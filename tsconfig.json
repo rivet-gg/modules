@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"outDir": "dist",
+		"resolveJsonModule": true,
+        "esModuleInterop": true,
+        "target": "ES2022",
+	},
+	"include": ["src"],
+	"exclude": ["node_modules"]
+}
