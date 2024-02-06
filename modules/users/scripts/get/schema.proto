@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ogs.modules.users.fns.get;
+package ogs.modules.users.scripts.get;
 
 import "modules/users/proto/common.proto";
 

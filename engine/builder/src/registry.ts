@@ -23,7 +23,19 @@ export class Registry {
 }
 
 export interface ModuleConfig {
+    metadata: ModuleMetadata;
     scripts: { [name: string]: ScriptConfig };
+}
+
+
+export interface ModuleMetadata {
+    status: 'preview' | 'beta' | 'stable' | 'deprecated';
+    description: string;
+
+    /**
+    * The GitHub handle of the authors of the module.
+    */
+    authors: string[];
 }
 
 export interface ScriptConfig {

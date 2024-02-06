@@ -1,6 +1,5 @@
 ## Goal: Generate files
 
-- Generate protobuf files
 - Generate an index TypeScript file
     - Imports all modules and creates an index of all modules
 - Run with ts-node for now
