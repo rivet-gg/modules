@@ -4,7 +4,7 @@ import { glob } from 'glob';
 import { pbjs, pbts } from "protobufjs-cli";
 
 export async function compileProtobuf(registry: Registry) {
-    let protoFiles = await glob(["modules/*/schema/*.proto", "modules/*/functions/*/schema.proto"], { cwd: registry.path });
+    let protoFiles = await glob(["modules/*/schema/*.proto", "modules/*/scripts/*/schema.proto"], { cwd: registry.path });
     protoFiles = protoFiles.map(p => path.join(registry.path, p));
     console.log('Proto files:', protoFiles);
     if (protoFiles.length == 0) {
@@ -16,17 +16,16 @@ export async function compileProtobuf(registry: Registry) {
 
     // Generate JS defintions
     await new Promise((resolve, reject) => {
-        pbjs.main(["-t", "static-module", "-w", "commonjs", "-o", jsOutput, ...protoFiles], function(err) {
+        pbjs.main(["--target", "static-module", "--wrap", "commonjs", "--es6", "--path", registry.path, "--out", jsOutput, ...protoFiles], function(err) {
             if (err) return reject(err);
             console.log("Static JS generated successfully.");
             resolve(undefined);
         });
-
     });
 
     // Generate TS definitions from static JS
     await new Promise((resolve, reject) => {
-        pbts.main(["-o", tsOutput, jsOutput], function(err) {
+        pbts.main(["--out", tsOutput, jsOutput], function(err) {
             if (err) return reject(err);
             console.log("TS definitions generated successfully.");
             resolve(undefined);

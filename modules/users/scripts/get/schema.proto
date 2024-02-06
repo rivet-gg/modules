@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ogs.modules.users.scripts.get;
 
-import "modules/users/proto/common.proto";
+import "modules/users/schema/common.proto";
 
 message Request {
     repeated string user_ids = 1;

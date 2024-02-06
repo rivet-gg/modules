@@ -4,6 +4,10 @@
     - Imports all modules and creates an index of all modules
 - Run with ts-node for now
 
+## Goal: Convert to Deno & reorg packages
+
+## Goal: Create packages
+
 ## Goal: Serve request programatically
 
 - Write @ogs/runtime
@@ -35,6 +39,5 @@
 
 ## Long term
 
-- Convert to Deno
 - One-click deploys
 

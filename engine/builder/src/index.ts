@@ -10,9 +10,7 @@ async function main() {
     // Compile schema
     compileProtobuf(registry);
 
-    // TODO: Compile Protobuf
-
-    // TODO: Compile JavaScript
+    // TODO: Generate entrypoint
 
     console.log('Loaded registry');
 

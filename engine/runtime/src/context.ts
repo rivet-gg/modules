@@ -1,6 +1,4 @@
-class Context {
-    private constructor() {
-
-    }
+export class Context {
+    public constructor() {}
 }
 
