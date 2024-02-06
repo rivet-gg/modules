@@ -1,0 +1,6 @@
+class Context {
+    private constructor() {
+
+    }
+}
+

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ogs.modules.users.fns.get;
+
+import "modules/users/proto/common.proto";
+
+message Request {
+    repeated string user_ids = 1;
+}
+
+message Response {
+    repeated ogs.modules.users.User users = 1;
+}
+
