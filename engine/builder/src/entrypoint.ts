@@ -2,25 +2,23 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import { tjs } from "./deps.ts";
 import { Registry } from "../../registry/src/index.ts";
 
-export async function generateEntrypoint(registry: Registry, schema: tjs.Definition) {
+export async function generateEntrypoint(registry: Registry) {
     let outDir = path.join(registry.path, 'dist');
     let outPath = path.join(outDir, 'entrypoint.ts');
 
     // Generate module configs
     let modImports = "";
     let modConfig = "{";
-    for (let modName in registry.modules) {
-        let mod = registry.modules[modName];
-
-        modConfig += `${JSON.stringify(modName)}: {`;
+    for (let mod of registry.modules.values()) {
+        modConfig += `${JSON.stringify(mod.name)}: {`;
 
         // Generate script configs
         modConfig += "scripts: {";
-        for (let scriptName in mod.scripts) {
-            let handlerIdent = `modules__${modName}__${scriptName}__handler`;
+        for (let script of mod.scripts.values()) {
+            let handlerIdent = `modules__${mod.name}__${script.name}__handler`;
 
-            modImports = `import { handler as ${handlerIdent} } from '../modules/${modName}/scripts/${scriptName}.ts';\n`;
-            modConfig += `${JSON.stringify(scriptName)}: { handler: ${handlerIdent} },`;
+            modImports = `import { handler as ${handlerIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
+            modConfig += `${JSON.stringify(script.name)}: { handler: ${handlerIdent}, requestSchema: ${JSON.stringify(script.requestSchema)}, responseSchema: ${JSON.stringify(script.responseSchema)} },`;
         }
         modConfig += "},";
 
@@ -39,7 +37,6 @@ ${modImports}
 async function main() {
     let runtime = new Runtime({
         modules: ${modConfig},
-        schema: ${JSON.stringify(schema)},
     });
     await runtime.serve();
 }

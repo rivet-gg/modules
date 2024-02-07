@@ -80,3 +80,16 @@ TODO
 
 TODO
 
+## Why generate JSON schema instead of using native TS decorators?
+
+There are [many other options](https://stackoverflow.com/questions/33800497/check-if-an-object-implements-an-interface-at-runtime-with-typescript) that use JS decorators for validating & parsing input JSON.
+
+We opt to generate [JSON schemas](https://json-schema.org/) from TypeScript interfaces and use [ajv](https://www.npmjs.com/package/ajv) to validate input types at runtime against the schemas.
+
+Using JSON schemas allows us to:
+
+- Generate OpenAPI specifications & client libraries automatically from TypeScript types
+- Better standardize how data is validated
+- Provide more validation types
+- Allow for future flexibility in how we handle JSON schemas
+

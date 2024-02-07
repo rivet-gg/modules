@@ -14,15 +14,15 @@ export class Registry {
         console.log('Loading registry', rootPath);
 
         let modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
-        let modules = {};
+        let modules = new Map();
         for (let mod of modPaths) {
             let modName = path.basename(path.dirname(mod));
-            modules[modName] = await Module.load(path.join(rootPath, path.dirname(mod)), modName);
+            modules.set(modName, await Module.load(path.join(rootPath, path.dirname(mod)), modName));
         }
         return new Registry(rootPath, modules);
     }
 
-    private constructor(public path: string, public modules: { [name: string]: Module }) {}
+    private constructor(public path: string, public modules: Map<string, Module>) {}
 }
 
 export interface ModuleConfig {
@@ -61,19 +61,22 @@ export class Module {
         }
 
         // Read scripts
-        let scripts = {};
+        let scripts = new Map();
         for (let scriptName in config.scripts) {
-            let scriptPath = path.resolve(modulePath, 'scripts', scriptName);
-            scripts[scriptName] = new Script(scriptPath, scriptName, config.scripts[scriptName]);
+            let scriptPath = path.resolve(modulePath, 'scripts', scriptName + ".ts");
+            scripts.set(scriptName, new Script(scriptPath, scriptName, config.scripts[scriptName]));
         }
 
         return new Module(modulePath, name, config, scripts);
     }
 
-    private constructor(public path: string, public name: string, public config: ModuleConfig, public scripts: { [name: string]: Script }) {}
+    private constructor(public path: string, public name: string, public config: ModuleConfig, public scripts: Map<string, Script>) {}
 }
 
 export class Script {
+    public requestSchema?: tjs.Definition;
+    public responseSchema?: tjs.Definition;
+
     public constructor(public path: string, public name: string, public config: ScriptConfig) {}
 }
 

@@ -12,11 +12,11 @@ async function main() {
 
     // Compile schema
     console.log('Compiling schema');
-    let schema = await compileSchema(registry);
+    await compileSchema(registry);
 
     // Generate entrypoint
     console.log('Generating entrypoint');
-    await generateEntrypoint(registry, schema);
+    await generateEntrypoint(registry);
 
     console.log('Done');
 }
