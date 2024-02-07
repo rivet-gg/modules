@@ -1,11 +1,13 @@
-import { Registry } from "./registry";
-import path from "path";
-import { compileSchema } from './schema';
-import { generateEntrypoint } from './entrypoint';
+import * as path from "$std/path/mod.ts";
+import { Registry } from "./registry.ts";
+import { compileSchema } from './schema.ts';
+import { generateEntrypoint } from './entrypoint.ts';
+
+const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
 async function main() {
     // Load registry
-    let rootPath = path.join(__dirname, "..", "..", "..");
+    let rootPath = path.join(__dirname, '..', '..', '..');
     let registry = await Registry.load(rootPath);
 
     // Compile schema

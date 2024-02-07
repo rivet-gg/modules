@@ -1,9 +1,8 @@
+import * as path from '$std/path/mod.ts';
+import { parse } from '$std/yaml/mod.ts';
 import { glob } from 'glob';
-import path from 'path';
-import { promises as fs } from 'fs';
-import yaml from 'js-yaml';
-import { schema } from '../dist/schema';
 import Ajv from 'ajv';
+import { schema } from '../dist/schema.ts';
 
 let ajv = new Ajv({ schemas: [schema] });
 
@@ -48,8 +47,8 @@ export class Module {
         console.log('Loading module', modulePath);
 
         // Read config
-        let configRaw = await fs.readFile(path.join(modulePath, 'module.yaml'), 'utf8');
-        let config = yaml.load(configRaw) as ModuleConfig;
+        let configRaw = await Deno.readTextFile(path.join(modulePath, 'module.yaml'), 'utf8');
+        let config = parse(configRaw) as ModuleConfig;
 
         // Validate config
         let moduleConfigSchema = ajv.getSchema("#/definitions/ModuleConfig");

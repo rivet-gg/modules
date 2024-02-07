@@ -1,6 +1,6 @@
 import * as path from "$std/path/mod.ts";
 import { exists, ensureDir } from "$std/fs/mod.ts";
-import tjs from "tjs";
+import tjs from "typescript-json-schema";
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
@@ -13,12 +13,6 @@ console.log("Writing temporary schema");
 await Deno.writeTextFile(schemaPath, "export let schema = {};");
 
 console.log("Getting program files");
-// TODO: Use glob
-// TODO: Why is this not working
-// const program = tjs.programFromConfig(path.join(__dirname, "tsconfig.json"), [
-// 	path.resolve(__dirname, "src", "registry.ts"),
-// ]);
-
 const program = tjs.getProgramFromFiles([path.resolve(__dirname, "src", "registry.ts")], {
     target: "es2015",
     esModuleInterop: true,

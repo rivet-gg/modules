@@ -1,2 +1,2 @@
-export { Context } from "./context";
-export { Runtime } from "./runtime";
+export { Context } from "./context.ts";
+export { Runtime } from "./runtime.ts";

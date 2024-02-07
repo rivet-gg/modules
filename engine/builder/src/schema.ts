@@ -1,7 +1,9 @@
-import { Registry } from './registry';
-import path from 'path';
+import * as path from '$std/path/mod.ts';
 import { glob } from 'glob';
 import * as tjs from "typescript-json-schema";
+import { Registry } from './registry.ts';
+
+const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
 export async function compileSchema(registry: Registry): Promise<tjs.Definition> {
     let schemaFiles = await glob(["modules/*/scripts/*.ts"], { cwd: registry.path });
@@ -11,6 +13,7 @@ export async function compileSchema(registry: Registry): Promise<tjs.Definition>
     const program = tjs.getProgramFromFiles(schemaFiles, {
         target: "es2015",
         esModuleInterop: true,
+        allowImportingTsExtensions: true,
     }, __dirname);
 
     console.log("Generating schema");

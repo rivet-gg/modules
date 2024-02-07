@@ -1,5 +1,5 @@
-import { Context } from "../../../engine/runtime/src/index";
-import { User } from "../schema/common";
+import { Context } from "../../../engine/runtime/src/index.ts";
+import { User } from "../schema/common.ts";
 
 export interface Request {
     userIds: string[];
