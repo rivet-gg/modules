@@ -457,6 +457,10 @@
       }
     }
   },
+  "redirects": {
+    "https://deno.land/std/path/mod.ts": "https://deno.land/std@0.214.0/path/mod.ts",
+    "https://deno.land/std/yaml/mod.ts": "https://deno.land/std@0.214.0/yaml/mod.ts"
+  },
   "remote": {
     "https://deno.land/std@0.214.0/assert/assert.ts": "bec068b2fccdd434c138a555b19a2c2393b71dfaada02b7d568a01541e67cdc5",
     "https://deno.land/std@0.214.0/assert/assertion_error.ts": "9f689a101ee586c4ce92f52fa7ddd362e86434ffdf1f848e45987dc7689976b8",
@@ -594,12 +598,5 @@
     "https://deno.land/std@0.214.0/yaml/schema/mod.ts": "9bf7ff80c2a246f781bdcab979211d0389760831a974cf5883bf2016567e3507",
     "https://deno.land/std@0.214.0/yaml/stringify.ts": "580f8b2fa56e3233424520d8242f4fc0edf41ac54a6a6d2f6f8e0b6e99cd63c0",
     "https://deno.land/std@0.214.0/yaml/type.ts": "708dde5f20b01cc1096489b7155b6af79a217d585afb841128e78c3c2391eb5c"
-  },
-  "workspace": {
-    "dependencies": [
-      "npm:ajv@^8.12.0",
-      "npm:glob@^10.3.10",
-      "npm:typescript-json-schema@^0.62.0"
-    ]
   }
 }

@@ -20,8 +20,8 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
     //     };
     // });
 
-    let output = await ctx.postgres.run(async conn => conn.queryObject`SELECT 'bar' AS foo`);
-    console.log('output', output.rows);
+    let output = await ctx.postgres.run(async conn => conn.queryObject`SELECT * FROM users`);
+    console.log('output', output);
 
     let users = req.userIds.map((id) => {
         return {

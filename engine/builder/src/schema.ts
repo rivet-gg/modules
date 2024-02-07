@@ -1,5 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import { glob, tjs } from './deps';
+import { glob, tjs } from './deps.ts';
 import { Registry } from '../../registry/src/index.ts';
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
