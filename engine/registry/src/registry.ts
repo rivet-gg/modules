@@ -1,15 +1,13 @@
-import * as path from '$std/path/mod.ts';
-import * as tjs from "typescript-json-schema";
-import { parse } from '$std/yaml/mod.ts';
-import { glob } from 'glob';
-import Ajv from 'ajv';
+import * as path from "https://deno.land/std/path/mod.ts";
+import { parse } from "https://deno.land/std/yaml/mod.ts";
+import { Ajv, glob, tjs } from './deps.ts';
 
 // TODO: Clean this up
 import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let ajv = new Ajv({ schemas: [generateModuleConfigJsonSchema()] });
+let moduleConfigAjv = new Ajv({ schemas: [generateModuleConfigJsonSchema()] });
 
 export class Registry {
     public static async load(rootPath: string): Promise<Registry> {
@@ -56,7 +54,7 @@ export class Module {
         let config = parse(configRaw) as ModuleConfig;
 
         // Validate config
-        let moduleConfigSchema = ajv.getSchema("#/definitions/ModuleConfig");
+        let moduleConfigSchema = moduleConfigAjv.getSchema("#/definitions/ModuleConfig");
         if (!moduleConfigSchema) throw new Error("Failed to get module config schema");
         if (!moduleConfigSchema(config)) {
             throw new Error(`Invalid module config: ${JSON.stringify(moduleConfigSchema.errors)}`);
@@ -80,7 +78,7 @@ export class Script {
 }
 
 function generateModuleConfigJsonSchema(): tjs.Definition {
-    console.log("Getting registry.ts schema");
+    console.log("Generating registry.ts schema");
 
     let schemaFiles = [__filename];
 

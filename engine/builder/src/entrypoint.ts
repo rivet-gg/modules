@@ -1,6 +1,6 @@
-import * as path from '$std/path/mod.ts';
-import * as tjs from "typescript-json-schema";
-import { Registry } from "./registry.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import { tjs } from "./deps.ts";
+import { Registry } from "../../registry/src/index.ts";
 
 export async function generateEntrypoint(registry: Registry, schema: tjs.Definition) {
     let outDir = path.join(registry.path, 'dist');

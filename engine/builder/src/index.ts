@@ -1,5 +1,5 @@
-import * as path from "$std/path/mod.ts";
-import { Registry } from "./registry.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import { Registry } from "../../registry/src/index.ts";
 import { compileSchema } from './schema.ts';
 import { generateEntrypoint } from './entrypoint.ts';
 
