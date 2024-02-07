@@ -14,6 +14,8 @@ Start server with:
 deno task start
 ```
 
+Under the hood, this runs the `build`, `migrate`, and `entrypoint` tasks. You can also run each one individually.
+
 ## Goals
 
 - **Package manager for game services** Adding backend functionality to your game should be as easy as one command
