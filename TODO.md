@@ -1,6 +1,9 @@
-## Goal: Convert to Deno & reorg packages
+## Goal: docker-compose.json
 
-## Goal: Create packages
+## Goal: Integrate with Postgres
+
+- Run migrations
+- Expose PG to modules
 
 ## Goal: Serve request programatically
 
@@ -12,18 +15,13 @@
 
 - Call the module
 
+## Goal: Generate OpenAPI spec
+
 ## Goal: Validate request over HTTP
 
 - Generate JSON schema for the protobuf types
 - Decode JSON and use Ajv to validate the type
 - Generate Postman?
-
-## Goal: docker-compose.json
-
-## Goal: Integrate with Postgres
-
-- Run migrations
-- Expose PG to modules
 
 ## Goal: Run tests
 

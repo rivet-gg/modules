@@ -17,12 +17,18 @@ export async function compileSchema(registry: Registry): Promise<tjs.Definition>
     }, __dirname);
 
     console.log("Generating schema");
-    const schema = tjs.generateSchema(program, "Request", {
+    const schema = tjs.generateSchema(program, "*", {
         topRef: true,
         required: true,
         strictNullChecks: true,
         noExtraProps: true,
         esModuleInterop: true,
+
+        // TODO: Is this needed?
+        include: schemaFiles,
+
+        // TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
+        ignoreErrors: true,
     });
     if (schema === null) throw new Error("Failed to generate schema");
 
