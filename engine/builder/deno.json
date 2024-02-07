@@ -1,6 +1,5 @@
 {
     "tasks": {
-        "build": "deno run --allow-read --allow-write build.ts",
         "start": "deno run --allow-read --allow-write src/index.ts"
     },
     "imports": {

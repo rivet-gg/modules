@@ -1,5 +1,19 @@
 # Open Game Services (OGS)
 
+## Development
+
+Setup environment with:
+
+```
+deno task dev:setup
+```
+
+Start task with:
+
+```
+deno task start
+```
+
 ## Goals
 
 - **Easy to use for game devs** Designed from the ground up to be approachable by game developers to add backend functionality to their game

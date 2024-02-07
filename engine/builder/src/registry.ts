@@ -1,10 +1,15 @@
 import * as path from '$std/path/mod.ts';
+import * as tjs from "typescript-json-schema";
 import { parse } from '$std/yaml/mod.ts';
 import { glob } from 'glob';
 import Ajv from 'ajv';
-import { schema } from '../dist/schema.ts';
 
-let ajv = new Ajv({ schemas: [schema] });
+// TODO: Clean this up
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let ajv = new Ajv({ schemas: [generateModuleConfigJsonSchema()] });
 
 export class Registry {
     public static async load(rootPath: string): Promise<Registry> {
@@ -74,3 +79,31 @@ export class Script {
     public constructor(public path: string, public name: string, public config: ScriptConfig) {}
 }
 
+function generateModuleConfigJsonSchema(): tjs.Definition {
+    console.log("Getting registry.ts schema");
+
+    let schemaFiles = [__filename];
+
+    const program = tjs.getProgramFromFiles(schemaFiles, {
+        target: "es2015",
+        esModuleInterop: true,
+        allowImportingTsExtensions: true,
+    });
+
+    const schema = tjs.generateSchema(program, "ModuleConfig", {
+        topRef: true,
+        required: true,
+        strictNullChecks: true,
+        noExtraProps: true,
+        esModuleInterop: true,
+
+        // TODO: Is this needed?
+        include: schemaFiles,
+
+        // TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
+        ignoreErrors: true,
+    });
+    if (schema == null) throw new Error("Failed to generate schema");
+
+    return schema;
+}

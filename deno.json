@@ -1,0 +1,8 @@
+{
+    "tasks": {
+        "dev:setup": "docker-compose up -d",
+        "dev:teardown": "docker-compose down",
+        "build": "deno task --config engine/builder/deno.json start",
+        "start": "deno task build && deno run --allow-env --allow-net dist/entrypoint.ts",
+    }
+}
