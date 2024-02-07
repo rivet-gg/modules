@@ -1,9 +1,3 @@
-## Goal: Generate files
-
-- Generate an index TypeScript file
-    - Imports all modules and creates an index of all modules
-- Run with ts-node for now
-
 ## Goal: Convert to Deno & reorg packages
 
 ## Goal: Create packages
@@ -24,6 +18,8 @@
 - Decode JSON and use Ajv to validate the type
 - Generate Postman?
 
+## Goal: docker-compose.json
+
 ## Goal: Integrate with Postgres
 
 - Run migrations
@@ -36,6 +32,7 @@
 ## Goal: setup tokens
 
 ## Goal: setup identities
+
 
 ## Long term
 

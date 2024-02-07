@@ -1,0 +1,9 @@
+{
+    "tasks": {
+        "build": "deno run --allow-read --allow-write build.ts"
+    },
+    "imports": {
+        "$std/": "https://deno.land/std@0.214.0/",
+        "tjs": "npm:typescript-json-schema@^0.62.0"
+    }
+}

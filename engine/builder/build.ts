@@ -1,11 +1,16 @@
-const path = require("path");
-const fs = require("fs");
+import * as path from "$std/path/mod.ts";
+import { exists, ensureDir } from "$std/fs/mod.ts";
+import tjs from "tjs";
+
+const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
 let genPath = path.join(__dirname, "dist");
 let schemaPath = path.join(genPath, "schema.ts");
 
+await ensureDir(genPath);
+
 console.log("Writing temporary schema");
-fs.writeFileSync(schemaPath, "export let schema = {};");
+await Deno.writeTextFile(schemaPath, "export let schema = {};");
 
 console.log("Getting program files");
 // TODO: Use glob
@@ -30,8 +35,7 @@ const schema = tjs.generateSchema(program, "ModuleConfig", {
 if (schema == null) throw new Error("Failed to generate schema");
 
 console.log("Writing files");
-if (!fs.existsSync(genPath)) fs.mkdirSync(genPath);
-fs.writeFileSync(
+await Deno.writeTextFile(
 	schemaPath,
 	`export let schema = ${JSON.stringify(schema, null, 4)};`
 );
