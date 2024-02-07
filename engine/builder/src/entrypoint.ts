@@ -41,9 +41,7 @@ async function main() {
         modules: ${modConfig},
         schema: ${JSON.stringify(schema)},
     });
-    let response = await runtime.call('users', 'get', { userIds: ['abc', 'def'] });
-    console.log('Call response', response);
-    // await runtime.run();
+    await runtime.serve();
 }
 
 main();

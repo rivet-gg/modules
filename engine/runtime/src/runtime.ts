@@ -1,5 +1,6 @@
 import * as postgres from "https://deno.land/x/postgres@v0.17.1/mod.ts";
 import { Context } from "./context.ts";
+import { serverHandler } from './server.ts';
 
 interface Config {
     modules: { [name: string]: Module };
@@ -40,5 +41,11 @@ export class Runtime {
         } catch (err) {
             throw new Error(`Failed to execute script: ${err.message}`)
         }
+    }
+
+    public async serve() {
+        const port = parseInt(Deno.env.get("PORT") ?? "8080");
+        console.log(`Serving on port ${port}`);
+        Deno.serve({ port }, serverHandler(this));
     }
 }
