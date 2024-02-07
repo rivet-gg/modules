@@ -11,7 +11,9 @@
         "migrate": "deno task --config engine/migrate/deno.json start",
 
         "entrypoint": "deno run --allow-env --allow-net dist/entrypoint.ts",
+        "entrypoint:watch": "deno run --watch --allow-env --allow-net dist/entrypoint.ts",
 
         "start": "deno task build && deno task migrate && deno task entrypoint",
+        "start:watch": "deno task build && deno task migrate && deno task entrypoint:watch",
     }
 }

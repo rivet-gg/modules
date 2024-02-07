@@ -11,7 +11,7 @@ deno task dev:setup
 Start server with:
 
 ```
-deno task start
+deno task start:watch
 ```
 
 Under the hood, this runs the `build`, `migrate`, and `entrypoint` tasks. You can also run each one individually.
