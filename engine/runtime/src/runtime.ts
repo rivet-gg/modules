@@ -2,6 +2,7 @@ import { Context } from "./context";
 
 interface Config {
     modules: { [name: string]: Module };
+    schema: any;
 }
 
 interface Module {

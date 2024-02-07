@@ -1,6 +1,7 @@
 import { Registry } from "./registry";
 import path from "path";
-import { compileProtobuf } from './schema';
+import { compileSchema } from './schema';
+import { generateEntrypoint } from './entrypoint';
 
 async function main() {
     // Load registry
@@ -8,12 +9,14 @@ async function main() {
     let registry = await Registry.load(rootPath);
 
     // Compile schema
-    compileProtobuf(registry);
+    console.log('Compiling schema');
+    let schema = await compileSchema(registry);
 
-    // TODO: Generate entrypoint
+    // Generate entrypoint
+    console.log('Generating entrypoint');
+    await generateEntrypoint(registry, schema);
 
-    console.log('Loaded registry');
-
+    console.log('Done');
 }
 
 main();

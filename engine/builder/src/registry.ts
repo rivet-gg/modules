@@ -12,14 +12,15 @@ export class Registry {
         console.log('Loading registry', rootPath);
 
         let modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
-        let modules: Module[] = [];
+        let modules = {};
         for (let mod of modPaths) {
-            modules.push(await Module.load(path.join(rootPath, path.dirname(mod))));
+            let modName = path.basename(path.dirname(mod));
+            modules[modName] = await Module.load(path.join(rootPath, path.dirname(mod)), modName);
         }
         return new Registry(rootPath, modules);
     }
 
-    private constructor(public path: string, public modules: Module[]) {}
+    private constructor(public path: string, public modules: { [name: string]: Module }) {}
 }
 
 export interface ModuleConfig {
@@ -43,7 +44,7 @@ export interface ScriptConfig {
 }
 
 export class Module {
-    public static async load(modulePath: string): Promise<Module> {
+    public static async load(modulePath: string, name: string): Promise<Module> {
         console.log('Loading module', modulePath);
 
         // Read config
@@ -58,23 +59,19 @@ export class Module {
         }
 
         // Read scripts
-        let scripts: Script[] = [];
-        for (let fnName in config.scripts) {
-            let scriptPath = path.resolve(modulePath, 'scripts', fnName);
-            let script = new Script(scriptPath, fnName, config.scripts[fnName])
-            scripts.push(script);
+        let scripts = {};
+        for (let scriptName in config.scripts) {
+            let scriptPath = path.resolve(modulePath, 'scripts', scriptName);
+            scripts[scriptName] = new Script(scriptPath, scriptName, config.scripts[scriptName]);
         }
 
-        return new Module(modulePath, config);
+        return new Module(modulePath, name, config, scripts);
     }
 
-    private constructor(public path: string, public config: ModuleConfig) {}
+    private constructor(public path: string, public name: string, public config: ModuleConfig, public scripts: { [name: string]: Script }) {}
 }
 
 export class Script {
-    public static async load(scriptPath: string, name: string, config: ScriptConfig): Promise<Script> {
-        return new Script(scriptPath, name, config);
-    }
-
-    constructor(public path: string, public name: string, public config: ScriptConfig) {}
+    public constructor(public path: string, public name: string, public config: ScriptConfig) {}
 }
+

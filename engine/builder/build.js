@@ -1,5 +1,4 @@
 const path = require("path");
-const tjs = require("typescript-json-schema");
 const fs = require("fs");
 
 let genPath = path.join(__dirname, "dist");
@@ -28,6 +27,7 @@ const schema = tjs.generateSchema(program, "ModuleConfig", {
 	noExtraProps: true,
     esModuleInterop: true,
 });
+if (schema == null) throw new Error("Failed to generate schema");
 
 console.log("Writing files");
 if (!fs.existsSync(genPath)) fs.mkdirSync(genPath);

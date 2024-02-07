@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package ogs.modules.users;
-
-message User {
-    string id = 1;
-    string username = 2;
-}
-

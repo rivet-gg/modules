@@ -17,6 +17,19 @@ TODO
 
 See [here](./docs/FAQ.md).
 
+## Support
+
+**Community**
+
+Create a GitHub issue.
+
+**Enterprise**
+
+The following companies provide enterprise support for OGS:
+
+- [Rivet](https://rivet.gg/support)
+- _Create a PR to list your enterprise services for OGS_
+
 ## Modules
 
 TODO

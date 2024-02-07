@@ -10,6 +10,8 @@
 
 ### ...Go?
 
+## How does OGS scale?
+
 ## How does OGS compare to...
 
 ### Unity Game Services

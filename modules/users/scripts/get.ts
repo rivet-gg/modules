@@ -1,7 +1,15 @@
-import { Context } from "../../../../engine/runtime/src/index"
-import { ogs } from "../../../../dist/schema";
+import { Context } from "../../../engine/runtime/src/index";
+import { User } from "../schema/common";
 
-export async function handler(ctx: Context, req: ogs.modules.users.scripts.get.IRequest): Promise<ogs.modules.users.scripts.get.IResponse> {
+export interface Request {
+    userIds: string[];
+}
+
+export interface Response {
+    users: User[];
+}
+
+export async function handler(ctx: Context, req: Request): Promise<Response> {
     // await req.auth("user");
 
     // let rows = await ctx.pg.query("SELECT * FROM users WHERE id = ANY($1)", [req.user_ids]);
@@ -15,7 +23,7 @@ export async function handler(ctx: Context, req: ogs.modules.users.scripts.get.I
     let users = req.userIds.map((id) => {
         return {
             id,
-            name: "Alice",
+            username: "Alice",
         };
     });
 
