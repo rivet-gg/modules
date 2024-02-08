@@ -10,7 +10,7 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    let users = await ctx.postgres.run(async conn => conn.queryObject`SELECT * FROM users`);
+    let query = await ctx.postgres.run(async conn => conn.queryObject`SELECT * FROM users WHERE id = ANY(${req.userIds})`);
 
     return {
         users: query.rows
