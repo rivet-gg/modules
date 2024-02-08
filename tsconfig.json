@@ -4,6 +4,7 @@
 		"resolveJsonModule": true,
         "esModuleInterop": true,
         "target": "ES2022",
+        "strict": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]

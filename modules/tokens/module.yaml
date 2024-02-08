@@ -1,0 +1,11 @@
+metadata:
+  status: preview
+  description: Tokens.
+  authors:
+    - NathanFlurry
+scripts:
+  create: {}
+  get: {}
+  revoke: {}
+  validate: {}
+

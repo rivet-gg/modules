@@ -5,7 +5,7 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
         const url = new URL(req.url);
         console.log('url', url.pathname)
 
-        const moduleCall = /^\/modules\/(\w+)\/scripts\/(\w+)\/call$/;
+        const moduleCall = /^\/modules\/(\w+)\/scripts\/(\w+)\/call\/?$/;
         if (req.method == "POST" && moduleCall.test(url.pathname)) {
             const matches = url.pathname.match(moduleCall);
             if (matches) {

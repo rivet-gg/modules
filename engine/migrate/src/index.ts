@@ -21,7 +21,7 @@ async function main() {
             CREATE TABLE IF NOT EXISTS _migrations (
                 idx INTEGER PRIMARY KEY,
                 name TEXT UNIQUE NOT NULL,
-                executed_at TIMESTAMP DEFAULT timezone('UTC', now())
+                executed_at TIMESTAMP NOT NULL DEFAULT timezone('UTC', now())
             );
         `);
 

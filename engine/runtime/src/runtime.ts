@@ -1,5 +1,5 @@
-import * as postgres from "https://deno.land/x/postgres@v0.17.1/mod.ts";
 import { Context } from "./context.ts";
+import { Postgres } from './postgres.ts';
 import { serverHandler } from './server.ts';
 import { Ajv } from './deps.ts';
 
@@ -20,13 +20,12 @@ interface Script {
 }
 
 export class Runtime {
+    public postgres: Postgres;
+
     private ajv: Ajv = new Ajv();
 
-    public pg: postgres.Pool;
-
     public constructor(public config: Config) {
-        const databaseUrl = Deno.env.get("DATABASE_URL") ?? "postgres://postgres:password@localhost:5432/postgres"
-        this.pg = new postgres.Pool(databaseUrl, 3, true);
+        this.postgres = new Postgres();
     }
 
     public async call(moduleName: string, scriptName: string, req: unknown): Promise<unknown> {

@@ -1,8 +1,7 @@
-- Wrap request & response schema with metadata
-- OpenAPI support
-- Postman
-- Setup users scaffold
 - Setup tokens
+- Figure out camel case vs snake case for rows
+- Figure out query shorthand
+- Filter req & res using Ajv
 - Testing
 - Rivet auth
 - Find a cool demo that can be ran quickly in the browser

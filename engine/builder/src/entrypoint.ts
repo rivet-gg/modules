@@ -22,7 +22,7 @@ export async function generateEntrypoint(registry: Registry) {
         }
         modConfig += "},";
 
-        modConfig += "}";
+        modConfig += "},";
     }
     modConfig += "}";
 
