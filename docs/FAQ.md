@@ -62,6 +62,12 @@ LogRocket has a great article on why to avoid JS ORMs [here](https://blog.logroc
 - **Multiple migration types** Support both vanilla SQL migrations & custom TypeScript
 - **Deno-native** The less we rely on Node modules, the better
 
+## Why Deno?
+
+OGS was initiated by a bunch of Rust nerds who value the quality of life tooling provided around the language.
+
+Deno aims to provide the same tooling (tests, documentation, formatting, linting, package managers, etc) but for TypeScript, which provides faster iteration speeds and is accessible to a wider audience than Rust.
+
 ## How does OGS compare to...
 
 ### Unity Game Services

@@ -74,4 +74,22 @@ export class Runtime {
         console.log(`Serving on port ${port}`);
         Deno.serve({ port }, serverHandler(this));
     }
+
+    public async test(name: string, fn: (ctx: Context) => Promise<void>) {
+        Deno.test(name, async () => {
+            // Build trace
+            let trace = appendTraceEntry(parentTrace, {
+                test: { name }
+            });
+
+            // Build Postgres
+            let postgres = new PostgresWrapped(this.postgres, moduleName);
+
+            // Build context
+            const ctx = new Context(this, trace, postgres);
+
+            // Run test
+            await cb(ctx);
+        });
+    }
 }

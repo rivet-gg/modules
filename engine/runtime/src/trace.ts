@@ -18,7 +18,7 @@ export interface TraceEntry {
 /**
  * Infomration about the type of the trace entry.
  */
-export type TraceEntryType  = { httpRequest: TraceEntryType.HttpRequest } | { script: TraceEntryType.Script };
+export type TraceEntryType  = { httpRequest: TraceEntryType.HttpRequest } | { script: TraceEntryType.Script } | { test: TraceEntryType.Test };
 
 module TraceEntryType {
     export interface HttpRequest {
@@ -28,6 +28,10 @@ module TraceEntryType {
     export interface Script {
         module: string;
         script: string;
+    }
+
+    export interface Test {
+        name: string;
     }
 }
 
