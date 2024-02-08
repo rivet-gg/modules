@@ -15,5 +15,7 @@
 
         "start": "deno task build && deno task migrate && deno task entrypoint",
         "start:watch": "deno task build && deno task migrate && deno task entrypoint:watch",
+
+        "sdk:gen": "deno task build && deno task --config engine/sdk_generator/deno.json start",
     }
 }

@@ -8,6 +8,18 @@ export async function generateOpenApi(registry: Registry) {
             title: "Open Game Services",
             version: "1.0.0"
         },
+        servers: [
+            {
+                "description": "Local",
+                "url": "http://localhost:8080"
+            }
+        ],
+        tags: [
+            {
+                name: "OGS",
+                description: "Open Game Services"
+            }
+        ],
         paths: {},
         components: {
             schemas: {}
@@ -21,8 +33,8 @@ export async function generateOpenApi(registry: Registry) {
             schema.paths[`/modules/${mod.name}/scripts/${script.name}/call`] = {
                 post: {
                     description: "Call ${mod.name}.${script.name} script.",
-                    tags: [mod.name],
-                    operationId: `call_${script.name}`,
+                    tags: ["OGS"],
+                    operationId: `call_${mod.name}_${script.name}`,
                     requestBody: {
                         content: {
                             "application/json": {

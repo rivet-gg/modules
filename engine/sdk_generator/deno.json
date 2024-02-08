@@ -1,0 +1,5 @@
+{
+    "tasks": {
+        "start": "deno run --allow-read --allow-run src/index.ts",
+    }
+}
