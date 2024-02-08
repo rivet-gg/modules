@@ -47,6 +47,7 @@ main();
 
     // Write file
     console.log('Writing entrypoint', outPath);
+    await Deno.mkdir(outDir, {recursive: true});
     await Deno.writeTextFile(outPath, source);
 }
 
