@@ -1,6 +1,6 @@
 /** Validate alphanumeric characters */
 export function validateString(input: string): boolean {
-    let regex = /^[a-zA-Z0-9]+$/;
+    let regex = /^[a-zA-Z0-9_]+$/;
     return regex.test(input);
 }
 

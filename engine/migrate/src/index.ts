@@ -28,9 +28,9 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
     try {
         for (const mod of registry.modules.values()) {
             // Create database
-            let existsQuery = await client.queryObject`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.name})`;
+            let existsQuery = await client.queryObject`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.dbName})`;
             if (!existsQuery.rows[0].exists) {
-                await client.queryArray(`CREATE DATABASE ${assertValidString(mod.name)}`);
+                await client.queryArray(`CREATE DATABASE ${assertValidString(mod.dbName)}`);
             }
         }
     } catch (err) {
@@ -43,7 +43,7 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
 async function runModuleMigrations(mod: Module, databaseUrl: string) {
     // Connect to database for this module
     const databaseUrlParsed = new URL(databaseUrl);
-    databaseUrlParsed.pathname = `/${mod.name}`;
+    databaseUrlParsed.pathname = `/${mod.dbName}`;
 
     const client = new postgres.Client(databaseUrlParsed.toString());
     await client.connect();

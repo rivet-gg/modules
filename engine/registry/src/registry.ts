@@ -71,6 +71,10 @@ export class Module {
     }
 
     private constructor(public path: string, public name: string, public config: ModuleConfig, public scripts: Map<string, Script>) {}
+
+    public get dbName(): string {
+        return `module_${this.name}`;
+    }
 }
 
 export class Script {

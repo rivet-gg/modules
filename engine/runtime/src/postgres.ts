@@ -19,7 +19,7 @@ export class Postgres {
         } else {
             // Build URL for this database
             let url = new URL(this.databaseUrl);
-            url.pathname = "/" + database;
+            url.pathname = "/module_" + database;
 
             // Create & insert pool
             let pool = new postgres.Pool(url.toString(), POOL_SIZE, true);
