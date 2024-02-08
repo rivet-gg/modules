@@ -19,6 +19,8 @@ Easy to represent in OpenAPI & external languages compared to internally tagged 
 
 Comes at the down side of not having exhaustive switch statements
 
+## Avoid OOP at all costs
+
 ## Prefer interfaces for rich data, prefer classes for functional objects
 
 `Trace` simply stores data. Helper functions can be published to manage traces.

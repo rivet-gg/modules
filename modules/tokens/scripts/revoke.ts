@@ -24,7 +24,7 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
         UPDATE tokens
         SET revoked_at = timezone('UTC', now())
         FROM pre_update
-        WHERE tokens.token = pre_update.token
+        WHERE token = pre_update.token
         RETURNING token, pre_update.revoked_at IS NOT NULL AS already_revoked
     `);
 

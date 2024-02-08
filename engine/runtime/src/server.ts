@@ -1,4 +1,5 @@
 import { Runtime } from "./runtime.ts";
+import { newTrace } from "./trace.ts";
 
 export function serverHandler(runtime: Runtime): Deno.ServeHandler {
     return async (req: Request): Response => {
@@ -9,9 +10,15 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
         if (req.method == "POST" && moduleCall.test(url.pathname)) {
             const matches = url.pathname.match(moduleCall);
             if (matches) {
+                // Create trace
+                let trace = newTrace({
+                    httpRequest: { method: req.method, path: url.pathname }
+                });
+
                 // Match module
                 const [, moduleName, scriptName] = matches;
-                let output = await runtime.call(moduleName, scriptName, await req.json());
+                let output = await runtime.call(trace, moduleName, scriptName, await req.json());
+
                 return new Response(JSON.stringify(output), { status: 200, headers: { "Content-Type": "application/json" } });
             }
         }

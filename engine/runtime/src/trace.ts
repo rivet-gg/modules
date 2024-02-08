@@ -31,4 +31,32 @@ module TraceEntryType {
     }
 }
 
+export function newTrace(entryType: TraceEntryType): Trace {
+    let entry: TraceEntry = {
+        requestId: crypto.randomUUID(),
+        startedAt: new Date().toISOString(),
+        type: entryType,
+    };
+
+    return {
+        rayId: crypto.randomUUID(),
+        entries: [entry],
+    };
+}
+
+/**
+ * Returns a new trace with the given entry appended to it.
+ */
+export function appendTraceEntry(trace: Trace, entryType: TraceEntryType): Trace {
+    let entry: TraceEntry = {
+        requestId: crypto.randomUUID(),
+        startedAt: new Date().toISOString(),
+        type: entryType,
+    };
+
+    return {
+        rayId: trace.rayId,
+        entries: [...trace.entries, entry],
+    };
+}
 

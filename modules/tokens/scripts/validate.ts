@@ -10,7 +10,7 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    let query = await ctx.postgres.run(conn => conn.queryObject`SELECT * FROM tokens WHERE tokens = ANY(${req.tokens})`);
+    let query = await ctx.postgres.run(conn => conn.queryObject`SELECT * FROM tokens WHERE token = ANY(${req.tokens})`);
 
     let tokens = {};
     for (let token of query.rows) {

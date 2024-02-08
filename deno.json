@@ -4,7 +4,6 @@
         "dev:teardown": "docker-compose down",
 
         "pg:sh": "docker-compose exec -it postgres psql --username postgres",
-        "pg:drop": "docker-compose exec -T postgres dropdb --username postgres --if-exists postgres && docker-compose exec -T postgres createdb --username postgres postgres",
 
         "build": "deno task --config engine/builder/deno.json start",
 

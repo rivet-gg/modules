@@ -20,6 +20,10 @@
 
 Cockroach does not benefit from the same extension ecosystem that Postgres has. While Cockroach has many scaling & performance benefits, it comes at the cost of consistency trade offs and lacking from benefiting from the existing Postgres documentation.
 
+Cockroach is licensed under BSL. BSL is not a truely open source license. While OGS could be built on top of Cockroach, it leaves the future of the project in the hands of whatever Cockroach decides to do with their licensing. For example, if they relicensed to SSPL, the entire OGS project would not be able to deliver on its promise of flexible licensing and would also have to be relicensed as SSPL.
+
+Postgres can scale when needed.
+
 ## How does OGS scale?
 
 ## Why use raw SQL queries instead of an ORM?
@@ -92,4 +96,12 @@ Using JSON schemas allows us to:
 - Better standardize how data is validated
 - Provide more validation types
 - Allow for future flexibility in how we handle JSON schemas
+
+## Why do modules have their own databsaes instead of schemas?
+
+- Security
+- Isolation
+- Performance
+
+TODO
 

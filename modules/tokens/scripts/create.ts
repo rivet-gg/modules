@@ -14,7 +14,7 @@ export interface Response {
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
     let tokenStr = generateToken(req.type);
-    let query = await ctx.postgres.run(conn => conn.queryObject`INSERT INTO tokens (token, type, meta, expire_at) VALUES (${tokenStr}, ${req.type}, ${req.meta}, ${req.expire_at}) RETURNING *`)
+    let query = await ctx.postgres.run(conn => conn.queryObject`INSERT INTO tokens (token, type, meta, trace, expire_at) VALUES (${tokenStr}, ${req.type}, ${req.meta}, ${ctx.trace}, ${req.expire_at}) RETURNING *`)
 
     return {
         token: query.rows[0]

@@ -1,6 +1,7 @@
 import { Context } from "./context.ts";
-import { Postgres } from './postgres.ts';
+import { Postgres, PostgresWrapped } from './postgres.ts';
 import { serverHandler } from './server.ts';
+import { Trace, appendTraceEntry } from './trace.ts';
 import { Ajv } from './deps.ts';
 
 interface Config {
@@ -28,9 +29,17 @@ export class Runtime {
         this.postgres = new Postgres();
     }
 
-    public async call(moduleName: string, scriptName: string, req: unknown): Promise<unknown> {
+    public async call(parentTrace: Trace, moduleName: string, scriptName: string, req: unknown): Promise<unknown> {
+        // Build trace
+        let trace = appendTraceEntry(parentTrace, {
+            script: { module: moduleName, script: scriptName }
+        });
+
+        // Build Postgres
+        let postgres = new PostgresWrapped(this.postgres, moduleName);
+
         // Build context
-        const ctx = new Context(this);
+        const ctx = new Context(this, trace, postgres);
 
         try {
             // Lookup module
