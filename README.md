@@ -22,6 +22,8 @@ To generate SDKs to `dist/sdks/`:
 deno task sdk:gen
 ```
 
+Explore the APIs by opening `dist/openapi.json` in Postman/Insomnia/Paw.
+
 ## Goals
 
 - **Package manager for game services** Adding backend functionality to your game should be as easy as one command
