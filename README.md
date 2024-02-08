@@ -58,7 +58,7 @@ Create a GitHub issue.
 
 **Enterprise**
 
-The following companies provide enterprise support & services for OGS:
+The following companies provide enterprise support & custom modules for OGS:
 
 - [Rivet](https://rivet.gg/support)
 - _Create a PR to list your enterprise services for OGS_
