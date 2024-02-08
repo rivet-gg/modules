@@ -17,7 +17,7 @@ export async function generateEntrypoint(registry: Registry) {
         for (let script of mod.scripts.values()) {
             let handlerIdent = `modules__${mod.name}__${script.name}__handler`;
 
-            modImports = `import { handler as ${handlerIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
+            modImports += `import { handler as ${handlerIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
             modConfig += `${JSON.stringify(script.name)}: { handler: ${handlerIdent}, requestSchema: ${JSON.stringify(script.requestSchema)}, responseSchema: ${JSON.stringify(script.responseSchema)} },`;
         }
         modConfig += "},";

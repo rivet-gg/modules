@@ -10,26 +10,10 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    // await req.auth("user");
+    let users = await ctx.postgres.run(async conn => conn.queryObject`SELECT * FROM users`);
 
-    // let rows = await ctx.pg.query("SELECT * FROM users WHERE id = ANY($1)", [req.user_ids]);
-    // let users = rows.map((row) => {
-    //     return {
-    //         id: row.id,
-    //         name: row.name,
-    //     };
-    // });
-
-    let output = await ctx.postgres.run(async conn => conn.queryObject`SELECT * FROM users`);
-    console.log('output', output);
-
-    let users = req.userIds.map((id) => {
-        return {
-            id,
-            username: "Alice",
-        };
-    });
-
-    return { users };
+    return {
+        users: query.rows
+    };
 }
 

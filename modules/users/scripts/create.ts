@@ -10,11 +10,10 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    // await req.auth("user");
+    let query = await ctx.postgres.run(conn => conn.queryObject`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`)
 
-    return { user: {
-        id: "123",
-        username: "Alice",
-    } };
+    return {
+        user: query.rows[0]
+    };
 }
 
