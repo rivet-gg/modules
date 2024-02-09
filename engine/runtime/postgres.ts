@@ -1,4 +1,4 @@
-import * as postgres from "https://deno.land/x/postgres@v0.17.1/mod.ts";
+import * as postgres from "postgres/mod.ts";
 
 const POOL_SIZE = 32;
 

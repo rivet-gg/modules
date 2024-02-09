@@ -1,16 +1,12 @@
 // TODO: Pin this version
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as postgres from "https://deno.land/x/postgres/mod.ts";
-import { Registry } from '../../registry/src/index.ts';
+import * as path from "std/path/mod.ts";
+import * as postgres from "postgres/mod.ts";
+import { Registry, Module } from '../registry/mod.ts';
 import { assertValidString } from "./validate.ts";
-import { Module } from "../../registry/src/registry.ts";
-
-const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
 async function main() {
     // Load registry
-    let rootPath = path.join(__dirname, '..', '..', '..');
-    let registry = await Registry.load(rootPath);
+    const registry = await Registry.load();
 
     // Setup database
     const databaseUrl = Deno.env.get("DATABASE_URL") ?? "postgres://postgres:password@localhost:5432/postgres"

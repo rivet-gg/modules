@@ -1,4 +1,4 @@
-import { Trace } from '../../../engine/runtime/src/index.ts';
+import { Trace } from '@ogs/runtime';
 
 export interface Token {
     id: string,

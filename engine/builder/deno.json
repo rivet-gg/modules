@@ -1,5 +1,0 @@
-{
-    "tasks": {
-        "start": "deno run --check --allow-read --allow-write src/index.ts"
-    }
-}

@@ -1,4 +1,4 @@
-import { Context } from "../../../engine/runtime/src/index.ts";
+import { Context } from "@ogs/runtime";
 import { User } from "../schema/common.ts";
 
 export interface Request {

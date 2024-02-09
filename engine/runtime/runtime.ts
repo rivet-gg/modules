@@ -2,7 +2,8 @@ import { Context } from "./context.ts";
 import { Postgres, PostgresWrapped } from './postgres.ts';
 import { serverHandler } from './server.ts';
 import { Trace, appendTraceEntry, newTrace } from './trace.ts';
-import { Ajv, addFormats } from './deps.ts';
+import Ajv from "ajv";
+import addFormats from 'ajv-formats';
 
 interface Config {
     modules: Record<string, Module>;
@@ -81,21 +82,21 @@ export class Runtime {
         Deno.serve({ port }, serverHandler(this));
     }
 
-    public async test(module: string, name: string, fn: (ctx: Context) => Promise<void>) {
-        Deno.test(name, async () => {
-            // Create trace
-            const trace = newTrace({
-                test: { module, name }
-            });
+    // public static test(module: string, name: string, fn: (ctx: Context) => Promise<void>) {
+    //     Deno.test(name, async () => {
+    //         // Create trace
+    //         const trace = newTrace({
+    //             test: { module, name }
+    //         });
 
-            // Build Postgres
-            const postgres = new PostgresWrapped(this.postgres, module);
+    //         // Build Postgres
+    //         const postgresWrapped = new PostgresWrapped(this.postgres, module);
 
-            // Build context
-            const ctx = new Context(this, trace, postgres);
+    //         // Build context
+    //         const ctx = new Context(this, trace, postgresWrapped);
 
-            // Run test
-            await fn(ctx);
-        });
-    }
+    //         // Run test
+    //         await fn(ctx);
+    //     });
+    // }
 }

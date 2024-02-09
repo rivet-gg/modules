@@ -1,5 +1,4 @@
-import { stringify } from "https://deno.land/std@0.214.0/yaml/stringify.ts";
-import { Context } from "../../../engine/runtime/src/index.ts";
+import { Context } from "@ogs/runtime";
 
 export interface Request {
     tokenIds: string[];

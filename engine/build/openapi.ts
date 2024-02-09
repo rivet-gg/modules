@@ -1,5 +1,5 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { Registry } from "../../registry/src/registry.ts";
+import * as path from "std/path/mod.ts";
+import { Registry } from "../registry/mod.ts";
 
 export async function generateOpenApi(registry: Registry) {
     let schema = {

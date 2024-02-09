@@ -1,6 +1,8 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { parse } from "https://deno.land/std/yaml/mod.ts";
-import { Ajv, glob, tjs } from './deps.ts';
+import * as path from "std/path/mod.ts";
+import { parse } from "std/yaml/mod.ts";
+import Ajv from "ajv";
+import { glob } from "glob";
+import tjs from "typescript-json-schema";
 
 // TODO: Clean this up
 import { fileURLToPath } from "node:url";
@@ -10,7 +12,9 @@ const __dirname = path.dirname(__filename);
 const moduleConfigAjv = new Ajv.default({ schemas: [generateModuleConfigJsonSchema()] });
 
 export class Registry {
-    public static async load(rootPath: string): Promise<Registry> {
+    public static async load(): Promise<Registry> {
+        let rootPath = path.join(__dirname, "..", "..");
+
         console.log('Loading registry', rootPath);
 
         let modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });

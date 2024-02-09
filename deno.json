@@ -5,9 +5,9 @@
 
         "pg:sh": "docker-compose exec -it postgres psql --username postgres",
 
-        "build": "deno task --config engine/builder/deno.json start",
+        "build": "deno run --check --allow-read --allow-write engine/build/index.ts",
 
-        "migrate": "deno task --config engine/migrate/deno.json start",
+        "migrate": "deno run --check --allow-net --allow-read --allow-env engine/migrate/index.ts",
 
         "entrypoint": "deno run --check --allow-env --allow-net dist/entrypoint.ts",
         "entrypoint:watch": "deno run --check --watch --allow-env --allow-net dist/entrypoint.ts",
@@ -15,6 +15,15 @@
         "start": "deno task build && deno task migrate && deno task entrypoint",
         "start:watch": "deno task build && deno task migrate && deno task entrypoint:watch",
 
-        "sdk:gen": "deno task build && deno task --config engine/sdk_generator/deno.json start",
+        "sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts"
+    },
+    "imports": {
+        "@ogs/runtime": "./engine/runtime/mod.ts",
+        "std/": "https://deno.land/std@0.208.0/",
+        "postgres/": "https://deno.land/x/postgres@v0.17.2/",
+        "glob": "npm:glob@^10.3.10",
+        "typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
+        "ajv": "npm:ajv@^8.12.0",
+        "ajv-formats": "npm:ajv-formats@^2.1.1"
     }
 }

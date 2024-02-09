@@ -1,6 +1,7 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { glob, tjs } from './deps.ts';
-import { Registry } from '../../registry/src/index.ts';
+import * as path from "std/path/mod.ts";
+import * as glob from "glob";
+import tjs from "typescript-json-schema";
+import { Registry } from '../registry/mod.ts';
 
 // const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
