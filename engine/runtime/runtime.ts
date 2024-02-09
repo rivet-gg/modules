@@ -82,21 +82,19 @@ export class Runtime {
         Deno.serve({ port }, serverHandler(this));
     }
 
-    // public static test(module: string, name: string, fn: (ctx: Context) => Promise<void>) {
-    //     Deno.test(name, async () => {
-    //         // Create trace
-    //         const trace = newTrace({
-    //             test: { module, name }
-    //         });
+    public static test(config: Config, module: string, name: string, fn: (ctx: Context) => Promise<void>) {
+        Deno.test(name, async () => {
+            const runtime = new Runtime(config);
 
-    //         // Build Postgres
-    //         const postgresWrapped = new PostgresWrapped(this.postgres, module);
+            // Build context
+            const trace = newTrace({
+                test: { module, name }
+            });
+            const postgresWrapped = new PostgresWrapped(runtime.postgres, module);
+            const ctx = new Context(runtime, trace, postgresWrapped);
 
-    //         // Build context
-    //         const ctx = new Context(this, trace, postgresWrapped);
-
-    //         // Run test
-    //         await fn(ctx);
-    //     });
-    // }
+            // Run test
+            await fn(ctx);
+        });
+    }
 }

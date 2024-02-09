@@ -2,31 +2,46 @@
 
 ## Development
 
-Setup environment with:
+**Setup Dev Environment**
 
 ```
 deno task dev:setup
 ```
 
-Migrate database with:
-
-```
-deno task migrate
-```
-
-Start server with:
+**Start OGS server**
 
 ```
 deno task start:watch
 ```
 
-Under the hood, this runs the `build`, `migrate`, and `entrypoint` tasks. You can also run each one individually.
+Under the hood, this runs:
 
-To generate SDKs to `dist/sdks/`:
+- `deno task build`
+- `deno task migrate`
+- `deno task entrypoint:watch`
+
+You can also run each one individually.
+
+**Run tests**
+
+_OGS testing is very WIP at the moment._
+
+This does not require restarting the server
+
+```
+deno task test modules/tokens/tests/e2e.ts
+```
+
+**Generate SDKs**
+To generate SDKs to :
 
 ```
 deno task sdk:gen
 ```
+
+SDKs are generated at `dist/sdks/`.
+
+**OpenAPI & Postman/Insomnia/Paw**
 
 Explore the APIs by opening `dist/openapi.json` in Postman/Insomnia/Paw.
 
