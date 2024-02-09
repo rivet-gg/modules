@@ -1,3 +1,4 @@
+import { stringify } from "https://deno.land/std@0.214.0/yaml/stringify.ts";
 import { Context } from "../../../engine/runtime/src/index.ts";
 
 export interface Request {
@@ -5,7 +6,7 @@ export interface Request {
 }
 
 export interface Response {
-    updates: { [id: string]: TokenUpdate };
+    updates: Record<string, TokenUpdate>;
 }
 
 export enum TokenUpdate {
@@ -15,7 +16,7 @@ export enum TokenUpdate {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    let query = await ctx.postgres.run(conn => conn.queryObject`
+    const query = await ctx.postgres.run(conn => conn.queryObject<{ token: string, already_revoked: boolean }>`
         WITH pre_update AS (
             SELECT token, revoked_at
             FROM tokens
@@ -28,9 +29,9 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
         RETURNING token, pre_update.revoked_at IS NOT NULL AS already_revoked
     `);
 
-    let updates = {};
-    for (let token of req.tokenIds) {
-        let tokenRow = query.rows.find(row => row.token === token);
+    const updates: Record<string, TokenUpdate> = {};
+    for (const token of req.tokenIds) {
+        const tokenRow = query.rows.find(row => row.token === token);
         if (tokenRow) {
             updates[token] = tokenRow.already_revoked ? TokenUpdate.AlreadyRevoked : TokenUpdate.Revoked;
         } else {

@@ -1,3 +1,4 @@
+- Fix building
 - Get tests working
 - Setup tokens
 - Figure out camel case vs snake case for rows

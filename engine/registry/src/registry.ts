@@ -27,7 +27,7 @@ export class Registry {
 
 export interface ModuleConfig {
     metadata: ModuleMetadata;
-    scripts: { [name: string]: ScriptConfig };
+    scripts: { [name: string]: ScriptConfig },
 }
 
 
@@ -87,13 +87,27 @@ export class Script {
 function generateModuleConfigJsonSchema(): tjs.Definition {
     console.log("Generating registry.ts schema");
 
+    // https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
+    const DEFAULT_COMPILER_OPTIONS = {
+        "allowJs": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": false,
+        "inlineSourceMap": true,
+        "isolatedModules": true,
+        "jsx": "react",
+        "module": "esnext",
+        "moduleDetection": "force",
+        "strict": true,
+        "target": "esnext",
+        "useDefineForClassFields": true,
+
+        "lib": ["esnext", "dom", "dom.iterable"],
+        "allowImportingTsExtensions": true,
+    };
+
     let schemaFiles = [__filename];
 
-    const program = tjs.getProgramFromFiles(schemaFiles, {
-        target: "es2015",
-        esModuleInterop: true,
-        allowImportingTsExtensions: true,
-    });
+    const program = tjs.getProgramFromFiles(schemaFiles, DEFAULT_COMPILER_OPTIONS);
 
     const schema = tjs.generateSchema(program, "ModuleConfig", {
         topRef: true,
@@ -109,6 +123,8 @@ function generateModuleConfigJsonSchema(): tjs.Definition {
         ignoreErrors: true,
     });
     if (schema == null) throw new Error("Failed to generate schema");
+
+    console.log('schema', schema);
 
     return schema;
 }

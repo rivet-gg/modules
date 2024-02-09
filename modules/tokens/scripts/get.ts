@@ -6,14 +6,18 @@ export interface Request {
 }
 
 export interface Response {
-    tokens: Token[];
+    tokens: Record<string, Token>,
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    let query = await ctx.postgres.run(conn => conn.queryObject`SELECT * FROM tokens WHERE id = ANY(${req.tokenIds})`);
+    const query = await ctx.postgres.run(conn => conn.queryObject<Token>`
+        SELECT id, type, meta, trace, created_at, expire_at, revoked_at
+        FROM tokens
+        WHERE id = ANY(${req.tokenIds})
+    `);
 
-    let tokens = {};
-    for (let token of query.rows) {
+    const tokens: Record<string, Token> = {};
+    for (const token of query.rows) {
         tokens[token.id] = token;
     }
 

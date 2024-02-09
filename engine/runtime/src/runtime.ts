@@ -1,21 +1,21 @@
 import { Context } from "./context.ts";
 import { Postgres, PostgresWrapped } from './postgres.ts';
 import { serverHandler } from './server.ts';
-import { Trace, appendTraceEntry } from './trace.ts';
+import { Trace, appendTraceEntry, newTrace } from './trace.ts';
 import { Ajv } from './deps.ts';
 
 interface Config {
-    modules: { [name: string]: Module };
+    modules: Record<string, Module>;
 }
 
 interface Module {
-    scripts: { [name: string]: Script };
+    scripts: Record<string, Script>;
 }
 
 type ScriptHandler<Req, Res> = (ctx: Context, req: Req) => Promise<Res>;
 
 interface Script {
-    handler: ScriptHandler<unknown, unknown>;
+    handler: ScriptHandler<any, any>;
     requestSchema: any;
     responseSchema: any;
 }
@@ -23,7 +23,7 @@ interface Script {
 export class Runtime {
     public postgres: Postgres;
 
-    private ajv: Ajv = new Ajv();
+    private ajv= new Ajv.default();
 
     public constructor(public config: Config) {
         this.postgres = new Postgres();
@@ -75,21 +75,21 @@ export class Runtime {
         Deno.serve({ port }, serverHandler(this));
     }
 
-    public async test(name: string, fn: (ctx: Context) => Promise<void>) {
+    public async test(module: string, name: string, fn: (ctx: Context) => Promise<void>) {
         Deno.test(name, async () => {
-            // Build trace
-            let trace = appendTraceEntry(parentTrace, {
-                test: { name }
+            // Create trace
+            const trace = newTrace({
+                test: { module, name }
             });
 
             // Build Postgres
-            let postgres = new PostgresWrapped(this.postgres, moduleName);
+            const postgres = new PostgresWrapped(this.postgres, module);
 
             // Build context
             const ctx = new Context(this, trace, postgres);
 
             // Run test
-            await cb(ctx);
+            await fn(ctx);
         });
     }
 }

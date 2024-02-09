@@ -10,7 +10,7 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    let query = await ctx.postgres.run(conn => conn.queryObject`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`)
+    const query = await ctx.postgres.run(conn => conn.queryObject<User>`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`)
 
     return {
         user: query.rows[0]

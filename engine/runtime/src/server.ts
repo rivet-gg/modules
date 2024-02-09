@@ -2,7 +2,7 @@ import { Runtime } from "./runtime.ts";
 import { newTrace } from "./trace.ts";
 
 export function serverHandler(runtime: Runtime): Deno.ServeHandler {
-    return async (req: Request): Response => {
+    return async (req: Request): Promise<Response> => {
         const url = new URL(req.url);
         console.log('url', url.pathname)
 

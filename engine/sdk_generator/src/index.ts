@@ -6,7 +6,7 @@ interface Generator {
     generator: string;
 }
 
-const GENERATORS: { [name: string]: Generator } = {
+const GENERATORS: Record<string, Generator> = {
     typescript: {
         generator: "typescript-fetch"
     }

@@ -31,6 +31,7 @@ module TraceEntryType {
     }
 
     export interface Test {
+        module: string;
         name: string;
     }
 }
