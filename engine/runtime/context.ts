@@ -9,5 +9,9 @@ export class Context {
         public readonly trace: Trace,
         public readonly postgres: PostgresWrapped,
     ) {}
+
+    public async call(moduleName: string, scriptName: string, req: unknown): Promise<unknown> {
+        return await this.runtime.call(this.trace, moduleName, scriptName, req);
+    }
 }
 

@@ -1,5 +1,5 @@
 import { Context } from "@ogs/runtime";
-import { Token } from "../schema/common.ts";
+import { TokenWithSecret } from "../schema/common.ts";
 
 export interface Request {
     type: string;
@@ -8,15 +8,15 @@ export interface Request {
 }
 
 export interface Response {
-    token: Token;
+    token: TokenWithSecret;
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
     const tokenStr = generateToken(req.type);
-    const query = await ctx.postgres.run(conn => conn.queryObject<Token>`
+    const query = await ctx.postgres.run(conn => conn.queryObject<TokenWithSecret>`
         INSERT INTO tokens (token, type, meta, trace, expire_at)
         VALUES (${tokenStr}, ${req.type}, ${req.meta}, ${ctx.trace}, ${req.expire_at})
-        RETURNING id, type, meta, to_json(created_at) AS created_at, to_json(expire_at) AS expire_at, to_json(revoked_at) AS revoked_at
+        RETURNING token, id, type, meta, to_json(created_at) AS created_at, to_json(expire_at) AS expire_at, to_json(revoked_at) AS revoked_at
     `)
 
     return {

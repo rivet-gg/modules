@@ -29,6 +29,7 @@ _OGS testing is very WIP at the moment._
 This does not require restarting the server
 
 ```
+deno task build
 deno task test modules/tokens/tests/e2e.ts
 ```
 

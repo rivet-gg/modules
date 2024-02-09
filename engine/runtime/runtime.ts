@@ -5,21 +5,21 @@ import { Trace, appendTraceEntry, newTrace } from './trace.ts';
 import Ajv from "ajv";
 import addFormats from 'ajv-formats';
 
-interface Config {
+export interface Config {
     modules: Record<string, Module>;
 }
 
-interface Module {
+export interface Module {
     scripts: Record<string, Script>;
 }
 
-type ScriptHandler<Req, Res> = (ctx: Context, req: Req) => Promise<Res>;
-
-interface Script {
+export interface Script {
     handler: ScriptHandler<any, any>;
     requestSchema: any;
     responseSchema: any;
 }
+
+export type ScriptHandler<Req, Res> = (ctx: Context, req: Req) => Promise<Res>;
 
 export class Runtime {
     public postgres: Postgres;
@@ -31,6 +31,10 @@ export class Runtime {
 
         this.ajv =  new Ajv.default();
         addFormats.default(this.ajv);
+    }
+
+    async shutdown() {
+        await this.postgres.shutdown();
     }
 
     public async call(parentTrace: Trace, moduleName: string, scriptName: string, req: unknown): Promise<unknown> {
@@ -94,7 +98,13 @@ export class Runtime {
             const ctx = new Context(runtime, trace, postgresWrapped);
 
             // Run test
-            await fn(ctx);
+            try {
+                await fn(ctx);
+            } catch (err) {
+                throw err;
+            } finally {
+                await runtime.shutdown();
+            }
         });
     }
 }

@@ -13,6 +13,12 @@ export class Postgres {
         this.databaseUrl = Deno.env.get("DATABASE_URL") ?? "postgres://postgres:password@localhost:5432/postgres";
     }
 
+    public async shutdown() {
+        for (let pool of this.pools.values()) {
+            await pool.end();
+        }
+    }
+
     private getOrCreatePool(database: string): postgres.Pool {
         if (this.pools.has(database)) {
             return this.pools.get(database)!;

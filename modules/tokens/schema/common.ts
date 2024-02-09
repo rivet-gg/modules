@@ -1,5 +1,3 @@
-import { Trace } from '@ogs/runtime';
-
 export interface Token {
     id: string,
     type: string,
@@ -7,4 +5,8 @@ export interface Token {
     created_at: string,
     expire_at: string | null,
     revoked_at: string | null,
+}
+
+export interface TokenWithSecret extends Token {
+    token: string,
 }
