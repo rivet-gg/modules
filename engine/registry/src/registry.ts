@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let moduleConfigAjv = new Ajv({ schemas: [generateModuleConfigJsonSchema()] });
+const moduleConfigAjv = new Ajv.default({ schemas: [generateModuleConfigJsonSchema()] });
 
 export class Registry {
     public static async load(rootPath: string): Promise<Registry> {
@@ -50,7 +50,7 @@ export class Module {
         console.log('Loading module', modulePath);
 
         // Read config
-        let configRaw = await Deno.readTextFile(path.join(modulePath, 'module.yaml'), 'utf8');
+        let configRaw = await Deno.readTextFile(path.join(modulePath, 'module.yaml'));
         let config = parse(configRaw) as ModuleConfig;
 
         // Validate config

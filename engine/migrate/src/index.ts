@@ -2,7 +2,8 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as postgres from "https://deno.land/x/postgres/mod.ts";
 import { Registry } from '../../registry/src/index.ts';
-import { validateString, assertValidString } from "./validate.ts";
+import { assertValidString } from "./validate.ts";
+import { Module } from "../../registry/src/registry.ts";
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
@@ -28,7 +29,7 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
     try {
         for (const mod of registry.modules.values()) {
             // Create database
-            let existsQuery = await client.queryObject`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.dbName})`;
+            const existsQuery = await client.queryObject<{ exists: boolean }>`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.dbName})`;
             if (!existsQuery.rows[0].exists) {
                 await client.queryArray(`CREATE DATABASE ${assertValidString(mod.dbName)}`);
             }
@@ -79,12 +80,12 @@ async function runModuleMigrations(mod: Module, databaseUrl: string) {
     }
 }
 
-async function runMigration(client: pg.Client, mod: Module, idx: number, name: string, source: string) {
+async function runMigration(client: postgres.Client, mod: Module, idx: number, name: string, source: string) {
     const transaction = client.createTransaction("migrate");
     await transaction.begin();
     try {
         // Check if migration already ran
-        const result = await transaction.queryObject`SELECT name FROM _migrations WHERE idx = ${idx}`;
+        const result = await transaction.queryObject<{ name: string }>`SELECT name FROM _migrations WHERE idx = ${idx}`;
 
         // Validate the migration name hasn't changed
         if (result.rows.length > 0 && result.rows[0].name != name) throw new Error(`Migration name mismatch at index ${idx}: ${result.rows[0].name} != ${name}`)

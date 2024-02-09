@@ -20,7 +20,7 @@ export async function generateOpenApi(registry: Registry) {
                 description: "Open Game Services"
             }
         ],
-        paths: {},
+        paths: {} as Record<string, any>,
         components: {
             schemas: {}
         }
