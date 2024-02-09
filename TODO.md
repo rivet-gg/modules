@@ -1,12 +1,47 @@
-- Get tests working
-- Setup tokens
-- Figure out camel case vs snake case for rows
-- Figure out query shorthand
-- Filter req & res using Ajv
-- Testing
+- Add standard auth
+- Enable calling endpoints
 - Rivet auth
 - Find a cool demo that can be ran quickly in the browser
-- Standardize errors
+
+## Configs
+
+- Add config.ts file in modules
+- Will be passed from the root config.yaml
+
+## Standardize errors
+
+- Create error registry
+- Throw errors for token validation
+
+## Database querying
+
+- Investigate Prisma or TypeORM or Knex again
+- Standardize camel case & snake case for rows/queries
+    - Create snake -> camel converter helper?
+    - Store as camel in database?
+- Add simple KV storage?
+- Add shorthand for querying
+- Validating schemas
+
+## Middleware
+
+- Core middlewares
+    - Token auth
+    - Rate limits
+- How does data get passed to modules from middleware?
+
+## Analytics plugin
+
+- Publish event for analytics
+- Analytics service will write to either Rivet or PostHog or GA
+
+## Realtime
+
+- Use Redis pub/sub (with clustering)
+
+## Caching
+
+- Add cluster-compatible caching & cache invalidation
 
 ## Long term
 

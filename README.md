@@ -50,10 +50,13 @@ Explore the APIs by opening `dist/openapi.json` in Postman/Insomnia/Paw.
 
 - **Package manager for game services** Adding backend functionality to your game should be as easy as one command
 - **Easy to use for game devs** Designed from the ground up to be approachable by game developers to add backend functionality to their game
+- **Easy to modify for everyone** Modules are built to be as simple as possible and rigorously reviewed before merging
 - **Modular** Add, remove, and modify modules from the backend to fit the use case for your game
 - **Portable & lightweight** Built on boring, reliable technology that runs however you want to run OGS
 - **Community-driven** Modularity make it easy for devs to customize for their own use cases & contribute modules
 - **Secure by default** Security & anti-botting should not be an afterthought for gaming backends
+- **Load test everything** Everything is load tested to prevent surprises on launch day
+- **Strict schemas for everything**
 - **Documented** Strict typings & documentation are _required_ to make this easy to approach
 - **Permissively licensed** Apache 2.0 license allows developers to adapt & modify & redistribute
 
