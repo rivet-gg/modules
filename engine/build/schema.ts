@@ -45,12 +45,12 @@ export async function compileSchema(registry: Registry) {
 
             const program = tjs.getProgramFromFiles([script.path], DEFAULT_COMPILER_OPTIONS);
 
-            const requestSchema = tjs.generateSchema(program, "Request", validateConfig);
+            const requestSchema = tjs.generateSchema(program, "Request", validateConfig, [script.path]);
             if (requestSchema === null) throw new Error("Failed to generate request schema for " + script.path);
             // patchSchema(null, requestSchema);
             script.requestSchema = requestSchema;
 
-            const responseSchema = tjs.generateSchema(program, "Response", validateConfig);
+            const responseSchema = tjs.generateSchema(program, "Response", validateConfig, [script.path]);
             if (responseSchema === null) throw new Error("Failed to generate response schema for " + script.path);
             // patchSchema(null, responseSchema);
             script.responseSchema = responseSchema;
