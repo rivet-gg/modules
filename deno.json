@@ -17,6 +17,7 @@
 
         "test": "deno task build && deno task migrate && deno task test:fast",
         "test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
+        "test:all": "deno test --check --allow-env --allow-net --unstable-temporal modules/*/tests/*.ts",
 
         "sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts"
     },
