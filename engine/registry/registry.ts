@@ -81,7 +81,11 @@ export class Module {
 		// Read scripts
 		const scripts = new Map();
 		for (const scriptName in config.scripts) {
-			const scriptPath = path.resolve(modulePath, "scripts", scriptName + ".ts");
+			const scriptPath = path.resolve(
+				modulePath,
+				"scripts",
+				scriptName + ".ts",
+			);
 			scripts.set(
 				scriptName,
 				new Script(scriptPath, scriptName, config.scripts[scriptName]),

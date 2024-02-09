@@ -1,6 +1,5 @@
 import * as path from "std/path/mod.ts";
 import { Registry } from "../registry/mod.ts";
-import * as tjs from "typescript-json-schema";
 
 export async function generateEntrypoint(registry: Registry) {
 	// Generate module configs
@@ -68,8 +67,8 @@ main();
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
 
 	// Format files
-	const status = await Deno.run({
-		cmd: ["deno", "fmt", configPath, entrypointPath],
-	}).status();
-	if (!status.success) throw new Error(`Failed to format generated files`);
+	const { success } = await new Deno.Command("deno", {
+		args: ["fmt", configPath, entrypointPath],
+	}).output();
+	if (!success) throw new Error(`Failed to format generated files`);
 }

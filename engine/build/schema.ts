@@ -1,11 +1,9 @@
-import * as path from "std/path/mod.ts";
-import * as glob from "glob";
 import tjs from "typescript-json-schema";
 import { Registry } from "../registry/mod.ts";
 
 // const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
-export async function compileSchema(registry: Registry) {
+export function compileSchema(registry: Registry) {
 	for (const module of registry.modules.values()) {
 		for (const script of module.scripts.values()) {
 			console.log("Generating schema", script.path);

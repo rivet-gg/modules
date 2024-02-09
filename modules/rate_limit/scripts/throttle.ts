@@ -22,7 +22,7 @@ export interface Request {
 export interface Response {
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(_ctx: Context, _req: Request): Promise<Response> {
 	// TODO:
 
 	return {};

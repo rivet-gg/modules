@@ -1,6 +1,6 @@
 import { Context, Runtime } from "@ogs/runtime";
 import config from "../../../dist/runtime_config.ts";
-import { assertEquals, assertExists } from "std/assert/mod.ts";
+import { assertEquals } from "std/assert/mod.ts";
 import { faker } from "@faker-js/faker";
 
 Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {

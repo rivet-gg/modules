@@ -22,8 +22,8 @@ async function main() {
 
 async function generateSdk(rootPath: string, name: string, config: Generator) {
 	console.log("Generating", name);
-	const status = await Deno.run({
-		cmd: [
+	const { success } = await new Deno.Command("docker", {
+		args: [
 			"docker",
 			"run",
 			"--rm",
@@ -38,8 +38,8 @@ async function generateSdk(rootPath: string, name: string, config: Generator) {
 			"-o",
 			`/local/dist/sdks/${name}/`,
 		],
-	}).status();
-	if (!status.success) {
+	}).output();
+	if (!success) {
 		throw new Error("Failed to generate OpenAPI SDK");
 	}
 }

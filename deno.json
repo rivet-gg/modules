@@ -12,8 +12,8 @@
 		"entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
 		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
 
-		"start": "deno fmt && deno task build && deno task migrate && deno task entrypoint",
-		"start:watch": "deno fmt && deno task build && deno task migrate && deno task entrypoint:watch",
+		"start": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint",
+		"start:watch": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint:watch",
 
 		"test": "deno task build && deno task migrate && deno task test:fast",
 		"test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
@@ -31,6 +31,13 @@
 		"typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
 		"ajv": "npm:ajv@^8.12.0",
 		"ajv-formats": "npm:ajv-formats@^2.1.1"
+	},
+	"lint": {
+		"include": ["engine/", "modules/"],
+		"exclude": ["modules/*/tests/*.ts"],
+		"rules": {
+			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
+		}
 	},
 	"fmt": {
 		"useTabs": true

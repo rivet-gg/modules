@@ -14,8 +14,11 @@ export interface Module {
 }
 
 export interface Script {
+	// deno-lint-ignore no-explicit-any
 	handler: ScriptHandler<any, any>;
+	// deno-lint-ignore no-explicit-any
 	requestSchema: any;
+	// deno-lint-ignore no-explicit-any
 	responseSchema: any;
 }
 
@@ -104,7 +107,7 @@ export class Runtime {
 	public async serve() {
 		const port = parseInt(Deno.env.get("PORT") ?? "8080");
 		console.log(`Serving on port ${port}`);
-		Deno.serve({ port }, serverHandler(this));
+		await Deno.serve({ port }, serverHandler(this)).finished;
 	}
 
 	public static test(

@@ -18,25 +18,23 @@ export interface TraceEntry {
 /**
  * Infomration about the type of the trace entry.
  */
-export type TraceEntryType = { httpRequest: TraceEntryType.HttpRequest } | {
-	script: TraceEntryType.Script;
-} | { test: TraceEntryType.Test };
+export type TraceEntryType = { httpRequest: TraceEntryTypeHttpRequest } | {
+	script: TraceEntryTypeScript;
+} | { test: TraceEntryTypeTest };
 
-module TraceEntryType {
-	export interface HttpRequest {
-		method: string;
-		path: string;
-	}
+export interface TraceEntryTypeHttpRequest {
+	method: string;
+	path: string;
+}
 
-	export interface Script {
-		module: string;
-		script: string;
-	}
+export interface TraceEntryTypeScript {
+	module: string;
+	script: string;
+}
 
-	export interface Test {
-		module: string;
-		name: string;
-	}
+export interface TraceEntryTypeTest {
+	module: string;
+	name: string;
 }
 
 export function newTrace(entryType: TraceEntryType): Trace {

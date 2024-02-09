@@ -1,8 +1,12 @@
 import * as path from "std/path/mod.ts";
 import { Registry } from "../registry/mod.ts";
+import * as tjs from "typescript-json-schema";
+
+// deno-lint-ignore no-explicit-any
+type OpenApiDefinition = any;
 
 export async function generateOpenApi(registry: Registry) {
-	const schema = {
+	const schema: OpenApiDefinition = {
 		openapi: "3.1.0",
 		info: {
 			title: "Open Game Services",
@@ -20,7 +24,7 @@ export async function generateOpenApi(registry: Registry) {
 				description: "Open Game Services",
 			},
 		],
-		paths: {} as Record<string, any>,
+		paths: {} as Record<string, OpenApiDefinition>,
 		components: {
 			schemas: {},
 		},
@@ -30,13 +34,13 @@ export async function generateOpenApi(registry: Registry) {
 		for (const script of mod.scripts.values()) {
 			const requestBodyRef = injectSchema(
 				schema,
-				script.requestSchema,
+				script.requestSchema!,
 				`${mod.name}__${script.name}__request`,
 				"Request",
 			);
 			const responseContentRef = injectSchema(
 				schema,
-				script.responseSchema,
+				script.responseSchema!,
 				`${mod.name}__${script.name}__response`,
 				"Response",
 			);
@@ -82,8 +86,8 @@ export async function generateOpenApi(registry: Registry) {
  * @param rootDefinition The name of the root definition in the JSON schema
  */
 function injectSchema(
-	openapi: any,
-	schema: any,
+	openapi: OpenApiDefinition,
+	schema: tjs.Definition,
 	prefix: string,
 	rootDefinition: string,
 ) {
@@ -108,7 +112,7 @@ function injectSchema(
 /**
  * Recursively replace $ref properties in an object
  */
-function replaceRefs(obj: any, replacer: (x: string) => string) {
+function replaceRefs(obj: OpenApiDefinition, replacer: (x: string) => string) {
 	for (const key in obj) {
 		if (key === "$ref") {
 			obj[key] = replacer(obj[key]);
