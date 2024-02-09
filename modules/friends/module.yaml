@@ -1,0 +1,9 @@
+metadata:
+  status: preview
+  description: Friends.
+  authors:
+    - NathanFlurry
+scripts:
+  send_request: {}
+  accept_request: {}
+  decline_request: {}

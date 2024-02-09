@@ -59,6 +59,7 @@ Explore the APIs by opening `dist/openapi.json` in Postman/Insomnia/Paw.
 - **Strict schemas for everything**
 - **Documented** Strict typings & documentation are _required_ to make this easy to approach
 - **Permissively licensed** Apache 2.0 license allows developers to adapt & modify & redistribute
+- **Language agnostic** Performance critical parts of the project will likely be optimized to use a high performance language, such as Rust
 
 ## Technologies Used
 

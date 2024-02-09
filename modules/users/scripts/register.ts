@@ -20,6 +20,8 @@ export interface IdentityTypeGuest {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
+    await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
+
     // Create user
     const user = await ctx.postgres.transaction<User>("register", async tx => {
         const userQuery = await tx.queryObject<User>`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`;

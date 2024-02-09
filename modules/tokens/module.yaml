@@ -6,6 +6,7 @@ metadata:
 scripts:
   create: {}
   get: {}
+  get_by_token: {}
   revoke: {}
   validate: {}
 

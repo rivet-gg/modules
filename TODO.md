@@ -1,8 +1,19 @@
+- Add expandable to friends API
+- Add pagination to friends API
+- Configure script triggers
+    - HTTP
+    - HTTP API
+    - CRON
 - Add standard auth
 - Enable calling endpoints
 - Rivet auth
 - Find a cool demo that can be ran quickly in the browser
 - Logging
+
+## Templating
+
+- create module
+- create script
 
 ## Users
 
@@ -51,6 +62,12 @@
 ## Monitoring
 
 - Add Prometheus monitoring
+
+## Realtime apis
+
+- Should realtime events be triggered on database updates or something else?
+- Publish events to topics
+- Allow streaming events in respose
 
 ## Long term
 

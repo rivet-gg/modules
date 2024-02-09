@@ -10,6 +10,8 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
+    await ctx.call("rate_limit", "throttle", {});
+
     const query = await ctx.postgres.run(conn => conn.queryObject<User>`SELECT * FROM users WHERE id = ANY(${req.userIds})`);
 
     const users: Record<string, User> = {};

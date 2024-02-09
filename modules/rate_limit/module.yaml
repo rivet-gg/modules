@@ -1,0 +1,7 @@
+metadata:
+  status: preview
+  description: Rate limit.
+  authors:
+    - NathanFlurry
+scripts:
+  throttle: {}

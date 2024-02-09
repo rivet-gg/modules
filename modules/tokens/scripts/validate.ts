@@ -1,33 +1,26 @@
 import { Context } from "@ogs/runtime";
-import { Token, TokenWithSecret } from "../schema/common.ts";
+import { Token } from "../schema/common.ts";
 
 export interface Request {
-    tokens: string[];
+    token: string;
 }
 
 export interface Response {
-    tokens: { [key: string]: Token };
+    token: Token;
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    let query = await ctx.postgres.run(conn => conn.queryObject<TokenWithSecret>`
-        SELECT token, id, type, meta, to_json(created_at) AS created_at, to_json(expire_at) AS expire_at, to_json(revoked_at) AS revoked_at
-        FROM tokens
-        WHERE token = ANY(${req.tokens})
-    `);
+    let { tokens } = await ctx.call("tokens", "get_by_token", { tokens: [req.token] }) as any;
+    let token = tokens[req.token];
 
-    let tokens: Record<string, Token> = {};
-    for (let token of query.rows) {
-        tokens[token.token] = {
-            id: token.id,
-            type: token.type,
-            meta: token.meta,
-            created_at: token.created_at,
-            expire_at: token.expire_at,
-            revoked_at: token.revoked_at,
-        };
-    }
+    if (!token) throw new Error("Token not found");
 
-    return { tokens };
+    if (token.revoked_at) throw new Error("Token revoked");
+
+    const expireAt = Temporal.PlainDateTime.from(token.expire_at);
+    const now = Temporal.Now.plainDateTimeISO();
+    if (Temporal.PlainDateTime.compare(expireAt, now) < 1) throw new Error("Token expired");
+
+    return { token };
 }
 
