@@ -15,26 +15,26 @@ export enum TokenUpdate {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    const query = await ctx.postgres.run(conn => conn.queryObject<{ token: string, already_revoked: boolean }>`
+    const query = await ctx.postgres.run(conn => conn.queryObject<{ id: string, already_revoked: boolean }>`
         WITH pre_update AS (
-            SELECT token, revoked_at
+            SELECT id, revoked_at
             FROM tokens
             WHERE id = ANY(${req.tokenIds})
         )
         UPDATE tokens
         SET revoked_at = timezone('UTC', now())
         FROM pre_update
-        WHERE token = pre_update.token
-        RETURNING token, pre_update.revoked_at IS NOT NULL AS already_revoked
+        WHERE tokens.id = pre_update.id
+        RETURNING tokens.id, pre_update.revoked_at IS NOT NULL AS already_revoked
     `);
 
     const updates: Record<string, TokenUpdate> = {};
-    for (const token of req.tokenIds) {
-        const tokenRow = query.rows.find(row => row.token === token);
+    for (const tokenId of req.tokenIds) {
+        const tokenRow = query.rows.find(row => row.id === tokenId);
         if (tokenRow) {
-            updates[token] = tokenRow.already_revoked ? TokenUpdate.AlreadyRevoked : TokenUpdate.Revoked;
+            updates[tokenId] = tokenRow.already_revoked ? TokenUpdate.AlreadyRevoked : TokenUpdate.Revoked;
         } else {
-            updates[token] = TokenUpdate.NotFound;
+            updates[tokenId] = TokenUpdate.NotFound;
         }
     }
 

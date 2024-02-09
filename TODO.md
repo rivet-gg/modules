@@ -10,6 +10,8 @@
 
 ## Long term
 
+- Allow for multi-file scripts, or have a recommended way of managing libraries
 - One-click deploys
 - Docs on ORMs
+- Create isolated database for each test
 
