@@ -19,6 +19,16 @@ Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
         targetUserId: userB.id,
     }) as any;
 
+    let { friendRequests: outgoingRequests } = await ctx.call("friends", "list_outgoing_friend_requests", {
+        userToken: tokenA.token,
+    }) as any;
+    assertEquals(outgoingRequests.length, 1);
+
+    let { friendRequests: incomingRequests } = await ctx.call("friends", "list_incoming_friend_requests", {
+        userToken: tokenB.token,
+    }) as any;
+    assertEquals(incomingRequests.length, 1);
+
     await ctx.call("friends", "accept_request", {
         userToken: tokenB.token,
         friendRequestId: friendRequest.id,
@@ -55,4 +65,14 @@ Runtime.test(config, "friends", "e2e reject", async (ctx: Context) => {
         userToken: tokenB.token,
         friendRequestId: friendRequest.id,
     }) as any;
+
+    let { friendRequests: outgoingRequests } = await ctx.call("friends", "list_outgoing_friend_requests", {
+        userToken: tokenA.token,
+    }) as any;
+    assertEquals(outgoingRequests.length, 0);
+
+    let { friendRequests: incomingRequests } = await ctx.call("friends", "list_incoming_friend_requests", {
+        userToken: tokenB.token,
+    }) as any;
+    assertEquals(incomingRequests.length, 0);
 });
