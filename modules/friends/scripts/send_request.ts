@@ -2,24 +2,30 @@ import { Context } from "@ogs/runtime";
 import { FriendRequest } from "../schema/common.ts";
 
 export interface Request {
-    userToken: string;
-    targetUserId: string;
+	userToken: string;
+	targetUserId: string;
 }
 
 export interface Response {
-    friendRequest: FriendRequest;
+	friendRequest: FriendRequest;
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-    await ctx.call("rate_limit", "throttle", {});
-    const { userId } = await ctx.call("users", "validate_token", { userToken: req.userToken }) as any;
-    
-    if (userId === req.targetUserId) throw new Error("You cannot send a friend request to yourself");
+	await ctx.call("rate_limit", "throttle", {});
+	const { userId } = await ctx.call("users", "validate_token", {
+		userToken: req.userToken,
+	}) as any;
 
-    const [userIdA, userIdB] = [userId, req.targetUserId].sort();
+	if (userId === req.targetUserId) {
+		throw new Error("You cannot send a friend request to yourself");
+	}
 
-    const friendRequest = await ctx.postgres.transaction("send_request", async tx => {
-        const friendQuery = await tx.queryObject<{ exists: boolean }>`
+	const [userIdA, userIdB] = [userId, req.targetUserId].sort();
+
+	const friendRequest = await ctx.postgres.transaction(
+		"send_request",
+		async (tx) => {
+			const friendQuery = await tx.queryObject<{ exists: boolean }>`
             SELECT EXISTS(
                 SELECT 1
                 FROM friends
@@ -27,9 +33,13 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
                 FOR UPDATE
             )
         `;
-        if (friendQuery.rows[0].exists) throw new Error("Target user already has a friend request to you");
+			if (friendQuery.rows[0].exists) {
+				throw new Error(
+					"Target user already has a friend request to you",
+				);
+			}
 
-        const existsQuery = await tx.queryObject<{ exists: boolean }>`
+			const existsQuery = await tx.queryObject<{ exists: boolean }>`
             SELECT EXISTS(
                 SELECT 1
                 FROM friend_requests
@@ -37,15 +47,20 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
                 FOR UPDATE
             )
         `;
-        if (existsQuery.rows[0].exists) throw new Error("Friend request already sent");
+			if (existsQuery.rows[0].exists) {
+				throw new Error(
+					"Friend request already sent",
+				);
+			}
 
-        const insertQuery = await tx.queryObject<FriendRequest>`
+			const insertQuery = await tx.queryObject<FriendRequest>`
             INSERT INTO friend_requests (sender_user_id, target_user_id)
             VALUES (${userId}, ${req.targetUserId})
             RETURNING id, sender_user_id, target_user_id, to_json(created_at) AS created_at, to_json(declined_at) AS declined_at, to_json(accepted_at) AS accepted_at
         `;
-        return insertQuery.rows[0];
-    });
+			return insertQuery.rows[0];
+		},
+	);
 
-    return { friendRequest };
+	return { friendRequest };
 }

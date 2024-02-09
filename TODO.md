@@ -1,14 +1,15 @@
-- Add expandable to friends API
-- Add pagination to friends API
+- Standardize errors (see below)
 - Configure script triggers
-    - HTTP
-    - HTTP API
-    - CRON
-- Add standard auth
+  - HTTP
+  - HTTP API
 - Enable calling endpoints
 - Rivet auth
 - Find a cool demo that can be ran quickly in the browser
 - Logging
+
+## Expandables
+
+- Add expandable to friends API
 
 ## Templating
 
@@ -33,8 +34,8 @@
 
 - Investigate Prisma or TypeORM or Knex again
 - Standardize camel case & snake case for rows/queries
-    - Create snake -> camel converter helper?
-    - Store as camel in database?
+  - Create snake -> camel converter helper?
+  - Store as camel in database?
 - Add simple KV storage?
 - Add shorthand for querying
 - Validating schemas
@@ -42,8 +43,8 @@
 ## Middleware
 
 - Core middlewares
-    - Token auth
-    - Rate limits
+  - Token auth
+  - Rate limits
 - How does data get passed to modules from middleware?
 
 ## Analytics plugin
@@ -79,4 +80,5 @@
 
 ## Small long term
 
-- Add `last_online_at` to users by listening for online events that can be joined, optionally by this
+- Add `last_online_at` to users by listening for online events that can be
+  joined, optionally by this

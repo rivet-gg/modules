@@ -1,35 +1,38 @@
 {
-    "tasks": {
-        "dev:setup": "docker-compose up -d",
-        "dev:teardown": "docker-compose down",
+	"tasks": {
+		"dev:setup": "docker-compose up -d",
+		"dev:teardown": "docker-compose down",
 
-        "pg:sh": "docker-compose exec -it postgres psql --username postgres",
+		"pg:sh": "docker-compose exec -it postgres psql --username postgres",
 
-        "build": "deno run --check --allow-read --allow-write --allow-run engine/build/index.ts",
+		"build": "deno run --check --allow-read --allow-write --allow-run engine/build/index.ts",
 
-        "migrate": "deno run --check --allow-net --allow-read --allow-env engine/migrate/index.ts",
+		"migrate": "deno run --check --allow-net --allow-read --allow-env engine/migrate/index.ts",
 
-        "entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
-        "entrypoint:watch": "deno run --check --watch --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
+		"entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
+		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
 
-        "start": "deno task build && deno task migrate && deno task entrypoint",
-        "start:watch": "deno task build && deno task migrate && deno task entrypoint:watch",
+		"start": "deno fmt && deno task build && deno task migrate && deno task entrypoint",
+		"start:watch": "deno fmt && deno task build && deno task migrate && deno task entrypoint:watch",
 
-        "test": "deno task build && deno task migrate && deno task test:fast",
-        "test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
-        "test:all": "deno test --check --allow-env --allow-net --unstable-temporal modules/*/tests/*.ts",
+		"test": "deno task build && deno task migrate && deno task test:fast",
+		"test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
+		"test:all": "deno test --check --allow-env --allow-net --unstable-temporal modules/*/tests/*.ts",
 
-        "sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts"
-    },
-    "imports": {
-        "@ogs/runtime": "./engine/runtime/mod.ts",
-        "@ogs/types": "./engine/types/mod.ts",
-        "@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
-        "std/": "https://deno.land/std@0.208.0/",
-        "postgres/": "https://deno.land/x/postgres@v0.17.2/",
-        "glob": "npm:glob@^10.3.10",
-        "typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
-        "ajv": "npm:ajv@^8.12.0",
-        "ajv-formats": "npm:ajv-formats@^2.1.1"
-    }
+		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts"
+	},
+	"imports": {
+		"@ogs/runtime": "./engine/runtime/mod.ts",
+		"@ogs/types": "./engine/types/mod.ts",
+		"@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
+		"std/": "https://deno.land/std@0.208.0/",
+		"postgres/": "https://deno.land/x/postgres@v0.17.2/",
+		"glob": "npm:glob@^10.3.10",
+		"typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
+		"ajv": "npm:ajv@^8.12.0",
+		"ajv-formats": "npm:ajv-formats@^2.1.1"
+	},
+	"fmt": {
+		"useTabs": true
+	}
 }
