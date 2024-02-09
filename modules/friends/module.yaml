@@ -7,6 +7,7 @@ scripts:
   send_request: {}
   accept_request: {}
   decline_request: {}
+  remove_friend: {}
   list_friends: {}
   list_outgoing_friend_requests: {}
   list_incoming_friend_requests: {}

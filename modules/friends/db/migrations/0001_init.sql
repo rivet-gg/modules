@@ -2,6 +2,7 @@ CREATE TABLE friends (
     user_id_a UUID NOT NULL,
     user_id_b UUID NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT timezone('utc', now()),
+    removed_at TIMESTAMP,
     PRIMARY KEY (user_id_a, user_id_b),
     CONSTRAINT user_id_order_check CHECK (user_id_a < user_id_b)
 );

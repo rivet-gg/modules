@@ -23,7 +23,7 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
             SELECT EXISTS(
                 SELECT 1
                 FROM friends
-                WHERE user_id_a = ${userIdA} AND user_id_b = ${userIdB}
+                WHERE user_id_a = ${userIdA} AND user_id_b = ${userIdB} AND removed_at IS NULL
                 FOR UPDATE
             )
         `;
