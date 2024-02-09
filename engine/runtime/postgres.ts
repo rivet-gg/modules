@@ -3,6 +3,7 @@ import * as postgres from "postgres/mod.ts";
 const POOL_SIZE = 32;
 
 type PostgresRunScope<T> = (conn: postgres.QueryClient) => Promise<T>;
+type PostgresTransactionScope<T> = (conn: postgres.Transaction) => Promise<T>;
 
 /** Manages Postgres connections. */
 export class Postgres {
@@ -50,6 +51,20 @@ export class PostgresWrapped {
 
     public async run<T>(scope: PostgresRunScope<T>): Promise<T> {
         return await this.postgres.run<T>(this.database, scope);
+    }
+
+    public async transaction<T>(name: string, scope: PostgresTransactionScope<T>): Promise<T> {
+        return await this.run(async conn => {
+            const transaction = conn.createTransaction(name);
+            try {
+                const result = await scope(transaction);
+                await transaction.commit();
+                return result;
+            } catch (e) {
+                await transaction.rollback();
+                throw e;
+            }
+        });
     }
 }
 

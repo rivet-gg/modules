@@ -56,9 +56,16 @@ main();
 
     // Write file
     const distDir = path.join(registry.path, 'dist');
+    const configPath = path.join(distDir, 'runtime_config.ts');
+    const entrypointPath = path.join(distDir, 'entrypoint.ts');
     console.log('Writing entrypoint');
     await Deno.mkdir(distDir, {recursive: true});
-    await Deno.writeTextFile(path.join(distDir, 'runtime_config.ts'), configSource);
-    await Deno.writeTextFile(path.join(distDir, 'entrypoint.ts'), entrypointSource);
+    await Deno.writeTextFile(configPath, configSource);
+    await Deno.writeTextFile(entrypointPath, entrypointSource);
+
+    // Format files
+    let status = await Deno.run({cmd: ['deno', 'fmt', configPath, entrypointPath]}).status();
+    if (!status.success) throw new Error(`Failed to format generated files`);
+
 }
 

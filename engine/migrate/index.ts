@@ -98,10 +98,11 @@ async function runMigration(client: postgres.Client, mod: Module, idx: number, n
 
             console.log(`${mod.name}@${name}: Already ran`);
         }
-    } catch (err) {
-        throw err;
-    } finally {
+
         await transaction.commit();
+    } catch (err) {
+        await transaction.rollback();
+        throw err;
     }
 }
 
