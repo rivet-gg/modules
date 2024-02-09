@@ -75,8 +75,8 @@ export class Runtime {
             if (!validateResponse(res)) throw new Error(`Invalid response: ${JSON.stringify(validateResponse.errors)}`);
 
             return res;
-        } catch (err) {
-            throw new Error(`Failed to execute script: ${err.message}`)
+        } catch (cause) {
+            throw new Error(`Failed to execute script: ${moduleName}.${scriptName}`, { cause })
         }
     }
 
@@ -100,8 +100,8 @@ export class Runtime {
             // Run test
             try {
                 await fn(ctx);
-            } catch (err) {
-                throw err;
+            } catch (cause) {
+                throw new Error(`Failed to execute test: ${module}.${name}`, { cause });
             } finally {
                 await runtime.shutdown();
             }

@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:@faker-js/faker@^8.4.1": "npm:@faker-js/faker@8.4.1",
       "npm:ajv-formats@2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
       "npm:ajv-formats@^2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
       "npm:ajv@^8.12.0": "npm:ajv@8.12.0",
@@ -14,6 +15,10 @@
         "dependencies": {
           "@jridgewell/trace-mapping": "@jridgewell/trace-mapping@0.3.9"
         }
+      },
+      "@faker-js/faker@8.4.1": {
+        "integrity": "sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==",
+        "dependencies": {}
       },
       "@isaacs/cliui@8.0.2": {
         "integrity": "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==",
@@ -881,6 +886,7 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:@faker-js/faker@^8.4.1",
       "npm:ajv-formats@^2.1.1",
       "npm:ajv@^8.12.0",
       "npm:glob@^10.3.10",

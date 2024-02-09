@@ -5,5 +5,4 @@ metadata:
     - NathanFlurry
 scripts:
   get: {}
-  create: {}
-
+  register: {}

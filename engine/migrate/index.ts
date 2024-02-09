@@ -30,8 +30,8 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
                 await client.queryArray(`CREATE DATABASE ${assertValidString(mod.dbName)}`);
             }
         }
-    } catch (err) {
-        throw err;
+    } catch (cause) {
+        throw new Error('Failed to create databases', { cause });
     } finally {
         await client.end();
     }
@@ -69,8 +69,8 @@ async function runModuleMigrations(mod: Module, databaseUrl: string) {
             let source = await Deno.readTextFile(absolutePath);
             await runMigration(client, mod, i, migrationName, source);
         }
-    } catch (err) {
-        throw err;
+    } catch (cause) {
+        throw new Error(`Failed to run migrations for ${mod.name}`, { cause });
     } finally {
         await client.end();
     }
@@ -100,9 +100,13 @@ async function runMigration(client: postgres.Client, mod: Module, idx: number, n
         }
 
         await transaction.commit();
-    } catch (err) {
-        await transaction.rollback();
-        throw err;
+    } catch (cause) {
+        try {
+            await transaction.rollback();
+        } catch (cause) {
+            console.warn('Failed to rollback transaction', cause);
+        }
+        throw new Error(`Failed to run migration ${mod.name}@${name}`, { cause });
     }
 }
 

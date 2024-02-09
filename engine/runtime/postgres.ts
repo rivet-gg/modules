@@ -56,13 +56,18 @@ export class PostgresWrapped {
     public async transaction<T>(name: string, scope: PostgresTransactionScope<T>): Promise<T> {
         return await this.run(async conn => {
             const transaction = conn.createTransaction(name);
+            await transaction.begin();
             try {
                 const result = await scope(transaction);
                 await transaction.commit();
                 return result;
-            } catch (e) {
-                await transaction.rollback();
-                throw e;
+            } catch (cause) {
+                try {
+                    await transaction.rollback();
+                } catch (cause) {
+                    console.warn('Failed to rollback transaction', cause);
+                }
+                throw new Error(`Failed to execute transaction: ${name}`, { cause });
             }
         });
     }

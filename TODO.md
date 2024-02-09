@@ -2,6 +2,11 @@
 - Enable calling endpoints
 - Rivet auth
 - Find a cool demo that can be ran quickly in the browser
+- Logging
+
+## Users
+
+- Register (idenitty)
 
 ## Configs
 
@@ -43,8 +48,13 @@
 
 - Add cluster-compatible caching & cache invalidation
 
+## Monitoring
+
+- Add Prometheus monitoring
+
 ## Long term
 
+- Automatic type definition generation for `ctx.call`
 - Allow for multi-file scripts, or have a recommended way of managing libraries
 - One-click deploys
 - Docs on ORMs

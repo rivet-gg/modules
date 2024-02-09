@@ -5,22 +5,25 @@
 
         "pg:sh": "docker-compose exec -it postgres psql --username postgres",
 
-        "build": "deno run --check --allow-read --allow-write engine/build/index.ts",
+        "build": "deno run --check --allow-read --allow-write --allow-run engine/build/index.ts",
 
         "migrate": "deno run --check --allow-net --allow-read --allow-env engine/migrate/index.ts",
 
-        "entrypoint": "deno run --check --allow-env --allow-net dist/entrypoint.ts",
-        "entrypoint:watch": "deno run --check --watch --allow-env --allow-net dist/entrypoint.ts",
+        "entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
+        "entrypoint:watch": "deno run --check --watch --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
 
         "start": "deno task build && deno task migrate && deno task entrypoint",
         "start:watch": "deno task build && deno task migrate && deno task entrypoint:watch",
 
-        "test": "deno test --check --allow-env --allow-net",
+        "test": "deno task build && deno task migrate && deno task test:fast",
+        "test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
 
         "sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts"
     },
     "imports": {
         "@ogs/runtime": "./engine/runtime/mod.ts",
+        "@ogs/types": "./engine/types/mod.ts",
+        "@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
         "std/": "https://deno.land/std@0.208.0/",
         "postgres/": "https://deno.land/x/postgres@v0.17.2/",
         "glob": "npm:glob@^10.3.10",

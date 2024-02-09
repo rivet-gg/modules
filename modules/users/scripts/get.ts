@@ -6,14 +6,16 @@ export interface Request {
 }
 
 export interface Response {
-    users: User[];
+    users: { [id: string]: User },
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
     const query = await ctx.postgres.run(conn => conn.queryObject<User>`SELECT * FROM users WHERE id = ANY(${req.userIds})`);
 
-    return {
-        users: query.rows
-    };
-}
+    const users: Record<string, User> = {};
+    for (const user of query.rows) {
+        users[user.id] = user;
+    }
 
+    return { users };
+}
