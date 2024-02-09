@@ -8,6 +8,12 @@ Setup environment with:
 deno task dev:setup
 ```
 
+Migrate database with:
+
+```
+deno task migrate
+```
+
 Start server with:
 
 ```
