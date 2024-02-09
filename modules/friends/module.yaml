@@ -7,3 +7,4 @@ scripts:
   send_request: {}
   accept_request: {}
   decline_request: {}
+  list_friends: {}

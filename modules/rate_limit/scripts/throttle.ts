@@ -2,6 +2,11 @@ import { Context } from "@ogs/runtime";
 
 export interface Request {
     /**
+     * The preset to use for rate limiting.
+     */
+    preset?: string;
+
+    /**
      * Number of requests in `period` before rate limiting.
      * @default 20
      **/

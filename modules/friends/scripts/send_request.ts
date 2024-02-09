@@ -19,10 +19,24 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
     const [userIdA, userIdB] = [userId, req.targetUserId].sort();
 
     const friendRequest = await ctx.postgres.transaction("send_request", async tx => {
-        const friendQuery = await tx.queryObject<{ exists: boolean }>`SELECT EXISTS(SELECT 1 FROM friends WHERE user_id_a = ${userIdA} AND user_id_b = ${userIdB})`;
+        const friendQuery = await tx.queryObject<{ exists: boolean }>`
+            SELECT EXISTS(
+                SELECT 1
+                FROM friends
+                WHERE user_id_a = ${userIdA} AND user_id_b = ${userIdB}
+                FOR UPDATE
+            )
+        `;
         if (friendQuery.rows[0].exists) throw new Error("Target user already has a friend request to you");
 
-        const existsQuery = await tx.queryObject<{ exists: boolean }>`SELECT EXISTS(SELECT 1 FROM friend_requests WHERE sender_user_id = ${userId} AND target_user_id = ${req.targetUserId} AND accepted_at IS NULL AND declined_at IS NULL)`;
+        const existsQuery = await tx.queryObject<{ exists: boolean }>`
+            SELECT EXISTS(
+                SELECT 1
+                FROM friend_requests
+                WHERE sender_user_id = ${userId} AND target_user_id = ${req.targetUserId} AND accepted_at IS NULL AND declined_at IS NULL
+                FOR UPDATE
+            )
+        `;
         if (existsQuery.rows[0].exists) throw new Error("Friend request already sent");
 
         const insertQuery = await tx.queryObject<FriendRequest>`

@@ -1,6 +1,6 @@
 export interface Friend {
     user_id: string;
-    last_online_at: string;
+    created_at: string;
 }
 
 export interface FriendRequest {

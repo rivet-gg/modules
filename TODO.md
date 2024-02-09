@@ -69,7 +69,7 @@
 - Publish events to topics
 - Allow streaming events in respose
 
-## Long term
+## Big long term
 
 - Automatic type definition generation for `ctx.call`
 - Allow for multi-file scripts, or have a recommended way of managing libraries
@@ -77,3 +77,6 @@
 - Docs on ORMs
 - Create isolated database for each test
 
+## Small long term
+
+- Add `last_online_at` to users by listening for online events that can be joined, optionally by this

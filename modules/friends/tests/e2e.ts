@@ -23,6 +23,16 @@ Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
         userToken: tokenB.token,
         friendRequestId: friendRequest.id,
     }) as any;
+
+    let friendsA = await ctx.call("friends", "list_friends", {
+        userToken: tokenA.token
+    }) as any;
+    assertEquals(friendsA.friends.length, 1);
+
+    let friendsB = await ctx.call("friends", "list_friends", {
+        userToken: tokenB.token
+    }) as any;
+    assertEquals(friendsB.friends.length, 1);
 });
 
 Runtime.test(config, "friends", "e2e reject", async (ctx: Context) => {
