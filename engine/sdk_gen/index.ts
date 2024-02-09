@@ -13,16 +13,16 @@ const GENERATORS: Record<string, Generator> = {
 };
 
 async function main() {
-	let rootPath = path.join(__dirname, "..", "..", "..");
-	for (let name in GENERATORS) {
-		let generator = GENERATORS[name];
+	const rootPath = path.join(__dirname, "..", "..", "..");
+	for (const name in GENERATORS) {
+		const generator = GENERATORS[name];
 		await generateSdk(rootPath, name, generator);
 	}
 }
 
 async function generateSdk(rootPath: string, name: string, config: Generator) {
 	console.log("Generating", name);
-	let status = await Deno.run({
+	const status = await Deno.run({
 		cmd: [
 			"docker",
 			"run",

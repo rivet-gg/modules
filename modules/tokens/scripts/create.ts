@@ -30,7 +30,7 @@ const CHARACTERS =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 function generateToken(type: string): string {
-	let len = 40;
+	const len = 40;
 
 	// Select random numbers
 	const buf = new Uint32Array(len);

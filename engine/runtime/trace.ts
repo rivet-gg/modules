@@ -40,7 +40,7 @@ module TraceEntryType {
 }
 
 export function newTrace(entryType: TraceEntryType): Trace {
-	let entry: TraceEntry = {
+	const entry: TraceEntry = {
 		requestId: crypto.randomUUID(),
 		startedAt: new Date().toISOString(),
 		type: entryType,
@@ -59,7 +59,7 @@ export function appendTraceEntry(
 	trace: Trace,
 	entryType: TraceEntryType,
 ): Trace {
-	let entry: TraceEntry = {
+	const entry: TraceEntry = {
 		requestId: crypto.randomUUID(),
 		startedAt: new Date().toISOString(),
 		type: entryType,

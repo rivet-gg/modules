@@ -6,8 +6,8 @@ import { Registry } from "../registry/mod.ts";
 // const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
 
 export async function compileSchema(registry: Registry) {
-	for (let module of registry.modules.values()) {
-		for (let script of module.scripts.values()) {
+	for (const module of registry.modules.values()) {
+		for (const script of module.scripts.values()) {
 			console.log("Generating schema", script.path);
 
 			// TODO: Dupe of registry.ts

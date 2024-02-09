@@ -10,7 +10,7 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-	let query = await ctx.postgres.run((conn) =>
+	const query = await ctx.postgres.run((conn) =>
 		conn.queryObject<TokenWithSecret>`
         SELECT token, id, type, meta, to_json(created_at) AS created_at, to_json(expire_at) AS expire_at, to_json(revoked_at) AS revoked_at
         FROM tokens
@@ -18,8 +18,8 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
     `
 	);
 
-	let tokens: Record<string, Token> = {};
-	for (let token of query.rows) {
+	const tokens: Record<string, Token> = {};
+	for (const token of query.rows) {
 		tokens[token.token] = {
 			id: token.id,
 			type: token.type,

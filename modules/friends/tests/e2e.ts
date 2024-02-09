@@ -4,22 +4,22 @@ import { assertEquals, assertExists } from "std/assert/mod.ts";
 import { faker } from "@faker-js/faker";
 
 Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
-	let { user: userA, token: tokenA } = await ctx.call("users", "register", {
+	const { user: userA, token: tokenA } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },
 	}) as any;
 
-	let { user: userB, token: tokenB } = await ctx.call("users", "register", {
+	const { user: userB, token: tokenB } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },
 	}) as any;
 
-	let { friendRequest } = await ctx.call("friends", "send_request", {
+	const { friendRequest } = await ctx.call("friends", "send_request", {
 		userToken: tokenA.token,
 		targetUserId: userB.id,
 	}) as any;
 
-	let { friendRequests: outgoingRequests } = await ctx.call(
+	const { friendRequests: outgoingRequests } = await ctx.call(
 		"friends",
 		"list_outgoing_friend_requests",
 		{
@@ -28,7 +28,7 @@ Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
 	) as any;
 	assertEquals(outgoingRequests.length, 1);
 
-	let { friendRequests: incomingRequests } = await ctx.call(
+	const { friendRequests: incomingRequests } = await ctx.call(
 		"friends",
 		"list_incoming_friend_requests",
 		{
@@ -42,12 +42,12 @@ Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
 		friendRequestId: friendRequest.id,
 	}) as any;
 
-	let friendsA = await ctx.call("friends", "list_friends", {
+	const friendsA = await ctx.call("friends", "list_friends", {
 		userToken: tokenA.token,
 	}) as any;
 	assertEquals(friendsA.friends.length, 1);
 
-	let friendsB = await ctx.call("friends", "list_friends", {
+	const friendsB = await ctx.call("friends", "list_friends", {
 		userToken: tokenB.token,
 	}) as any;
 	assertEquals(friendsB.friends.length, 1);
@@ -57,24 +57,24 @@ Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
 		targetUserId: userB.id,
 	}) as any;
 
-	let friendsRemoved = await ctx.call("friends", "list_friends", {
+	const friendsRemoved = await ctx.call("friends", "list_friends", {
 		userToken: tokenB.token,
 	}) as any;
 	assertEquals(friendsRemoved.friends.length, 0);
 });
 
 Runtime.test(config, "friends", "e2e reject", async (ctx: Context) => {
-	let { user: userA, token: tokenA } = await ctx.call("users", "register", {
+	const { user: userA, token: tokenA } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },
 	}) as any;
 
-	let { user: userB, token: tokenB } = await ctx.call("users", "register", {
+	const { user: userB, token: tokenB } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },
 	}) as any;
 
-	let { friendRequest } = await ctx.call("friends", "send_request", {
+	const { friendRequest } = await ctx.call("friends", "send_request", {
 		userToken: tokenA.token,
 		targetUserId: userB.id,
 	}) as any;
@@ -84,7 +84,7 @@ Runtime.test(config, "friends", "e2e reject", async (ctx: Context) => {
 		friendRequestId: friendRequest.id,
 	}) as any;
 
-	let { friendRequests: outgoingRequests } = await ctx.call(
+	const { friendRequests: outgoingRequests } = await ctx.call(
 		"friends",
 		"list_outgoing_friend_requests",
 		{
@@ -93,7 +93,7 @@ Runtime.test(config, "friends", "e2e reject", async (ctx: Context) => {
 	) as any;
 	assertEquals(outgoingRequests.length, 0);
 
-	let { friendRequests: incomingRequests } = await ctx.call(
+	const { friendRequests: incomingRequests } = await ctx.call(
 		"friends",
 		"list_incoming_friend_requests",
 		{

@@ -4,12 +4,12 @@ import { faker } from "@faker-js/faker";
 import { assertExists } from "std/assert/assert_exists.ts";
 
 Runtime.test(config, "users", "register guest", async (ctx: Context) => {
-	let { user, token } = await ctx.call("users", "register", {
+	const { user, token } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },
 	}) as any;
 
-	let { users: users, token: token2 } = await ctx.call("users", "get", {
+	const { users: users, token: token2 } = await ctx.call("users", "get", {
 		userIds: [user.id],
 	}) as any;
 	assertExists(users[user.id]);

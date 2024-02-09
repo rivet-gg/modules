@@ -48,28 +48,28 @@ export class Runtime {
 		);
 
 		// Build trace
-		let trace = appendTraceEntry(parentTrace, {
+		const trace = appendTraceEntry(parentTrace, {
 			script: { module: moduleName, script: scriptName },
 		});
 
 		// Build Postgres
-		let postgres = new PostgresWrapped(this.postgres, moduleName);
+		const postgres = new PostgresWrapped(this.postgres, moduleName);
 
 		// Build context
 		const ctx = new Context(this, trace, postgres);
 
 		try {
 			// Lookup module
-			let module = this.config.modules[moduleName];
+			const module = this.config.modules[moduleName];
 			if (!module) throw new Error(`Module not found: ${moduleName}`);
 
 			// Lookup script
-			let script = module.scripts[scriptName];
+			const script = module.scripts[scriptName];
 			if (!script) throw new Error(`Script not found: ${scriptName}`);
 
 			// Compile schemas
-			let validateRequest = this.ajv.compile(script.requestSchema);
-			let validateResponse = this.ajv.compile(script.responseSchema);
+			const validateRequest = this.ajv.compile(script.requestSchema);
+			const validateResponse = this.ajv.compile(script.responseSchema);
 
 			// Validate request
 			if (!validateRequest(req)) {
@@ -79,7 +79,7 @@ export class Runtime {
 			}
 
 			// Execute script
-			let res = await script.handler(ctx, req);
+			const res = await script.handler(ctx, req);
 			console.log(
 				`Response ${moduleName}.${scriptName}:\n${
 					JSON.stringify(res, null, 2)

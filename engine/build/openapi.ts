@@ -2,7 +2,7 @@ import * as path from "std/path/mod.ts";
 import { Registry } from "../registry/mod.ts";
 
 export async function generateOpenApi(registry: Registry) {
-	let schema = {
+	const schema = {
 		openapi: "3.1.0",
 		info: {
 			title: "Open Game Services",
@@ -26,15 +26,15 @@ export async function generateOpenApi(registry: Registry) {
 		},
 	};
 
-	for (let mod of registry.modules.values()) {
-		for (let script of mod.scripts.values()) {
-			let requestBodyRef = injectSchema(
+	for (const mod of registry.modules.values()) {
+		for (const script of mod.scripts.values()) {
+			const requestBodyRef = injectSchema(
 				schema,
 				script.requestSchema,
 				`${mod.name}__${script.name}__request`,
 				"Request",
 			);
-			let responseContentRef = injectSchema(
+			const responseContentRef = injectSchema(
 				schema,
 				script.responseSchema,
 				`${mod.name}__${script.name}__response`,
@@ -88,8 +88,8 @@ function injectSchema(
 	rootDefinition: string,
 ) {
 	// Add the definition to the OpenAPI schema
-	for (let definitionName in schema.definitions) {
-		let definition = schema.definitions[definitionName];
+	for (const definitionName in schema.definitions) {
+		const definition = schema.definitions[definitionName];
 
 		// Update $refs to point to the new location
 		replaceRefs(
@@ -109,13 +109,13 @@ function injectSchema(
  * Recursively replace $ref properties in an object
  */
 function replaceRefs(obj: any, replacer: (x: string) => string) {
-	for (let key in obj) {
+	for (const key in obj) {
 		if (key === "$ref") {
 			obj[key] = replacer(obj[key]);
 		} else if (typeof obj[key] === "object") {
 			replaceRefs(obj[key], replacer);
 		} else if (Array.isArray(obj[key])) {
-			for (let item of obj[key]) {
+			for (const item of obj[key]) {
 				replaceRefs(item, replacer);
 			}
 		}

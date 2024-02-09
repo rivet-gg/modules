@@ -11,13 +11,13 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 			const matches = url.pathname.match(moduleCall);
 			if (matches) {
 				// Create trace
-				let trace = newTrace({
+				const trace = newTrace({
 					httpRequest: { method: req.method, path: url.pathname },
 				});
 
 				// Match module
 				const [, moduleName, scriptName] = matches;
-				let output = await runtime.call(
+				const output = await runtime.call(
 					trace,
 					moduleName,
 					scriptName,

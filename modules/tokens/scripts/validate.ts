@@ -10,10 +10,10 @@ export interface Response {
 }
 
 export async function handler(ctx: Context, req: Request): Promise<Response> {
-	let { tokens } = await ctx.call("tokens", "get_by_token", {
+	const { tokens } = await ctx.call("tokens", "get_by_token", {
 		tokens: [req.token],
 	}) as any;
-	let token = tokens[req.token];
+	const token = tokens[req.token];
 
 	if (!token) throw new Error("Token not found");
 

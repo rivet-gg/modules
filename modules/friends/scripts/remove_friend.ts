@@ -16,7 +16,7 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
 
 	const [userIdA, userIdB] = [userId, req.targetUserId].sort();
 
-	let updateQuery = await ctx.postgres.run((conn) =>
+	const updateQuery = await ctx.postgres.run((conn) =>
 		conn.queryObject`
         UPDATE friends
         SET removed_at = timezone('utc', now())

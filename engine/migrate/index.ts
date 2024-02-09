@@ -60,8 +60,8 @@ async function runModuleMigrations(mod: Module, databaseUrl: string) {
         `;
 
 		// Read migration names
-		let migrationsPath = path.join(mod.path, "db", "migrations");
-		let migrationNames = [];
+		const migrationsPath = path.join(mod.path, "db", "migrations");
+		const migrationNames = [];
 		for await (const migration of Deno.readDir(migrationsPath)) {
 			migrationNames.push(migration.name);
 		}
@@ -69,9 +69,9 @@ async function runModuleMigrations(mod: Module, databaseUrl: string) {
 
 		// Run migrations
 		for (let i = 0; i < migrationNames.length; i++) {
-			let migrationName = migrationNames[i];
-			let absolutePath = path.join(migrationsPath, migrationName);
-			let source = await Deno.readTextFile(absolutePath);
+			const migrationName = migrationNames[i];
+			const absolutePath = path.join(migrationsPath, migrationName);
+			const source = await Deno.readTextFile(absolutePath);
 			await runMigration(client, mod, i, migrationName, source);
 		}
 	} catch (cause) {

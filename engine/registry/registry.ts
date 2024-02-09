@@ -15,14 +15,14 @@ const moduleConfigAjv = new Ajv.default({
 
 export class Registry {
 	public static async load(): Promise<Registry> {
-		let rootPath = path.join(__dirname, "..", "..");
+		const rootPath = path.join(__dirname, "..", "..");
 
 		console.log("Loading registry", rootPath);
 
-		let modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
-		let modules = new Map();
-		for (let mod of modPaths) {
-			let modName = path.basename(path.dirname(mod));
+		const modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
+		const modules = new Map();
+		for (const mod of modPaths) {
+			const modName = path.basename(path.dirname(mod));
 			modules.set(
 				modName,
 				await Module.load(path.join(rootPath, path.dirname(mod)), modName),
@@ -60,13 +60,13 @@ export class Module {
 		console.log("Loading module", modulePath);
 
 		// Read config
-		let configRaw = await Deno.readTextFile(
+		const configRaw = await Deno.readTextFile(
 			path.join(modulePath, "module.yaml"),
 		);
-		let config = parse(configRaw) as ModuleConfig;
+		const config = parse(configRaw) as ModuleConfig;
 
 		// Validate config
-		let moduleConfigSchema = moduleConfigAjv.getSchema(
+		const moduleConfigSchema = moduleConfigAjv.getSchema(
 			"#/definitions/ModuleConfig",
 		);
 		if (!moduleConfigSchema) {
@@ -79,9 +79,9 @@ export class Module {
 		}
 
 		// Read scripts
-		let scripts = new Map();
-		for (let scriptName in config.scripts) {
-			let scriptPath = path.resolve(modulePath, "scripts", scriptName + ".ts");
+		const scripts = new Map();
+		for (const scriptName in config.scripts) {
+			const scriptPath = path.resolve(modulePath, "scripts", scriptName + ".ts");
 			scripts.set(
 				scriptName,
 				new Script(scriptPath, scriptName, config.scripts[scriptName]),
@@ -135,7 +135,7 @@ function generateModuleConfigJsonSchema(): tjs.Definition {
 		"allowImportingTsExtensions": true,
 	};
 
-	let schemaFiles = [__filename];
+	const schemaFiles = [__filename];
 
 	const program = tjs.getProgramFromFiles(
 		schemaFiles,

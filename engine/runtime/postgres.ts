@@ -16,7 +16,7 @@ export class Postgres {
 	}
 
 	public async shutdown() {
-		for (let pool of this.pools.values()) {
+		for (const pool of this.pools.values()) {
 			await pool.end();
 		}
 	}
@@ -26,11 +26,11 @@ export class Postgres {
 			return this.pools.get(database)!;
 		} else {
 			// Build URL for this database
-			let url = new URL(this.databaseUrl);
+			const url = new URL(this.databaseUrl);
 			url.pathname = "/module_" + database;
 
 			// Create & insert pool
-			let pool = new postgres.Pool(url.toString(), POOL_SIZE, true);
+			const pool = new postgres.Pool(url.toString(), POOL_SIZE, true);
 			this.pools.set(database, pool);
 			return pool;
 		}
