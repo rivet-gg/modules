@@ -47,12 +47,43 @@ export async function compileSchema(registry: Registry) {
 
             const requestSchema = tjs.generateSchema(program, "Request", validateConfig);
             if (requestSchema === null) throw new Error("Failed to generate request schema for " + script.path);
+            // patchSchema(null, requestSchema);
             script.requestSchema = requestSchema;
 
             const responseSchema = tjs.generateSchema(program, "Response", validateConfig);
             if (responseSchema === null) throw new Error("Failed to generate response schema for " + script.path);
+            // patchSchema(null, responseSchema);
             script.responseSchema = responseSchema;
         }
     }
 }
 
+// function patchSchema(name: string | null, schema: tjs.DefinitionOrBoolean) {
+//     if (typeof schema === "boolean") return;
+
+//     if (name && name.startsWith("Record<") && schema.type == "object") {
+//         console.log('Patching', name, schema);
+//         schema.type = "object";
+//         schema.additionalProperties = {};
+//     }
+
+//     // Recursively patch schemas
+//     if (schema.definitions) {
+//         for (const key in schema.definitions) {
+//             patchSchema(key, schema.definitions[key]);
+//         }
+//     } else if (schema.properties) {
+//         for (const key in schema.properties) {
+//             patchSchema(key, schema.properties[key]);
+//         }
+//     } else if (schema.items) {
+//         if (typeof schema.items === "boolean") return;
+//         else if (Array.isArray(schema.items)) {
+//             for (const item of schema.items) {
+//                 patchSchema(null, item);
+//             }
+//         } else {
+//             patchSchema(null, schema.items);
+//         }
+//     }
+// }

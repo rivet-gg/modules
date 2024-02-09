@@ -5,7 +5,7 @@ export interface Request {
 }
 
 export interface Response {
-    updates: Record<string, TokenUpdate>;
+    updates: { [key: string]: TokenUpdate };
 }
 
 export enum TokenUpdate {
