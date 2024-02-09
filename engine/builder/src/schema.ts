@@ -9,6 +9,25 @@ export async function compileSchema(registry: Registry) {
         for (let script of module.scripts.values()) {
             console.log("Generating schema", script.path);
 
+            // TODO: Dupe of registry.ts
+            // https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
+            const DEFAULT_COMPILER_OPTIONS = {
+                "allowJs": true,
+                "esModuleInterop": true,
+                "experimentalDecorators": false,
+                "inlineSourceMap": true,
+                "isolatedModules": true,
+                "jsx": "react",
+                "module": "esnext",
+                "moduleDetection": "force",
+                "strict": true,
+                "target": "esnext",
+                "useDefineForClassFields": true,
+
+                "lib": ["esnext", "dom", "dom.iterable"],
+                "allowImportingTsExtensions": true,
+            };
+
             const validateConfig = {
                 topRef: true,
                 required: true,
@@ -23,11 +42,7 @@ export async function compileSchema(registry: Registry) {
                 ignoreErrors: true,
             };
 
-            const program = tjs.getProgramFromFiles([script.path], {
-                target: "es2015",
-                esModuleInterop: true,
-                allowImportingTsExtensions: true,
-            });
+            const program = tjs.getProgramFromFiles([script.path], DEFAULT_COMPILER_OPTIONS);
 
             const requestSchema = tjs.generateSchema(program, "Request", validateConfig);
             if (requestSchema === null) throw new Error("Failed to generate request schema for " + script.path);

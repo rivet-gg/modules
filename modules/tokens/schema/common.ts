@@ -6,6 +6,6 @@ export interface Token {
     meta: Record<string, any>,
     trace: Trace,
     created_at: string,
-    expire_at?: string,
-    revoked_at?: string,
+    expire_at: string | null,
+    revoked_at: string | null,
 }

@@ -124,7 +124,5 @@ function generateModuleConfigJsonSchema(): tjs.Definition {
     });
     if (schema == null) throw new Error("Failed to generate schema");
 
-    console.log('schema', schema);
-
     return schema;
 }
