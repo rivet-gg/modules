@@ -22,7 +22,8 @@ export type TraceEntryType  = { httpRequest: TraceEntryType.HttpRequest } | { sc
 
 module TraceEntryType {
     export interface HttpRequest {
-
+        method: string;
+        path: string;
     }
 
     export interface Script {

@@ -2,7 +2,7 @@ import { Context } from "./context.ts";
 import { Postgres, PostgresWrapped } from './postgres.ts';
 import { serverHandler } from './server.ts';
 import { Trace, appendTraceEntry, newTrace } from './trace.ts';
-import { Ajv } from './deps.ts';
+import { Ajv, addFormats } from './deps.ts';
 
 interface Config {
     modules: Record<string, Module>;
@@ -23,13 +23,18 @@ interface Script {
 export class Runtime {
     public postgres: Postgres;
 
-    private ajv= new Ajv.default();
+    private ajv: Ajv.default;
 
     public constructor(public config: Config) {
         this.postgres = new Postgres();
+
+        this.ajv =  new Ajv.default();
+        addFormats.default(this.ajv);
     }
 
     public async call(parentTrace: Trace, moduleName: string, scriptName: string, req: unknown): Promise<unknown> {
+        console.log(`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`)
+
         // Build trace
         let trace = appendTraceEntry(parentTrace, {
             script: { module: moduleName, script: scriptName }
@@ -59,6 +64,7 @@ export class Runtime {
 
             // Execute script
             let res = await script.handler(ctx, req);
+            console.log(`Response ${moduleName}.${scriptName}:\n${JSON.stringify(res, null, 2)}`)
 
             // Validate response
             if (!validateResponse(res)) throw new Error(`Invalid response: ${JSON.stringify(validateResponse.errors)}`);

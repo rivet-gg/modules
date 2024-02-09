@@ -2,9 +2,17 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:ajv-formats@2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
+      "npm:ajv-formats@^2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
       "npm:ajv@^8.12.0": "npm:ajv@8.12.0"
     },
     "npm": {
+      "ajv-formats@2.1.1_ajv@8.12.0": {
+        "integrity": "sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==",
+        "dependencies": {
+          "ajv": "ajv@8.12.0"
+        }
+      },
       "ajv@8.12.0": {
         "integrity": "sha512-sRu1kpcO9yLtYxBKvqfTeh9KzZEwO3STyX1HT+4CaDzC6HpTGYhIhPIzj9XuKU7KYDwnaeh5hcOwjy1QuJzBPA==",
         "dependencies": {

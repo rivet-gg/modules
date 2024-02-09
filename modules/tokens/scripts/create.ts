@@ -16,7 +16,7 @@ export async function handler(ctx: Context, req: Request): Promise<Response> {
     const query = await ctx.postgres.run(conn => conn.queryObject<Token>`
         INSERT INTO tokens (token, type, meta, trace, expire_at)
         VALUES (${tokenStr}, ${req.type}, ${req.meta}, ${ctx.trace}, ${req.expire_at})
-        RETURNING id, type, meta, trace, created_at, expire_at, revoked_at
+        RETURNING id, type, meta, trace, to_json(created_at) AS created_at, to_json(expire_at) AS expire_at, to_json(revoked_at) AS revoked_at
     `)
 
     return {

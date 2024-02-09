@@ -11,6 +11,7 @@
 
 ## Long term
 
+- Try migrating to https://github.com/vega/ts-json-schema-generator
 - One-click deploys
 - Docs on ORMs
 
