@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 
 export interface Request {
 	tokenIds: string[];
@@ -14,7 +14,10 @@ export enum TokenUpdate {
 	NotFound = "NOT_FOUND",
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	const query = await ctx.postgres.run((conn) =>
 		conn.queryObject<{ id: string; already_revoked: boolean }>`
         WITH pre_update AS (

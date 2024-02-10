@@ -15,6 +15,7 @@ export async function generateEntrypoint(registry: Registry) {
 
 			modImports +=
 				`import { handler as ${handlerIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
+
 			modConfig += `${
 				JSON.stringify(script.name)
 			}: { handler: ${handlerIdent}, requestSchema: ${
@@ -22,6 +23,9 @@ export async function generateEntrypoint(registry: Registry) {
 			}, responseSchema: ${JSON.stringify(script.responseSchema)} },`;
 		}
 		modConfig += "},";
+
+		// Generate error configs
+		modConfig += `errors: ${JSON.stringify(mod.config.errors)},`;
 
 		modConfig += "},";
 	}

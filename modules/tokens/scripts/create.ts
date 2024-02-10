@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 import { TokenWithSecret } from "../schema/common.ts";
 
 export interface Request {
@@ -11,7 +11,10 @@ export interface Response {
 	token: TokenWithSecret;
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	const tokenStr = generateToken(req.type);
 	const query = await ctx.postgres.run((conn) =>
 		conn.queryObject<TokenWithSecret>`

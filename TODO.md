@@ -1,6 +1,6 @@
 - Standardize errors (see below)
 - Configure script triggers
-  - HTTP
+  - Call
   - HTTP API
 - Enable calling endpoints
 - Rivet auth

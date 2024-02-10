@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 import { Token } from "../schema/common.ts";
 
 export interface Request {
@@ -9,7 +9,10 @@ export interface Response {
 	tokens: { [key: string]: Token };
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	const query = await ctx.postgres.run((conn) =>
 		conn.queryObject<Token>`
         SELECT id, type, meta, to_json(created_at) AS created_at, to_json(expire_at) AS expire_at, to_json(revoked_at) AS revoked_at

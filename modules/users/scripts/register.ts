@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 import { User } from "../schema/common.ts";
 import { TokenWithSecret } from "../../tokens/schema/common.ts";
 import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
@@ -18,7 +18,10 @@ export type IdentityType = { guest: IdentityTypeGuest };
 export interface IdentityTypeGuest {
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
 
 	// Create user

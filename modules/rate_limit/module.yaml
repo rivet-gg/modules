@@ -5,3 +5,4 @@ metadata:
     - NathanFlurry
 scripts:
   throttle: {}
+errors: {}

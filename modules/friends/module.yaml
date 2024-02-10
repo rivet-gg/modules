@@ -11,3 +11,4 @@ scripts:
   list_friends: {}
   list_outgoing_friend_requests: {}
   list_incoming_friend_requests: {}
+errors: {}

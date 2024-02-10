@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 
 export interface Request {
 	userToken: string;
@@ -8,7 +8,10 @@ export interface Response {
 	userId: string;
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	const { token } = await ctx.call("tokens", "validate", {
 		token: req.userToken,
 	}) as any;

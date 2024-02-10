@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 import { User } from "../schema/common.ts";
 
 export interface Request {
@@ -9,7 +9,10 @@ export interface Response {
 	users: { [id: string]: User };
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	await ctx.call("rate_limit", "throttle", {});
 
 	const query = await ctx.postgres.run((conn) =>

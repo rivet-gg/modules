@@ -9,4 +9,5 @@ scripts:
   get_by_token: {}
   revoke: {}
   validate: {}
-
+errors:
+  TOKEN_EXPIRED: {}

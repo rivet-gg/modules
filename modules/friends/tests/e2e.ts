@@ -1,9 +1,9 @@
-import { Context, Runtime } from "@ogs/runtime";
+import { TestContext, Runtime } from "@ogs/runtime";
 import config from "../../../dist/runtime_config.ts";
 import { assertEquals } from "std/assert/mod.ts";
 import { faker } from "@faker-js/faker";
 
-Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
+Runtime.test(config, "friends", "e2e accept", async (ctx: TestContext) => {
 	const { user: userA, token: tokenA } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },
@@ -63,7 +63,7 @@ Runtime.test(config, "friends", "e2e accept", async (ctx: Context) => {
 	assertEquals(friendsRemoved.friends.length, 0);
 });
 
-Runtime.test(config, "friends", "e2e reject", async (ctx: Context) => {
+Runtime.test(config, "friends", "e2e reject", async (ctx: TestContext) => {
 	const { user: userA, token: tokenA } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },

@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 import { Token } from "../schema/common.ts";
 
 export interface Request {
@@ -9,7 +9,10 @@ export interface Response {
 	token: Token;
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	const { tokens } = await ctx.call("tokens", "get_by_token", {
 		tokens: [req.token],
 	}) as any;

@@ -40,6 +40,7 @@ export class Registry {
 export interface ModuleConfig {
 	metadata: ModuleMetadata;
 	scripts: { [name: string]: ScriptConfig };
+	errors: { [name: string]: ErrorConfig };
 }
 
 export interface ModuleMetadata {
@@ -53,6 +54,10 @@ export interface ModuleMetadata {
 }
 
 export interface ScriptConfig {
+}
+
+export interface ErrorConfig {
+	description?: string;
 }
 
 export class Module {

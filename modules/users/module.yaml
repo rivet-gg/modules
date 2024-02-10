@@ -7,3 +7,4 @@ scripts:
   get: {}
   register: {}
   validate_token: {}
+errors: {}

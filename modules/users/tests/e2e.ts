@@ -1,9 +1,9 @@
-import { Context, Runtime } from "@ogs/runtime";
+import { TestContext, Runtime } from "@ogs/runtime";
 import config from "../../../dist/runtime_config.ts";
 import { faker } from "@faker-js/faker";
 import { assertExists } from "std/assert/assert_exists.ts";
 
-Runtime.test(config, "users", "register guest", async (ctx: Context) => {
+Runtime.test(config, "users", "register guest", async (ctx: TestContext) => {
 	const { user, token } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },

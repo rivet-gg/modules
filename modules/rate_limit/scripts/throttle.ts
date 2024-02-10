@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 
 export interface Request {
 	/**
@@ -22,7 +22,10 @@ export interface Request {
 export interface Response {
 }
 
-export async function handler(_ctx: Context, _req: Request): Promise<Response> {
+export async function handler(
+	_ctx: ScriptContext,
+	_req: Request,
+): Promise<Response> {
 	// TODO:
 
 	return {};

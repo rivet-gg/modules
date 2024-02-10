@@ -1,7 +1,9 @@
-import { Context } from "./context.ts";
-import { Postgres, PostgresWrapped } from "./postgres.ts";
+import { ScriptContext } from "./context.ts";
+import { Context, TestContext } from "./context.ts";
+import { Postgres } from "./postgres.ts";
 import { serverHandler } from "./server.ts";
-import { appendTraceEntry, newTrace, Trace } from "./trace.ts";
+import { TraceEntryType } from "./trace.ts";
+import { newTrace } from "./trace.ts";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 
@@ -11,6 +13,7 @@ export interface Config {
 
 export interface Module {
 	scripts: Record<string, Script>;
+	errors: Record<string, ErrorConfig>;
 }
 
 export interface Script {
@@ -22,12 +25,19 @@ export interface Script {
 	responseSchema: any;
 }
 
-export type ScriptHandler<Req, Res> = (ctx: Context, req: Req) => Promise<Res>;
+export type ScriptHandler<Req, Res> = (
+	ctx: ScriptContext,
+	req: Req,
+) => Promise<Res>;
+
+export interface ErrorConfig {
+	description?: string;
+}
 
 export class Runtime {
 	public postgres: Postgres;
 
-	private ajv: Ajv.default;
+	public ajv: Ajv.default;
 
 	public constructor(public config: Config) {
 		this.postgres = new Postgres();
@@ -36,101 +46,53 @@ export class Runtime {
 		addFormats.default(this.ajv);
 	}
 
-	async shutdown() {
+	private async shutdown() {
 		await this.postgres.shutdown();
 	}
 
-	public async call(
-		parentTrace: Trace,
-		moduleName: string,
-		scriptName: string,
-		req: unknown,
-	): Promise<unknown> {
-		console.log(
-			`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`,
-		);
-
-		// Build trace
-		const trace = appendTraceEntry(parentTrace, {
-			script: { module: moduleName, script: scriptName },
-		});
-
-		// Build Postgres
-		const postgres = new PostgresWrapped(this.postgres, moduleName);
-
-		// Build context
-		const ctx = new Context(this, trace, postgres);
-
-		try {
-			// Lookup module
-			const module = this.config.modules[moduleName];
-			if (!module) throw new Error(`Module not found: ${moduleName}`);
-
-			// Lookup script
-			const script = module.scripts[scriptName];
-			if (!script) throw new Error(`Script not found: ${scriptName}`);
-
-			// Compile schemas
-			const validateRequest = this.ajv.compile(script.requestSchema);
-			const validateResponse = this.ajv.compile(script.responseSchema);
-
-			// Validate request
-			if (!validateRequest(req)) {
-				throw new Error(
-					`Invalid request: ${JSON.stringify(validateRequest.errors)}`,
-				);
-			}
-
-			// Execute script
-			const res = await script.handler(ctx, req);
-			console.log(
-				`Response ${moduleName}.${scriptName}:\n${
-					JSON.stringify(res, null, 2)
-				}`,
-			);
-
-			// Validate response
-			if (!validateResponse(res)) {
-				throw new Error(
-					`Invalid response: ${JSON.stringify(validateResponse.errors)}`,
-				);
-			}
-
-			return res;
-		} catch (cause) {
-			throw new Error(`Failed to execute script: ${moduleName}.${scriptName}`, {
-				cause,
-			});
-		}
+	public createRootContext(traceEntryType: TraceEntryType): Context {
+		return new Context(this, newTrace(traceEntryType));
 	}
 
+	/**
+	 * Serves the runtime as an HTTP server.
+	 */
 	public async serve() {
 		const port = parseInt(Deno.env.get("PORT") ?? "8080");
 		console.log(`Serving on port ${port}`);
 		await Deno.serve({ port }, serverHandler(this)).finished;
 	}
 
+	/**
+	 * Registers a module test with the Deno runtime.
+	 */
 	public static test(
 		config: Config,
-		module: string,
-		name: string,
-		fn: (ctx: Context) => Promise<void>,
+		moduleName: string,
+		testName: string,
+		fn: (ctx: TestContext) => Promise<void>,
 	) {
-		Deno.test(name, async () => {
+		Deno.test(testName, async () => {
 			const runtime = new Runtime(config);
 
 			// Build context
-			const trace = newTrace({
-				test: { module, name },
-			});
-			const postgresWrapped = new PostgresWrapped(runtime.postgres, module);
-			const ctx = new Context(runtime, trace, postgresWrapped);
+			const ctx = new TestContext(
+				runtime,
+				newTrace({
+					test: { module: moduleName, name: testName },
+				}),
+				moduleName,
+			);
 
 			// Run test
 			try {
-				await fn(ctx);
+				await ctx.runBlock(async () => {
+					await fn(ctx);
+				});
 			} catch (cause) {
-				throw new Error(`Failed to execute test: ${module}.${name}`, { cause });
+				throw new Error(`Failed to execute test: ${moduleName}.${testName}`, {
+					cause,
+				});
 			} finally {
 				await runtime.shutdown();
 			}

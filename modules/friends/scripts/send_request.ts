@@ -1,4 +1,4 @@
-import { Context } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/runtime";
 import { FriendRequest } from "../schema/common.ts";
 
 export interface Request {
@@ -10,7 +10,10 @@ export interface Response {
 	friendRequest: FriendRequest;
 }
 
-export async function handler(ctx: Context, req: Request): Promise<Response> {
+export async function handler(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
 	await ctx.call("rate_limit", "throttle", {});
 	const { userId } = await ctx.call("users", "validate_token", {
 		userToken: req.userToken,
