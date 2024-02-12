@@ -47,6 +47,12 @@ Create script:
 deno task create:script foo bar
 ```
 
+Create migration:
+
+```
+deno task create:migration foo bar
+```
+
 **Generate SDKs** To generate SDKs to :
 
 ```

@@ -22,7 +22,8 @@
 		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts",
 
 		"create:module": "deno run --check --allow-read --allow-write engine/template/module.ts",
-		"create:script": "deno run --check --allow-read --allow-write engine/template/script.ts"
+		"create:script": "deno run --check --allow-read --allow-write engine/template/script.ts",
+		"create:migration": "deno run --check --allow-read --allow-write engine/template/migration.ts"
 	},
 	"imports": {
 		"@ogs/runtime": "./engine/runtime/mod.ts",
