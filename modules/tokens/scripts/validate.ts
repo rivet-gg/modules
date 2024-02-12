@@ -22,10 +22,12 @@ export async function handler(
 
 	if (token.revoked_at) throw new Error("Token revoked");
 
-	const expireAt = Temporal.PlainDateTime.from(token.expire_at);
-	const now = Temporal.Now.plainDateTimeISO();
-	if (Temporal.PlainDateTime.compare(expireAt, now) < 1) {
-		throw new Error("Token expired");
+	if (token.expire_at) {
+		const expireAt = Temporal.PlainDateTime.from(token.expire_at);
+		const now = Temporal.Now.plainDateTimeISO();
+		if (Temporal.PlainDateTime.compare(expireAt, now) < 1) {
+			throw new Error("Token expired");
+		}
 	}
 
 	return { token };

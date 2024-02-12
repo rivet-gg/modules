@@ -7,6 +7,7 @@ Runtime.test(config, "tokens", "e2e", async (ctx: TestContext) => {
 	const { token } = await ctx.call("tokens", "create", {
 		type: "test",
 		meta: { foo: "bar" },
+		expire_at: Temporal.Now.plainDateTimeISO().add({ days: 1 }).toJSON(),
 	}) as any;
 
 	const getRes = await ctx.call("tokens", "get", {
@@ -14,10 +15,15 @@ Runtime.test(config, "tokens", "e2e", async (ctx: TestContext) => {
 	}) as any;
 	assertExists(getRes.tokens[token.id]);
 
-	const validateRes = await ctx.call("tokens", "validate", {
+	const getByTokenRes = await ctx.call("tokens", "get_by_token", {
 		tokens: [token.token],
 	}) as any;
-	assertExists(validateRes.tokens[token.token]);
+	assertExists(getByTokenRes.tokens[token.token]);
+
+	const validateRes = await ctx.call("tokens", "validate", {
+		token: token.token
+	}) as any;
+	assertEquals(token.id, validateRes.token.id);
 
 	const revokeRes = await ctx.call("tokens", "revoke", {
 		tokenIds: [token.id],
