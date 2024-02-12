@@ -14,13 +14,26 @@ if (!mod) {
     throw new Error(`Missing module ${moduleName}`);
 }
 
-// Create directires
+// Create scripts
 const scriptPath = path.join(registry.path, "modules", moduleName, "scripts", scriptName + ".ts");
 try {
 	await Deno.stat(scriptPath);
 	throw new Error("Script already exists");
 } catch (error) {
 	if (!(error instanceof Deno.errors.NotFound)) {
+		throw error;
+	}
+}
+
+// Create test if doesn't already exist
+let createTest = false;
+const testPath = path.join(registry.path, "modules", moduleName, "tests", scriptName + ".ts");
+try {
+	await Deno.stat(testPath);
+} catch (error) {
+	if (error instanceof Deno.errors.NotFound) {
+		createTest = true;
+	} else {
 		throw error;
 	}
 }
@@ -54,3 +67,20 @@ export async function handler(
 
 `;
 await Deno.writeTextFile(scriptPath, scriptTs);
+
+if (createTest) {
+	// Write default config
+	const testTs =
+`import { TestContext, Runtime } from "@ogs/runtime";
+import config from "../../../dist/runtime_config.ts";
+import { assertExists } from "std/assert/assert_exists.ts";
+
+Runtime.test(config, "users", "register guest", async (ctx: TestContext) => {
+	const res = await ctx.call("${moduleName}", "${scriptName}", {
+		// TODO:
+	}) as any;
+});
+
+`;
+	await Deno.writeTextFile(testPath, testTs);
+}

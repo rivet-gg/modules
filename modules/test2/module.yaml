@@ -1,5 +1,0 @@
-# Run `deno task create:script test2 <scriptName>` to create a new script
-scripts: {}
-
-# Add your errors here the module can throw
-errors: {}
