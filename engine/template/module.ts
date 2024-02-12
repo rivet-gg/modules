@@ -21,10 +21,13 @@ await Deno.mkdir(path.join(modulePath, "schema"));
 
 // Write default config
 const moduleYaml =
-`# Run \`deno task create:script ${moduleName} <scriptName>\` to create a new script
-scripts: {}
-
-# Add the errors your module can call here
+`scripts: {}
 errors: {}
 `;
 await Deno.writeTextFile(path.join(modulePath, "module.yaml"), moduleYaml);
+
+// Write default migration
+const migrationSql =
+`-- TODO: Write migration
+`;
+await Deno.writeTextFile(path.join(modulePath, "db", "migrations", "0001_init.sql"), migrationSql);
