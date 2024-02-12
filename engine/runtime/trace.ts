@@ -20,7 +20,7 @@ export interface TraceEntry {
  */
 export type TraceEntryType = { httpRequest: TraceEntryTypeHttpRequest } | {
 	script: TraceEntryTypeScript;
-} | { test: TraceEntryTypeTest };
+} | { test: TraceEntryTypeTest } | { internalTest: TraceEntryTypeInternalTest };
 
 export interface TraceEntryTypeHttpRequest {
 	method: string;
@@ -35,6 +35,10 @@ export interface TraceEntryTypeScript {
 export interface TraceEntryTypeTest {
 	module: string;
 	name: string;
+}
+
+export interface TraceEntryTypeInternalTest {
+	
 }
 
 export function newTrace(entryType: TraceEntryType): Trace {

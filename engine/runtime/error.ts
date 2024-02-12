@@ -25,7 +25,7 @@ export class RuntimeError extends Error {
 	 */
 	public errorConfig?: ErrorConfig;
 
-	public constructor(public readonly code: string, options: ErrorOptions) {
+	public constructor(public readonly code: string, options?: ErrorOptions) {
 		super(code, options);
 	}
 
