@@ -33,6 +33,20 @@ deno task build
 deno task test modules/tokens/tests/e2e.ts
 ```
 
+**Creating modules & scripts**
+
+Create module:
+
+```
+deno task create:module foo
+```
+
+Create script:
+
+```
+deno task create:script foo bar
+```
+
 **Generate SDKs** To generate SDKs to :
 
 ```
