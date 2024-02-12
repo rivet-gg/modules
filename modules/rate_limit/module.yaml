@@ -1,8 +1,6 @@
-metadata:
-  status: preview
-  description: Rate limit.
-  authors:
-    - NathanFlurry
+status: preview
+authors:
+  - NathanFlurry
 scripts:
   throttle: {}
 errors: {}

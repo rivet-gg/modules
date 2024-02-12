@@ -37,23 +37,21 @@ export class Registry {
 	) {}
 }
 
-export interface ModuleConfig {
-	metadata: ModuleMetadata;
-	scripts: { [name: string]: ScriptConfig };
-	errors: { [name: string]: ErrorConfig };
-}
-
-export interface ModuleMetadata {
-	status: "preview" | "beta" | "stable" | "deprecated";
-	description: string;
+export interface ModuleConfig extends Record<string, unknown> {
+	status?: "preview" | "beta" | "stable" | "deprecated";
+	description?: string;
 
 	/**
 	 * The GitHub handle of the authors of the module.
 	 */
-	authors: string[];
+	authors?: string[];
+
+	scripts: { [name: string]: ScriptConfig };
+	errors: { [name: string]: ErrorConfig };
 }
 
 export interface ScriptConfig {
+
 }
 
 export interface ErrorConfig {
@@ -115,12 +113,13 @@ export class Module {
 			);
 		}
 
-		return new Module(modulePath, name, config, scripts);
+		return new Module(modulePath, name, configRaw, config, scripts);
 	}
 
 	private constructor(
 		public path: string,
 		public name: string,
+		public configRaw: string,
 		public config: ModuleConfig,
 		public scripts: Map<string, Script>,
 	) {}

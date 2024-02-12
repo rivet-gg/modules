@@ -1,8 +1,6 @@
-metadata:
-  status: preview
-  description: Users.
-  authors:
-    - NathanFlurry
+status: preview
+authors:
+  - NathanFlurry
 scripts:
   get: {}
   register: {}

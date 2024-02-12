@@ -1,8 +1,6 @@
-metadata:
-  status: preview
-  description: Friends.
-  authors:
-    - NathanFlurry
+status: preview
+authors:
+  - NathanFlurry
 scripts:
   send_request: {}
   accept_request: {}

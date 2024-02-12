@@ -19,7 +19,10 @@
 		"test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
 		"test:all": "deno test --check --allow-env --allow-net --unstable-temporal modules/*/tests/*.ts",
 
-		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts"
+		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts",
+
+		"create:module": "deno run --check --allow-read --allow-write engine/template/module.ts",
+		"create:script": "deno run --check --allow-read --allow-write engine/template/script.ts"
 	},
 	"imports": {
 		"@ogs/runtime": "./engine/runtime/mod.ts",

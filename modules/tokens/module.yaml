@@ -1,8 +1,6 @@
-metadata:
-  status: preview
-  description: Tokens.
-  authors:
-    - NathanFlurry
+status: preview
+authors:
+  - NathanFlurry
 scripts:
   create: {}
   get: {}
