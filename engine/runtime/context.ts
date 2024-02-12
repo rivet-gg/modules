@@ -68,9 +68,8 @@ export class Context {
 
 			return res;
 		} catch (cause) {
-			throw new Error(`Failed to execute script: ${moduleName}.${scriptName}`, {
-				cause,
-			});
+			console.warn(`Failed to execute script: ${moduleName}.${scriptName}`, cause);
+			throw cause;
 		}
 	}
 

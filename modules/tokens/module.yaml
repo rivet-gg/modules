@@ -8,4 +8,6 @@ scripts:
   revoke: {}
   validate: {}
 errors:
+  TOKEN_NOT_FOUND: {}
+  TOKEN_REVOKED: {}
   TOKEN_EXPIRED: {}

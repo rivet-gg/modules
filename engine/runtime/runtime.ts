@@ -91,9 +91,8 @@ export class Runtime {
 					await fn(ctx);
 				});
 			} catch (cause) {
-				throw new Error(`Failed to execute test: ${moduleName}.${testName}`, {
-					cause,
-				});
+				console.error(`Failed to execute test: ${moduleName}.${testName}`, cause);
+				throw cause;
 			} finally {
 				await runtime.shutdown();
 			}
