@@ -9,23 +9,28 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 		if (req.method == "POST" && moduleCall.test(url.pathname)) {
 			const matches = url.pathname.match(moduleCall);
 			if (matches) {
-				// Create context
-				const ctx = runtime.createRootContext({
-					httpRequest: { method: req.method, path: url.pathname },
-				});
-
-				// Match module
+				// Lookup script
 				const [, moduleName, scriptName] = matches;
-				const output = await ctx.call(
-					moduleName,
-					scriptName,
-					await req.json(),
-				);
+				const script = runtime.config.modules[moduleName]?.scripts[scriptName];
 
-				return new Response(JSON.stringify(output), {
-					status: 200,
-					headers: { "Content-Type": "application/json" },
-				});
+				if (script && script.public) {
+					// Create context
+					const ctx = runtime.createRootContext({
+						httpRequest: { method: req.method, path: url.pathname },
+					});
+
+					// Match module
+					const output = await ctx.call(
+						moduleName,
+						scriptName,
+						await req.json(),
+					);
+
+					return new Response(JSON.stringify(output), {
+						status: 200,
+						headers: { "Content-Type": "application/json" },
+					});
+				}
 			}
 		}
 

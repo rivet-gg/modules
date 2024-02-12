@@ -83,7 +83,8 @@ export class Context {
 		} catch (cause) {
 			// Convert error to RuntimeError. Enrich with context.
 			if (cause instanceof RuntimeError) {
-				throw cause.enrich(this.runtime, this);
+				cause.enrich(this.runtime, this);
+				throw cause;
 			} else {
 				const error = new RuntimeError("INTERNAL_ERROR", { cause });
 				error.enrich(this.runtime, this);

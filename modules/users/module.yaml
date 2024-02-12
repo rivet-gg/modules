@@ -2,7 +2,9 @@ status: preview
 authors:
   - NathanFlurry
 scripts:
-  get: {}
-  register: {}
+  get:
+    public: true
+  register:
+    public: true
   validate_token: {}
 errors: {}

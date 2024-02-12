@@ -1,10 +1,6 @@
-- Standardize errors (see below)
-- Configure script triggers
-  - Call
-  - HTTP API
 - Enable calling endpoints
+- Split out identity in to separate module
 - Rivet auth
-- Find a cool demo that can be ran quickly in the browser
 - Logging
 
 ## Expandables

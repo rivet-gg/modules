@@ -23,6 +23,7 @@ export interface Script {
 	requestSchema: any;
 	// deno-lint-ignore no-explicit-any
 	responseSchema: any;
+	public: boolean;
 }
 
 export type ScriptHandler<Req, Res> = (

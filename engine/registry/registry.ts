@@ -51,7 +51,15 @@ export interface ModuleConfig extends Record<string, unknown> {
 }
 
 export interface ScriptConfig {
-
+	/** 
+	 * If the script can be called from the public HTTP interface.
+	 * 
+	 * If enabled, ensure that authentication & rate limits are configued for
+	 * this endpoints. See the `user` and `rate_limit` modules.
+	 * 
+	 * @default false
+	 **/
+	public?: boolean;
 }
 
 export interface ErrorConfig {
