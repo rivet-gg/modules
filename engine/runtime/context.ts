@@ -3,6 +3,8 @@ import { Trace } from "./trace.ts";
 import { PostgresWrapped } from "./postgres.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
+import { drizzle, PostgresJsDatabase } from 'npm:drizzle-orm/postgres-js';
+import * as schema from '../../modules/users/db/schema'
 
 export class Context {
 	public constructor(
@@ -98,6 +100,14 @@ export class Context {
  */
 export class ModuleContext extends Context {
 	public readonly postgres: PostgresWrapped;
+
+	public drizzle<T extends Record<string, unknown>>(): PostgresJsDatabase<T> {
+		throw "Unimplemented";
+	}
+
+	public get something() { 
+		return drizzle('some' as any, {schema})
+	}
 
 	public constructor(
 		runtime: Runtime,
