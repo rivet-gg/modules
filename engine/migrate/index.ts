@@ -63,6 +63,8 @@ async function runModuleMigrations(mod: Module, databaseUrl: string) {
 		const migrationsPath = path.join(mod.path, "db", "migrations");
 		const migrationNames = [];
 		for await (const migration of Deno.readDir(migrationsPath)) {
+			if (migration.name.endsWith(".sql")) continue;
+			
 			migrationNames.push(migration.name);
 		}
 		migrationNames.sort();
