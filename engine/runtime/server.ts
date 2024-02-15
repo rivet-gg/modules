@@ -1,7 +1,10 @@
 import { Runtime } from "./runtime.ts";
 
 export function serverHandler(runtime: Runtime): Deno.ServeHandler {
-	return async (req: Request): Promise<Response> => {
+	return async (
+		req: Request,
+		info: Deno.ServeHandlerInfo,
+	): Promise<Response> => {
 		const url = new URL(req.url);
 		console.log("url", url.pathname);
 
@@ -16,7 +19,12 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 				if (script && script.public) {
 					// Create context
 					const ctx = runtime.createRootContext({
-						httpRequest: { method: req.method, path: url.pathname },
+						httpRequest: {
+							method: req.method,
+							path: url.pathname,
+							remoteAddress: info.remoteAddr.hostname,
+							headers: Object.fromEntries(req.headers.entries()),
+						},
 					});
 
 					// Match module

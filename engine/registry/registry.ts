@@ -51,14 +51,14 @@ export interface ModuleConfig extends Record<string, unknown> {
 }
 
 export interface ScriptConfig {
-	/** 
+	/**
 	 * If the script can be called from the public HTTP interface.
-	 * 
+	 *
 	 * If enabled, ensure that authentication & rate limits are configued for
 	 * this endpoints. See the `user` and `rate_limit` modules.
-	 * 
+	 *
 	 * @default false
-	 **/
+	 */
 	public?: boolean;
 }
 
@@ -91,7 +91,9 @@ export class Module {
 
 		// Find names of the expected scripts to find. Used to print error for extra scripts.
 		const scriptsPath = path.join(modulePath, "scripts");
-		const expectedScripts = new Set(await glob("*.ts", { cwd: path.join(modulePath, "scripts") }));
+		const expectedScripts = new Set(
+			await glob("*.ts", { cwd: path.join(modulePath, "scripts") }),
+		);
 
 		// Read scripts
 		const scripts = new Map();
@@ -102,7 +104,9 @@ export class Module {
 				scriptName + ".ts",
 			);
 			if (!await Deno.stat(scriptPath)) {
-				throw new Error(`Script not found: ${scriptPath}\nCheck the scripts in your module.yaml are configured correctly.`);
+				throw new Error(
+					`Script not found: ${scriptPath}\nCheck the scripts in your module.yaml are configured correctly.`,
+				);
 			}
 			scripts.set(
 				scriptName,
@@ -115,9 +119,13 @@ export class Module {
 
 		// Throw error extra scripts
 		if (expectedScripts.size > 0) {
-			const scriptList = Array.from(expectedScripts).map(x => `- ${path.join(scriptsPath, x)}\n`);
+			const scriptList = Array.from(expectedScripts).map((x) =>
+				`- ${path.join(scriptsPath, x)}\n`
+			);
 			throw new Error(
-				`Found extra scripts not registered in module.yaml:\n\n${scriptList.join("")}\nAdd these scripts to the module.yaml file.`,
+				`Found extra scripts not registered in module.yaml:\n\n${
+					scriptList.join("")
+				}\nAdd these scripts to the module.yaml file.`,
 			);
 		}
 

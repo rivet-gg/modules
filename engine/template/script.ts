@@ -1,4 +1,4 @@
-import { Registry } from '../registry/mod.ts';
+import { Registry } from "../registry/mod.ts";
 import * as path from "std/path/mod.ts";
 import { stringify } from "std/yaml/mod.ts";
 
@@ -11,11 +11,17 @@ const registry = await Registry.load();
 
 const mod = registry.modules.get(moduleName);
 if (!mod) {
-    throw new Error(`Missing module ${moduleName}`);
+	throw new Error(`Missing module ${moduleName}`);
 }
 
 // Create scripts
-const scriptPath = path.join(registry.path, "modules", moduleName, "scripts", scriptName + ".ts");
+const scriptPath = path.join(
+	registry.path,
+	"modules",
+	moduleName,
+	"scripts",
+	scriptName + ".ts",
+);
 try {
 	await Deno.stat(scriptPath);
 	throw new Error("Script already exists");
@@ -27,7 +33,13 @@ try {
 
 // Create test if doesn't already exist
 let createTest = false;
-const testPath = path.join(registry.path, "modules", moduleName, "tests", scriptName + ".ts");
+const testPath = path.join(
+	registry.path,
+	"modules",
+	moduleName,
+	"tests",
+	scriptName + ".ts",
+);
 try {
 	await Deno.stat(testPath);
 } catch (error) {
@@ -42,11 +54,13 @@ try {
 const newConfig = structuredClone(mod.config);
 newConfig.scripts[scriptName] = {};
 const newConfigRaw = stringify(newConfig);
-await Deno.writeTextFile(path.join(registry.path, "modules", moduleName, "module.yaml"), newConfigRaw);
+await Deno.writeTextFile(
+	path.join(registry.path, "modules", moduleName, "module.yaml"),
+	newConfigRaw,
+);
 
 // Write default config
-const scriptTs =
-`import { ScriptContext } from "@ogs/runtime";
+const scriptTs = `import { ScriptContext } from "@ogs/runtime";
 
 export interface Request {
     
@@ -70,8 +84,7 @@ await Deno.writeTextFile(scriptPath, scriptTs);
 
 if (createTest) {
 	// Write default config
-	const testTs =
-`import { TestContext, Runtime } from "@ogs/runtime";
+	const testTs = `import { TestContext, Runtime } from "@ogs/runtime";
 import config from "../../../dist/runtime_config.ts";
 import { assertExists } from "std/assert/assert_exists.ts";
 

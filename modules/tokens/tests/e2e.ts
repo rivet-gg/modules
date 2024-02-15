@@ -1,4 +1,4 @@
-import { TestContext, Runtime } from "@ogs/runtime";
+import { Runtime, TestContext } from "@ogs/runtime";
 import config from "../../../dist/runtime_config.ts";
 import { assertEquals, assertExists } from "std/assert/mod.ts";
 import { TokenUpdate } from "../scripts/revoke.ts";
@@ -21,7 +21,7 @@ Runtime.test(config, "tokens", "e2e", async (ctx: TestContext) => {
 	assertExists(getByTokenRes.tokens[token.token]);
 
 	const validateRes = await ctx.call("tokens", "validate", {
-		token: token.token
+		token: token.token,
 	}) as any;
 	assertEquals(token.id, validateRes.token.id);
 

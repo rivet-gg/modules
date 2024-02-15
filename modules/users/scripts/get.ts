@@ -15,6 +15,8 @@ export async function handler(
 ): Promise<Response> {
 	await ctx.call("rate_limit", "throttle", {});
 
+	console.log("trace", ctx.trace.entries[0]?.type);
+
 	const query = await ctx.postgres.run((conn) =>
 		conn.queryObject<User>`SELECT * FROM users WHERE id = ANY(${req.userIds})`
 	);

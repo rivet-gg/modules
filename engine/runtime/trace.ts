@@ -18,13 +18,19 @@ export interface TraceEntry {
 /**
  * Infomration about the type of the trace entry.
  */
-export type TraceEntryType = { httpRequest: TraceEntryTypeHttpRequest } | {
-	script: TraceEntryTypeScript;
-} | { test: TraceEntryTypeTest } | { internalTest: TraceEntryTypeInternalTest };
+export type TraceEntryType =
+	| { httpRequest: TraceEntryTypeHttpRequest }
+	| {
+		script: TraceEntryTypeScript;
+	}
+	| { test: TraceEntryTypeTest }
+	| { internalTest: TraceEntryTypeInternalTest };
 
 export interface TraceEntryTypeHttpRequest {
 	method: string;
 	path: string;
+	remoteAddress: string;
+	headers: { [key: string]: string };
 }
 
 export interface TraceEntryTypeScript {
@@ -38,7 +44,6 @@ export interface TraceEntryTypeTest {
 }
 
 export interface TraceEntryTypeInternalTest {
-	
 }
 
 export function newTrace(entryType: TraceEntryType): Trace {

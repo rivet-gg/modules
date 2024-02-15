@@ -18,7 +18,9 @@ export async function generateEntrypoint(registry: Registry) {
 
 			modConfig += `${
 				JSON.stringify(script.name)
-			}: { handler: ${handlerIdent}, public: ${JSON.stringify(script.config.public ?? false)}, requestSchema: ${
+			}: { handler: ${handlerIdent}, public: ${
+				JSON.stringify(script.config.public ?? false)
+			}, requestSchema: ${
 				JSON.stringify(script.requestSchema)
 			}, responseSchema: ${JSON.stringify(script.responseSchema)} },`;
 		}

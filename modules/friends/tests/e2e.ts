@@ -1,4 +1,4 @@
-import { TestContext, Runtime } from "@ogs/runtime";
+import { Runtime, TestContext } from "@ogs/runtime";
 import config from "../../../dist/runtime_config.ts";
 import { assertEquals } from "std/assert/mod.ts";
 import { faker } from "@faker-js/faker";
