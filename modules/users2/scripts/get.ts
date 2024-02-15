@@ -32,10 +32,7 @@
 //     return { users };
 // });
 
-
-
-
-import module from '../module.ts';
+// ScriptContext = Context<MyModule>
 
 interface Request {
     userId: string;
@@ -45,7 +42,11 @@ interface Response {
 
 }
 
-export const get = module.script<Request>(async (ctx, req) => {
-    const users = await ctx.db.query.users.findMany();
-    return { users };
-});
+// export const get = script<Request>(async (ctx, req) => {
+//     const users = await ctx.db.query.users.findMany();
+//     return { users };
+// });
+
+export function run(ctx: ScriptContext, req: Request): Promise<Response> {
+    return ctx.db.sql`SELECT * FROM users WHERE id = ${req.userId}`;
+}

@@ -30,10 +30,6 @@
 
 ## 3 parts
 
-- module.ts
-- scripts (module.script)
-- schema
-
 - later
     - migrate ajv -> zod
 
