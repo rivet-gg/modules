@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/friends/remove_friend.ts";
 
 export interface Request {
 	userToken: string;

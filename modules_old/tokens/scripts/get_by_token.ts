@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/tokens/get_by_token.ts";
 import { Token, TokenWithSecret } from "../schema/common.ts";
 
 export interface Request {

@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/rate_limit/throttle.ts";
 
 export interface Request {
 	/**

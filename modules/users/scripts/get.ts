@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/users/get.ts";
 import { User } from "../schema/common.ts";
 
 export interface Request {
@@ -13,7 +13,7 @@ export async function handler(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", {});
+	// await ctx.call("rate_limit", "throttle", {});
 
 	console.log("trace", ctx.trace.entries[0]?.type);
 

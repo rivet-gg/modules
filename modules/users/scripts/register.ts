@@ -1,7 +1,7 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/users/get.ts";
 import { User } from "../schema/common.ts";
-import { TokenWithSecret } from "../../tokens/schema/common.ts";
-import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
+// import { TokenWithSecret } from "../../tokens/schema/common.ts";
+// import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
 
 export interface Request {
 	username: string;
@@ -10,7 +10,7 @@ export interface Request {
 
 export interface Response {
 	user: User;
-	token: TokenWithSecret;
+	// token: TokenWithSecret;
 }
 
 export type IdentityType = { guest: IdentityTypeGuest };
@@ -22,7 +22,7 @@ export async function handler(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
+	// await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
 
 	// Create user
 	const user = await ctx.postgres.transaction<User>("register", async (tx) => {
@@ -46,12 +46,15 @@ export async function handler(
 		return user;
 	});
 
-	// Create token
-	const { token } = await ctx.call("tokens", "create", {
-		type: "user",
-		meta: { userId: user.id },
-		expire_at: Temporal.Now.plainDateISO().add({ days: 30 }).toString(),
-	}) as TokenCreateResponse;
+	// // Create token
+	// const { token } = await ctx.call("tokens", "create", {
+	// 	type: "user",
+	// 	meta: { userId: user.id },
+	// 	expire_at: Temporal.Now.plainDateISO().add({ days: 30 }).toString(),
+	// }) as TokenCreateResponse;
 
-	return { user, token };
+	return {
+		user,
+		// token
+	};
 }

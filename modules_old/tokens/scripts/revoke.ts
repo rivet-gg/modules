@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/tokens/revoke.ts";
 
 export interface Request {
 	tokenIds: string[];

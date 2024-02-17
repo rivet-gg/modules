@@ -154,6 +154,17 @@ export class Script {
 		public name: string,
 		public config: ScriptConfig,
 	) {}
+
+	/** Path to helper source code that will be imported inside the script itself. */
+	distHelperPath(registry: Registry, module: Module): string {
+		return path.join(
+			registry.path,
+			"dist",
+			"helpers",
+			module.name,
+			this.name + ".ts",
+		);
+	}
 }
 
 function generateModuleConfigJsonSchema(): tjs.Definition {
