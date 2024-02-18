@@ -34,7 +34,6 @@
 		"@ogs/helpers/": "./dist/helpers/",
 		"@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
 		"std/": "https://deno.land/std@0.208.0/",
-		"postgres/": "https://deno.land/x/postgres@v0.17.2/",
 		"glob": "npm:glob@^10.3.10",
 		"typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
 		"ajv": "npm:ajv@^8.12.0",

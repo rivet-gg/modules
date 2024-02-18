@@ -21,6 +21,7 @@ Deno.test("error", async () => {
 		runtime,
 		newTrace({ internalTest: {} }),
 		"test_module",
+		{}
 	);
 
 	// Create error

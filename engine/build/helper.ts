@@ -18,9 +18,16 @@ async function compileScriptHelper(
 
 	// Generate source
 	const source = `
-import { ScriptContext as ScriptContextInner } from "@ogs/runtime";
+import { ScriptContext as ScriptContextInner, DrizzleSchema } from "@ogs/runtime";
+import { users, identities, identityGuests } from "../../../modules/${module.name}/db/schema.ts"
 
-export type ScriptContext = ScriptContextInner;
+interface ModuleDrizzleSchema extends DrizzleSchema {
+	users: typeof users;
+	identities: typeof identities;
+	identityGuests: typeof identityGuests;
+}
+
+export type ScriptContext = ScriptContextInner<ModuleDrizzleSchema>;
 `;
 
 	// Write source

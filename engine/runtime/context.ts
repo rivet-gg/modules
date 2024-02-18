@@ -1,8 +1,9 @@
 import { Runtime } from "./runtime.ts";
 import { Trace } from "./trace.ts";
-import { PostgresWrapped } from "./postgres.ts";
+import { PostgresWrapped, DrizzleSchema } from "./postgres.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
+import * as schema from "../../modules/users/db/schema.ts";
 
 export class Context {
 	public constructor(
@@ -26,6 +27,7 @@ export class Context {
 				script: { module: moduleName, script: scriptName },
 			}),
 			moduleName,
+			schema,
 			scriptName,
 		);
 
@@ -99,34 +101,36 @@ export class Context {
 /**
  * Context for a module.
  */
-export class ModuleContext extends Context {
-	public readonly postgres: PostgresWrapped;
+export class ModuleContext<TDrizzleSchema extends DrizzleSchema> extends Context {
+	public readonly db: PostgresWrapped<TDrizzleSchema>;
 
 	public constructor(
 		runtime: Runtime,
 		trace: Trace,
 		public readonly moduleName: string,
+		public readonly schema: TDrizzleSchema,
 	) {
 		super(runtime, trace);
-		this.postgres = new PostgresWrapped(runtime.postgres, moduleName);
+		this.db = runtime.postgres.getOrCreatePool<TDrizzleSchema>(moduleName, schema).drizzle;
 	}
 }
 
 /**
  * Context for a script.
  */
-export class ScriptContext extends ModuleContext {
+export class ScriptContext<TDrizzleSchema extends DrizzleSchema> extends ModuleContext<TDrizzleSchema> {
 	public constructor(
 		runtime: Runtime,
 		trace: Trace,
 		moduleName: string,
+		schema: TDrizzleSchema,
 		public readonly scriptName: string,
 	) {
-		super(runtime, trace, moduleName);
+		super(runtime, trace, moduleName, schema);
 	}
 }
 
 /**
  * Context for a test.
  */
-export class TestContext extends ModuleContext {}
+export class TestContext<TDrizzleSchema extends DrizzleSchema> extends ModuleContext<TDrizzleSchema> {}

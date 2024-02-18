@@ -3,7 +3,7 @@ import config from "../../../dist/runtime_config.ts";
 import { faker } from "@faker-js/faker";
 import { assertExists } from "std/assert/assert_exists.ts";
 
-Runtime.test(config, "users", "register guest", async (ctx: TestContext) => {
+Runtime.test(config, "users", "register guest", async (ctx: TestContext<any>) => {
 	const { user, token } = await ctx.call("users", "register", {
 		username: faker.internet.userName(),
 		identity: { guest: {} },

@@ -8,6 +8,13 @@
       "when": 1708229152749,
       "tag": "0000_lyrical_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1708230962830,
+      "tag": "0001_square_medusa",
+      "breakpoints": true
     }
   ]
 }

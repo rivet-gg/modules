@@ -1,11 +1,12 @@
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
-import { Postgres } from "./postgres.ts";
+import { DrizzleSchema, Postgres } from "./postgres.ts";
 import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
+import * as schema from "../../modules/users/db/schema.ts"
 
 export interface Config {
 	modules: Record<string, Module>;
@@ -14,11 +15,14 @@ export interface Config {
 export interface Module {
 	scripts: Record<string, Script>;
 	errors: Record<string, ErrorConfig>;
+	db?: {
+		schema: DrizzleSchema;
+	}
 }
 
 export interface Script {
 	// deno-lint-ignore no-explicit-any
-	handler: ScriptHandler<any, any>;
+	handler: ScriptHandler<any, any, any>;
 	// deno-lint-ignore no-explicit-any
 	requestSchema: any;
 	// deno-lint-ignore no-explicit-any
@@ -26,8 +30,8 @@ export interface Script {
 	public: boolean;
 }
 
-export type ScriptHandler<Req, Res> = (
-	ctx: ScriptContext,
+export type ScriptHandler<Req, Res, TDrizzleSchema extends DrizzleSchema> = (
+	ctx: ScriptContext<TDrizzleSchema>,
 	req: Req,
 ) => Promise<Res>;
 
@@ -71,7 +75,7 @@ export class Runtime {
 		config: Config,
 		moduleName: string,
 		testName: string,
-		fn: (ctx: TestContext) => Promise<void>,
+		fn: (ctx: TestContext<any>) => Promise<void>,
 	) {
 		Deno.test(testName, async () => {
 			const runtime = new Runtime(config);
@@ -83,6 +87,7 @@ export class Runtime {
 					test: { module: moduleName, name: testName },
 				}),
 				moduleName,
+				schema
 			);
 
 			// Run test

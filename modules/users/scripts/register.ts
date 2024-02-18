@@ -24,24 +24,18 @@ export async function handler(
 ): Promise<Response> {
 	// await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
 
-	// Create user
-	const user = await ctx.postgres.transaction<User>("register", async (tx) => {
-		const userQuery = await tx.queryObject<
-			User
-		>`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`;
-		const user = userQuery.rows[0];
+	const user = await ctx.db.transaction(async (tx) => {
+		let rows = await tx.insert(ctx.schema.users).values({ username: req.username }).returning();
+		let user = rows[0];
 
-		// const identity = await tx.queryObject<
-		// 	{ id: string }
-		// >`INSERT INTO identities (user_id) VALUES (${user.id}) RETURNING id`;
-		// const identityId = identity.rows[0].id;
+		let identityRows = await tx.insert(ctx.schema.identities).values({ userId: user.id }).returning({ id: ctx.schema.identities.id });
+		let identity = identityRows[0];
 
-		// if (req.identity.guest) {
-		// 	await tx
-		// 		.queryObject`INSERT INTO identity_guests (identity_id) VALUES (${identityId})`;
-		// } else {
-		// 	throw new Error("Invalid identity type");
-		// }
+		if (req.identity.guest) {
+			await tx.insert(ctx.schema.identityGuests).values({ identityId: identity.id });
+		} else {
+			throw new Error("Invalid identity type");
+		}
 
 		return user;
 	});
