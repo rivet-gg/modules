@@ -7,8 +7,8 @@ export interface ModuleConfig extends Record<string, unknown> {
 	 */
 	authors?: string[];
 
-	scripts: { [name: string]: ScriptConfig; };
-	errors: { [name: string]: ErrorConfig; };
+	scripts: { [name: string]: ScriptConfig };
+	errors: { [name: string]: ErrorConfig };
 }
 
 export interface ScriptConfig {

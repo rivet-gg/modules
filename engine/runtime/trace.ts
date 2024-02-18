@@ -1,7 +1,9 @@
+import { JsonObject } from "../types/json.ts";
+
 /**
  * Provides context about where this script call came from.
  */
-export interface Trace {
+export interface Trace extends JsonObject {
 	rayId: string;
 	entries: TraceEntry[];
 }
@@ -9,7 +11,7 @@ export interface Trace {
 /**
  * Single entry in the trace.
  */
-export interface TraceEntry {
+export interface TraceEntry extends JsonObject {
 	requestId: string;
 	startedAt: string;
 	type: TraceEntryType;
@@ -26,24 +28,24 @@ export type TraceEntryType =
 	| { test: TraceEntryTypeTest }
 	| { internalTest: TraceEntryTypeInternalTest };
 
-export interface TraceEntryTypeHttpRequest {
+export interface TraceEntryTypeHttpRequest extends JsonObject {
 	method: string;
 	path: string;
 	remoteAddress: string;
 	headers: { [key: string]: string };
 }
 
-export interface TraceEntryTypeScript {
+export interface TraceEntryTypeScript extends JsonObject {
 	module: string;
 	script: string;
 }
 
-export interface TraceEntryTypeTest {
+export interface TraceEntryTypeTest extends JsonObject {
 	module: string;
 	name: string;
 }
 
-export interface TraceEntryTypeInternalTest {
+export interface TraceEntryTypeInternalTest extends JsonObject {
 }
 
 export function newTrace(entryType: TraceEntryType): Trace {

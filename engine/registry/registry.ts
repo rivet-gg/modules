@@ -7,6 +7,7 @@ import tjs from "typescript-json-schema";
 // TODO: Clean this up
 import { fileURLToPath } from "node:url";
 import { ModuleConfig, ScriptConfig } from "./module_config.ts";
+import { exists } from "std/fs/mod.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -94,7 +95,7 @@ async function loadModule(modulePath: string, name: string): Promise<Module> {
 			scriptsPath,
 			scriptName + ".ts",
 		);
-		if (!await Deno.stat(scriptPath)) {
+		if (!await exists(scriptPath)) {
 			throw new Error(
 				`Script not found: ${scriptPath}\nCheck the scripts in your module.yaml are configured correctly.`,
 			);
@@ -125,7 +126,7 @@ async function loadModule(modulePath: string, name: string): Promise<Module> {
 
 	// Load db config
 	let db: ModuleDatabase | undefined = undefined;
-	if (await Deno.stat(path.join(modulePath, "db"))) {
+	if (await exists(path.join(modulePath, "db"), { isDirectory: true })) {
 		db = {
 			name: `module_${name.replace("-", "_")}`,
 		};
@@ -141,14 +142,16 @@ async function loadModule(modulePath: string, name: string): Promise<Module> {
 	};
 }
 
-export function scriptDistHelperPath(registry: Registry, module: Module, script: Script): string {
+export function moduleDistHelperPath(
+	registry: Registry,
+	module: Module,
+): string {
 	return path.join(
 		registry.path,
 		"dist",
 		"helpers",
 		module.name,
-		"scripts",
-		script.name + ".ts",
+		"mod.ts",
 	);
 }
 
@@ -158,7 +161,22 @@ export function testDistHelperPath(registry: Registry, module: Module): string {
 		"dist",
 		"helpers",
 		module.name,
-		"test.ts"
+		"test.ts",
+	);
+}
+
+export function scriptDistHelperPath(
+	registry: Registry,
+	module: Module,
+	script: Script,
+): string {
+	return path.join(
+		registry.path,
+		"dist",
+		"helpers",
+		module.name,
+		"scripts",
+		script.name + ".ts",
 	);
 }
 

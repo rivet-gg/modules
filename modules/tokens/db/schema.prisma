@@ -1,0 +1,15 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Token {
+  id        String    @id @default(uuid()) @db.Uuid
+  token     String    @unique
+  type      String
+  meta      Json
+  trace     Json
+  createdAt DateTime  @default(now())
+  expireAt  DateTime?
+  revokedAt DateTime?
+}

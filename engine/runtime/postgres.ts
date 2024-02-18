@@ -5,7 +5,7 @@ type PostgresRunScope<T> = (conn: postgres.QueryClient) => Promise<T>;
 type PostgresTransactionScope<T> = (conn: postgres.Transaction) => Promise<T>;
 
 export interface PrismaClientDummy {
-  $disconnect(): Promise<void>;
+	$disconnect(): Promise<void>;
 }
 
 export interface Pool {
@@ -48,7 +48,7 @@ export class Postgres {
 			const output = module.db.createPrisma(url.toString());
 			const pool = {
 				prisma: output.prisma,
-				pgPool: output.pgPool
+				pgPool: output.pgPool,
 			} as Pool;
 			this.pools.set(module.db.name, pool);
 			return pool;

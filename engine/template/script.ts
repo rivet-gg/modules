@@ -84,11 +84,11 @@ await Deno.writeTextFile(scriptPath, scriptTs);
 
 if (createTest) {
 	// Write default config
-	const testTs = `import { TestContext, Runtime } from "@ogs/runtime";
-import config from "../../../dist/runtime_config.ts";
+	const testTs =
+		`import { TestContext, Runtime } from "@ogs/helpers/${moduleName}/test.ts";
 import { assertExists } from "std/assert/assert_exists.ts";
 
-Runtime.test(config, "users", "register guest", async (ctx: TestContext) => {
+test("e2e", async (ctx: TestContext) => {
 	const res = await ctx.call("${moduleName}", "${scriptName}", {
 		// TODO:
 	}) as any;

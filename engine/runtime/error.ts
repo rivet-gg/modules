@@ -3,6 +3,10 @@ import { Context } from "./context.ts";
 import { ErrorConfig, Runtime } from "./runtime.ts";
 import { Trace } from "./trace.ts";
 
+export interface RuntimeErrorOptions extends ErrorOptions {
+	meta?: any;
+}
+
 export class RuntimeError extends Error {
 	/**
 	 * The module this error originated from.
@@ -25,7 +29,10 @@ export class RuntimeError extends Error {
 	 */
 	public errorConfig?: ErrorConfig;
 
-	public constructor(public readonly code: string, options?: ErrorOptions) {
+	public constructor(
+		public readonly code: string,
+		options?: RuntimeErrorOptions,
+	) {
 		super(code, options);
 	}
 
