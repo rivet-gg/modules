@@ -1,12 +1,12 @@
-import { Registry } from "../registry/mod.ts";
 import * as path from "std/path/mod.ts";
+import { loadRegistry } from "../registry/registry.ts";
 
 const moduleName = Deno.args[0];
 const migrationName = Deno.args[1];
 if (!moduleName) throw new Error("Module name required");
 if (!migrationName) throw new Error("Migration name required");
 
-const registry = await Registry.load();
+const registry = await loadRegistry();
 
 const mod = registry.modules.get(moduleName);
 if (!mod) {

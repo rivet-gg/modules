@@ -6,6 +6,7 @@ import tjs from "typescript-json-schema";
 
 // TODO: Clean this up
 import { fileURLToPath } from "node:url";
+import { ModuleConfig, ScriptConfig } from "./module_config.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,158 +14,141 @@ const moduleConfigAjv = new Ajv.default({
 	schemas: [generateModuleConfigJsonSchema()],
 });
 
-export class Registry {
-	public static async load(): Promise<Registry> {
-		const rootPath = path.join(__dirname, "..", "..");
+export interface Registry {
+	path: string;
+	modules: Map<string, Module>;
+}
 
-		console.log("Loading registry", rootPath);
+export interface Module {
+	path: string;
+	name: string;
+	configRaw: string;
+	config: ModuleConfig;
+	scripts: Map<string, Script>;
+	db?: ModuleDatabase;
+}
 
-		const modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
-		const modules = new Map();
-		for (const mod of modPaths) {
-			const modName = path.basename(path.dirname(mod));
-			modules.set(
-				modName,
-				await Module.load(path.join(rootPath, path.dirname(mod)), modName),
-			);
-		}
-		return new Registry(rootPath, modules);
+export interface ModuleDatabase {
+	name: string;
+}
+
+export interface Script {
+	path: string;
+	name: string;
+	config: ScriptConfig;
+
+	requestSchema?: tjs.Definition;
+	responseSchema?: tjs.Definition;
+}
+
+export async function loadRegistry(): Promise<Registry> {
+	const rootPath = path.join(__dirname, "..", "..");
+
+	console.log("Loading registry", rootPath);
+
+	const modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
+	const modules = new Map();
+	for (const mod of modPaths) {
+		const modName = path.basename(path.dirname(mod));
+		modules.set(
+			modName,
+			await loadModule(path.join(rootPath, path.dirname(mod)), modName),
+		);
+	}
+	return { path: rootPath, modules };
+}
+
+async function loadModule(modulePath: string, name: string): Promise<Module> {
+	console.log("Loading module", modulePath);
+
+	// Read config
+	const configRaw = await Deno.readTextFile(
+		path.join(modulePath, "module.yaml"),
+	);
+	const config = parse(configRaw) as ModuleConfig;
+
+	// Validate config
+	const moduleConfigSchema = moduleConfigAjv.getSchema(
+		"#/definitions/ModuleConfig",
+	);
+	if (!moduleConfigSchema) {
+		throw new Error("Failed to get module config schema");
+	}
+	if (!moduleConfigSchema(config)) {
+		throw new Error(
+			`Invalid module config: ${JSON.stringify(moduleConfigSchema.errors)}`,
+		);
 	}
 
-	private constructor(
-		public path: string,
-		public modules: Map<string, Module>,
-	) {}
-}
+	// Find names of the expected scripts to find. Used to print error for extra scripts.
+	const scriptsPath = path.join(modulePath, "scripts");
+	const expectedScripts = new Set(
+		await glob("*.ts", { cwd: path.join(modulePath, "scripts") }),
+	);
 
-export interface ModuleConfig extends Record<string, unknown> {
-	status?: "preview" | "beta" | "stable" | "deprecated";
-	description?: string;
-
-	/**
-	 * The GitHub handle of the authors of the module.
-	 */
-	authors?: string[];
-
-	scripts: { [name: string]: ScriptConfig };
-	errors: { [name: string]: ErrorConfig };
-}
-
-export interface ScriptConfig {
-	/**
-	 * If the script can be called from the public HTTP interface.
-	 *
-	 * If enabled, ensure that authentication & rate limits are configued for
-	 * this endpoints. See the `user` and `rate_limit` modules.
-	 *
-	 * @default false
-	 */
-	public?: boolean;
-}
-
-export interface ErrorConfig {
-	description?: string;
-}
-
-export class Module {
-	public static async load(modulePath: string, name: string): Promise<Module> {
-		console.log("Loading module", modulePath);
-
-		// Read config
-		const configRaw = await Deno.readTextFile(
-			path.join(modulePath, "module.yaml"),
+	// Read scripts
+	const scripts = new Map();
+	for (const scriptName in config.scripts) {
+		// Load script
+		const scriptPath = path.join(
+			scriptsPath,
+			scriptName + ".ts",
 		);
-		const config = parse(configRaw) as ModuleConfig;
-
-		// Validate config
-		const moduleConfigSchema = moduleConfigAjv.getSchema(
-			"#/definitions/ModuleConfig",
-		);
-		if (!moduleConfigSchema) {
-			throw new Error("Failed to get module config schema");
-		}
-		if (!moduleConfigSchema(config)) {
+		if (!await Deno.stat(scriptPath)) {
 			throw new Error(
-				`Invalid module config: ${JSON.stringify(moduleConfigSchema.errors)}`,
+				`Script not found: ${scriptPath}\nCheck the scripts in your module.yaml are configured correctly.`,
 			);
 		}
 
-		// Find names of the expected scripts to find. Used to print error for extra scripts.
-		const scriptsPath = path.join(modulePath, "scripts");
-		const expectedScripts = new Set(
-			await glob("*.ts", { cwd: path.join(modulePath, "scripts") }),
+		const script: Script = {
+			path: scriptPath,
+			name: scriptName,
+			config: config.scripts[scriptName],
+		};
+		scripts.set(scriptName, script);
+
+		// Remove script
+		expectedScripts.delete(scriptName + ".ts");
+	}
+
+	// Throw error extra scripts
+	if (expectedScripts.size > 0) {
+		const scriptList = Array.from(expectedScripts).map((x) =>
+			`- ${path.join(scriptsPath, x)}\n`
 		);
-
-		// Read scripts
-		const scripts = new Map();
-		for (const scriptName in config.scripts) {
-			// Load script
-			const scriptPath = path.join(
-				scriptsPath,
-				scriptName + ".ts",
-			);
-			if (!await Deno.stat(scriptPath)) {
-				throw new Error(
-					`Script not found: ${scriptPath}\nCheck the scripts in your module.yaml are configured correctly.`,
-				);
-			}
-			scripts.set(
-				scriptName,
-				new Script(scriptPath, scriptName, config.scripts[scriptName]),
-			);
-
-			// Remove script
-			expectedScripts.delete(scriptName + ".ts");
-		}
-
-		// Throw error extra scripts
-		if (expectedScripts.size > 0) {
-			const scriptList = Array.from(expectedScripts).map((x) =>
-				`- ${path.join(scriptsPath, x)}\n`
-			);
-			throw new Error(
-				`Found extra scripts not registered in module.yaml:\n\n${
-					scriptList.join("")
-				}\nAdd these scripts to the module.yaml file.`,
-			);
-		}
-
-		return new Module(modulePath, name, configRaw, config, scripts);
+		throw new Error(
+			`Found extra scripts not registered in module.yaml:\n\n${
+				scriptList.join("")
+			}\nAdd these scripts to the module.yaml file.`,
+		);
 	}
 
-	private constructor(
-		public path: string,
-		public name: string,
-		public configRaw: string,
-		public config: ModuleConfig,
-		public scripts: Map<string, Script>,
-	) {}
-
-	public get dbName(): string {
-		return `module_${this.name}`;
+	// Load db config
+	let db: ModuleDatabase | undefined = undefined;
+	if (await Deno.stat(path.join(modulePath, "db"))) {
+		db = {
+			name: `module_${name.replace("-", "_")}`,
+		};
 	}
+
+	return {
+		path: modulePath,
+		name,
+		configRaw,
+		config,
+		scripts,
+		db,
+	};
 }
 
-export class Script {
-	public requestSchema?: tjs.Definition;
-	public responseSchema?: tjs.Definition;
-
-	public constructor(
-		public path: string,
-		public name: string,
-		public config: ScriptConfig,
-	) {}
-
-	/** Path to helper source code that will be imported inside the script itself. */
-	distHelperPath(registry: Registry, module: Module): string {
-		return path.join(
-			registry.path,
-			"dist",
-			"helpers",
-			module.name,
-			this.name + ".ts",
-		);
-	}
+export function scriptDistHelperPath(registry: Registry, module: Module, script: Script): string {
+	return path.join(
+		registry.path,
+		"dist",
+		"helpers",
+		module.name,
+		script.name + ".ts",
+	);
 }
 
 function generateModuleConfigJsonSchema(): tjs.Definition {

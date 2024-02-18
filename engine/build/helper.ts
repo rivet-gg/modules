@@ -1,4 +1,4 @@
-import { Module, Registry, Script } from "../registry/mod.ts";
+import { Module, Registry, Script, scriptDistHelperPath } from "../registry/mod.ts";
 import * as path from "std/path/mod.ts";
 
 export async function compileScriptHelpers(registry: Registry) {
@@ -24,7 +24,7 @@ export type ScriptContext = ScriptContextInner;
 `;
 
 	// Write source
-	const helperPath = script.distHelperPath(registry, module);
+	const helperPath = scriptDistHelperPath(registry, module, script);
 	await Deno.mkdir(path.dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
