@@ -1,12 +1,15 @@
 // TODO: Pin this version
 import * as path from "std/path/mod.ts";
-import * as postgres from "postgres/mod.ts";
-import { Module, Registry } from "../registry/mod.ts";
+import { Module, Registry, loadRegistry } from "../registry/mod.ts";
 import { assertValidString } from "./validate.ts";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+// import { Client as postgres.Client } from "pg";
+import postgres from "pg";
 
 async function main() {
 	// Load registry
-	const registry = await Registry.load();
+	const registry = await loadRegistry();
 
 	// Setup database
 	const databaseUrl = Deno.env.get("DATABASE_URL") ??
@@ -19,20 +22,21 @@ async function main() {
 	}
 }
 
+/**
+ * Create databases for a module in the directory.
+ */
 async function createDatabases(registry: Registry, databaseUrl: string) {
-	const client = new postgres.Client(databaseUrl);
+	const client = new postgres.Client({ connectionString: databaseUrl });
 	await client.connect();
 
 	try {
 		for (const mod of registry.modules.values()) {
+			if (!mod.db) continue;
+
 			// Create database
-			const existsQuery = await client.queryObject<
-				{ exists: boolean }
-			>`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.dbName})`;
+			const existsQuery = await client.query(`SELECT EXISTS (SELECT FROM pg_database WHERE datname = $1)`, [mod.db.name]);
 			if (!existsQuery.rows[0].exists) {
-				await client.queryArray(
-					`CREATE DATABASE ${assertValidString(mod.dbName)}`,
-				);
+				await client.query(`CREATE DATABASE ${assertValidString(mod.db.name)}`);
 			}
 		}
 	} catch (cause) {
@@ -43,41 +47,21 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
 }
 
 async function runModuleMigrations(mod: Module, databaseUrl: string) {
+	if (!mod.db) return;
+
 	// Connect to database for this module
 	const databaseUrlParsed = new URL(databaseUrl);
-	databaseUrlParsed.pathname = `/${mod.dbName}`;
+	databaseUrlParsed.pathname = `/${mod.db.name}`;
 
 	const client = new postgres.Client(databaseUrlParsed.toString());
 	await client.connect();
 	try {
-		// Create migrations table
-		await client.queryArray`
-            CREATE TABLE IF NOT EXISTS _migrations (
-                idx INTEGER PRIMARY KEY,
-                name TEXT UNIQUE NOT NULL,
-                executed_at TIMESTAMP NOT NULL DEFAULT timezone('UTC', now())
-            );
-        `;
-
-		// Read migration names
-		const migrationsPath = path.join(mod.path, "db", "migrations");
-		const migrationNames = [];
-		for await (const migration of Deno.readDir(migrationsPath)) {
-			if (!migration.name.endsWith(".sql")) continue;
-
-			migrationNames.push(migration.name);
-		}
-		migrationNames.sort();
-
-		// Run migrations
-		for (let i = 0; i < migrationNames.length; i++) {
-			const migrationName = migrationNames[i];
-			const absolutePath = path.join(migrationsPath, migrationName);
-			const source = await Deno.readTextFile(absolutePath);
-			await runMigration(client, mod, i, migrationName, source);
-		}
+		const db = drizzle(client);
+		await migrate(db, {
+			migrationsFolder: path.join(mod.path, "db", "migrations"),
+		})
 	} catch (cause) {
-		throw new Error(`Failed to run migrations for ${mod.name}`, { cause });
+		throw new Error(`Failed to run migrations for ${mod.db.name}`, { cause });
 	} finally {
 		await client.end();
 	}

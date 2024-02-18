@@ -1,10 +1,10 @@
-import { Registry } from "../registry/mod.ts";
+import { loadRegistry } from "../registry/mod.ts";
 import * as path from "std/path/mod.ts";
 
 const moduleName = Deno.args[0];
 if (!moduleName) throw new Error("Module name required");
 
-const registry = await Registry.load();
+const registry = await loadRegistry();
 
 if (registry.modules.has(moduleName)) {
 	throw new Error("Module already exists");

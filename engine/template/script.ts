@@ -1,13 +1,13 @@
-import { Registry } from "../registry/mod.ts";
 import * as path from "std/path/mod.ts";
 import { stringify } from "std/yaml/mod.ts";
+import { loadRegistry } from "../registry/mod.ts";
 
 const moduleName = Deno.args[0];
 const scriptName = Deno.args[1];
 if (!moduleName) throw new Error("Module name required");
 if (!scriptName) throw new Error("Script name required");
 
-const registry = await Registry.load();
+const registry = await loadRegistry();
 
 const mod = registry.modules.get(moduleName);
 if (!mod) {

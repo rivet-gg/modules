@@ -1,5 +1,5 @@
 import { ScriptContext } from "@ogs/helpers/users/get.ts";
-import { User } from "../schema/common.ts";
+import { User } from "../types/common.ts";
 // import { TokenWithSecret } from "../../tokens/schema/common.ts";
 // import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
 
@@ -31,17 +31,17 @@ export async function handler(
 		>`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`;
 		const user = userQuery.rows[0];
 
-		const identity = await tx.queryObject<
-			{ id: string }
-		>`INSERT INTO identities (user_id) VALUES (${user.id}) RETURNING id`;
-		const identityId = identity.rows[0].id;
+		// const identity = await tx.queryObject<
+		// 	{ id: string }
+		// >`INSERT INTO identities (user_id) VALUES (${user.id}) RETURNING id`;
+		// const identityId = identity.rows[0].id;
 
-		if (req.identity.guest) {
-			await tx
-				.queryObject`INSERT INTO identity_guests (identity_id) VALUES (${identityId})`;
-		} else {
-			throw new Error("Invalid identity type");
-		}
+		// if (req.identity.guest) {
+		// 	await tx
+		// 		.queryObject`INSERT INTO identity_guests (identity_id) VALUES (${identityId})`;
+		// } else {
+		// 	throw new Error("Invalid identity type");
+		// }
 
 		return user;
 	});

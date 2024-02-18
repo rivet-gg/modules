@@ -1,5 +1,5 @@
 import { ScriptContext } from "@ogs/helpers/friends/list_friends.ts";
-import { Friend } from "../schema/common.ts";
+import { Friend } from "../types/common.ts";
 
 export interface Request {
 	userToken: string;

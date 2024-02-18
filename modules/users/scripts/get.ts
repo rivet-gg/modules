@@ -1,5 +1,5 @@
 import { ScriptContext } from "@ogs/helpers/users/get.ts";
-import { User } from "../schema/common.ts";
+import { User } from "../types/common.ts";
 
 export interface Request {
 	userIds: string[];

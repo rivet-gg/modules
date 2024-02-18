@@ -1,5 +1,5 @@
 import { RuntimeError, ScriptContext } from "@ogs/helpers/tokens/validate.ts";
-import { Token } from "../schema/common.ts";
+import { Token } from "../types/common.ts";
 
 export interface Request {
 	token: string;
