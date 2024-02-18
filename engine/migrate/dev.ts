@@ -2,6 +2,7 @@
 //
 // Wrapper around `prisma migrate dev`
 
+import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { loadRegistry } from "../registry/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 import { copy, exists } from "std/fs/mod.ts";
@@ -19,25 +20,42 @@ forEachPrismaSchema(registry, async ({ databaseUrl, module, tempDir, generatedCl
         stdout: "inherit",
         stderr: "inherit",
         env: {
-            DATABASE_URL: databaseUrl
+            DATABASE_URL: databaseUrl,
+            PRISMA_CLIENT_FORCE_WASM: "true",
         },
     }).output();
     if (!status.success) {
         throw new Error("Failed to generate migrations");
     }
 
-    // Replace all imports of ".js" with ".d.ts" in generated Prisma client to fix compatability with Deno
-    // console.log('Replacing imports');
-    // const clientFiles = [
-    //     "index.d.ts",
-    //     "runtime/library.d.ts",
-    // ];
-    // for (const file of clientFiles) {
-    //     const filePath = path.join(generatedClientDir, file);
-    //     const content = await Deno.readTextFile(filePath);
-    //     const newContent = content.replace(/import (.*)\.js(["'])/g, "import $1.d.ts$2");
-    //     await Deno.writeTextFile(filePath, newContent);
-    // }
+    // Specify the path to the library & binary types
+    await (async () => {
+        for (const filename of ["index.d.ts", "default.d.ts"]) {
+            const filePath = path.join(generatedClientDir, filename);
+            let content = await Deno.readTextFile(filePath);
+            const replaceLineA = `import * as runtime from './runtime/library.js'`;
+            const replaceLineB = `import * as runtime from './runtime/binary.js'`;
+            content = content
+                .replace(replaceLineA, `// @deno-types="./runtime/library.d.ts"\n${replaceLineA}`)
+                .replace(replaceLineB, `// @deno-types="./runtime/binary.d.ts"\n${replaceLineB}`)
+                .replace(/from '.\/default'/g, `from './default.d.ts'`);
+            await Deno.writeTextFile(filePath, content);
+        }
+    })()
+
+    // Fix suffix on imports
+    await (async () => {
+        const filePath = path.join(generatedClientDir, "runtime", "binary.d.ts");
+        let content = await Deno.readTextFile(filePath);
+        const replaceLineA = `export * from "./library"`;
+        content = content
+            .replace(replaceLineA, `export * from "./library.d.ts"`);
+        await Deno.writeTextFile(filePath, content);
+    })()
+
+    // Compile the ESM library
+    console.log('Compiling ESM library');
+    buildPrismaPackage(generatedClientDir, path.join(generatedClientDir, "esm.js"));
 
     // Copy back migrations dir
     console.log('Copying migrations back');

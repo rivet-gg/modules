@@ -1,5 +1,6 @@
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
+import { PrismaClientDummy } from "./postgres.ts";
 import { Postgres } from "./postgres.ts";
 import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
@@ -14,11 +15,20 @@ export interface Config {
 export interface Module {
 	scripts: Record<string, Script>;
 	errors: Record<string, ErrorConfig>;
+	db?: {
+		name: string;
+		createPrisma: (databaseUrl: string) => CreatePrismaOutput;
+	},
+}
+
+interface CreatePrismaOutput {
+	prisma: PrismaClientDummy;
+	pgPool?: any;
 }
 
 export interface Script {
 	// deno-lint-ignore no-explicit-any
-	handler: ScriptHandler<any, any>;
+	handler: ScriptHandler<any, any, any>;
 	// deno-lint-ignore no-explicit-any
 	requestSchema: any;
 	// deno-lint-ignore no-explicit-any
@@ -26,8 +36,8 @@ export interface Script {
 	public: boolean;
 }
 
-export type ScriptHandler<Req, Res> = (
-	ctx: ScriptContext,
+export type ScriptHandler<Req, Res, TDatabase> = (
+	ctx: ScriptContext<TDatabase>,
 	req: Req,
 ) => Promise<Res>;
 
@@ -44,7 +54,8 @@ export class Runtime {
 		this.postgres = new Postgres();
 
 		this.ajv = new Ajv.default();
-		addFormats.default(this.ajv);
+		// TODO: Why are types incompatible
+		addFormats.default(this.ajv as any);
 	}
 
 	private async shutdown() {
@@ -71,21 +82,23 @@ export class Runtime {
 		config: Config,
 		moduleName: string,
 		testName: string,
-		fn: (ctx: TestContext) => Promise<void>,
+		fn: (ctx: TestContext<any>) => Promise<void>,
 	) {
 		Deno.test(testName, async () => {
 			const runtime = new Runtime(config);
 
 			// Build context
+			const module = config.modules[moduleName];
 			const ctx = new TestContext(
 				runtime,
 				newTrace({
 					test: { module: moduleName, name: testName },
 				}),
 				moduleName,
+				runtime.postgres.getOrCreatePool(module)?.prisma,
 			);
 
-			// Run test
+			// // Run test
 			try {
 				await ctx.runBlock(async () => {
 					await fn(ctx);
