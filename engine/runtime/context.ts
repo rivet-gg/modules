@@ -100,7 +100,6 @@ export class Context {
  * Context for a module.
  */
 export class ModuleContext<TDatabase> extends Context {
-
 	public constructor(
 		runtime: Runtime,
 		trace: Trace,

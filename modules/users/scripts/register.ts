@@ -1,7 +1,7 @@
 import { ScriptContext } from "@ogs/helpers/users/scripts/get.ts";
-import { User } from "../schema/common.ts";
-// import { TokenWithSecret } from "../../tokens/schema/common.ts";
-// import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
+import { User } from "../types/common.ts";
+import { TokenWithSecret } from "../../tokens/types/common.ts";
+import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
 
 export interface Request {
 	username: string;
@@ -10,7 +10,7 @@ export interface Request {
 
 export interface Response {
 	user: User;
-	// token: TokenWithSecret;
+	token: TokenWithSecret;
 }
 
 export type IdentityType = { guest: IdentityTypeGuest };
@@ -29,8 +29,8 @@ export async function handler(
 	if (req.identity.guest) {
 		identitiesCreate = {
 			identityGuest: {
-				create: {}
-			}
+				create: {},
+			},
 		};
 	} else {
 		throw new Error("Unknown identity type");
@@ -41,20 +41,20 @@ export async function handler(
 		data: {
 			username: req.username,
 			identities: {
-				create: identitiesCreate
-			}
-		}
+				create: identitiesCreate,
+			},
+		},
 	});
 
-	// // Create token
-	// const { token } = await ctx.call("tokens", "create", {
-	// 	type: "user",
-	// 	meta: { userId: user.id },
-	// 	expire_at: Temporal.Now.plainDateISO().add({ days: 30 }).toString(),
-	// }) as TokenCreateResponse;
+	// Create token
+	const { token } = await ctx.call("tokens", "create", {
+		type: "user",
+		meta: { userId: user.id },
+		expireAt: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
+	}) as TokenCreateResponse;
 
 	return {
 		user,
-		// token
+		token,
 	};
 }

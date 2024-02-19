@@ -18,7 +18,7 @@ export interface Module {
 	db?: {
 		name: string;
 		createPrisma: (databaseUrl: string) => CreatePrismaOutput;
-	},
+	};
 }
 
 interface CreatePrismaOutput {
@@ -53,7 +53,9 @@ export class Runtime {
 	public constructor(public config: Config) {
 		this.postgres = new Postgres();
 
-		this.ajv = new Ajv.default();
+		this.ajv = new Ajv.default({
+			removeAdditional: true,
+		});
 		// TODO: Why are types incompatible
 		addFormats.default(this.ajv as any);
 	}
@@ -84,34 +86,41 @@ export class Runtime {
 		testName: string,
 		fn: (ctx: TestContext<any>) => Promise<void>,
 	) {
-		Deno.test(testName, async () => {
-			const runtime = new Runtime(config);
+		Deno.test({
+			name: testName,
 
-			// Build context
-			const module = config.modules[moduleName];
-			const ctx = new TestContext(
-				runtime,
-				newTrace({
-					test: { module: moduleName, name: testName },
-				}),
-				moduleName,
-				runtime.postgres.getOrCreatePool(module)?.prisma,
-			);
+			// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/35
+			sanitizeOps: false,
 
-			// // Run test
-			try {
-				await ctx.runBlock(async () => {
-					await fn(ctx);
-				});
-			} catch (cause) {
-				console.error(
-					`Failed to execute test: ${moduleName}.${testName}`,
-					cause,
+			async fn() {
+				const runtime = new Runtime(config);
+
+				// Build context
+				const module = config.modules[moduleName];
+				const ctx = new TestContext(
+					runtime,
+					newTrace({
+						test: { module: moduleName, name: testName },
+					}),
+					moduleName,
+					runtime.postgres.getOrCreatePool(module)?.prisma,
 				);
-				throw cause;
-			} finally {
-				await runtime.shutdown();
-			}
+
+				// Run test
+				try {
+					await ctx.runBlock(async () => {
+						await fn(ctx);
+					});
+				} catch (cause) {
+					console.error(
+						`Failed to execute test: ${moduleName}.${testName}`,
+						cause,
+					);
+					throw cause;
+				} finally {
+					await runtime.shutdown();
+				}
+			},
 		});
 	}
 }

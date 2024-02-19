@@ -16,12 +16,10 @@ export async function generateEntrypoint(registry: Registry) {
 			modImports +=
 				`import { handler as ${handlerIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
 
-			modConfig += `${
-				JSON.stringify(script.name)
-			}: {`;
-			modConfig += `handler: ${handlerIdent},`
-			modConfig += `public: ${ JSON.stringify(script.config.public ?? false) },`
-			modConfig += `requestSchema: ${JSON.stringify(script.requestSchema)},`
+			modConfig += `${JSON.stringify(script.name)}: {`;
+			modConfig += `handler: ${handlerIdent},`;
+			modConfig += `public: ${JSON.stringify(script.config.public ?? false)},`;
+			modConfig += `requestSchema: ${JSON.stringify(script.requestSchema)},`;
 			modConfig += `responseSchema: ${JSON.stringify(script.responseSchema)},`;
 			modConfig += `},`;
 		}
@@ -34,14 +32,18 @@ export async function generateEntrypoint(registry: Registry) {
 		if (mod.db) {
 			// HACK: https://github.com/prisma/prisma/issues/2452#issuecomment-1666513809
 			const prismaImportName = `prisma__${mod.name}`;
-			modImports += `import * as ${prismaImportName} from "./prisma/${mod.name}/esm.js";\n`;
+			modImports +=
+				`import ${prismaImportName} from "./prisma/${mod.name}/esm.js";\n`;
 
 			modConfig += `db: {`;
 			modConfig += `name: ${JSON.stringify(mod.db.name)},`;
 			modConfig += `createPrisma: (url: string) => {
 				const pgPool = new pg.Pool({ connectionString: url })
 				const adapter = new PrismaPg(pgPool);
-				const prisma = new ${prismaImportName}.default.PrismaClient({ adapter });
+				const prisma = new ${prismaImportName}.PrismaClient({
+					adapter,
+					log: ['query', 'info', 'warn', 'error'],
+				});
 				return { prisma, pgPool };
 			},`;
 			modConfig += `},`;

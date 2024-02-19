@@ -13,16 +13,16 @@
 		"migrate:reset": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/reset.ts",
 		"migrate:deploy": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/deploy.ts",
 
-		"entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
-		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
+		"entrypoint": "deno run --check --allow-env --allow-net --allow-read dist/entrypoint.ts",
+		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --allow-read dist/entrypoint.ts",
 
 		"start": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint",
 		"start:watch": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint:watch",
 
 		"test": "deno task build && deno task migrate && deno task test:fast",
-		"test:fast": "deno test --check -A --unstable-temporal",
+		"test:fast": "deno test --check -A",
 		"test:all": "deno task build && deno task migrate && deno task test:all:fast",
-		"test:all:fast": "deno test --check -A --unstable-temporal modules/*/tests/*.ts",
+		"test:all:fast": "deno test --check -A modules/*/tests/*.ts",
 
 		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts",
 

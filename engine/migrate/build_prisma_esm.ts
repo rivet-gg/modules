@@ -4,7 +4,11 @@ import * as esbuild from "esbuild";
 import { polyfillNodeForDeno } from "esbuild-plugin-polyfill-node";
 
 /** Builds a single ESM file for a given Prisma package. */
-export async function buildPrismaPackage(prismaModuleDir: string, outFile: string) {
+export async function buildPrismaPackage(
+	prismaModuleDir: string,
+	outFile: string,
+) {
+	// Build the ESM file
 	await esbuild.build({
 		entryPoints: [path.resolve(prismaModuleDir, "wasm.js")],
 		bundle: true,
@@ -18,6 +22,12 @@ export async function buildPrismaPackage(prismaModuleDir: string, outFile: strin
 		format: "esm",
 		platform: "neutral",
 	});
+
+	// TODO: Use tsc to generate a single .d.ts file
+	// Prepend TypeScript reference
+	const content = await Deno.readTextFile(outFile);
+	const newContent = `/// <reference types="./wasm.d.ts" />\n${content}`;
+	await Deno.writeTextFile(outFile, newContent);
 }
 
 // Modified from https://esbuild.github.io/plugins/#http-plugin
