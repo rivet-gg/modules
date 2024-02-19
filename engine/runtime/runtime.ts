@@ -28,7 +28,7 @@ interface CreatePrismaOutput {
 
 export interface Script {
 	// deno-lint-ignore no-explicit-any
-	handler: ScriptHandler<any, any, any>;
+	run: ScriptRun<any, any, any>;
 	// deno-lint-ignore no-explicit-any
 	requestSchema: any;
 	// deno-lint-ignore no-explicit-any
@@ -36,7 +36,7 @@ export interface Script {
 	public: boolean;
 }
 
-export type ScriptHandler<Req, Res, TDatabase> = (
+export type ScriptRun<Req, Res, TDatabase> = (
 	ctx: ScriptContext<TDatabase>,
 	req: Req,
 ) => Promise<Res>;

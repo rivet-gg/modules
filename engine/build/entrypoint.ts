@@ -11,13 +11,13 @@ export async function generateEntrypoint(registry: Registry) {
 		// Generate script configs
 		modConfig += "scripts: {";
 		for (const script of mod.scripts.values()) {
-			const handlerIdent = `modules__${mod.name}__${script.name}__handler`;
+			const runIdent = `modules__${mod.name}__${script.name}__run`;
 
 			modImports +=
-				`import { handler as ${handlerIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
+				`import { run as ${runIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
 
 			modConfig += `${JSON.stringify(script.name)}: {`;
-			modConfig += `handler: ${handlerIdent},`;
+			modConfig += `run: ${runIdent},`;
 			modConfig += `public: ${JSON.stringify(script.config.public ?? false)},`;
 			modConfig += `requestSchema: ${JSON.stringify(script.requestSchema)},`;
 			modConfig += `responseSchema: ${JSON.stringify(script.responseSchema)},`;

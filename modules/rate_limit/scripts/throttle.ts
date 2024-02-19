@@ -22,7 +22,7 @@ export interface Request {
 export interface Response {
 }
 
-export async function handler(
+export async function run(
 	_ctx: ScriptContext,
 	_req: Request,
 ): Promise<Response> {
