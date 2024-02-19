@@ -3,10 +3,11 @@ import * as path from "std/path/mod.ts";
 import * as postgres from "postgres/mod.ts";
 import { Module, Registry } from "../registry/mod.ts";
 import { assertValidString } from "./validate.ts";
+import { loadRegistry } from "../registry/registry.ts";
 
 async function main() {
 	// Load registry
-	const registry = await Registry.load();
+	const registry = await loadRegistry();
 
 	// Setup database
 	const databaseUrl = Deno.env.get("DATABASE_URL") ??
@@ -25,13 +26,15 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
 
 	try {
 		for (const mod of registry.modules.values()) {
+			if (!mod.db) continue;
+
 			// Create database
 			const existsQuery = await client.queryObject<
 				{ exists: boolean }
-			>`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.dbName})`;
+			>`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${mod.db.name})`;
 			if (!existsQuery.rows[0].exists) {
 				await client.queryArray(
-					`CREATE DATABASE ${assertValidString(mod.dbName)}`,
+					`CREATE DATABASE ${assertValidString(mod.db.name)}`,
 				);
 			}
 		}
@@ -43,9 +46,11 @@ async function createDatabases(registry: Registry, databaseUrl: string) {
 }
 
 async function runModuleMigrations(mod: Module, databaseUrl: string) {
+	if (!mod.db) return;
+
 	// Connect to database for this module
 	const databaseUrlParsed = new URL(databaseUrl);
-	databaseUrlParsed.pathname = `/${mod.dbName}`;
+	databaseUrlParsed.pathname = `/${mod.db.name}`;
 
 	const client = new postgres.Client(databaseUrlParsed.toString());
 	await client.connect();
