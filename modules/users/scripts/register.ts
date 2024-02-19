@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/helpers/users/get.ts";
+import { ScriptContext } from "@ogs/helpers/users/scripts/get.ts";
 import { User } from "../schema/common.ts";
 // import { TokenWithSecret } from "../../tokens/schema/common.ts";
 // import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
@@ -24,26 +24,26 @@ export async function handler(
 ): Promise<Response> {
 	// await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
 
+	// Configure identity
+	let identitiesCreate;
+	if (req.identity.guest) {
+		identitiesCreate = {
+			identityGuest: {
+				create: {}
+			}
+		};
+	} else {
+		throw new Error("Unknown identity type");
+	}
+
 	// Create user
-	const user = await ctx.postgres.transaction<User>("register", async (tx) => {
-		const userQuery = await tx.queryObject<
-			User
-		>`INSERT INTO users (username) VALUES (${req.username}) RETURNING *`;
-		const user = userQuery.rows[0];
-
-		const identity = await tx.queryObject<
-			{ id: string }
-		>`INSERT INTO identities (user_id) VALUES (${user.id}) RETURNING id`;
-		const identityId = identity.rows[0].id;
-
-		if (req.identity.guest) {
-			await tx
-				.queryObject`INSERT INTO identity_guests (identity_id) VALUES (${identityId})`;
-		} else {
-			throw new Error("Invalid identity type");
+	const user = await ctx.db.user.create({
+		data: {
+			username: req.username,
+			identities: {
+				create: identitiesCreate
+			}
 		}
-
-		return user;
 	});
 
 	// // Create token

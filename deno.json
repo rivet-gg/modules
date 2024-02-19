@@ -9,6 +9,8 @@
 
 		"migrate": "deno task migrate:dev",
 		"migrate:dev": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/dev.ts",
+		"migrate:status": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/status.ts",
+		"migrate:reset": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/reset.ts",
 		"migrate:deploy": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/deploy.ts",
 
 		"entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
@@ -18,9 +20,9 @@
 		"start:watch": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint:watch",
 
 		"test": "deno task build && deno task migrate && deno task test:fast",
-		"test:fast": "deno test --check --allow-env --allow-net --unstable-temporal",
+		"test:fast": "deno test --check -A --unstable-temporal",
 		"test:all": "deno task build && deno task migrate && deno task test:all:fast",
-		"test:all:fast": "deno test --check --allow-env --allow-net --unstable-temporal modules/*/tests/*.ts",
+		"test:all:fast": "deno test --check -A --unstable-temporal modules/*/tests/*.ts",
 
 		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts",
 
@@ -38,7 +40,11 @@
 		"glob": "npm:glob@^10.3.10",
 		"typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
 		"ajv": "npm:ajv@^8.12.0",
-		"ajv-formats": "npm:ajv-formats@^2.1.1"
+		"ajv-formats": "npm:ajv-formats@^2.1.1",
+		"pg": "npm:pg@^8.11.3",
+		"@prisma/adapter-pg": "npm:@prisma/adapter-pg@^5.9.1",
+		"esbuild": "npm:esbuild@^0.20.0",
+		"esbuild-plugin-polyfill-node": "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0"
 	},
 	"lint": {
 		"include": ["engine/", "modules/"],

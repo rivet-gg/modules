@@ -10,14 +10,14 @@ model User {
 }
 
 model Identity {
-    id              String          @id @default(uuid()) @db.Uuid
-    user_id         String          @db.Uuid
-    created_at      DateTime        @default(now())
-    users           User            @relation(fields: [user_id], references: [id])
-    identity_guests IdentityGuest[]
+    id            String         @id @default(uuid()) @db.Uuid
+    userId        String         @db.Uuid
+    created_at    DateTime       @default(now())
+    user          User           @relation(fields: [userId], references: [id])
+    identityGuest IdentityGuest?
 }
 
 model IdentityGuest {
-    identity_id String   @id @db.Uuid
-    identities  Identity @relation(fields: [identity_id], references: [id])
+    identityId String   @id @unique @db.Uuid
+    identity   Identity @relation(fields: [identityId], references: [id])
 }

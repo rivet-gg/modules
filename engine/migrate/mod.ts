@@ -2,7 +2,7 @@ import { Registry, Module, ModuleDatabase } from "../registry/mod.ts";
 import { assertValidString } from "./validate.ts";
 import { Client as PostgresClient } from "postgres/mod.ts";
 import * as path from "std/path/mod.ts";
-import { copy, exists } from "std/fs/mod.ts";
+import { copy } from "std/fs/mod.ts";
 
 export type ForEachDatabaseCallback = (opts: { databaseUrl: string, module: Module, db: ModuleDatabase }) => Promise<void>;
 export type ForEachPrismaSchemaCallback = (opts: { databaseUrl: string, module: Module, db: ModuleDatabase, tempDir: string, generatedClientDir: string }) => Promise<void>;
@@ -33,7 +33,7 @@ export async function forEachDatabase(registry: Registry, callback: ForEachDatab
             await callback({ databaseUrl, module: mod, db: mod.db });
 		}
 	} catch (cause) {
-		throw new Error("Failed to create databases", { cause });
+		throw new Error("Failed to iterate databases", { cause });
 	} finally {
 		await defaultClient.end();
 	}
@@ -74,8 +74,10 @@ export async function forEachPrismaSchema(registry: Registry, callback: ForEachP
         schema += `
 generator client {
     provider = "prisma-client-js"
-    previewFeatures = ["deno"]
     output = "${generatedClientDir}"
+    previewFeatures = ["driverAdapters"]
+
+    // binaryTargets = ["native", "darwin", "darwin-arm64"]
 }
 `;
         await Deno.writeTextFile(tempSchemaPath, schema);
@@ -92,6 +94,6 @@ async function createDatabases(client: PostgresClient, db: ModuleDatabase) {
     // Create database
     const existsQuery = await client.queryObject<{ exists: boolean }>`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${db.name})`;
     if (!existsQuery.rows[0].exists) {
-        await client.queryObject`CREATE DATABASE ${assertValidString(db.name)}`;
+        await client.queryObject(`CREATE DATABASE ${assertValidString(db.name)}`);
     }
 }

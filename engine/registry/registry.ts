@@ -147,7 +147,18 @@ export function scriptDistHelperPath(registry: Registry, module: Module, script:
 		"dist",
 		"helpers",
 		module.name,
+		"scripts",
 		script.name + ".ts",
+	);
+}
+
+export function testDistHelperPath(registry: Registry, module: Module): string {
+	return path.join(
+		registry.path,
+		"dist",
+		"helpers",
+		module.name,
+		"test.ts"
 	);
 }
 
