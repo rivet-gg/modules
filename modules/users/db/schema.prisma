@@ -1,0 +1,23 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         String     @id @default(uuid()) @db.Uuid
+    username   String     @unique
+    identities Identity[]
+}
+
+model Identity {
+    id              String          @id @default(uuid()) @db.Uuid
+    user_id         String          @db.Uuid
+    created_at      DateTime        @default(now())
+    users           User            @relation(fields: [user_id], references: [id])
+    identity_guests IdentityGuest[]
+}
+
+model IdentityGuest {
+    identity_id String   @id @db.Uuid
+    identities  Identity @relation(fields: [identity_id], references: [id])
+}

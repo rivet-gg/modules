@@ -7,7 +7,9 @@
 
 		"build": "deno run --check --allow-read --allow-write --allow-run engine/build/index.ts",
 
-		"migrate": "deno run --check --allow-net --allow-read --allow-env engine/migrate/index.ts",
+		"migrate": "deno task migrate:dev",
+		"migrate:dev": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/dev.ts",
+		"migrate:deploy": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/deploy.ts",
 
 		"entrypoint": "deno run --check --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
 		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --unstable-temporal dist/entrypoint.ts",
