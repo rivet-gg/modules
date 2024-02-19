@@ -29,6 +29,7 @@
 	"imports": {
 		"@ogs/runtime": "./engine/runtime/mod.ts",
 		"@ogs/types": "./engine/types/mod.ts",
+		"@ogs/helpers/": "./dist/helpers/",
 		"@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
 		"std/": "https://deno.land/std@0.208.0/",
 		"postgres/": "https://deno.land/x/postgres@v0.17.2/",

@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/friends/list_friends.ts";
 import { Friend } from "../schema/common.ts";
 
 export interface Request {

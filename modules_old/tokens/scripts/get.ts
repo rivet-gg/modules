@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/tokens/get.ts";
 import { Token } from "../schema/common.ts";
 
 export interface Request {

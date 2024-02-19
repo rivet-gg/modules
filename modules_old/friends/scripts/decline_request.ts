@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/runtime";
+import { ScriptContext } from "@ogs/helpers/friends/decline_request.ts";
 
 export interface Request {
 	userToken: string;
