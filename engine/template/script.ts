@@ -70,7 +70,7 @@ export interface Response {
     
 }
 
-export async function handler(
+export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {

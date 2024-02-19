@@ -50,9 +50,7 @@ export class Context {
 			}
 
 			// Execute script
-			const res = await ctx.runBlock(async () =>
-				await script.handler(ctx, req)
-			);
+			const res = await ctx.runBlock(async () => await script.run(ctx, req));
 			console.log(
 				`Response ${moduleName}.${scriptName}:\n${
 					JSON.stringify(res, null, 2)

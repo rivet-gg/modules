@@ -9,7 +9,7 @@ export interface Response {
 	friends: Friend[];
 }
 
-export async function handler(
+export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
