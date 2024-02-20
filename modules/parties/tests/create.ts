@@ -2,7 +2,11 @@ import { test, TestContext } from "@ogs/helpers/parties/test.ts";
 import { assertExists } from "std/assert/mod.ts";
 import { faker } from "@faker-js/faker";
 
-// FIXME: 
+// FIXME: Sometimes users register as "already friends" or the friend request is
+// not accepted correctly, leading to failures in this test.
+//
+// This may actually be due to the `friends` module, but that needs to be
+// further looked into.
 test("parties create", async (ctx: TestContext) => {
 	const { token: ownerToken } = await ctx.call(
 		"users",

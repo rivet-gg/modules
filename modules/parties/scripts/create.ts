@@ -57,7 +57,6 @@ export async function run(
 		
 		for (const member of members) {
 			if (!ownerFriends.has(member.id)) {
-				throw new Error(JSON.stringify(ownerFriendList, null, 2));
 				throw new RuntimeError("FRIEND_CONSTRAINT_FAILED");
 			}
 		}
