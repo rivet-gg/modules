@@ -1,0 +1,31 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Party {
+    id           String    @id @default(uuid()) @db.Uuid
+    name         String
+
+    ownerId      String    @db.Uuid
+    members      PartyMembership[]
+
+    friendsOnly  Boolean   @default(false)
+    createdAt    DateTime  @default(now())
+}
+
+
+model User {
+    id           String    @id @db.Uuid
+    parties      PartyMembership[]
+}
+
+model PartyMembership {
+    party           Party         @relation(fields: [partyId], references: [id])
+    partyId         String        @db.Uuid
+
+    user            User          @relation(fields: [userId], references: [id])
+    userId          String        @db.Uuid
+
+    @@id([partyId, userId])
+}

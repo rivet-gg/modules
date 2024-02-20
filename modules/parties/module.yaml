@@ -1,0 +1,10 @@
+status: preview
+authors:
+  - SkylerCalaman
+scripts:
+  create:
+    public: true
+errors:
+  OWNER_NOT_FOUND: {}
+  MEMBER_NOT_FOUND: {}
+  FRIEND_CONSTRAINT_FAILED: {}
