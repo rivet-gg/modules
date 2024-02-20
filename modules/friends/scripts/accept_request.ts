@@ -22,13 +22,13 @@ export async function run(
 
 	await ctx.db.$transaction(async (tx) => {
 		// Lock & validate friend request
-		interface FriendRequsetRow {
+		interface FriendRequestRow {
 			senderUserId: string;
 			targetUserId: string;
 			acceptedAt: Date | null;
 			declinedAt: Date | null;
 		}
-		const friendRequests = await tx.$queryRaw<FriendRequsetRow[]>`
+		const friendRequests = await tx.$queryRaw<FriendRequestRow[]>`
 			SELECT "senderUserId", "targetUserId", "acceptedAt", "declinedAt"
 			FROM "FriendRequest"
 			WHERE "id" = ${req.friendRequestId}
