@@ -1,7 +1,4 @@
-import {
-	RuntimeError,
-	ScriptContext,
-} from "@ogs/helpers/friends/scripts/accept_request.ts";
+import { ScriptContext } from "@ogs/helpers/friends/scripts/accept_request.ts";
 
 export interface Request {
 	userToken: string;
@@ -31,7 +28,6 @@ export async function run(
 		token: req.userToken,
 		module: "friends",
 	});
-
 
 	const [userIdA, userIdB] = [userId, senderId].sort();
 

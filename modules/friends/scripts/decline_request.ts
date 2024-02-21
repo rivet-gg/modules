@@ -1,7 +1,4 @@
-import {
-	RuntimeError,
-	ScriptContext,
-} from "@ogs/helpers/friends/scripts/decline_request.ts";
+import { ScriptContext } from "@ogs/helpers/friends/scripts/decline_request.ts";
 
 export interface Request {
 	userToken: string;

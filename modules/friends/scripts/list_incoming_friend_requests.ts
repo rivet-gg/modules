@@ -29,5 +29,5 @@ export async function run(
 			targetUserId: invite.to,
 			createdAt: invite.created,
 		})),
-	}
+	};
 }
