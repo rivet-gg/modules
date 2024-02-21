@@ -6,20 +6,8 @@ datasource db {
 model Friend {
     userIdA         String        @db.Uuid
     userIdB         String        @db.Uuid
-    friendRequestId String        @db.Uuid @unique
-    friendRequest   FriendRequest @relation("FriendRequest", fields: [friendRequestId], references: [id])
     createdAt       DateTime      @default(now())
     removedAt       DateTime?
 
     @@id([userIdA, userIdB])
-}
-
-model FriendRequest {
-    id           String    @id @default(uuid()) @db.Uuid
-    senderUserId String    @db.Uuid
-    targetUserId String    @db.Uuid
-    createdAt    DateTime  @default(now())
-    declinedAt   DateTime?
-    acceptedAt   DateTime?
-    friend       Friend?   @relation("FriendRequest")
 }

@@ -2,7 +2,7 @@ import {
 	RuntimeError,
 	ScriptContext,
 } from "@ogs/helpers/friends/scripts/send_request.ts";
-import { FriendRequest, friendRequestFromRow } from "../types/common.ts";
+import { FriendRequest } from "../types/common.ts";
 
 export interface Request {
 	userToken: string;
@@ -27,49 +27,32 @@ export async function run(
 		throw new Error("You cannot send a friend request to yourself");
 	}
 
-	// Sort the user IDs to ensure consistency
-	const [userIdA, userIdB] = [userId, req.targetUserId].sort();
-
-	const row = await ctx.db.$transaction(async (tx) => {
-		// Validate that the users are not already friends
-		const existingFriendRows = await tx.$queryRaw<any[]>`
-			SELECT 1
-			FROM "Friend"
-			WHERE "userIdA" = ${userIdA} OR "userIdB" = ${userIdA}
-			FOR UPDATE
-		`;
-		if (existingFriendRows.length > 0) {
-			throw new RuntimeError("ALREADY_FRIENDS", { meta: { userIdA, userIdB } });
-		}
-
-		// Validate that the users do not already have a pending friend request
-		const existingRequest = await tx.friendRequest.findFirst({
-			where: {
-				senderUserId: userId,
-				targetUserId: req.targetUserId,
-				acceptedAt: null,
-				declinedAt: null,
+	try {
+		const { invite } = await ctx.modules.invites.create({
+			request_options: {
+				from: userId,
+				to: req.targetUserId,
+				directional: false,
+				for: "friend",
+				module: "friends",
 			},
-			select: { senderUserId: true, targetUserId: true },
+			token: req.userToken,
 		});
-		if (existingRequest) {
+
+		return {
+			friendRequest: {
+				id: `${invite.from}::${invite.to}`,
+				senderUserId: invite.from,
+				targetUserId: invite.to,
+				createdAt: invite.created,
+			},
+		};
+	} catch (e) {
+		if (e instanceof RuntimeError && e.code === "INVITE_ALREADY_EXISTS") {
 			throw new RuntimeError("FRIEND_REQUEST_ALREADY_EXISTS", {
 				meta: { userId, targetUserId: req.targetUserId },
 			});
 		}
-
-		// Create friend request
-		const friendRequest = await tx.friendRequest.create({
-			data: {
-				senderUserId: userId,
-				targetUserId: req.targetUserId,
-			},
-		});
-
-		return friendRequest;
-	});
-
-	return {
-		friendRequest: friendRequestFromRow(row),
-	};
+		throw e;
+	}
 }

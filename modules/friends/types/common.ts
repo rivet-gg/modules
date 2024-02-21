@@ -11,8 +11,6 @@ export interface FriendRequest {
 	senderUserId: string;
 	targetUserId: string;
 	createdAt: string;
-	declinedAt: string | null;
-	acceptedAt: string | null;
 }
 
 export function friendFromRow(
@@ -21,16 +19,5 @@ export function friendFromRow(
 	return {
 		...row,
 		createdAt: row.createdAt.toISOString(),
-	};
-}
-
-export function friendRequestFromRow(
-	row: prisma.Prisma.FriendRequestGetPayload<any>,
-): FriendRequest {
-	return {
-		...row,
-		createdAt: row.createdAt.toISOString(),
-		declinedAt: row.declinedAt?.toISOString() ?? null,
-		acceptedAt: row.acceptedAt?.toISOString() ?? null,
 	};
 }

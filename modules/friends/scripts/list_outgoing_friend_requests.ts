@@ -1,5 +1,5 @@
 import { ScriptContext } from "@ogs/helpers/friends/scripts/list_outgoing_friend_requests.ts";
-import { FriendRequest, friendRequestFromRow } from "../types/common.ts";
+import { FriendRequest } from "../types/common.ts";
 
 export interface Request {
 	userToken: string;
@@ -14,23 +14,20 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
 	await ctx.call("rate_limit", "throttle", {});
-	const { userId } = await ctx.call("users", "validate_token", {
-		userToken: req.userToken,
-	}) as any;
+	await ctx.call("users", "validate_token", { userToken: req.userToken });
 
-	const rows = await ctx.db.friendRequest.findMany({
-		where: {
-			senderUserId: userId,
-			acceptedAt: null,
-			declinedAt: null,
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 100,
+	const { invites } = await ctx.modules.invites.get({
+		token: req.userToken,
+		getType: "AS_SENDER",
+		module: "friends",
 	});
 
-	const friendRequests = rows.map(friendRequestFromRow);
-
-	return { friendRequests };
+	return {
+		friendRequests: invites.map((invite) => ({
+			id: `${invite.from}::${invite.to}`,
+			senderUserId: invite.from,
+			targetUserId: invite.to,
+			createdAt: invite.created,
+		})),
+	}
 }
