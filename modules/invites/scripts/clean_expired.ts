@@ -1,5 +1,8 @@
-import { RuntimeError } from "@ogs/helpers/invites/scripts/clean_expired.ts";
-import { ScriptContext } from "@ogs/helpers/invites/scripts/clean_expired.ts";
+import {
+	prisma,
+	RuntimeError,
+	ScriptContext,
+} from "@ogs/helpers/invites/scripts/clean_expired.ts";
 
 export interface Request {}
 
@@ -54,13 +57,26 @@ export async function run(
 				}),
 			]);
 
-			const expiredInvites = [
+			const expiredInvites: prisma.ExpiredInvite[] = [
 				...expiredDirectional.map((invite) => ({
-					...invite,
+					for: invite.for,
+					originModule: invite.originModule,
+					createdAt: invite.createdAt,
+					expiration: invite.expiration,
+					hidePostExpire: invite.hidePostExpire,
+
+					fromUserId: invite.fromUserId,
+					toUserId: invite.toUserId,
+
 					directional: true,
 				})),
 				...expiredNondirectional.map((invite) => ({
-					...invite,
+					for: invite.for,
+					originModule: invite.originModule,
+					createdAt: invite.createdAt,
+					expiration: invite.expiration,
+					hidePostExpire: invite.hidePostExpire,
+
 					directional: false,
 					fromUserId: invite.senderId,
 					toUserId: invite.userAId === invite.senderId

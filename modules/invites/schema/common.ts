@@ -84,3 +84,31 @@ export function nondirectionalDbInviteToInvite(
 		onDecline: dbInvite.onDecline ?? undefined,
 	};
 }
+
+export function expiredDbInviteToInvite(
+	dbInvite: prisma.ExpiredInvite,
+): Invite {
+	const dbExpiration = dbInvite.expiration;
+	const dbHidePostExpire = dbInvite.hidePostExpire;
+
+	return {
+		from: dbInvite.fromUserId,
+		to: dbInvite.toUserId,
+		for: dbInvite.for,
+		directional: false,
+
+		module: dbInvite.originModule,
+
+		created: dbInvite.createdAt.toJSON(),
+		expiration: (dbExpiration && dbHidePostExpire)
+			? {
+				ms: dbExpiration.getTime() - dbInvite.createdAt.getTime(),
+				hidden_after_expiration: dbHidePostExpire,
+			}
+			: undefined,
+		expires: dbExpiration?.toJSON() ?? null,
+
+		onAccept: undefined,
+		onDecline: undefined,
+	};
+}
