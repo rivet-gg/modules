@@ -3,17 +3,19 @@ import { Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 
+import type { RegistryCallFn } from "@ogs/helpers/registry.d.ts"
+
 export class Context {
 	public constructor(
 		protected readonly runtime: Runtime,
 		public readonly trace: Trace,
 	) {}
 
-	public async call(
-		moduleName: string,
-		scriptName: string,
-		req: unknown,
-	): Promise<unknown> {
+	public call: RegistryCallFn<Context> = async function(
+		moduleName,
+		scriptName,
+		req,
+	) {
 		console.log(
 			`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`,
 		);
@@ -64,7 +66,7 @@ export class Context {
 				);
 			}
 
-			return res;
+			return res as any;
 		} catch (cause) {
 			console.warn(
 				`Failed to execute script: ${moduleName}.${scriptName}`,
