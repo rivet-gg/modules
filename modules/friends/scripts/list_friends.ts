@@ -16,7 +16,7 @@ export async function run(
 	await ctx.call("rate_limit", "throttle", {});
 	const { userId } = await ctx.call("users", "validate_token", {
 		userToken: req.userToken,
-	}) as any;
+	});
 
 	const rows = await ctx.db.friend.findMany({
 		where: {

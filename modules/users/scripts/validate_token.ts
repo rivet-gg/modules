@@ -14,7 +14,7 @@ export async function run(
 ): Promise<Response> {
 	const { token } = await ctx.call("tokens", "validate", {
 		token: req.userToken,
-	}) as any;
+	});
 	if (token.type !== "user") throw new Error("Token is not a user token");
 	const userId = token.meta.userId;
 

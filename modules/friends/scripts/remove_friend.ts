@@ -18,7 +18,7 @@ export async function run(
 	await ctx.call("rate_limit", "throttle", { requests: 50 });
 	const { userId } = await ctx.call("users", "validate_token", {
 		userToken: req.userToken,
-	}) as any;
+	});
 
 	// Sort the user IDs to ensure consistency
 	const [userIdA, userIdB] = [userId, req.targetUserId].sort();

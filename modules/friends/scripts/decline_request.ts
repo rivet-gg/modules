@@ -18,7 +18,7 @@ export async function run(
 	await ctx.call("rate_limit", "throttle", { requests: 50 });
 	const { userId } = await ctx.call("users", "validate_token", {
 		userToken: req.userToken,
-	}) as any;
+	});
 
 	await ctx.db.$transaction(async (tx) => {
 		// Lock & validate friend request

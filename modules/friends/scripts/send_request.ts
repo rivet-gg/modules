@@ -21,7 +21,7 @@ export async function run(
 
 	const { userId } = await ctx.call("users", "validate_token", {
 		userToken: req.userToken,
-	}) as any;
+	});
 
 	if (userId === req.targetUserId) {
 		throw new Error("You cannot send a friend request to yourself");
