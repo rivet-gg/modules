@@ -11,6 +11,9 @@ export interface InviteOptions {
 	};
 
 	module: string;
+
+	onAccept?: string;
+	onDecline?: string;
 }
 
 export interface Invite extends InviteOptions {
@@ -18,12 +21,13 @@ export interface Invite extends InviteOptions {
 	expires: string | null;
 }
 
-export type GetType = 'ALL' | 'AS_SENDER' | 'AS_RECIPIENT';
-
+export type GetType = "ALL" | "AS_SENDER" | "AS_RECIPIENT";
 
 import { prisma } from "@ogs/helpers/invites/test.ts";
 
-export function directionalDbInviteToInvite(dbInvite: prisma.ActiveDirectionalInvite): Invite {
+export function directionalDbInviteToInvite(
+	dbInvite: prisma.ActiveDirectionalInvite,
+): Invite {
 	const dbExpiration = dbInvite.expiration;
 	const dbHidePostExpire = dbInvite.hidePostExpire;
 
@@ -35,34 +39,48 @@ export function directionalDbInviteToInvite(dbInvite: prisma.ActiveDirectionalIn
 		directional: true,
 
 		module: dbInvite.originModule,
-		
+
 		created: dbInvite.createdAt.toJSON(),
-		expiration: (dbExpiration && dbHidePostExpire) ? {
-			ms: dbExpiration.getTime() - dbInvite.createdAt.getTime(),
-			hidden_after_expiration: dbHidePostExpire,
-		} : undefined,
+		expiration: (dbExpiration && dbHidePostExpire)
+			? {
+				ms: dbExpiration.getTime() - dbInvite.createdAt.getTime(),
+				hidden_after_expiration: dbHidePostExpire,
+			}
+			: undefined,
 		expires: dbExpiration?.toJSON() ?? null,
+
+		onAccept: dbInvite.onAccept ?? undefined,
+		onDecline: dbInvite.onDecline ?? undefined,
 	};
 }
 
-export function nondirectionalDbInviteToInvite(dbInvite: prisma.ActiveNondirectionalInvite): Invite {
+export function nondirectionalDbInviteToInvite(
+	dbInvite: prisma.ActiveNondirectionalInvite,
+): Invite {
 	const dbExpiration = dbInvite.expiration;
 	const dbHidePostExpire = dbInvite.hidePostExpire;
 
 	return {
 		from: dbInvite.senderId,
-		to: dbInvite.userAId === dbInvite.senderId ? dbInvite.userBId : dbInvite.userAId,
+		to: dbInvite.userAId === dbInvite.senderId
+			? dbInvite.userBId
+			: dbInvite.userAId,
 
 		for: dbInvite.for,
 		directional: false,
 
 		module: dbInvite.originModule,
-		
+
 		created: dbInvite.createdAt.toJSON(),
-		expiration: (dbExpiration && dbHidePostExpire) ? {
-			ms: dbExpiration.getTime() - dbInvite.createdAt.getTime(),
-			hidden_after_expiration: dbHidePostExpire,
-		} : undefined,
+		expiration: (dbExpiration && dbHidePostExpire)
+			? {
+				ms: dbExpiration.getTime() - dbInvite.createdAt.getTime(),
+				hidden_after_expiration: dbHidePostExpire,
+			}
+			: undefined,
 		expires: dbExpiration?.toJSON() ?? null,
+
+		onAccept: dbInvite.onAccept ?? undefined,
+		onDecline: dbInvite.onDecline ?? undefined,
 	};
 }

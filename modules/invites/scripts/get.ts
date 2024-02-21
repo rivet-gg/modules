@@ -3,14 +3,15 @@ import {
 	ScriptContext,
 } from "@ogs/helpers/invites/scripts/get.ts";
 
-
 import {
-	Invite, GetType,
-	directionalDbInviteToInvite, nondirectionalDbInviteToInvite,
+	directionalDbInviteToInvite,
+	GetType,
+	Invite,
+	nondirectionalDbInviteToInvite,
 } from "../schema/common.ts";
 
 export interface Request {
-    token: string;
+	token: string;
 	getType: GetType;
 	module: string;
 }
@@ -24,6 +25,7 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
 	await ctx.modules.rate_limit.throttle({});
+	await ctx.modules.invites.clean_expired({});
 
 	const { userId: tokenUserId } = await (async () => {
 		try {
@@ -35,39 +37,46 @@ export async function run(
 		}
 	})();
 
-	const asSender = req.getType === 'ALL' || req.getType === 'AS_SENDER';
-	const asRecipient = req.getType === 'ALL' || req.getType === 'AS_RECIPIENT';
+	const asSender = req.getType === "ALL" || req.getType === "AS_SENDER";
+	const asRecipient = req.getType === "ALL" || req.getType === "AS_RECIPIENT";
 
-	const senderInvitesDir = asSender ? await ctx.db.activeDirectionalInvite.findMany({
-		where: {
-			fromUserId: tokenUserId,
-			originModule: req.module,
-		},
-	}) : [];
-	const senderInvitesNondir = asSender ? await ctx.db.activeNondirectionalInvite.findMany({
-		where: {
-			senderId: tokenUserId,
-			originModule: req.module,
-		},
-	}) : [];
+	const senderInvitesDir = asSender
+		? await ctx.db.activeDirectionalInvite.findMany({
+			where: {
+				fromUserId: tokenUserId,
+				originModule: req.module,
+			},
+		})
+		: [];
+	const senderInvitesNondir = asSender
+		? await ctx.db.activeNondirectionalInvite.findMany({
+			where: {
+				senderId: tokenUserId,
+				originModule: req.module,
+			},
+		})
+		: [];
 
-	const recipientInvitesDir = asRecipient ? await ctx.db.activeDirectionalInvite.findMany({
-		where: {
-			toUserId: tokenUserId,
-			originModule: req.module,
-		},
-	}) : [];
-	const recipientInvitesNondir = asRecipient ? await ctx.db.activeNondirectionalInvite.findMany({
-		where: {
-			OR: [
-				{ userAId: tokenUserId },
-				{ userBId: tokenUserId },
-			],
-			NOT: { senderId: tokenUserId },
-			originModule: req.module,
-		},
-	}) : [];
-	
+	const recipientInvitesDir = asRecipient
+		? await ctx.db.activeDirectionalInvite.findMany({
+			where: {
+				toUserId: tokenUserId,
+				originModule: req.module,
+			},
+		})
+		: [];
+	const recipientInvitesNondir = asRecipient
+		? await ctx.db.activeNondirectionalInvite.findMany({
+			where: {
+				OR: [
+					{ userAId: tokenUserId },
+					{ userBId: tokenUserId },
+				],
+				NOT: { senderId: tokenUserId },
+				originModule: req.module,
+			},
+		})
+		: [];
 
 	const invites = [
 		...senderInvitesDir.map(directionalDbInviteToInvite),
