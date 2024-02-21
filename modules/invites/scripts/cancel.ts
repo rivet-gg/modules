@@ -13,9 +13,7 @@ export interface Request {
 	module: string;
 }
 
-export interface Response {
-	onDeclineResponse?: any;
-}
+export interface Response {}
 
 export async function run(
 	ctx: ScriptContext,
@@ -35,11 +33,11 @@ export async function run(
 		}
 	})();
 
-	if (req.details.to !== tokenUserId) throw new RuntimeError("INVALID_TOKEN");
+	if (req.details.from !== tokenUserId) throw new RuntimeError("INVALID_TOKEN");
 
 	const { invites } = await ctx.modules.invites.get({
 		token: req.token,
-		getType: "AS_RECIPIENT",
+		getType: "AS_SENDER",
 		module: req.module,
 	});
 
@@ -74,23 +72,6 @@ export async function run(
 				originModule: req.module,
 			},
 		});
-	}
-
-	if (existingInvite.onDecline) {
-		const onAcceptCallbackReq = { invite: existingInvite };
-		if (
-			ctx.can_call(req.module, existingInvite.onDecline, onAcceptCallbackReq)
-		) {
-			return {
-				onDeclineResponse: await ctx.try_call_raw(
-					req.module,
-					existingInvite.onDecline,
-					onAcceptCallbackReq,
-				),
-			};
-		} else {
-			throw new RuntimeError("ON_ACCEPT_CALLBACK_DOES_NOT_EXIST");
-		}
 	}
 
 	return {};
