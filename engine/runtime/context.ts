@@ -76,6 +76,33 @@ export class Context {
 		}
 	}
 
+	public async try_call_raw(moduleName: string, scriptName: string, req: unknown): Promise<object | null> {
+		// Lookup module
+		const module = this.runtime.config.modules[moduleName];
+		if (!module) return null;
+
+		// Lookup script
+		const script = module.scripts[scriptName];
+		if (!script) return null;
+
+		return await this.call(moduleName as any, scriptName as any, req);
+	}
+
+	public can_call(moduleName: string, scriptName: string, req?: unknown): boolean {
+		// Lookup module
+		const module = this.runtime.config.modules[moduleName];
+		if (!module) return false;
+
+		// Lookup script
+		const script = module.scripts[scriptName];
+		if (!script) return false;
+
+		const validateRequest = this.runtime.ajv.compile(script.requestSchema);
+		if (req && !validateRequest(req)) return false;
+
+		return true;
+	}
+
 	/**
 	 * Runs a block of code and catches any related errors.
 	 */
