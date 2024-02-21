@@ -1,6 +1,7 @@
 scripts:
   create: {}
   clean_expired: {}
+  get: {}
 errors:
   INVALID_SENDER_TOKEN: {}
   SENDER_USER_NOT_FOUND: {}
