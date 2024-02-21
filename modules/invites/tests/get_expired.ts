@@ -4,7 +4,7 @@ import { assertExists } from "std/assert/assert_exists.ts";
 
 import { faker } from "@faker-js/faker";
 
-test("accept", async (ctx: TestContext) => {
+test("get expired", async (ctx: TestContext) => {
 	const { user: sender, token: senderToken } = await ctx.modules.users.register(
 		{
 			username: faker.internet.userName(),
@@ -28,32 +28,22 @@ test("accept", async (ctx: TestContext) => {
 			directional: false,
 			for: "test",
 			module: "invites_test",
+			expiration: {
+				ms: 200,
+				hidden_after_expiration: false,
+			},
 		},
 	});
 	assertExists(invite);
 
-	const { invites: preAcceptInvites } = await ctx.modules.invites.get({
+	const { invites: preExpireInvites } = await ctx.modules.invites.get({
 		token: recipientToken.token,
 		getType: "AS_RECIPIENT",
 		module: "invites_test",
 	});
-	assertExists(preAcceptInvites[0]);
+	assertExists(preExpireInvites[0]);
 
-	const { onAcceptResponse } = await ctx.modules.invites.accept({
-		token: recipientToken.token,
-		details: {
-			from: sender.id,
-			to: recipient.id,
-			directional: false,
-			for: "test",
-		},
-		module: "invites_test",
-	});
-	assertEquals(
-		onAcceptResponse,
-		undefined,
-		"onAcceptResponse should be undefined because onAccept is not set",
-	);
+	await new Promise((res) => setTimeout(res, 1000));
 
 	const { invites: postAcceptInvites } = await ctx.modules.invites.get({
 		token: recipientToken.token,
@@ -63,6 +53,16 @@ test("accept", async (ctx: TestContext) => {
 	assertEquals(
 		postAcceptInvites.length,
 		0,
-		"invite should be deleted after accept",
+		"invite should be removed from regular get after expiration",
+	);
+
+	const { invites: expiredInvites } = await ctx.modules.invites.get_expired({
+		token: recipientToken.token,
+		getType: "AS_RECIPIENT",
+		module: "invites_test",
+	});
+	assertExists(
+		expiredInvites[0],
+		"invite should be in expired get after expiration",
 	);
 });
