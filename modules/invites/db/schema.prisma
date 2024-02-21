@@ -1,0 +1,55 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model ActiveDirectionalInvite {
+    fromUserId      String        @db.Uuid
+    toUserId        String        @db.Uuid
+
+    for             String
+
+    originModule    String
+
+    createdAt       DateTime      @default(now())
+
+    expiration      DateTime?
+    hidePostExpire  Boolean?
+
+    @@id([fromUserId, toUserId])
+}
+
+model ActiveNondirectionalInvite {
+    userAId         String        @db.Uuid
+    userBId         String        @db.Uuid
+    senderId        String        @db.Uuid
+
+    for             String
+
+    originModule    String
+
+    createdAt       DateTime      @default(now())
+
+    expiration      DateTime?
+    hidePostExpire  Boolean?
+
+    @@id([userAId, userBId])
+}
+
+model ExpiredInvite {
+    fromUserId      String        @db.Uuid
+    toUserId        String        @db.Uuid
+
+    directional     Boolean
+
+    for             String
+
+    originModule    String
+
+    createdAt       DateTime      @default(now())
+
+    expiration      DateTime?
+    hidePostExpire  Boolean?
+
+    @@id([fromUserId, toUserId])
+}
