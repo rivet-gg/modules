@@ -1,0 +1,9 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model UserWallet {
+    userId      String     @id @db.Uuid
+    balance    Int
+}
