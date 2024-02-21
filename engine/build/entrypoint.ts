@@ -11,7 +11,7 @@ export async function generateEntrypoint(registry: Registry) {
 		// Generate script configs
 		modConfig += "scripts: {";
 		for (const script of mod.scripts.values()) {
-			const runIdent = `modules__${mod.name}__${script.name}__run`;
+			const runIdent = `modules$$${mod.name}$$${script.name}$$run`;
 
 			modImports +=
 				`import { run as ${runIdent} } from '../modules/${mod.name}/scripts/${script.name}.ts';\n`;
@@ -31,7 +31,7 @@ export async function generateEntrypoint(registry: Registry) {
 		// Generate db config
 		if (mod.db) {
 			// HACK: https://github.com/prisma/prisma/issues/2452#issuecomment-1666513809
-			const prismaImportName = `prisma__${mod.name}`;
+			const prismaImportName = `prisma$$${mod.name}`;
 			modImports +=
 				`import ${prismaImportName} from "./prisma/${mod.name}/esm.js";\n`;
 
