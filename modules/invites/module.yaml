@@ -1,0 +1,8 @@
+scripts:
+  create: {}
+  clean_expired: {}
+errors:
+  INVALID_SENDER_TOKEN: {}
+  SENDER_USER_NOT_FOUND: {}
+  RECIPIENT_USER_NOT_FOUND: {}
+  CANNOT_INVITE_SELF: {}
