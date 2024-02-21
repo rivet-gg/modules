@@ -16,7 +16,10 @@ model ActiveDirectionalInvite {
     expiration      DateTime?
     hidePostExpire  Boolean?
 
-    @@id([fromUserId, toUserId])
+    onAccept        String?
+    onDecline       String?
+
+    @@id([fromUserId, toUserId, for, originModule])
 }
 
 model ActiveNondirectionalInvite {
@@ -33,7 +36,10 @@ model ActiveNondirectionalInvite {
     expiration      DateTime?
     hidePostExpire  Boolean?
 
-    @@id([userAId, userBId])
+    onAccept        String?
+    onDecline       String?
+
+    @@id([userAId, userBId, for, originModule])
 }
 
 model ExpiredInvite {
@@ -51,5 +57,5 @@ model ExpiredInvite {
     expiration      DateTime?
     hidePostExpire  Boolean?
 
-    @@id([fromUserId, toUserId])
+    @@id([fromUserId, toUserId, for, originModule, createdAt])
 }

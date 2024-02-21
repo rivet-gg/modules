@@ -2,8 +2,13 @@ scripts:
   create: {}
   clean_expired: {}
   get: {}
+  accept: {}
+  decline: {}
 errors:
   INVALID_SENDER_TOKEN: {}
   SENDER_USER_NOT_FOUND: {}
   RECIPIENT_USER_NOT_FOUND: {}
   CANNOT_INVITE_SELF: {}
+  INVALID_TOKEN: {}
+  ON_ACCEPT_CALLBACK_DOES_NOT_EXIST: {}
+  ON_DECLINE_CALLBACK_DOES_NOT_EXIST: {}
