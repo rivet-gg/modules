@@ -1,6 +1,9 @@
 import { RuntimeError } from "@ogs/helpers/currency/scripts/set_balance.ts";
 import { ScriptContext } from "@ogs/helpers/currency/scripts/set_balance.ts";
 
+import { setBalance } from "../helper/set_balance.ts";
+
+
 export interface Request {
 	userId: string;
 	balance: number;
@@ -18,18 +21,11 @@ export async function run(
 
 	if (balance < 0) throw new RuntimeError("INVALID_AMOUNT");
 
-	ctx.db.userWallet.upsert({
-		where: {
-			userId,
-		},
-		update: {
-			balance: balance,
-		},
-		create: {
-			balance: balance,
-			userId,
-		},
-	});
+	try {
+		await setBalance(ctx.db, userId, balance);
+	} catch {
+		throw new RuntimeError("INVALID_AMOUNT");
+	}
 
 	return {};
 }

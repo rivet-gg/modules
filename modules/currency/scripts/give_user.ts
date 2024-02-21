@@ -1,6 +1,9 @@
 import { RuntimeError } from "@ogs/helpers/currency/scripts/give_user.ts";
 import { ScriptContext } from "@ogs/helpers/currency/scripts/give_user.ts";
 
+import { getBalance } from "../helper/get_balance.ts";
+import { setBalance } from "../helper/set_balance.ts";
+
 export interface Request {
 	userId: string;
 	amount: number;
@@ -20,19 +23,14 @@ export async function run(
 
 	if (amount < 0) throw new RuntimeError("INVALID_AMOUNT");
 
-	return ctx.db.$transaction(async (_tx) => {
-		const { balance } = await ctx.call("currency", "get_balance", {
-			userId,
-		}) as any;
+	return ctx.db.$transaction(async (tx) => {
+		const balance = await getBalance(tx, userId);
 
 		const updatedBalance = balance + amount;
 
 		if (updatedBalance < 0) throw new RuntimeError("NOT_ENOUGH_FUNDS");
 
-		await ctx.call("currency", "set_balance", {
-			userId,
-			balance: updatedBalance,
-		});
+		await setBalance(tx, userId, updatedBalance);
 
 		return {
 			updatedBalance,

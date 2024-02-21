@@ -1,5 +1,7 @@
 import { ScriptContext } from "@ogs/helpers/currency/scripts/get_balance.ts";
 
+import { getBalance } from "../helper/get_balance.ts";
+
 export interface Request {
 	userId: string;
 }
@@ -15,22 +17,7 @@ export async function run(
 	await ctx.call("rate_limit", "throttle", { requests: 25 });
 	const { userId } = req;
 
-	const user = await ctx.db.userWallet.findFirst({
-		where: {
-			userId,
-		},
-		select: {
-			balance: true,
-		},
-	});
-
-	if (!user) {
-		return {
-			balance: 0,
-		};
-	}
-
 	return {
-		balance: user.balance,
+		balance: await getBalance(ctx.db, userId)
 	};
 }
