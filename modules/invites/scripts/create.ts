@@ -3,7 +3,10 @@ import {
 	ScriptContext,
 } from "@ogs/helpers/invites/scripts/create.ts";
 
-import { Invite, InviteOptions } from "../schema/common.ts";
+import {
+	Invite, InviteOptions,
+	directionalDbInviteToInvite, nondirectionalDbInviteToInvite,
+} from "../schema/common.ts";
 
 export interface Request {
 	request_options: InviteOptions;
@@ -61,28 +64,8 @@ export async function run(
 				hidePostExpire: request_options.expiration?.hidden_after_expiration,
 			},
 		});
-		
-		const dbExpiration = dbInvite.expiration;
-		const dbHidePostExpire = dbInvite.hidePostExpire;
 
-		const invite: Invite = {
-			from: dbInvite.fromUserId,
-			to: dbInvite.toUserId,
-
-			for: dbInvite.for,
-			directional: true,
-
-			module: dbInvite.originModule,
-			
-			created: dbInvite.createdAt.toJSON(),
-			expiration: (dbExpiration && dbHidePostExpire) ? {
-				ms: dbExpiration.getTime() - dbInvite.createdAt.getTime(),
-				hidden_after_expiration: dbHidePostExpire,
-			} : undefined,
-			expires: dbExpiration?.toJSON() ?? null,
-		};
-
-		return { invite };
+		return { invite: directionalDbInviteToInvite(dbInvite) };
 	} else {
 		const dbInvite = await ctx.db.activeNondirectionalInvite.create({
 			data: {
@@ -98,27 +81,6 @@ export async function run(
 			},
 		});
 
-		const dbExpiration = dbInvite.expiration;
-		const dbHidePostExpire = dbInvite.hidePostExpire;
-
-		const invite: Invite = {
-			from: dbInvite.senderId,
-			to: dbInvite.userAId === dbInvite.senderId ? dbInvite.userBId : dbInvite.userAId,
-
-			for: dbInvite.for,
-			directional: false,
-
-			module: dbInvite.originModule,
-			
-			created: dbInvite.createdAt.toJSON(),
-			expiration: (dbExpiration && dbHidePostExpire) ? {
-				ms: dbExpiration.getTime() - Date.now(),
-				hidden_after_expiration: dbHidePostExpire,
-			} : undefined,
-			expires: dbExpiration?.toJSON() ?? null,
-		};
-
-		return { invite };
-	
+		return { invite: nondirectionalDbInviteToInvite(dbInvite) };
 	}
 }
