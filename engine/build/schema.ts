@@ -1,8 +1,6 @@
 import tjs from "typescript-json-schema";
 import { Registry } from "../registry/mod.ts";
 
-// const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
-
 export function compileSchema(registry: Registry) {
 	for (const module of registry.modules.values()) {
 		for (const script of module.scripts.values()) {
