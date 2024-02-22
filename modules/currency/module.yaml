@@ -3,9 +3,9 @@ authors:
   - ABCxFF
 scripts:
   # Maybe deposit?
-  give_user: {}
+  deposit: {}
   # Maybe withdraw?
-  take_user: {}
+  withdraw: {}
   get_balance: {}
   set_balance: {}
   get_balance_by_token:
