@@ -2,7 +2,7 @@ import { Runtime } from "./runtime.ts";
 import { Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
-import { BaseModuleProxyBuilder } from "./proxy.ts";
+import { buildRegistryProxy } from "./proxy.ts";
 
 import type { RegistryCallFn } from "@ogs/helpers/registry.d.ts";
 
@@ -78,7 +78,7 @@ export class Context {
 	};
 
 	public get modules() {
-		return BaseModuleProxyBuilder.buildProxyForRegistry(this.runtime.config.modules, this);
+		return buildRegistryProxy(this.runtime.config.modules, this);
 	}
 
 	public async tryCallRaw(moduleName: string, scriptName: string, req: unknown): Promise<object | null> {
