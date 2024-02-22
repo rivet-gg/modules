@@ -13,4 +13,5 @@ scripts:
 errors:
   INVALID_USER: {}
   INVALID_AMOUNT: {}
+  INVALID_BALANCE: {}
   NOT_ENOUGH_FUNDS: {}
