@@ -1,4 +1,4 @@
-import { prisma } from "@ogs/helpers/currency/mod.ts"
+import { prisma } from "@ogs/helpers/currency/mod.ts";
 
 type LimittedDB = Omit<
 	prisma.Prisma.DefaultPrismaClient,

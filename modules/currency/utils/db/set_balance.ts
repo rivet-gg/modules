@@ -1,10 +1,9 @@
-import { prisma } from "@ogs/helpers/currency/mod.ts"
+import { prisma } from "@ogs/helpers/currency/mod.ts";
 
 type LimittedDB = Omit<
 	prisma.Prisma.DefaultPrismaClient,
 	"$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
-
 
 export const setBalance = async (
 	db: LimittedDB,
