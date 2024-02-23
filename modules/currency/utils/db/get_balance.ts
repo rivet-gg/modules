@@ -1,14 +1,12 @@
-// import { PrismaClient } from "../../../dist/prisma/currency/default.js";
-// import { Prisma } from "../../../dist/prisma/currency/default.js";
-// import { DefaultArgs } from "../../../dist/prisma/currency/runtime/library.js";
+import { prisma } from "@ogs/helpers/currency/mod.ts"
 
-// type LimittedDB = Omit<
-// 	PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
-// 	"$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
-// >;
+type LimittedDB = Omit<
+	prisma.Prisma.DefaultPrismaClient,
+	"$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 export const getBalance = async (
-	db: any,
+	db: LimittedDB,
 	userId: string,
 ): Promise<number> => {
 	const user = await db.userWallet.findFirst({
