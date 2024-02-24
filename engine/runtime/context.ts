@@ -81,7 +81,11 @@ export class Context {
 		return buildRegistryProxy(this.runtime.config.modules, this);
 	}
 
-	public async tryCallRaw(moduleName: string, scriptName: string, req: unknown): Promise<object | null> {
+	public async tryCallRaw(
+		moduleName: string,
+		scriptName: string,
+		req: unknown,
+	): Promise<object | null> {
 		// Lookup module
 		const module = this.runtime.config.modules[moduleName];
 		if (!module) return null;
@@ -93,7 +97,11 @@ export class Context {
 		return await this.call(moduleName as any, scriptName as any, req);
 	}
 
-	public canCall(moduleName: string, scriptName: string, req?: unknown): boolean {
+	public canCall(
+		moduleName: string,
+		scriptName: string,
+		req?: unknown,
+	): boolean {
 		// Lookup module
 		const module = this.runtime.config.modules[moduleName];
 		if (!module) return false;

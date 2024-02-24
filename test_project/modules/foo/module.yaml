@@ -1,0 +1,10 @@
+status: preview
+authors:
+  - NathanFlurry
+scripts:
+  get:
+    public: true
+  register:
+    public: true
+  validate_token: {}
+errors: {}
