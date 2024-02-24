@@ -91,6 +91,7 @@ export class Runtime {
 
 			// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/35
 			sanitizeOps: false,
+			sanitizeResources: false,
 
 			async fn() {
 				const runtime = new Runtime(config);
