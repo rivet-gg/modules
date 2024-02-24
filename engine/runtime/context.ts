@@ -3,17 +3,19 @@ import { Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 
+import type { RegistryCallFn } from "@ogs/helpers/registry.d.ts"
+
 export class Context {
 	public constructor(
 		protected readonly runtime: Runtime,
 		public readonly trace: Trace,
 	) {}
 
-	public async call(
-		moduleName: string,
-		scriptName: string,
-		req: unknown,
-	): Promise<unknown> {
+	public call: RegistryCallFn<Context> = async function(
+		moduleName,
+		scriptName,
+		req,
+	) {
 		console.log(
 			`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`,
 		);
@@ -64,7 +66,7 @@ export class Context {
 				);
 			}
 
-			return res;
+			return res as any;
 		} catch (cause) {
 			console.warn(
 				`Failed to execute script: ${moduleName}.${scriptName}`,
@@ -72,6 +74,33 @@ export class Context {
 			);
 			throw cause;
 		}
+	}
+
+	public async tryCallRaw(moduleName: string, scriptName: string, req: unknown): Promise<object | null> {
+		// Lookup module
+		const module = this.runtime.config.modules[moduleName];
+		if (!module) return null;
+
+		// Lookup script
+		const script = module.scripts[scriptName];
+		if (!script) return null;
+
+		return await this.call(moduleName as any, scriptName as any, req);
+	}
+
+	public canCall(moduleName: string, scriptName: string, req?: unknown): boolean {
+		// Lookup module
+		const module = this.runtime.config.modules[moduleName];
+		if (!module) return false;
+
+		// Lookup script
+		const script = module.scripts[scriptName];
+		if (!script) return false;
+
+		const validateRequest = this.runtime.ajv.compile(script.requestSchema);
+		if (req && !validateRequest(req)) return false;
+
+		return true;
 	}
 
 	/**

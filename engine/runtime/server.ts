@@ -29,8 +29,8 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 
 					// Match module
 					const output = await ctx.call(
-						moduleName,
-						scriptName,
+						moduleName as any,
+						scriptName as any,
 						await req.json(),
 					);
 
