@@ -6,19 +6,20 @@ import { exists } from "std/fs/exists.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
 
-export interface Registry {
+export interface Project {
 	path: string;
 	projectConfig: ProjectConfig;
 	modules: Map<string, Module>;
 }
 
-export async function loadRegistry(): Promise<Registry> {
-	// Derive root path
-	const ogsPathEnv = Deno.env.get("OGS_PATH");
-	if (!ogsPathEnv) throw new Error("OGS_PATH environment variable not set");
-	const projectRoot = path.join(Deno.cwd(), ogsPathEnv);
+export interface LoadProjectOpts {
+	path?: string;
+}
 
-	console.log("Loading registry", projectRoot);
+export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
+	const projectRoot = path.join(Deno.cwd(), opts.path ?? ".");
+
+	console.log("Loading project", projectRoot);
 
 	// Read project config
 	const projectConfig = await readProjectConfig(

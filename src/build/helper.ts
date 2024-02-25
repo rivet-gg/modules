@@ -1,28 +1,28 @@
 import {
 	Module,
 	moduleDistHelperPath,
-	Registry,
+	Project,
 	Script,
 	scriptDistHelperPath,
 	testDistHelperPath,
-} from "../registry/mod.ts";
+} from "../project/mod.ts";
 import * as path from "std/path/mod.ts";
 
-export async function compileScriptHelpers(registry: Registry) {
-	for (const module of registry.modules.values()) {
-		await compileModuleHelper(registry, module);
-		await compileTestHelper(registry, module);
+export async function compileScriptHelpers(project: Project) {
+	for (const module of project.modules.values()) {
+		await compileModuleHelper(project, module);
+		await compileTestHelper(project, module);
 
 		for (const script of module.scripts.values()) {
-			await compileScriptHelper(registry, module, script);
+			await compileScriptHelper(project, module, script);
 		}
 	}
 
-	await compileTypeHelpers(registry);
+	await compileTypeHelpers(project);
 }
 
 async function compileModuleHelper(
-	registry: Registry,
+	project: Project,
 	module: Module,
 ) {
 	console.log("Generating module", module.path);
@@ -48,13 +48,13 @@ export type ModuleContext = ModuleContextInner<${
 `;
 
 	// Write source
-	const helperPath = moduleDistHelperPath(registry, module);
+	const helperPath = moduleDistHelperPath(project, module);
 	await Deno.mkdir(path.dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
 
 async function compileTestHelper(
-	registry: Registry,
+	project: Project,
 	module: Module,
 ) {
 	console.log("Generating test", module.path);
@@ -79,13 +79,13 @@ export function test(name: string, fn: TestFn) {
 `;
 
 	// Write source
-	const helperPath = testDistHelperPath(registry, module);
+	const helperPath = testDistHelperPath(project, module);
 	await Deno.mkdir(path.dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
 
 async function compileScriptHelper(
-	registry: Registry,
+	project: Project,
 	module: Module,
 	script: Script,
 ) {
@@ -109,14 +109,14 @@ export type ScriptContext = ScriptContextInner<${
 `;
 
 	// Write source
-	const helperPath = scriptDistHelperPath(registry, module, script);
+	const helperPath = scriptDistHelperPath(project, module, script);
 	await Deno.mkdir(path.dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
 
-async function compileTypeHelpers(registry: Registry) {
+async function compileTypeHelpers(project: Project) {
 	const typedefPath = path.join(
-		registry.path,
+		project.path,
 		"dist",
 		"helpers",
 		"registry.d.ts",
@@ -124,7 +124,7 @@ async function compileTypeHelpers(registry: Registry) {
 
 	const modules: string[] = [];
 
-	for (const module of registry.modules.values()) {
+	for (const module of project.modules.values()) {
 		const scripts: string[] = [];
 
 		const moduleInterfaceName = `${module.name}Module`;
@@ -135,7 +135,7 @@ async function compileTypeHelpers(registry: Registry) {
 			const responseTypeName = `${scriptId}Res`;
 
 			const absoluteImportPath = path.join(
-				registry.path,
+				project.path,
 				"modules",
 				module.name,
 				"scripts",

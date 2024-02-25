@@ -1,20 +1,20 @@
 import * as path from "std/path/mod.ts";
-import { loadRegistry } from "../registry/registry.ts";
+import { loadProject } from "../project/mod.ts";
 
 const moduleName = Deno.args[0];
 const migrationName = Deno.args[1];
 if (!moduleName) throw new Error("Module name required");
 if (!migrationName) throw new Error("Migration name required");
 
-const registry = await loadRegistry();
+const project = await loadProject();
 
-const mod = registry.modules.get(moduleName);
+const mod = project.modules.get(moduleName);
 if (!mod) {
 	throw new Error(`Missing module ${moduleName}`);
 }
 
 const migrationsPath = path.join(
-	registry.path,
+	project.path,
 	"modules",
 	moduleName,
 	"db",
@@ -42,7 +42,7 @@ const migrationNameFull = migrationNumber + "_" + migrationName;
 
 // Write default config
 const migrationPath = path.join(
-	registry.path,
+	project.path,
 	"modules",
 	moduleName,
 	"db",

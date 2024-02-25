@@ -1,12 +1,12 @@
 import tjs from "typescript-json-schema";
-import { Registry } from "../registry/mod.ts";
+import { Project } from "../project/mod.ts";
 
-export function compileSchema(registry: Registry) {
-	for (const module of registry.modules.values()) {
+export function compileSchema(project: Project) {
+	for (const module of project.modules.values()) {
 		for (const script of module.scripts.values()) {
 			console.log("Generating schema", script.path);
 
-			// TODO: Dupe of registry.ts
+			// TODO: Dupe of project.ts
 			// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
 			const DEFAULT_COMPILER_OPTIONS = {
 				"allowJs": true,

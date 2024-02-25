@@ -1,17 +1,17 @@
 import * as path from "std/path/mod.ts";
-import { loadRegistry } from "../registry/registry.ts";
+import { loadProject } from "../project/mod.ts";
 
 const moduleName = Deno.args[0];
 if (!moduleName) throw new Error("Module name required");
 
-const registry = await loadRegistry();
+const project = await loadProject();
 
-if (registry.modules.has(moduleName)) {
+if (project.modules.has(moduleName)) {
 	throw new Error("Module already exists");
 }
 
 // Create directires
-const modulePath = path.join(registry.path, "modules", moduleName);
+const modulePath = path.join(project.path, "modules", moduleName);
 await Deno.mkdir(modulePath);
 await Deno.mkdir(path.join(modulePath, "scripts"));
 await Deno.mkdir(path.join(modulePath, "tests"));

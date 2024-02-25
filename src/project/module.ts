@@ -4,7 +4,7 @@ import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
 import { exists } from "std/fs/mod.ts";
 import { glob } from "glob";
-import { Registry } from "./registry.ts";
+import { Project } from "./project.ts";
 
 export interface Module {
 	path: string;
@@ -91,11 +91,11 @@ export async function loadModule(
  * Get the path to the dist/helpers/{}/mod.ts
  */
 export function moduleDistHelperPath(
-	registry: Registry,
+	project: Project,
 	module: Module,
 ): string {
 	return path.join(
-		registry.path,
+		project.path,
 		"dist",
 		"helpers",
 		module.name,
@@ -106,9 +106,9 @@ export function moduleDistHelperPath(
 /**
  * Get the path to the dist/helpers/{}/test.ts
  */
-export function testDistHelperPath(registry: Registry, module: Module): string {
+export function testDistHelperPath(project: Project, module: Module): string {
 	return path.join(
-		registry.path,
+		project.path,
 		"dist",
 		"helpers",
 		module.name,
