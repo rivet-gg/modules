@@ -29,14 +29,17 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 
 					// Match module
 					const output = await ctx.call(
-						moduleName,
-						scriptName,
+						moduleName as any,
+						scriptName as any,
 						await req.json(),
 					);
 
 					return new Response(JSON.stringify(output), {
 						status: 200,
-						headers: { "Content-Type": "application/json" },
+						headers: {
+							"Content-Type": "application/json",
+							"Access-Control-Allow-Origin": "*",
+						},
 					});
 				}
 			}

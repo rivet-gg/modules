@@ -60,7 +60,10 @@ await Deno.writeTextFile(
 );
 
 // Write default config
-const scriptTs = `import { ScriptContext } from "@ogs/runtime";
+const scriptTs = `import {
+	RuntimeError,
+	ScriptContext,
+} from "@ogs/helpers/${moduleName}/scripts/${scriptName}.ts";
 
 export interface Request {
     
@@ -76,6 +79,7 @@ export async function run(
 ): Promise<Response> {
 	await ctx.call("rate_limit", "throttle", {});
 
+	// TODO: Implement code for ${moduleName}/${scriptName}
     throw new Error("Unimplemented");
 }
 
