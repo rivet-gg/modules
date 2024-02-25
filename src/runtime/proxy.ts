@@ -3,7 +3,7 @@ import type {
 	RequestOf,
 	ResponseOf,
 } from "@ogs/helpers/registry.d.ts";
-import { Context, Module } from "@ogs/runtime";
+import { Context, Module } from "./mod.ts";
 
 /**
  * Typed module accessor
