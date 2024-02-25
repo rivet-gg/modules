@@ -36,7 +36,10 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 
 					return new Response(JSON.stringify(output), {
 						status: 200,
-						headers: { "Content-Type": "application/json" },
+						headers: {
+							"Content-Type": "application/json",
+							"Access-Control-Allow-Origin": "*",
+						},
 					});
 				}
 			}
