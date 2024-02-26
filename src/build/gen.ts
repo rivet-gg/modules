@@ -1,12 +1,13 @@
 import { dirname, join, relative } from "../deps.ts";
 import {
 	Module,
-	moduleDistHelperPath,
+	moduleGenPath,
 	Project,
 	Script,
-	scriptDistHelperPath,
-	testDistHelperPath,
+	scriptGenPath,
+	testGenPath,
 } from "../project/mod.ts";
+import { getRuntimePath } from "./ogs_source.ts";
 
 export async function compileScriptHelpers(project: Project) {
 	for (const module of project.modules.values()) {
@@ -27,20 +28,22 @@ async function compileModuleHelper(
 ) {
 	console.log("Generating module", module.path);
 
+	const runtimePath = await getRuntimePath(project);
+
 	// Generate source
 	const source = `
-import { ModuleContext as ModuleContextInner } from "@ogs/runtime";
+import { ModuleContext as ModuleContextInner } from "${runtimePath}";
 ${
 		module.db
 			? `
-import prisma from "../../prisma/${module.name}/esm.js";
+import prisma from "./prisma/esm.js";
 export { prisma };
 export const Prisma = prisma.Prisma;
 `
 			: ""
 	}
 
-export { RuntimeError } from "@ogs/runtime";
+export { RuntimeError } from "${runtimePath}";
 
 export type ModuleContext = ModuleContextInner<${
 		module.db ? "prisma.PrismaClient" : "undefined"
@@ -48,7 +51,7 @@ export type ModuleContext = ModuleContextInner<${
 `;
 
 	// Write source
-	const helperPath = moduleDistHelperPath(project, module);
+	const helperPath = moduleGenPath(project, module);
 	await Deno.mkdir(dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
@@ -58,12 +61,13 @@ async function compileTestHelper(
 	module: Module,
 ) {
 	console.log("Generating test", module.path);
+	const runtimePath = await getRuntimePath(project);
 
 	// Generate source
 	const source = `
 import * as module from "./mod.ts";
-import { Runtime, TestContext as TestContextInner } from "@ogs/runtime";
-import config from "../../../dist/runtime_config.ts";
+import { Runtime, TestContext as TestContextInner } from "${runtimePath}";
+import config from "../../../_gen/runtime_config.ts";
 
 export * from "./mod.ts";
 
@@ -79,7 +83,7 @@ export function test(name: string, fn: TestFn) {
 `;
 
 	// Write source
-	const helperPath = testDistHelperPath(project, module);
+	const helperPath = testGenPath(project, module);
 	await Deno.mkdir(dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
@@ -90,14 +94,15 @@ async function compileScriptHelper(
 	script: Script,
 ) {
 	console.log("Generating script", script.path);
+	const runtimePath = await getRuntimePath(project);
 
 	// Generate source
 	const source = `
 import * as module from "../mod.ts";
-import { ScriptContext as ScriptContextInner } from "@ogs/runtime";
+import { ScriptContext as ScriptContextInner } from "${runtimePath}";
 ${
 		module.db
-			? `import { PrismaClient } from "../../../prisma/${module.name}/index.d.ts";`
+			? `import { PrismaClient } from "../prisma/index.d.ts";`
 			: ""
 	}
 
@@ -109,7 +114,7 @@ export type ScriptContext = ScriptContextInner<${
 `;
 
 	// Write source
-	const helperPath = scriptDistHelperPath(project, module, script);
+	const helperPath = scriptGenPath(project, module, script);
 	await Deno.mkdir(dirname(helperPath), { recursive: true });
 	await Deno.writeTextFile(helperPath, source);
 }
@@ -117,8 +122,7 @@ export type ScriptContext = ScriptContextInner<${
 async function compileTypeHelpers(project: Project) {
 	const typedefPath = join(
 		project.path,
-		"dist",
-		"helpers",
+		"_gen",
 		"registry.d.ts",
 	);
 

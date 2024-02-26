@@ -1,7 +1,9 @@
-import { Command, join } from "../../deps.ts";
+import { join } from "../../deps.ts";
+import { Command, glob } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build } from "../../build/mod.ts";
 
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()
 	.option("--no-format", "Don't format modules")
 	.option("--no-build", "Don't build source files")
@@ -9,12 +11,9 @@ export const testCommand = new Command<GlobalOpts>()
 	// .option("--no-lint", "Don't lint the codebase")
 	.option("--no-check", "Don't check source files before running")
 	.option("--no-watch", "Don't automatically restart server on changes")
-	.arguments("[modules...]")
 	.action(
-		async (opts, ...modules) => {
+		async (opts) => {
 			const project = await initProject(opts);
-
-			const entrypointPath = join(project.path, "dist", "entrypoint.ts");
 
 			// TODO: Only format local modules
 			// Fmt project
@@ -66,9 +65,13 @@ export const testCommand = new Command<GlobalOpts>()
 			if (opts.watch) args.push("--watch");
 			for (const module of project.modules.values()) {
 				// Test all modules or filter module tests
-				if (!modules || modules.includes(module.name)) {
-					args.push(join(module.path, "tests", "*.ts"));
-				}
+				const testPaths = await glob.glob(join(module.path, "tests", "*.ts"));
+				args.push(...testPaths);
+				
+				// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/86
+				// if (!modules || modules.includes(module.name)) {
+				// 	args.push(join(module.path, "tests", "*.ts"));
+				// }
 			}
 
 			// Run entrypoint
@@ -76,7 +79,6 @@ export const testCommand = new Command<GlobalOpts>()
 				args: [
 					"test",
 					...args,
-					entrypointPath,
 				],
 				stdout: "inherit",
 				stderr: "inherit",

@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/helpers/users/scripts/get.ts";
+import { ScriptContext } from "../_gen/scripts/get.ts";
 import { User } from "../types/common.ts";
 
 export interface Request {

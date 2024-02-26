@@ -1,7 +1,11 @@
-import { ScriptContext } from "@ogs/helpers/users/scripts/get.ts";
+import { ScriptContext } from "../_gen/scripts/get.ts";
 import { User } from "../types/common.ts";
-import { TokenWithSecret } from "../../tokens/types/common.ts";
-import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
+
+// TODO:
+// import { TokenWithSecret } from "@module/tokens/types/common.ts";
+// import { Response as TokenCreateResponse } from "@module/tokens/scripts/create.ts";
+type TokenWithSecret = any;
+type TokenCreateResponse = any;
 
 export interface Request {
 	username: string;

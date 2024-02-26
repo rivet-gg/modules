@@ -37,11 +37,11 @@ export async function generate() {
 				"openapitools/openapi-generator-cli:v7.2.0",
 				"generate",
 				"-i",
-				"/local/dist/openapi.json",
+				"/local/_gen/openapi.json",
 				"-g",
 				config.generator,
 				"-o",
-				`/local/dist/sdks/${name}/`,
+				`/local/_gen/sdks/${name}/`,
 			],
 		}).output();
 		if (!success) {

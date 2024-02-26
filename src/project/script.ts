@@ -12,19 +12,14 @@ export interface Script {
 	responseSchema?: tjs.Definition;
 }
 
-/**
- * Get the path to the dist/helpers/{}/scripts/{}.ts
- */
-export function scriptDistHelperPath(
-	project: Project,
+export function scriptGenPath(
+	_project: Project,
 	module: Module,
 	script: Script,
 ): string {
 	return join(
-		project.path,
-		"dist",
-		"helpers",
-		module.name,
+		module.path,
+		"_gen",
 		"scripts",
 		script.name + ".ts",
 	);

@@ -20,8 +20,26 @@ deno install --allow-net --allow-read --allow-env --allow-run --allow-write --na
 
 **Setup Dev Environment**
 
+_[TODO:](https://github.com/rivet-gg/open-game-services-engine/issues/84)_
+
+Write this `docker-compose.yaml` to the root of your project:
+
+```yaml
+version: '3.1'
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
 ```
-ogs dev setup
+
+Then start the project with:
+
+```
+docker-compose up -d
 ```
 
 **Start OGS server**
@@ -56,11 +74,11 @@ ogs create script foo bar
 ogs sdk generate
 ```
 
-SDKs are generated to `dist/sdks/`.
+SDKs are generated to `_gen/sdks/`.
 
 **OpenAPI & Postman/Insomnia/Paw**
 
-Explore the APIs by opening `dist/openapi.json` in Postman/Insomnia/Paw.
+Explore the APIs by opening `_gen/openapi.json` in Postman/Insomnia/Paw.
 
 ## Goals
 

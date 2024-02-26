@@ -13,13 +13,6 @@ export { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert
 
 export { fileURLToPath } from "node:url";
 
-export {
-	Command,
-	CompletionsCommand,
-	HelpCommand,
-	ValidationError,
-} from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
-
 export * as tjs from "npm:typescript-json-schema@^0.62.0";
 
 import Ajv from "npm:ajv@^8.12.0";

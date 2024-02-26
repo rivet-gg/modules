@@ -1,4 +1,4 @@
-import { ScriptContext } from "@ogs/helpers/users/scripts/validate_token.ts";
+import { ScriptContext } from "../_gen/scripts/validate_token.ts";
 
 export interface Request {
 	userToken: string;

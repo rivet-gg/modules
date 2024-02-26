@@ -34,7 +34,8 @@ export async function forEachDatabase(
 	try {
 		for (const mod of project.modules.values()) {
 			if (!mod.db) continue;
-			if (dbFilter && mod.name !== dbFilter) continue;
+			// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/83
+			// if (dbFilter && mod.name !== dbFilter) continue;
 
 			// Create database
 			await createDatabases(defaultClient, mod.db);
@@ -59,14 +60,13 @@ export async function forEachPrismaSchema(
 	project: Project,
 	callback: ForEachPrismaSchemaCallback,
 ) {
-	forEachDatabase(project, async ({ databaseUrl, module, db }) => {
+	await forEachDatabase(project, async ({ databaseUrl, module, db }) => {
 		const tempDir = await Deno.makeTempDir();
 		const dbDir = join(module.path, "db");
 		const generatedClientDir = join(
-			project.path,
-			"dist",
+			module.path,
+			"_gen",
 			"prisma",
-			module.name,
 		);
 
 		// Duplicate db directory

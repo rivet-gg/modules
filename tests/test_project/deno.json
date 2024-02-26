@@ -1,16 +1,23 @@
 {
-	"imports": {
-		"@ogs/runtime": "../../src/runtime/mod.ts",
-		"@ogs/helpers/": "./dist/helpers/"
-	},
-	"lint": {
-		"include": ["src/"],
-		"exclude": ["tests/"],
-		"rules": {
-			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
-		}
-	},
-	"fmt": {
-		"useTabs": true
-	}
+    "imports": {
+        "@ogs/runtime": "/Users/nathan/rivet/ogs-engine/src/runtime/mod.ts"
+    },
+    "lint": {
+        "include": [
+            "src/"
+        ],
+        "exclude": [
+            "tests/"
+        ],
+        "rules": {
+            "exclude": [
+                "no-empty-interface",
+                "no-explicit-any",
+                "require-await"
+            ]
+        }
+    },
+    "fmt": {
+        "useTabs": true
+    }
 }

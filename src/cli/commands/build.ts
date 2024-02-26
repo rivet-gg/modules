@@ -1,4 +1,4 @@
-import { Command } from "../../deps.ts";
+import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build } from "../../build/mod.ts";
 
