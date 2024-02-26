@@ -1,34 +1,6 @@
 {
 	"tasks": {
-		"dev:setup": "docker-compose up -d",
-		"dev:teardown": "docker-compose down",
-
-		"pg:sh": "docker-compose exec -it postgres psql --username postgres",
-
-		"build": "deno run --check --allow-read --allow-write --allow-run --allow-env src/build/index.ts",
-
-		"migrate": "deno task migrate:dev",
-		"migrate:dev": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/dev.ts",
-		"migrate:status": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/status.ts",
-		"migrate:reset": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/reset.ts",
-		"migrate:deploy": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/deploy.ts",
-
-		"entrypoint": "deno run --check --allow-env --allow-net --allow-read dist/entrypoint.ts",
-		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --allow-read dist/entrypoint.ts",
-
-		"start": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint",
-		"start:watch": "deno fmt && deno task build && deno task migrate && deno lint && deno task entrypoint:watch",
-
-		"test": "deno task build && deno task migrate && deno task test:fast",
-		"test:fast": "deno test --check -A",
-		"test:all": "deno task build && deno task migrate && deno task test:all:fast",
-		"test:all:fast": "deno test --check -A modules/*/tests/*.ts",
-
-		"sdk:gen": "deno run --check --allow-read --allow-run src/sdk_gen/index.ts",
-
-		"create:module": "deno run --check --allow-read --allow-write src/template/module.ts",
-		"create:script": "deno run --check --allow-read --allow-write src/template/script.ts",
-		"create:migration": "deno run --check --allow-read --allow-write src/template/migration.ts"
+		"cli": "deno run -A --check src/cli/main.ts --path tests/test_project"
 	},
 	"imports": {
 		"@ogs/runtime": "./src/runtime/mod.ts",
@@ -49,7 +21,7 @@
 	},
 	"lint": {
 		"include": ["src/"],
-		"exclude": ["modules/*/tests/*.ts"],
+		"exclude": ["tests/"],
 		"rules": {
 			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
 		}
