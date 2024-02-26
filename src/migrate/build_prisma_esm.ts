@@ -1,7 +1,6 @@
-import * as path from "std/path/mod.ts";
-import { Plugin } from "esbuild";
-import * as esbuild from "esbuild";
-import { polyfillNodeForDeno } from "esbuild-plugin-polyfill-node";
+import { resolve, join, isAbsolute } from "../deps.ts";
+import { esbuild, polyfillNodeForDeno } from "./deps.ts";
+type Plugin = esbuild.Plugin;
 
 /** Builds a single ESM file for a given Prisma package. */
 export async function buildPrismaPackage(
@@ -10,7 +9,7 @@ export async function buildPrismaPackage(
 ) {
 	// Build the ESM file
 	await esbuild.build({
-		entryPoints: [path.resolve(prismaModuleDir, "wasm.js")],
+		entryPoints: [resolve(prismaModuleDir, "wasm.js")],
 		bundle: true,
 		outfile: outFile,
 		plugins: [
@@ -58,9 +57,9 @@ function wasmPlugin(): Plugin {
 					return; // Ignore unresolvable paths
 				}
 				return {
-					path: path.isAbsolute(args.path)
+					path: isAbsolute(args.path)
 						? args.path
-						: path.join(args.resolveDir, args.path),
+						: join(args.resolveDir, args.path),
 					namespace: "wasm-stub",
 				};
 			});

@@ -2,25 +2,17 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "npm:@faker-js/faker@^8.4.1": "npm:@faker-js/faker@8.4.1",
       "npm:@neondatabase/serverless": "npm:@neondatabase/serverless@0.8.1",
       "npm:@neondatabase/serverless@0.7.2": "npm:@neondatabase/serverless@0.7.2",
       "npm:@prisma/adapter-neon": "npm:@prisma/adapter-neon@5.9.1_@neondatabase+serverless@0.7.2",
       "npm:@prisma/adapter-neon@5.9.1": "npm:@prisma/adapter-neon@5.9.1_@neondatabase+serverless@0.7.2",
-      "npm:@prisma/adapter-pg@^5.9.1": "npm:@prisma/adapter-pg@5.9.1_pg@8.11.3",
-      "npm:@rivet-gg/esbuild-plugin-polyfill-node": "npm:@rivet-gg/esbuild-plugin-polyfill-node@0.4.0_esbuild@0.20.0",
       "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0": "npm:@rivet-gg/esbuild-plugin-polyfill-node@0.4.0_esbuild@0.20.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
-      "npm:ajv-formats@2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
       "npm:ajv-formats@^2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
       "npm:ajv@^8.12.0": "npm:ajv@8.12.0",
-      "npm:esbuild": "npm:esbuild@0.20.0",
       "npm:esbuild@^0.20.0": "npm:esbuild@0.20.0",
       "npm:glob@^10.3.10": "npm:glob@10.3.10",
-      "npm:pg": "npm:pg@8.11.3",
-      "npm:pg@8.11.3": "npm:pg@8.11.3",
-      "npm:pg@^8.11.3": "npm:pg@8.11.3",
-      "npm:typescript-json-schema@^0.62.0": "npm:typescript-json-schema@0.62.0_typescript@5.1.6",
+      "npm:typescript-json-schema@^0.62.0": "npm:typescript-json-schema@0.62.0_@types+node@18.16.19_typescript@5.1.6",
       "npm:ws": "npm:ws@8.16.0"
     },
     "npm": {
@@ -122,10 +114,6 @@
         "integrity": "sha512-NgJnesu1RtWihtTtXGFMU5YSE6JyyHPMxCwBZK7a6/8d31GuSo9l0Ss7w1Jw5QnKUawG6UEehs883kcXf5fYwg==",
         "dependencies": {}
       },
-      "@faker-js/faker@8.4.1": {
-        "integrity": "sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==",
-        "dependencies": {}
-      },
       "@isaacs/cliui@8.0.2": {
         "integrity": "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==",
         "dependencies": {
@@ -177,14 +165,6 @@
         "dependencies": {
           "@neondatabase/serverless": "@neondatabase/serverless@0.7.2",
           "@prisma/driver-adapter-utils": "@prisma/driver-adapter-utils@5.9.1",
-          "postgres-array": "postgres-array@3.0.2"
-        }
-      },
-      "@prisma/adapter-pg@5.9.1_pg@8.11.3": {
-        "integrity": "sha512-0RhnB1sqLmSzilbIQS75YE5qTNotlGvLWhTG7cp+F59VJdQ5sWWXZ1j2W4Tn+AMb116Yp4AuFe0vggW2f+ujiQ==",
-        "dependencies": {
-          "@prisma/driver-adapter-utils": "@prisma/driver-adapter-utils@5.9.1",
-          "pg": "pg@8.11.3",
           "postgres-array": "postgres-array@3.0.2"
         }
       },
@@ -299,10 +279,6 @@
         "dependencies": {
           "balanced-match": "balanced-match@1.0.2"
         }
-      },
-      "buffer-writer@2.0.0": {
-        "integrity": "sha512-a7ZpuTZU1TRtnwyCNW3I5dc0wWNC3VR9S++Ewyk2HHZdrO3CQJqSpd+95Us590V6AL7JqUAH2IwZ/398PmNFgw==",
-        "dependencies": {}
       },
       "cliui@8.0.1": {
         "integrity": "sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==",
@@ -500,10 +476,6 @@
           "wrappy": "wrappy@1.0.2"
         }
       },
-      "packet-reader@1.0.0": {
-        "integrity": "sha512-HAKu/fG3HpHFO0AA8WE8q2g+gBJaZ9MG7fcKk+IJPLTGAD6Psw4443l+9DGRbOIh3/aXr7Phy0TjilYivJo5XQ==",
-        "dependencies": {}
-      },
       "path-equal@1.2.5": {
         "integrity": "sha512-i73IctDr3F2W+bsOWDyyVm/lqsXO47aY9nsFZUjTT/aljSbkxHxxCoyZ9UUrM8jK0JVod+An+rl48RCsvWM+9g==",
         "dependencies": {}
@@ -523,23 +495,9 @@
           "minipass": "minipass@7.0.4"
         }
       },
-      "pg-cloudflare@1.1.1": {
-        "integrity": "sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==",
-        "dependencies": {}
-      },
-      "pg-connection-string@2.6.2": {
-        "integrity": "sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==",
-        "dependencies": {}
-      },
       "pg-int8@1.0.1": {
         "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==",
         "dependencies": {}
-      },
-      "pg-pool@3.6.1_pg@8.11.3": {
-        "integrity": "sha512-jizsIzhkIitxCGfPRzJn1ZdcosIt3pz9Sh3V01fm1vZnbnCMgmGl5wvGGdNN2EL9Rmb0EcFoCkixH4Pu+sP9Og==",
-        "dependencies": {
-          "pg": "pg@8.11.3"
-        }
       },
       "pg-protocol@1.6.0": {
         "integrity": "sha512-M+PDm637OY5WM307051+bsDia5Xej6d9IR4GwJse1qA1DIhiKlksvrneZOYQq42OM+spubpcNYEo2FcKQrDk+Q==",
@@ -553,25 +511,6 @@
           "postgres-bytea": "postgres-bytea@1.0.0",
           "postgres-date": "postgres-date@1.0.7",
           "postgres-interval": "postgres-interval@1.2.0"
-        }
-      },
-      "pg@8.11.3": {
-        "integrity": "sha512-+9iuvG8QfaaUrrph+kpF24cXkH1YOOUeArRNYIxq1viYHZagBxrTno7cecY1Fa44tJeZvaoG+Djpkc3JwehN5g==",
-        "dependencies": {
-          "buffer-writer": "buffer-writer@2.0.0",
-          "packet-reader": "packet-reader@1.0.0",
-          "pg-cloudflare": "pg-cloudflare@1.1.1",
-          "pg-connection-string": "pg-connection-string@2.6.2",
-          "pg-pool": "pg-pool@3.6.1_pg@8.11.3",
-          "pg-protocol": "pg-protocol@1.6.0",
-          "pg-types": "pg-types@2.2.0",
-          "pgpass": "pgpass@1.0.5"
-        }
-      },
-      "pgpass@1.0.5": {
-        "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
-        "dependencies": {
-          "split2": "split2@4.2.0"
         }
       },
       "postgres-array@2.0.0": {
@@ -626,10 +565,6 @@
         "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
         "dependencies": {}
       },
-      "split2@4.2.0": {
-        "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==",
-        "dependencies": {}
-      },
       "string-width@4.2.3": {
         "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
         "dependencies": {
@@ -678,7 +613,7 @@
           "yn": "yn@3.1.1"
         }
       },
-      "typescript-json-schema@0.62.0_typescript@5.1.6": {
+      "typescript-json-schema@0.62.0_@types+node@18.16.19_typescript@5.1.6": {
         "integrity": "sha512-qRO6pCgyjKJ230QYdOxDRpdQrBeeino4v5p2rYmSD72Jf4rD3O+cJcROv46sQukm46CLWoeusqvBgKpynEv25g==",
         "dependencies": {
           "@types/json-schema": "@types/json-schema@7.0.15",
@@ -1382,18 +1317,5 @@
     "https://deno.land/x/postgres@v0.17.2/utils/deferred.ts": "5420531adb6c3ea29ca8aac57b9b59bd3e4b9a938a4996bbd0947a858f611080",
     "https://deno.land/x/postgres@v0.17.2/utils/utils.ts": "ca47193ea03ff5b585e487a06f106d367e509263a960b787197ce0c03113a738",
     "https://raw.githubusercontent.com/rivet-gg/esbuild-plugin-polyfill-node/nathan/deno-native-node-api/src/index.ts": "996720246108253b02fd54a8907a3fb3a37eb0e73940a2930562e1a05a532f78"
-  },
-  "workspace": {
-    "dependencies": [
-      "npm:@faker-js/faker@^8.4.1",
-      "npm:@prisma/adapter-pg@^5.9.1",
-      "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0",
-      "npm:ajv-formats@^2.1.1",
-      "npm:ajv@^8.12.0",
-      "npm:esbuild@^0.20.0",
-      "npm:glob@^10.3.10",
-      "npm:pg@^8.11.3",
-      "npm:typescript-json-schema@^0.62.0"
-    ]
   }
 }

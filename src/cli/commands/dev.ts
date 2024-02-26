@@ -1,8 +1,6 @@
-import { Command } from "cliffy/command/mod.ts";
+import { join, Command } from "../../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import * as path from "std/path/mod.ts";
 import { build } from "../../build/mod.ts";
-"";
 
 export const devCommand = new Command<GlobalOpts>();
 
@@ -40,7 +38,7 @@ devCommand
 		async (opts) => {
 			const project = await initProject(opts);
 
-			const entrypointPath = path.join(project.path, "dist", "entrypoint.ts");
+			const entrypointPath = join(project.path, "dist", "entrypoint.ts");
 
 			// TODO: Only format local modules
 			// Fmt project

@@ -1,8 +1,8 @@
-import * as postgres from "postgres/mod.ts";
+import { QueryClient, Transaction } from "./deps.ts";
 import { Module } from "./runtime.ts";
 
-type PostgresRunScope<T> = (conn: postgres.QueryClient) => Promise<T>;
-type PostgresTransactionScope<T> = (conn: postgres.Transaction) => Promise<T>;
+type PostgresRunScope<T> = (conn: QueryClient) => Promise<T>;
+type PostgresTransactionScope<T> = (conn: Transaction) => Promise<T>;
 
 export interface PrismaClientDummy {
 	$disconnect(): Promise<void>;

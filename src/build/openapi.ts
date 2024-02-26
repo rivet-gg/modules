@@ -1,6 +1,5 @@
-import * as path from "std/path/mod.ts";
+import { join, tjs } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import * as tjs from "typescript-json-schema";
 
 // deno-lint-ignore no-explicit-any
 type OpenApiDefinition = any;
@@ -72,7 +71,7 @@ export async function generateOpenApi(project: Project) {
 	}
 
 	await Deno.writeTextFile(
-		path.join(project.path, "dist", "openapi.json"),
+		join(project.path, "dist", "openapi.json"),
 		JSON.stringify(schema, null, 4),
 	);
 }

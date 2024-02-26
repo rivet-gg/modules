@@ -1,9 +1,8 @@
+import { assertExists, assertEquals } from "../deps.ts";
 import { ModuleContext } from "./context.ts";
 import { RuntimeError } from "./error.ts";
 import { newTrace } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
-import { assertExists } from "std/assert/assert_exists.ts";
-import { assertEquals } from "std/assert/assert_equals.ts";
 
 Deno.test("error", async () => {
 	// Setup
