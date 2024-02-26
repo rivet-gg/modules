@@ -5,13 +5,13 @@
 
 		"pg:sh": "docker-compose exec -it postgres psql --username postgres",
 
-		"build": "deno run --check --allow-read --allow-write --allow-run --allow-env engine/build/index.ts",
+		"build": "deno run --check --allow-read --allow-write --allow-run --allow-env src/build/index.ts",
 
 		"migrate": "deno task migrate:dev",
-		"migrate:dev": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/dev.ts",
-		"migrate:status": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/status.ts",
-		"migrate:reset": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/reset.ts",
-		"migrate:deploy": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/deploy.ts",
+		"migrate:dev": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/dev.ts",
+		"migrate:status": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/status.ts",
+		"migrate:reset": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/reset.ts",
+		"migrate:deploy": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write src/migrate/deploy.ts",
 
 		"entrypoint": "deno run --check --allow-env --allow-net --allow-read dist/entrypoint.ts",
 		"entrypoint:watch": "deno run --check --watch --allow-env --allow-net --allow-read dist/entrypoint.ts",
@@ -24,15 +24,15 @@
 		"test:all": "deno task build && deno task migrate && deno task test:all:fast",
 		"test:all:fast": "deno test --check -A modules/*/tests/*.ts",
 
-		"sdk:gen": "deno run --check --allow-read --allow-run engine/sdk_gen/index.ts",
+		"sdk:gen": "deno run --check --allow-read --allow-run src/sdk_gen/index.ts",
 
-		"create:module": "deno run --check --allow-read --allow-write engine/template/module.ts",
-		"create:script": "deno run --check --allow-read --allow-write engine/template/script.ts",
-		"create:migration": "deno run --check --allow-read --allow-write engine/template/migration.ts"
+		"create:module": "deno run --check --allow-read --allow-write src/template/module.ts",
+		"create:script": "deno run --check --allow-read --allow-write src/template/script.ts",
+		"create:migration": "deno run --check --allow-read --allow-write src/template/migration.ts"
 	},
 	"imports": {
-		"@ogs/runtime": "./engine/runtime/mod.ts",
-		"@ogs/types": "./engine/types/mod.ts",
+		"@ogs/runtime": "./src/runtime/mod.ts",
+		"@ogs/types": "./src/types/mod.ts",
 		"@ogs/helpers/": "./dist/helpers/",
 		"@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
 		"std/": "https://deno.land/std@0.208.0/",
@@ -47,7 +47,7 @@
 		"esbuild-plugin-polyfill-node": "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0"
 	},
 	"lint": {
-		"include": ["engine/", "modules/"],
+		"include": ["src/"],
 		"exclude": ["modules/*/tests/*.ts"],
 		"rules": {
 			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
