@@ -60,7 +60,7 @@ export async function templateScript(
 	const scriptTs = `import {
 	RuntimeError,
 	ScriptContext,
-} from "@ogs/helpers/${moduleName}/scripts/${scriptName}.ts";
+} from "../_gen/scripts/${scriptName}.ts";
 
 export interface Request {
     
@@ -86,8 +86,8 @@ export async function run(
 	if (createTest) {
 		// Write default config
 		const testTs =
-			`import { TestContext, Runtime } from "@ogs/helpers/${moduleName}/test.ts";
-import { assertExists } from "std/assert/assert_exists.ts";
+			`import { TestContext, Runtime } from "@generated/${moduleName}/test.ts";
+export { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 test("e2e", async (ctx: TestContext) => {
 	const res = await ctx.call("${moduleName}", "${scriptName}", {

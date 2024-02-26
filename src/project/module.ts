@@ -86,31 +86,21 @@ export async function loadModule(
 	};
 }
 
-/**
- * Get the path to the dist/helpers/{}/mod.ts
- */
-export function moduleDistHelperPath(
-	project: Project,
+export function moduleGenPath(
+	_project: Project,
 	module: Module,
 ): string {
 	return join(
-		project.path,
-		"dist",
-		"helpers",
-		module.name,
+		module.path,
+		"_gen",
 		"mod.ts",
 	);
 }
 
-/**
- * Get the path to the dist/helpers/{}/test.ts
- */
-export function testDistHelperPath(project: Project, module: Module): string {
+export function testGenPath(_project: Project, module: Module): string {
 	return join(
-		project.path,
-		"dist",
-		"helpers",
-		module.name,
+		module.path,
+		"_gen",
 		"test.ts",
 	);
 }

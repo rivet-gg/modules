@@ -1,5 +1,5 @@
-import { Command } from "../../deps.ts";
-import { GlobalOpts, initProject } from "../common.ts";
+import { Command } from "../deps.ts";
+import { GlobalOpts } from "../common.ts";
 import { generate } from "../../sdk/generate.ts";
 "";
 

@@ -1,4 +1,5 @@
-import { join, Command } from "../../deps.ts";
+import { join } from "../../deps.ts";
+import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build } from "../../build/mod.ts";
 
@@ -6,25 +7,26 @@ export const devCommand = new Command<GlobalOpts>();
 
 devCommand.action(() => devCommand.showHelp());
 
-devCommand.command("setup").action(async () => {
-	const cmd = await new Deno.Command("docker-compose", {
-		args: ["up", "-d"],
-		stdout: "inherit",
-		stderr: "inherit",
-	})
-		.output();
-	if (!cmd.success) throw new Error("Failed to setup Docker Compose");
-});
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/84
+// devCommand.command("setup").action(async () => {
+// 	const cmd = await new Deno.Command("docker-compose", {
+// 		args: ["up", "-d"],
+// 		stdout: "inherit",
+// 		stderr: "inherit",
+// 	})
+// 		.output();
+// 	if (!cmd.success) throw new Error("Failed to setup Docker Compose");
+// });
 
-devCommand.command("teardown").action(async () => {
-	const cmd = await new Deno.Command("docker-compose", {
-		args: ["down", "-d"],
-		stdout: "inherit",
-		stderr: "inherit",
-	})
-		.output();
-	if (!cmd.success) throw new Error("Failed to teardown Docker Compose");
-});
+// devCommand.command("teardown").action(async () => {
+// 	const cmd = await new Deno.Command("docker-compose", {
+// 		args: ["down", "-d"],
+// 		stdout: "inherit",
+// 		stderr: "inherit",
+// 	})
+// 		.output();
+// 	if (!cmd.success) throw new Error("Failed to teardown Docker Compose");
+// });
 
 devCommand
 	.command("start")
@@ -38,7 +40,7 @@ devCommand
 		async (opts) => {
 			const project = await initProject(opts);
 
-			const entrypointPath = join(project.path, "dist", "entrypoint.ts");
+			const entrypointPath = join(project.path, "_gen", "entrypoint.ts");
 
 			// TODO: Only format local modules
 			// Fmt project

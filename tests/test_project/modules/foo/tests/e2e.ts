@@ -1,7 +1,9 @@
-import { test, TestContext } from "@ogs/helpers/users/test.ts";
-import { faker } from "@faker-js/faker";
-import { assertExists } from "std/assert/assert_exists.ts";
-import { assertEquals } from "std/assert/assert_equals.ts";
+import { test, TestContext } from "@gen/users/test.ts";
+import { faker } from "npm:@faker-js/faker@^8.4.1";
+import {
+	assertEquals,
+	assertExists,
+} from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 test("e2e", async (ctx: TestContext) => {
 	const { user, token } = await ctx.call("users", "register", {

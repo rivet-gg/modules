@@ -1,4 +1,4 @@
-import { Command } from "../../deps.ts";
+import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { migrateDev } from "../../migrate/dev.ts";
 import { migrateStatus } from "../../migrate/status.ts";
@@ -25,14 +25,15 @@ dbCommand.command("deploy").action(async (opts) => {
 	await migrateDeploy(await initProject(opts));
 });
 
-// TODO: Select module to sh in to
-dbCommand.command("sh").action(async () => {
-	const cmd = await new Deno.Command("docker-compose", {
-		args: ["exec", "-it", "postgres", "psql", "--username", "postgres"],
-		stdin: "inherit",
-		stdout: "inherit",
-		stderr: "inherit",
-	})
-		.output();
-	if (!cmd.success) throw new Error("Failed to sh in to database");
-});
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/84
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/85
+// dbCommand.command("sh").action(async () => {
+// 	const cmd = await new Deno.Command("docker-compose", {
+// 		args: ["exec", "-it", "postgres", "psql", "--username", "postgres"],
+// 		stdin: "inherit",
+// 		stdout: "inherit",
+// 		stderr: "inherit",
+// 	})
+// 		.output();
+// 	if (!cmd.success) throw new Error("Failed to sh in to database");
+// });

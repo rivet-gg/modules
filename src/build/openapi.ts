@@ -71,7 +71,7 @@ export async function generateOpenApi(project: Project) {
 	}
 
 	await Deno.writeTextFile(
-		join(project.path, "dist", "openapi.json"),
+		join(project.path, "_gen", "openapi.json"),
 		JSON.stringify(schema, null, 4),
 	);
 }

@@ -1,7 +1,7 @@
 {
 	"tasks": {
 		"cli:run": "deno run -A --check src/cli/main.ts --path tests/test_project",
-		"cli:compile": "deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --output dist/cli src/cli/main.ts"
+		"cli:compile": "deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --output _gen/cli src/cli/main.ts"
 	},
 	"lint": {
 		"include": ["src/"],
