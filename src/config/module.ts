@@ -1,8 +1,4 @@
-import Ajv from "ajv";
-import { parse } from "std/yaml/mod.ts";
-import * as path from "std/path/mod.ts";
-import tjs from "typescript-json-schema";
-import { fileURLToPath } from "node:url";
+import { Ajv, fileURLToPath, join, parse, tjs } from "../deps.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -42,7 +38,7 @@ const moduleConfigAjv = new Ajv.default({
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	// Read config
 	const configRaw = await Deno.readTextFile(
-		path.join(modulePath, "module.yaml"),
+		join(modulePath, "module.yaml"),
 	);
 	const config = parse(configRaw) as ModuleConfig;
 

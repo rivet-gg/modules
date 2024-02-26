@@ -1,9 +1,8 @@
+import { join, exists } from "../deps.ts";
+import { glob } from "./deps.ts";
 import { readConfig as readModuleConfig } from "../config/module.ts";
-import * as path from "std/path/mod.ts";
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
-import { exists } from "std/fs/mod.ts";
-import { glob } from "glob";
 import { Project } from "./project.ts";
 
 export interface Module {
@@ -28,16 +27,16 @@ export async function loadModule(
 	const config = await readModuleConfig(modulePath);
 
 	// Find names of the expected scripts to find. Used to print error for extra scripts.
-	const scriptsPath = path.join(modulePath, "scripts");
+	const scriptsPath = join(modulePath, "scripts");
 	const expectedScripts = new Set(
-		await glob("*.ts", { cwd: path.join(modulePath, "scripts") }),
+		await glob.glob("*.ts", { cwd: join(modulePath, "scripts") }),
 	);
 
 	// Read scripts
 	const scripts = new Map();
 	for (const scriptName in config.scripts) {
 		// Load script
-		const scriptPath = path.join(
+		const scriptPath = join(
 			scriptsPath,
 			scriptName + ".ts",
 		);
@@ -61,7 +60,7 @@ export async function loadModule(
 	// Throw error extra scripts
 	if (expectedScripts.size > 0) {
 		const scriptList = Array.from(expectedScripts).map((x) =>
-			`- ${path.join(scriptsPath, x)}\n`
+			`- ${join(scriptsPath, x)}\n`
 		);
 		throw new Error(
 			`Found extra scripts not registered in module.yaml:\n\n${
@@ -72,7 +71,7 @@ export async function loadModule(
 
 	// Load db config
 	let db: ModuleDatabase | undefined = undefined;
-	if (await exists(path.join(modulePath, "db"), { isDirectory: true })) {
+	if (await exists(join(modulePath, "db"), { isDirectory: true })) {
 		db = {
 			name: `module_${name.replace("-", "_")}`,
 		};
@@ -94,7 +93,7 @@ export function moduleDistHelperPath(
 	project: Project,
 	module: Module,
 ): string {
-	return path.join(
+	return join(
 		project.path,
 		"dist",
 		"helpers",
@@ -107,7 +106,7 @@ export function moduleDistHelperPath(
  * Get the path to the dist/helpers/{}/test.ts
  */
 export function testDistHelperPath(project: Project, module: Module): string {
-	return path.join(
+	return join(
 		project.path,
 		"dist",
 		"helpers",

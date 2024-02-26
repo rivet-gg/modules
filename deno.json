@@ -1,23 +1,7 @@
 {
 	"tasks": {
-		"cli": "deno run -A --check src/cli/main.ts --path tests/test_project"
-	},
-	"imports": {
-		"@ogs/runtime": "./src/runtime/mod.ts",
-		"@ogs/types": "./src/types/mod.ts",
-		"@ogs/helpers/": "./dist/helpers/",
-		"@faker-js/faker": "npm:@faker-js/faker@^8.4.1",
-		"std/": "https://deno.land/std@0.208.0/",
-		"postgres/": "https://deno.land/x/postgres@v0.17.2/",
-		"glob": "npm:glob@^10.3.10",
-		"typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
-		"ajv": "npm:ajv@^8.12.0",
-		"ajv-formats": "npm:ajv-formats@^2.1.1",
-		"pg": "npm:pg@^8.11.3",
-		"@prisma/adapter-pg": "npm:@prisma/adapter-pg@^5.9.1",
-		"esbuild": "npm:esbuild@^0.20.0",
-		"esbuild-plugin-polyfill-node": "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0",
-		"cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.3/"
+		"cli:run": "deno run -A --check src/cli/main.ts --path tests/test_project",
+		"cli:compile": "deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --output dist/cli src/cli/main.ts"
 	},
 	"lint": {
 		"include": ["src/"],

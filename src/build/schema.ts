@@ -1,4 +1,4 @@
-import tjs from "typescript-json-schema";
+import { tjs } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 
 export function compileSchema(project: Project) {

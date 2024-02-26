@@ -1,7 +1,5 @@
-import { Command } from "cliffy/command/mod.ts";
+import { Command } from "../../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import * as path from "std/path/mod.ts";
-import { build } from "../../build/mod.ts";
 import { generate } from "../../sdk/generate.ts";
 "";
 

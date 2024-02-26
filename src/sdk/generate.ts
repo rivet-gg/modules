@@ -1,6 +1,6 @@
-import * as path from "std/path/mod.ts";
+import { join, dirname, fromFileUrl } from "../deps.ts";
 
-const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
+const __dirname = dirname(fromFileUrl(import.meta.url));
 
 export async function generate() {
 	interface Generator {
@@ -14,7 +14,7 @@ export async function generate() {
 	};
 
 	async function main() {
-		const rootPath = path.join(__dirname, "..", "..", "..");
+		const rootPath = join(__dirname, "..", "..", "..");
 		for (const name in GENERATORS) {
 			const generator = GENERATORS[name];
 			await generateSdk(rootPath, name, generator);

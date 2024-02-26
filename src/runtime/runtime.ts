@@ -1,12 +1,10 @@
+import { Ajv, addFormats } from "../deps.ts";
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
-import { PrismaClientDummy } from "./postgres.ts";
-import { Postgres } from "./postgres.ts";
+import { PrismaClientDummy, Postgres } from "./postgres.ts";
 import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
 
 export interface Config {
 	modules: Record<string, Module>;

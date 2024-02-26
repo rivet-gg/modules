@@ -1,8 +1,7 @@
-import * as path from "std/path/mod.ts";
+import { exists, join } from "../deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
-import { exists } from "std/fs/exists.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
 
@@ -17,7 +16,7 @@ export interface LoadProjectOpts {
 }
 
 export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
-	const projectRoot = path.join(Deno.cwd(), opts.path ?? ".");
+	const projectRoot = join(Deno.cwd(), opts.path ?? ".");
 
 	console.log("Loading project", projectRoot);
 
@@ -50,7 +49,7 @@ async function fetchAndResolveRegistry(
 ): Promise<string> {
 	// TODO: Impl git cloning
 	if (!registry.directory) throw new Error("Registry directory not set");
-	const registryPath = path.join(projectRoot, registry.directory);
+	const registryPath = join(projectRoot, registry.directory);
 	if (!await exists(registryPath)) {
 		throw new Error(`Registry not found at ${registryPath}`);
 	}
@@ -82,8 +81,8 @@ async function fetchAndResolveModule(
 
 	// Resolve module path
 	const pathModuleName = moduleNameInRegistry(moduleName, module);
-	const modulePath = path.join(registryPath, pathModuleName);
-	if (await exists(path.join(modulePath, "module.yaml"))) {
+	const modulePath = join(registryPath, pathModuleName);
+	if (await exists(join(modulePath, "module.yaml"))) {
 		return modulePath;
 	} else {
 		if (pathModuleName != moduleName) {

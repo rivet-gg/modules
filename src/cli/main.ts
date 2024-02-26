@@ -3,7 +3,7 @@ import {
 	CompletionsCommand,
 	HelpCommand,
 	ValidationError,
-} from "cliffy/command/mod.ts";
+} from "../deps.ts";
 import { devCommand } from "./commands/dev.ts";
 import { buildCommand } from "./commands/build.ts";
 import { dbCommand } from "./commands/db.ts";

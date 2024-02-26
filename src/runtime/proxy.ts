@@ -1,9 +1,15 @@
-import type {
-	Registry as RegistryType,
-	RequestOf,
-	ResponseOf,
-} from "@ogs/helpers/registry.d.ts";
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+// import type {
+// 	Registry as RegistryType,
+// 	RequestOf,
+// 	ResponseOf,
+// } from "@ogs/helpers/registry.d.ts";
 import { Context, Module } from "./mod.ts";
+
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+type RegistryType = unknown;
+type RequestOf<T> = unknown;
+type ResponseOf<T> = unknown;
 
 /**
  * Typed module accessor
@@ -45,7 +51,9 @@ export function buildRegistryProxy(
 	 */
 	const target: MappedNullProxy = {} as any;
 	for (const k of Object.keys(modules)) {
-		target[k as keyof RegistryType] = null;
+		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+		// target[k as keyof RegistryType] = null;
+		(target as any)[k] = null;
 	}
 
 	/**
@@ -95,7 +103,9 @@ function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
 	 */
 	const target: MappedModuleNullProxy<ModuleName> = {} as any;
 	for (const k of Object.keys(accessedModule.scripts)) {
-		target[k as keyof RegistryType[ModuleName]] = null;
+		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+		// target[k as keyof RegistryType[ModuleName]] = null;
+		(target as any)[k] = null;
 	}
 
 	/**

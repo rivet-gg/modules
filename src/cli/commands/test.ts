@@ -1,8 +1,6 @@
-import { Command } from "cliffy/command/mod.ts";
+import { Command, join } from "../../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import * as path from "std/path/mod.ts";
 import { build } from "../../build/mod.ts";
-"";
 
 export const testCommand = new Command<GlobalOpts>()
 	.option("--no-format", "Don't format modules")
@@ -16,7 +14,7 @@ export const testCommand = new Command<GlobalOpts>()
 		async (opts, ...modules) => {
 			const project = await initProject(opts);
 
-			const entrypointPath = path.join(project.path, "dist", "entrypoint.ts");
+			const entrypointPath = join(project.path, "dist", "entrypoint.ts");
 
 			// TODO: Only format local modules
 			// Fmt project
@@ -69,7 +67,7 @@ export const testCommand = new Command<GlobalOpts>()
 			for (const module of project.modules.values()) {
 				// Test all modules or filter module tests
 				if (!modules || modules.includes(module.name)) {
-					args.push(path.join(module.path, "tests", "*.ts"));
+					args.push(join(module.path, "tests", "*.ts"));
 				}
 			}
 

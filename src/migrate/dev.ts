@@ -2,11 +2,10 @@
 //
 // Wrapper around `prisma migrate dev`
 
+import { copy, exists, join } from "../deps.ts";
 import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { Project } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
-import { copy, exists } from "std/fs/mod.ts";
-import * as path from "std/path/mod.ts";
 
 export async function migrateDev(project: Project) {
 	await forEachPrismaSchema(
@@ -49,7 +48,7 @@ export async function migrateDev(project: Project) {
 							"edge.d.ts",
 						]
 					) {
-						const filePath = path.join(generatedClientDir, filename);
+						const filePath = join(generatedClientDir, filename);
 						let content = await Deno.readTextFile(filePath);
 						const replaceLineA =
 							`import * as runtime from './runtime/library.js'`;
@@ -73,14 +72,14 @@ export async function migrateDev(project: Project) {
 				console.log("Compiling ESM library");
 				buildPrismaPackage(
 					generatedClientDir,
-					path.join(generatedClientDir, "esm.js"),
+					join(generatedClientDir, "esm.js"),
 				);
 			}
 
 			// Copy back migrations dir
 			console.log("Copying migrations back");
-			const tempMigrationsDir = path.join(tempDir, "migrations");
-			const migrationsDir = path.join(module.path, "db", "migrations");
+			const tempMigrationsDir = join(tempDir, "migrations");
+			const migrationsDir = join(module.path, "db", "migrations");
 			if (await exists(tempMigrationsDir)) {
 				await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
 			}

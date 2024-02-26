@@ -4,7 +4,8 @@ import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 import { buildRegistryProxy } from "./proxy.ts";
 
-import type { RegistryCallFn } from "@ogs/helpers/registry.d.ts";
+// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+// import type { RegistryCallFn } from "@ogs/helpers/registry.d.ts";
 
 export class Context {
 	public constructor(
@@ -12,10 +13,16 @@ export class Context {
 		public readonly trace: Trace,
 	) {}
 
-	public call: RegistryCallFn<Context> = async function (
-		moduleName,
-		scriptName,
-		req,
+	// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+	// public call: RegistryCallFn<Context> = async function (
+	// 	moduleName,
+	// 	scriptName,
+	// 	req,
+	// ) {
+	public async call(
+		moduleName: string,
+		scriptName: string,
+		req: any,
 	) {
 		console.log(
 			`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`,
