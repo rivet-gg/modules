@@ -1,227 +1,111 @@
 import * as path from "std/path/mod.ts";
-import { parse } from "std/yaml/mod.ts";
-import Ajv from "ajv";
-import { glob } from "glob";
-import tjs from "typescript-json-schema";
-
-// TODO: Clean this up
-import { fileURLToPath } from "node:url";
-import { ModuleConfig, ScriptConfig } from "./module_config.ts";
-import { exists } from "std/fs/mod.ts";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const moduleConfigAjv = new Ajv.default({
-	schemas: [generateModuleConfigJsonSchema()],
-});
+import { readConfig as readProjectConfig } from "../config/project.ts";
+import { ProjectConfig } from "../config/project.ts";
+import { loadModule, Module } from "./module.ts";
+import { exists } from "std/fs/exists.ts";
+import { RegistryConfig } from "../config/project.ts";
+import { ProjectModuleConfig } from "../config/project.ts";
 
 export interface Registry {
 	path: string;
+	projectConfig: ProjectConfig;
 	modules: Map<string, Module>;
 }
 
-export interface Module {
-	path: string;
-	name: string;
-	configRaw: string;
-	config: ModuleConfig;
-	scripts: Map<string, Script>;
-	db?: ModuleDatabase;
-}
-
-export interface ModuleDatabase {
-	name: string;
-}
-
-export interface Script {
-	path: string;
-	name: string;
-	config: ScriptConfig;
-
-	requestSchema?: tjs.Definition;
-	responseSchema?: tjs.Definition;
-}
-
 export async function loadRegistry(): Promise<Registry> {
-	const rootPath = path.join(__dirname, "..", "..");
+	// Derive root path
+	const ogsPathEnv = Deno.env.get("OGS_PATH");
+	if (!ogsPathEnv) throw new Error("OGS_PATH environment variable not set");
+	const projectRoot = path.join(Deno.cwd(), ogsPathEnv);
 
-	console.log("Loading registry", rootPath);
+	console.log("Loading registry", projectRoot);
 
-	const modPaths = await glob("modules/*/module.yaml", { cwd: rootPath });
+	// Read project config
+	const projectConfig = await readProjectConfig(
+		projectRoot,
+	);
+
+	// Load modules
 	const modules = new Map();
-	for (const mod of modPaths) {
-		const modName = path.basename(path.dirname(mod));
-		modules.set(
-			modName,
-			await loadModule(path.join(rootPath, path.dirname(mod)), modName),
+	for (const projectModuleName in projectConfig.modules) {
+		const modulePath = await fetchAndResolveModule(
+			projectRoot,
+			projectConfig,
+			projectModuleName,
 		);
+		const module = await loadModule(modulePath, projectModuleName);
+		modules.set(projectModuleName, module);
 	}
-	return { path: rootPath, modules };
+
+	return { path: projectRoot, projectConfig, modules };
 }
 
-async function loadModule(modulePath: string, name: string): Promise<Module> {
-	console.log("Loading module", modulePath);
-
-	// Read config
-	const configRaw = await Deno.readTextFile(
-		path.join(modulePath, "module.yaml"),
-	);
-	const config = parse(configRaw) as ModuleConfig;
-
-	// Validate config
-	const moduleConfigSchema = moduleConfigAjv.getSchema(
-		"#/definitions/ModuleConfig",
-	);
-	if (!moduleConfigSchema) {
-		throw new Error("Failed to get module config schema");
+/**
+ * Clones a registry to the local machine if required and returns the path.
+ */
+async function fetchAndResolveRegistry(
+	projectRoot: string,
+	registry: RegistryConfig,
+): Promise<string> {
+	// TODO: Impl git cloning
+	if (!registry.directory) throw new Error("Registry directory not set");
+	const registryPath = path.join(projectRoot, registry.directory);
+	if (!await exists(registryPath)) {
+		throw new Error(`Registry not found at ${registryPath}`);
 	}
-	if (!moduleConfigSchema(config)) {
-		throw new Error(
-			`Invalid module config: ${JSON.stringify(moduleConfigSchema.errors)}`,
-		);
-	}
+	return registryPath;
+}
 
-	// Find names of the expected scripts to find. Used to print error for extra scripts.
-	const scriptsPath = path.join(modulePath, "scripts");
-	const expectedScripts = new Set(
-		await glob("*.ts", { cwd: path.join(modulePath, "scripts") }),
+/**
+ * Clones a registry to a local machine and resovles the path to the module.
+ */
+async function fetchAndResolveModule(
+	projectRoot: string,
+	projectConfig: ProjectConfig,
+	moduleName: string,
+): Promise<string> {
+	// Lookup module
+	const module = projectConfig.modules[moduleName];
+	if (!module) throw new Error(`Module not found ${moduleName}`);
+
+	// Lookup registry
+	const registryName = registryForModule(module);
+	const registryConfig = projectConfig.registries[registryName];
+	if (!registryConfig) {
+		throw new Error(`Registry ${registryName} not found for module ${module}`);
+	}
+	const registryPath = await fetchAndResolveRegistry(
+		projectRoot,
+		registryConfig,
 	);
 
-	// Read scripts
-	const scripts = new Map();
-	for (const scriptName in config.scripts) {
-		// Load script
-		const scriptPath = path.join(
-			scriptsPath,
-			scriptName + ".ts",
-		);
-		if (!await exists(scriptPath)) {
+	// Resolve module path
+	const pathModuleName = moduleNameInRegistry(moduleName, module);
+	const modulePath = path.join(registryPath, pathModuleName);
+	if (await exists(path.join(modulePath, "module.yaml"))) {
+		return modulePath;
+	} else {
+		if (pathModuleName != moduleName) {
+			// Has alias
 			throw new Error(
-				`Script not found: ${scriptPath}\nCheck the scripts in your module.yaml are configured correctly.`,
+				`Module ${pathModuleName} (alias of ${moduleName}) not found in registry ${registryName}`,
+			);
+		} else {
+			// No alias
+			throw new Error(
+				`Module ${pathModuleName} not found in registry ${registryName}`,
 			);
 		}
-
-		const script: Script = {
-			path: scriptPath,
-			name: scriptName,
-			config: config.scripts[scriptName],
-		};
-		scripts.set(scriptName, script);
-
-		// Remove script
-		expectedScripts.delete(scriptName + ".ts");
 	}
-
-	// Throw error extra scripts
-	if (expectedScripts.size > 0) {
-		const scriptList = Array.from(expectedScripts).map((x) =>
-			`- ${path.join(scriptsPath, x)}\n`
-		);
-		throw new Error(
-			`Found extra scripts not registered in module.yaml:\n\n${
-				scriptList.join("")
-			}\nAdd these scripts to the module.yaml file.`,
-		);
-	}
-
-	// Load db config
-	let db: ModuleDatabase | undefined = undefined;
-	if (await exists(path.join(modulePath, "db"), { isDirectory: true })) {
-		db = {
-			name: `module_${name.replace("-", "_")}`,
-		};
-	}
-
-	return {
-		path: modulePath,
-		name,
-		configRaw,
-		config,
-		scripts,
-		db,
-	};
 }
 
-export function moduleDistHelperPath(
-	registry: Registry,
-	module: Module,
+function registryForModule(module: ProjectModuleConfig): string {
+	return module.registry ?? "default";
+}
+
+function moduleNameInRegistry(
+	moduleName: string,
+	module: ProjectModuleConfig,
 ): string {
-	return path.join(
-		registry.path,
-		"dist",
-		"helpers",
-		module.name,
-		"mod.ts",
-	);
-}
-
-export function testDistHelperPath(registry: Registry, module: Module): string {
-	return path.join(
-		registry.path,
-		"dist",
-		"helpers",
-		module.name,
-		"test.ts",
-	);
-}
-
-export function scriptDistHelperPath(
-	registry: Registry,
-	module: Module,
-	script: Script,
-): string {
-	return path.join(
-		registry.path,
-		"dist",
-		"helpers",
-		module.name,
-		"scripts",
-		script.name + ".ts",
-	);
-}
-
-function generateModuleConfigJsonSchema(): tjs.Definition {
-	console.log("Generating registry.ts schema");
-
-	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
-	const DEFAULT_COMPILER_OPTIONS = {
-		"allowJs": true,
-		"esModuleInterop": true,
-		"experimentalDecorators": false,
-		"inlineSourceMap": true,
-		"isolatedModules": true,
-		"jsx": "react",
-		"module": "esnext",
-		"moduleDetection": "force",
-		"strict": true,
-		"target": "esnext",
-		"useDefineForClassFields": true,
-
-		"lib": ["esnext", "dom", "dom.iterable"],
-		"allowImportingTsExtensions": true,
-	};
-
-	const schemaFiles = [__filename];
-
-	const program = tjs.getProgramFromFiles(
-		schemaFiles,
-		DEFAULT_COMPILER_OPTIONS,
-	);
-
-	const schema = tjs.generateSchema(program, "ModuleConfig", {
-		topRef: true,
-		required: true,
-		strictNullChecks: true,
-		noExtraProps: true,
-		esModuleInterop: true,
-
-		// TODO: Is this needed?
-		include: schemaFiles,
-
-		// TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
-		ignoreErrors: true,
-	});
-	if (schema == null) throw new Error("Failed to generate schema");
-
-	return schema;
+	return module.module ?? moduleName;
 }

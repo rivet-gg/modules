@@ -8,9 +8,11 @@ import { Context, Module } from "@ogs/runtime";
 /**
  * Typed module accessor
  */
-type MappedProxy = Readonly<{
-	[K in keyof RegistryType]: MappedModuleProxy<K>;
-}>;
+type MappedProxy = Readonly<
+	{
+		[K in keyof RegistryType]: MappedModuleProxy<K>;
+	}
+>;
 type MappedNullProxy = {
 	[K in keyof RegistryType]: null;
 };
@@ -18,11 +20,13 @@ type MappedNullProxy = {
 /**
  * Typed module-specific script accessor
  */
-type MappedModuleProxy<Module extends keyof RegistryType> = Readonly<{
-	[K in keyof RegistryType[Module]]: (
-		request: RequestOf<RegistryType[Module][K]>,
-	) => Promise<ResponseOf<RegistryType[Module][K]>>;
-}>;
+type MappedModuleProxy<Module extends keyof RegistryType> = Readonly<
+	{
+		[K in keyof RegistryType[Module]]: (
+			request: RequestOf<RegistryType[Module][K]>,
+		) => Promise<ResponseOf<RegistryType[Module][K]>>;
+	}
+>;
 type MappedModuleNullProxy<Module extends keyof RegistryType> = {
 	[K in keyof RegistryType[Module]]: null;
 };
@@ -46,7 +50,7 @@ export function buildRegistryProxy(
 
 	/**
 	 * A handler object that will return a proxy for the accessed module.
-	 * 
+	 *
 	 * Object.hasOwn is used here to default to `undefined` just in case the
 	 * object is somehow improperly accessed.
 	 */
@@ -87,7 +91,7 @@ function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
 	/**
 	 * Proxies require the accessed key on the object to be defined, so we
 	 * create this object with all the script names in module `ModuleName`
-	 * mapped to null. 
+	 * mapped to null.
 	 */
 	const target: MappedModuleNullProxy<ModuleName> = {} as any;
 	for (const k of Object.keys(accessedModule.scripts)) {
@@ -97,7 +101,7 @@ function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
 	/**
 	 * A handler object that will return a bound call function for the
 	 * accessed script.
-	 * 
+	 *
 	 * Object.hasOwn is used here to default to `undefined` just in case the
 	 * object is somehow improperly accessed.
 	 */

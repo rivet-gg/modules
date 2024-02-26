@@ -1,0 +1,22 @@
+registries:
+  # default:
+  #   git: https://github.com/rivet-gg/open-game-services.git
+  #   branch: main
+  default:
+    directory: ../modules
+  local:
+    directory: ./modules
+modules:
+  currency: {}
+  friends: {}
+  rate_limit: {}
+  tokens: {}
+  users: {}
+  # auth:
+  #   config:
+  #     google:
+  #       token: abc123
+  #     discord:
+  #       token: abc123
+  foo:
+    registry: local

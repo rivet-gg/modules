@@ -5,7 +5,7 @@
 
 		"pg:sh": "docker-compose exec -it postgres psql --username postgres",
 
-		"build": "deno run --check --allow-read --allow-write --allow-run engine/build/index.ts",
+		"build": "deno run --check --allow-read --allow-write --allow-run --allow-env engine/build/index.ts",
 
 		"migrate": "deno task migrate:dev",
 		"migrate:dev": "deno run --check --allow-net --allow-read --allow-env --allow-run --allow-write engine/migrate/dev.ts",
