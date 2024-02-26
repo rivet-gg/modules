@@ -1,11 +1,11 @@
 import * as path from "std/path/mod.ts";
-import { Registry } from "../registry/mod.ts";
+import { Project } from "../project/mod.ts";
 import * as tjs from "typescript-json-schema";
 
 // deno-lint-ignore no-explicit-any
 type OpenApiDefinition = any;
 
-export async function generateOpenApi(registry: Registry) {
+export async function generateOpenApi(project: Project) {
 	const schema: OpenApiDefinition = {
 		openapi: "3.1.0",
 		info: {
@@ -30,7 +30,7 @@ export async function generateOpenApi(registry: Registry) {
 		},
 	};
 
-	for (const mod of registry.modules.values()) {
+	for (const mod of project.modules.values()) {
 		for (const script of mod.scripts.values()) {
 			const requestBodyRef = injectSchema(
 				schema,
@@ -72,7 +72,7 @@ export async function generateOpenApi(registry: Registry) {
 	}
 
 	await Deno.writeTextFile(
-		path.join(registry.path, "dist", "openapi.json"),
+		path.join(project.path, "dist", "openapi.json"),
 		JSON.stringify(schema, null, 4),
 	);
 }

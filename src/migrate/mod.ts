@@ -1,4 +1,4 @@
-import { Module, ModuleDatabase, Registry } from "../registry/mod.ts";
+import { Module, ModuleDatabase, Project } from "../project/mod.ts";
 import { assertValidString } from "./validate.ts";
 import { Client as PostgresClient } from "postgres/mod.ts";
 import * as path from "std/path/mod.ts";
@@ -19,7 +19,7 @@ export type ForEachPrismaSchemaCallback = (
 
 /** Prepares all databases and calls a callback once prepared. */
 export async function forEachDatabase(
-	registry: Registry,
+	project: Project,
 	callback: ForEachDatabaseCallback,
 ) {
 	const dbFilter = Deno.args[0];
@@ -33,7 +33,7 @@ export async function forEachDatabase(
 	await defaultClient.connect();
 
 	try {
-		for (const mod of registry.modules.values()) {
+		for (const mod of project.modules.values()) {
 			if (!mod.db) continue;
 			if (dbFilter && mod.name !== dbFilter) continue;
 
@@ -57,14 +57,14 @@ export async function forEachDatabase(
 
 /** Prepares the Postgres database & creates a temporary Prisma project for each database. */
 export async function forEachPrismaSchema(
-	registry: Registry,
+	project: Project,
 	callback: ForEachPrismaSchemaCallback,
 ) {
-	forEachDatabase(registry, async ({ databaseUrl, module, db }) => {
+	forEachDatabase(project, async ({ databaseUrl, module, db }) => {
 		const tempDir = await Deno.makeTempDir();
 		const dbDir = path.join(module.path, "db");
 		const generatedClientDir = path.join(
-			registry.path,
+			project.path,
 			"dist",
 			"prisma",
 			module.name,

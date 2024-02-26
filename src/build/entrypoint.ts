@@ -1,11 +1,11 @@
 import * as path from "std/path/mod.ts";
-import { Registry } from "../registry/mod.ts";
+import { Project } from "../project/mod.ts";
 
-export async function generateEntrypoint(registry: Registry) {
+export async function generateEntrypoint(project: Project) {
 	// Generate module configs
 	let modImports = "";
 	let modConfig = "{";
-	for (const mod of registry.modules.values()) {
+	for (const mod of project.modules.values()) {
 		modConfig += `${JSON.stringify(mod.name)}: {`;
 
 		// Generate script configs
@@ -94,7 +94,7 @@ main();
 `;
 
 	// Write file
-	const distDir = path.join(registry.path, "dist");
+	const distDir = path.join(project.path, "dist");
 	const configPath = path.join(distDir, "runtime_config.ts");
 	const entrypointPath = path.join(distDir, "entrypoint.ts");
 	console.log("Writing entrypoint");

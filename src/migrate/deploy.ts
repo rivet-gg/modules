@@ -1,11 +1,11 @@
 // Wrapper around `prisma migrate deploy`
 
-import { loadRegistry } from "../registry/mod.ts";
+import { loadProject } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 
-const registry = await loadRegistry();
+const project = await loadProject();
 
-forEachPrismaSchema(registry, async ({ databaseUrl, tempDir }) => {
+forEachPrismaSchema(project, async ({ databaseUrl, tempDir }) => {
 	// Generate migrations & client
 	const status = await new Deno.Command("deno", {
 		args: ["run", "-A", "npm:prisma@5.9.1", "migrate", "deploy"],

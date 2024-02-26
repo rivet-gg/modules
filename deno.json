@@ -44,7 +44,8 @@
 		"pg": "npm:pg@^8.11.3",
 		"@prisma/adapter-pg": "npm:@prisma/adapter-pg@^5.9.1",
 		"esbuild": "npm:esbuild@^0.20.0",
-		"esbuild-plugin-polyfill-node": "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0"
+		"esbuild-plugin-polyfill-node": "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0",
+		"cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.3/"
 	},
 	"lint": {
 		"include": ["src/"],

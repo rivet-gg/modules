@@ -3,15 +3,15 @@
 // Wrapper around `prisma migrate dev`
 
 import { buildPrismaPackage } from "./build_prisma_esm.ts";
-import { loadRegistry } from "../registry/mod.ts";
+import { loadProject } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 import { copy, exists } from "std/fs/mod.ts";
 import * as path from "std/path/mod.ts";
 
-const registry = await loadRegistry();
+const project = await loadProject();
 
 forEachPrismaSchema(
-	registry,
+	project,
 	async ({ databaseUrl, module, tempDir, generatedClientDir }) => {
 		const createOnly = Deno.args.includes("--create-only");
 

@@ -1,22 +1,22 @@
 import * as path from "std/path/mod.ts";
 import { stringify } from "std/yaml/mod.ts";
-import { loadRegistry } from "../registry/registry.ts";
+import { loadProject } from "../project/mod.ts";
 
 const moduleName = Deno.args[0];
 const scriptName = Deno.args[1];
 if (!moduleName) throw new Error("Module name required");
 if (!scriptName) throw new Error("Script name required");
 
-const registry = await loadRegistry();
+const project = await loadProject();
 
-const mod = registry.modules.get(moduleName);
+const mod = project.modules.get(moduleName);
 if (!mod) {
 	throw new Error(`Missing module ${moduleName}`);
 }
 
 // Create scripts
 const scriptPath = path.join(
-	registry.path,
+	project.path,
 	"modules",
 	moduleName,
 	"scripts",
@@ -34,7 +34,7 @@ try {
 // Create test if doesn't already exist
 let createTest = false;
 const testPath = path.join(
-	registry.path,
+	project.path,
 	"modules",
 	moduleName,
 	"tests",
@@ -55,7 +55,7 @@ const newConfig = structuredClone(mod.config);
 newConfig.scripts[scriptName] = {};
 const newConfigRaw = stringify(newConfig);
 await Deno.writeTextFile(
-	path.join(registry.path, "modules", moduleName, "module.yaml"),
+	path.join(project.path, "modules", moduleName, "module.yaml"),
 	newConfigRaw,
 );
 
