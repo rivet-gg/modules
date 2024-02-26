@@ -3,8 +3,8 @@ import {
 	ScriptContext,
 } from "../_gen/scripts/withdraw.ts";
 
-import { getBalance } from "../utils/db/get_balance.ts";
-import { setBalance } from "../utils/db/set_balance.ts";
+import { getBalance } from "../utils/get_balance.ts";
+import { setBalance } from "../utils/set_balance.ts";
 
 export interface Request {
 	userId: string;
