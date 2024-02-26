@@ -1,6 +1,5 @@
 import { test, TestContext } from "./_gen/test.ts";
 import { assertEquals } from "std/assert/mod.ts";
-import { faker } from "@faker-js/faker";
 
 test("e2e accept", async (ctx: TestContext) => {
 	const { user: userA, token: tokenA } = await ctx.call("users", "register", {

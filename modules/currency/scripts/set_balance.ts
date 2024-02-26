@@ -1,7 +1,7 @@
 import { RuntimeError } from "../_gen/scripts/set_balance.ts";
 import { ScriptContext } from "../_gen/scripts/set_balance.ts";
 
-import { setBalance } from "../utils/db/set_balance.ts";
+import { setBalance } from "../utils/set_balance.ts";
 
 export interface Request {
 	userId: string;

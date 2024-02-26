@@ -1,4 +1,4 @@
-import { prisma } from "./_gen/mod.ts";
+import { prisma } from "../_gen/mod.ts";
 
 export interface Token {
 	id: string;
