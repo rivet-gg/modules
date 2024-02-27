@@ -69,7 +69,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 // Import Prisma adapter for Postgres
-import * as pg from "npm:pg@^8.11.3";
+import pg from "npm:pg@^8.11.3";
 import { PrismaPg } from "npm:@prisma/adapter-pg@^5.9.1";
 
 ${modImports}
