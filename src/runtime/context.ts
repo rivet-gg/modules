@@ -3,26 +3,18 @@ import { Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 import { buildRegistryProxy } from "./proxy.ts";
+import { BaseRegistryBounds, RegistryCallFn } from "../types/registry.ts";
 
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
-// import type { RegistryCallFn } from "@ogs/helpers/registry.d.ts";
-
-export class Context {
+export class Context<Registry> {
 	public constructor(
-		protected readonly runtime: Runtime,
+		protected readonly runtime: Runtime<Registry>,
 		public readonly trace: Trace,
 	) {}
 
-	// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
-	// public call: RegistryCallFn<Context> = async function (
-	// 	moduleName,
-	// 	scriptName,
-	// 	req,
-	// ) {
-	public async call(
-		moduleName: string,
-		scriptName: string,
-		req: any,
+	public call: RegistryCallFn<Context<Registry>, Registry> = async function (
+		moduleName,
+		scriptName,
+		req,
 	) {
 		console.log(
 			`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`,
@@ -85,7 +77,7 @@ export class Context {
 	};
 
 	public get modules() {
-		return buildRegistryProxy(this.runtime.config.modules, this);
+		return buildRegistryProxy<Registry & BaseRegistryBounds>(this.runtime.config.modules, this);
 	}
 
 	public async tryCallRaw(
@@ -101,7 +93,7 @@ export class Context {
 		const script = module.scripts[scriptName];
 		if (!script) return null;
 
-		return await this.call(moduleName as any, scriptName as any, req);
+		return await this.call(moduleName as any, scriptName as any, req as any);
 	}
 
 	public canCall(
@@ -146,9 +138,9 @@ export class Context {
 /**
  * Context for a module.
  */
-export class ModuleContext<TDatabase> extends Context {
+export class ModuleContext<RegistryT, TDatabase> extends Context<RegistryT> {
 	public constructor(
-		runtime: Runtime,
+		runtime: Runtime<RegistryT>,
 		trace: Trace,
 		public readonly moduleName: string,
 		public readonly db: TDatabase,
@@ -160,9 +152,9 @@ export class ModuleContext<TDatabase> extends Context {
 /**
  * Context for a script.
  */
-export class ScriptContext<TDatabase> extends ModuleContext<TDatabase> {
+export class ScriptContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {
 	public constructor(
-		runtime: Runtime,
+		runtime: Runtime<RegistryT>,
 		trace: Trace,
 		moduleName: string,
 		db: TDatabase,
@@ -175,4 +167,4 @@ export class ScriptContext<TDatabase> extends ModuleContext<TDatabase> {
 /**
  * Context for a test.
  */
-export class TestContext<TDatabase> extends ModuleContext<TDatabase> {}
+export class TestContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {}

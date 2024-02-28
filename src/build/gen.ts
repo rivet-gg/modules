@@ -31,24 +31,21 @@ async function compileModuleHelper(
 	const runtimePath = await getRuntimePath(project);
 
 	// Generate source
-	const source = `
-import { ModuleContext as ModuleContextInner } from "${runtimePath}";
-${
-		module.db
-			? `
-import prisma from "./prisma/esm.js";
-export { prisma };
-export const Prisma = prisma.Prisma;
-`
-			: ""
-	}
-
-export { RuntimeError } from "${runtimePath}";
-
-export type ModuleContext = ModuleContextInner<${
-		module.db ? "prisma.PrismaClient" : "undefined"
-	}>;
-`;
+	const dbImports = [
+		'import prisma from "./prisma/esm.js";',
+		'export { prisma };',
+		'export const Prisma = prisma.Prisma;',
+	];
+	const source = [
+		`import { ModuleContext as ModuleContextInner } from "${runtimePath}";`,
+		`import { Registry as RegistryTypeInner } from "${project.path}/_gen/registry.d.ts";`,
+		'',
+		...(module.db ? dbImports : []),
+		'',
+		`export { RuntimeError } from "${runtimePath}";`,
+		`export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${module.db ? "prisma.PrismaClient" : "undefined"}>;`,
+		'',
+	].join("\n");
 
 	// Write source
 	const helperPath = moduleGenPath(project, module);
@@ -63,24 +60,24 @@ async function compileTestHelper(
 	console.log("Generating test", module.path);
 	const runtimePath = await getRuntimePath(project);
 
-	// Generate source
-	const source = `
-import * as module from "./mod.ts";
-import { Runtime, TestContext as TestContextInner } from "${runtimePath}";
-import config from "../../../_gen/runtime_config.ts";
+	const source = [
+		'import * as module from "./mod.ts";',
+		`import { Runtime, TestContext as TestContextInner } from "${runtimePath}";`,
+		`import { Registry as RegistryTypeInner } from "${project.path}/_gen/registry.d.ts";`,
+		`import config from "${project.path}/_gen/runtime_config.ts";`,
+		'',
+		'export * from "./mod.ts";',
+		'',
+		`export type TestContext = TestContextInner<RegistryTypeInner, ${module.db ? "module.prisma.PrismaClient" : "undefined"}>;`,
+		'',
+		'export type TestFn = (ctx: TestContext) => Promise<void>;',
+		'',
+		'export function test(name: string, fn: TestFn) {',
+		`	Runtime.test(config, "${module.name}", name, fn);`,
+		'}',
+		'',
+	].join("\n");
 
-export * from "./mod.ts";
-
-export type TestContext = TestContextInner<${
-		module.db ? "module.prisma.PrismaClient" : "undefined"
-	}>;
-
-export type TestFn = (ctx: TestContext) => Promise<void>;
-
-export function test(name: string, fn: TestFn) {
-	Runtime.test(config, "${module.name}", name, fn);
-}
-`;
 
 	// Write source
 	const helperPath = testGenPath(project, module);
@@ -96,22 +93,18 @@ async function compileScriptHelper(
 	console.log("Generating script", script.path);
 	const runtimePath = await getRuntimePath(project);
 
-	// Generate source
-	const source = `
-import * as module from "../mod.ts";
-import { ScriptContext as ScriptContextInner } from "${runtimePath}";
-${
-		module.db
-			? `import { PrismaClient } from "../prisma/index.d.ts";`
-			: ""
-	}
-
-export * from "../mod.ts";
-
-export type ScriptContext = ScriptContextInner<${
-		module.db ? "module.prisma.PrismaClient" : "undefined"
-	}>;
-`;
+	const source = [
+		'import * as module from "../mod.ts";',
+		`import { ScriptContext as ScriptContextInner } from "${runtimePath}";`,
+		`import { Registry as RegistryTypeInner } from "${join(project.path, "_gen", "registry.d.ts")}";`,
+		'',
+		module.db ? 'import { PrismaClient } from "../prisma/index.d.ts";' : '', // NOTE: This is not used anywhere
+		'',
+		'export * from "../mod.ts";',
+		'',
+		`export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${module.db ? "module.prisma.PrismaClient" : "undefined"}>;`,
+		'',
+	].join("\n");
 
 	// Write source
 	const helperPath = scriptGenPath(project, module, script);
@@ -138,16 +131,10 @@ async function compileTypeHelpers(project: Project) {
 			const requestTypeName = `${scriptId}Req`;
 			const responseTypeName = `${scriptId}Res`;
 
-			const absoluteImportPath = join(
-				project.path,
-				"modules",
-				module.name,
+			const importPath = join(
+				module.path,
 				"scripts",
 				`${script.name}.ts`,
-			);
-			const importPath = relative(
-				dirname(typedefPath),
-				absoluteImportPath,
 			);
 
 			const pathComment = `// ${module.name}/${script.name}`;
@@ -168,7 +155,14 @@ async function compileTypeHelpers(project: Project) {
 			scripts.push([pathComment, importLine, interfaceDef].join("\n"));
 		}
 
-		const moduleComment = `//\n// Types for ${module.name}\n//`;
+		const moduleComment = [
+			'//',
+			`// Types for ${module.name}`,
+			'//',
+			'',
+			`interface ${moduleInterfaceName} {}`,
+		].join("\n");
+
 		const scriptBody = scripts.join("\n\n");
 
 		const interfaceDef =

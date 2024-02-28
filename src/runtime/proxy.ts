@@ -1,58 +1,46 @@
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
-// import type {
-// 	Registry as RegistryType,
-// 	RequestOf,
-// 	ResponseOf,
-// } from "@ogs/helpers/registry.d.ts";
-import { Context, Module } from "./mod.ts";
-
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
-type RegistryType = unknown;
-type RequestOf<T> = unknown;
-type ResponseOf<T> = unknown;
+import { Context, Module } from "../runtime/mod.ts";
+import { BaseRegistryBounds } from "../types/registry.ts";
+import { RequestOf } from "../types/registry.ts";
+import { ResponseOf } from "../types/registry.ts";
 
 /**
  * Typed module accessor
  */
-type MappedProxy = Readonly<
-	{
-		[K in keyof RegistryType]: MappedModuleProxy<K>;
-	}
->;
-type MappedNullProxy = {
-	[K in keyof RegistryType]: null;
+type MappedProxy<RegistryT extends BaseRegistryBounds> = Readonly<{
+	[K in keyof RegistryT]: MappedModuleProxy<RegistryT, K>;
+}>;
+type MappedNullProxy<RegistryT extends BaseRegistryBounds> = {
+	[K in keyof RegistryT]: null;
 };
 
 /**
  * Typed module-specific script accessor
  */
-type MappedModuleProxy<Module extends keyof RegistryType> = Readonly<
-	{
-		[K in keyof RegistryType[Module]]: (
-			request: RequestOf<RegistryType[Module][K]>,
-		) => Promise<ResponseOf<RegistryType[Module][K]>>;
-	}
->;
-type MappedModuleNullProxy<Module extends keyof RegistryType> = {
-	[K in keyof RegistryType[Module]]: null;
+type MappedModuleProxy<RegistryT extends BaseRegistryBounds, Module extends keyof RegistryT> = Readonly<{
+	[K in keyof RegistryT[Module]]: (
+		request: RequestOf<RegistryT[Module][K]>,
+	) => Promise<ResponseOf<RegistryT[Module][K]>>;
+}>;
+type MappedModuleNullProxy<RegistryT extends BaseRegistryBounds, Module extends keyof RegistryT> = {
+	[K in keyof RegistryT[Module]]: null;
 };
 
 /**
  * Builds a proxy for the entire registry, with the keys of the modules mapped
  * to script proxies using [`buildModuleProxy`]({@link buildModuleProxy})
  */
-export function buildRegistryProxy(
+export function buildRegistryProxy<RegistryT extends BaseRegistryBounds>(
 	modules: Record<string, Module>,
-	ctx: Context,
-): MappedProxy {
+	ctx: Context<RegistryT>,
+): MappedProxy<RegistryT> {
 	/**
 	 * Proxies require the accessed key on the object to be defined, so we
 	 * create this object with all the module names mapped to null.
 	 */
-	const target: MappedNullProxy = {} as any;
+	const target: MappedNullProxy<RegistryT> = {} as any;
 	for (const k of Object.keys(modules)) {
 		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
-		// target[k as keyof RegistryType] = null;
+		// target[k as keyof RegistryT] = null;
 		(target as any)[k] = null;
 	}
 
@@ -62,13 +50,13 @@ export function buildRegistryProxy(
 	 * Object.hasOwn is used here to default to `undefined` just in case the
 	 * object is somehow improperly accessed.
 	 */
-	const handler: ProxyHandler<MappedProxy> = {
+	const handler: ProxyHandler<MappedProxy<RegistryT>> = {
 		get: function (_, property) {
-			if (Object.hasOwn(modules, property as string)) {
+			if (modules[property as keyof typeof modules]) {
 				return buildModuleProxy(
 					modules,
 					ctx,
-					property as keyof RegistryType,
+					property as keyof RegistryT & string,
 				);
 			}
 		},
@@ -80,18 +68,21 @@ export function buildRegistryProxy(
 	// `target as unknown as MappedProxy` is used to bypass the type check
 	// because null (typeof target[moduleName]) is not a sub or super type
 	// of `MappedModuleProxy<T>`.
-	return new Proxy(target as unknown as MappedProxy, handler);
+	return new Proxy(target as unknown as MappedProxy<RegistryT>, handler);
 }
 
 /**
  * Builds a proxy for a specific module (`ModuleName`), with the keys of the
  * scripts mapped to on-the-fly generated call functions
  */
-function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
+function buildModuleProxy<
+	RegistryT extends BaseRegistryBounds,
+	ModuleName extends keyof RegistryT & string,
+>(
 	modules: Record<string, Module>,
-	ctx: Context,
+	ctx: Context<RegistryT>,
 	moduleName: ModuleName,
-): MappedModuleProxy<ModuleName> {
+): MappedModuleProxy<RegistryT, ModuleName> {
 	// Although this should never throw an error, double-checking never hurt anyone
 	const accessedModule = modules[moduleName] as Module | undefined;
 	if (!accessedModule) throw new Error(`Module not found: ${moduleName}`);
@@ -101,10 +92,10 @@ function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
 	 * create this object with all the script names in module `ModuleName`
 	 * mapped to null.
 	 */
-	const target: MappedModuleNullProxy<ModuleName> = {} as any;
+	const target: MappedModuleNullProxy<RegistryT, ModuleName> = {} as any;
 	for (const k of Object.keys(accessedModule.scripts)) {
 		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
-		// target[k as keyof RegistryType[ModuleName]] = null;
+		// target[k as keyof RegistryT[ModuleName]] = null;
 		(target as any)[k] = null;
 	}
 
@@ -115,13 +106,13 @@ function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
 	 * Object.hasOwn is used here to default to `undefined` just in case the
 	 * object is somehow improperly accessed.
 	 */
-	const handler: ProxyHandler<MappedModuleProxy<ModuleName>> = {
+	const handler: ProxyHandler<MappedModuleProxy<RegistryT, ModuleName>> = {
 		get: function (_, property) {
 			if (Object.hasOwn(accessedModule.scripts, property as string)) {
 				return (req: unknown) =>
 					ctx.call(
 						moduleName as ModuleName,
-						property as keyof RegistryType[ModuleName] & string,
+						property as keyof RegistryT[ModuleName] & string,
 						req as any,
 					);
 			}
@@ -136,7 +127,7 @@ function buildModuleProxy<ModuleName extends keyof RegistryType & string>(
 	// bypass the type check because null (typeof target[scriptName]) is not
 	// a sub or super type of `(req: Promise<unknown>) => Promise<unknown>`.
 	return new Proxy(
-		target as unknown as MappedModuleProxy<ModuleName>,
+		target as unknown as MappedModuleProxy<RegistryT, ModuleName>,
 		handler,
 	);
 }

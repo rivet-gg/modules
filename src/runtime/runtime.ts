@@ -35,7 +35,7 @@ export interface Script {
 }
 
 export type ScriptRun<Req, Res, TDatabase> = (
-	ctx: ScriptContext<TDatabase>,
+	ctx: ScriptContext<any, TDatabase>,
 	req: Req,
 ) => Promise<Res>;
 
@@ -43,7 +43,7 @@ export interface ErrorConfig {
 	description?: string;
 }
 
-export class Runtime {
+export class Runtime<RegistryT> {
 	public postgres: Postgres;
 
 	public ajv: Ajv.default;
@@ -62,7 +62,7 @@ export class Runtime {
 		await this.postgres.shutdown();
 	}
 
-	public createRootContext(traceEntryType: TraceEntryType): Context {
+	public createRootContext(traceEntryType: TraceEntryType): Context<RegistryT> {
 		return new Context(this, newTrace(traceEntryType));
 	}
 
@@ -78,11 +78,11 @@ export class Runtime {
 	/**
 	 * Registers a module test with the Deno runtime.
 	 */
-	public static test(
+	public static test<RegistryT>(
 		config: Config,
 		moduleName: string,
 		testName: string,
-		fn: (ctx: TestContext<any>) => Promise<void>,
+		fn: (ctx: TestContext<RegistryT, any>) => Promise<void>,
 	) {
 		Deno.test({
 			name: testName,
@@ -92,11 +92,11 @@ export class Runtime {
 			sanitizeResources: false,
 
 			async fn() {
-				const runtime = new Runtime(config);
+				const runtime = new Runtime<RegistryT>(config);
 
 				// Build context
 				const module = config.modules[moduleName];
-				const ctx = new TestContext(
+				const ctx = new TestContext<RegistryT, PrismaClientDummy | undefined>(
 					runtime,
 					newTrace({
 						test: { module: moduleName, name: testName },
