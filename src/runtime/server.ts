@@ -1,6 +1,6 @@
 import { Runtime } from "./runtime.ts";
 
-export function serverHandler(runtime: Runtime): Deno.ServeHandler {
+export function serverHandler<RegistryT>(runtime: Runtime<RegistryT>): Deno.ServeHandler {
 	return async (
 		req: Request,
 		info: Deno.ServeHandlerInfo,
