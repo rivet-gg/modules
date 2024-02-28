@@ -4,6 +4,7 @@ import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 import { buildRegistryProxy } from "./proxy.ts";
 import { BaseRegistryBounds, RegistryCallFn } from "../types/registry.ts";
+import { CamelifyRegistry } from "../types/case_conversions.ts";
 
 export class Context<Registry> {
 	public constructor(
@@ -77,7 +78,7 @@ export class Context<Registry> {
 	};
 
 	public get modules() {
-		return buildRegistryProxy<Registry & BaseRegistryBounds>(this.runtime.config.modules, this);
+		return buildRegistryProxy<CamelifyRegistry<Registry> & BaseRegistryBounds>(this.runtime.config.modules, this);
 	}
 
 	public async tryCallRaw(
