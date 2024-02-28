@@ -1,5 +1,5 @@
-import { test, TestContext } from "./_gen/test.ts";
-import { assertEquals, assertExists } from "std/assert/mod.ts";
+import { test, TestContext } from "../_gen/test.ts";
+import { assertEquals, assertExists } from "https://deno.land/std@0.217.0/assert/mod.ts";
 import { TokenUpdate } from "../scripts/revoke.ts";
 
 test("e2e", async (ctx: TestContext) => {
