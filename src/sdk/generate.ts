@@ -1,8 +1,9 @@
+import { initProject } from "../cli/common.ts";
 import { join, dirname, fromFileUrl } from "../deps.ts";
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 
-export async function generate() {
+export async function generate(path?: string) {
 	interface Generator {
 		generator: string;
 	}
@@ -13,8 +14,10 @@ export async function generate() {
 		},
 	};
 
-	async function main() {
-		const rootPath = join(__dirname, "..", "..", "..");
+	async function main(path?: string) {
+		const project = await initProject({ path });
+		const rootPath = project.path;
+
 		for (const name in GENERATORS) {
 			const generator = GENERATORS[name];
 			await generateSdk(rootPath, name, generator);
@@ -29,7 +32,6 @@ export async function generate() {
 		console.log("Generating", name);
 		const { success } = await new Deno.Command("docker", {
 			args: [
-				"docker",
 				"run",
 				"--rm",
 				"-v",
@@ -49,5 +51,5 @@ export async function generate() {
 		}
 	}
 
-	main();
+	main(path);
 }
