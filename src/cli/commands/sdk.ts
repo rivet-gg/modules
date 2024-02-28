@@ -7,6 +7,6 @@ export const sdkCommand = new Command<GlobalOpts>();
 
 sdkCommand.action(() => sdkCommand.showHelp());
 
-sdkCommand.command("generate").action(async () => {
-	await generate();
+sdkCommand.command("generate").action(async opts => {
+	await generate(opts.path);
 });
