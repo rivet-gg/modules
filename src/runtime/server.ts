@@ -35,7 +35,7 @@ export function serverHandler(runtime: Runtime): Deno.ServeHandler {
 					);
 
 					if (output.__tempPleaseSeeOGSE3_NoData) {
-						return new Response(null, {
+						return new Response(undefined, {
 							status: 204,
 							headers: {
 								"Access-Control-Allow-Origin": "*",
