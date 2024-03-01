@@ -2,11 +2,13 @@
 
 ## Install
 
-**From GitHub (recommended)**
+<!--
+ **From GitHub (recommended)**
 
 ```
 deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force https://raw.githubusercontent.com/rivet-gg/open-game-services-engine/main/src/cli/main.ts
 ```
+-->
 
 **From source**
 
@@ -20,7 +22,7 @@ deno install --allow-net --allow-read --allow-env --allow-run --allow-write --na
 
 **Setup Dev Environment**
 
-_[TODO:](https://github.com/rivet-gg/open-game-services-engine/issues/84)_
+[TODO](https://github.com/rivet-gg/open-game-services-engine/issues/84)
 
 Write this `docker-compose.yaml` to the root of your project:
 
@@ -34,6 +36,10 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:
 ```
 
 Then start the project with:
@@ -47,6 +53,11 @@ docker-compose up -d
 ```
 opengb dev start
 ```
+
+> **Tip**
+>
+> You can configure the database url using the `DATABASE_URL` env var. This will
+default to `postgres://postgres:password@localhost:5432/postgres`
 
 **Run tests**
 
