@@ -34,7 +34,7 @@ export function serverHandler<RegistryT>(runtime: Runtime<RegistryT>): Deno.Serv
 						await req.json(),
 					);
 
-					if (output.__tempPleaseSeeOGSE3_NoData) {
+					if (output.__tempPleaseSeeOGBE3_NoData) {
 						return new Response(undefined, {
 							status: 204,
 							headers: {

@@ -19,7 +19,7 @@ export async function generateOpenApi(project: Project) {
 		],
 		tags: [
 			{
-				name: "OGS",
+				name: "Open Game Backend",
 				description: "Open Game Services",
 			},
 		],
@@ -46,7 +46,7 @@ export async function generateOpenApi(project: Project) {
 			schema.paths[`/modules/${mod.name}/scripts/${script.name}/call`] = {
 				post: {
 					description: "Call ${mod.name}.${script.name} script.",
-					tags: ["OGS"],
+					tags: ["OpenGB"],
 					operationId: `call_${mod.name}_${script.name}`,
 					requestBody: {
 						content: {
