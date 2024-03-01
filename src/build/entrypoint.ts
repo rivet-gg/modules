@@ -104,6 +104,7 @@ main();
 	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
+	await Deno.writeTextFile(join(distDir, ".gitignore"), ".");
 
 	// Format files
 	const { success } = await new Deno.Command("deno", {
