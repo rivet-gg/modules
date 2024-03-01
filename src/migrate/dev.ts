@@ -7,12 +7,14 @@ import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { Project } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 
-export async function migrateDev(project: Project) {
+export interface MigrateDevOpts {
+	createOnly: boolean;
+}
+
+export async function migrateDev(project: Project, opts: MigrateDevOpts) {
 	await forEachPrismaSchema(
 		project,
 		async ({ databaseUrl, module, tempDir, generatedClientDir }) => {
-			const createOnly = Deno.args.includes("--create-only");
-
 			// Generate migrations & client
 			console.log("Generating migrations");
 			const status = await new Deno.Command("deno", {
@@ -22,7 +24,7 @@ export async function migrateDev(project: Project) {
 					"npm:prisma@5.9.1",
 					"migrate",
 					"dev",
-					...(createOnly ? ["--create-only"] : []),
+					...(opts.createOnly ? ["--create-only"] : []),
 				],
 				cwd: tempDir,
 				stdin: "inherit",
@@ -37,7 +39,7 @@ export async function migrateDev(project: Project) {
 				throw new Error("Failed to generate migrations");
 			}
 
-			if (!createOnly) {
+			if (!opts.createOnly) {
 				// Specify the path to the library & binary types
 				await (async () => {
 					for (

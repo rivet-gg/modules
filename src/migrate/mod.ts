@@ -21,8 +21,6 @@ export async function forEachDatabase(
 	project: Project,
 	callback: ForEachDatabaseCallback,
 ) {
-	const dbFilter = Deno.args[0];
-
 	// Setup database
 	const defaultDatabaseUrl = Deno.env.get("DATABASE_URL") ??
 		"postgres://postgres:password@localhost:5432/postgres";
