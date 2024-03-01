@@ -1,11 +1,11 @@
-# Open Game Services (OGS)
+# Open Game Backend
 
 ## Install
 
 **From GitHub (recommended)**
 
 ```
-deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name ogs --force https://raw.githubusercontent.com/rivet-gg/open-game-services-engine/main/src/cli/main.ts
+deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force https://raw.githubusercontent.com/rivet-gg/open-game-services-engine/main/src/cli/main.ts
 ```
 
 **From source**
@@ -13,7 +13,7 @@ deno install --allow-net --allow-read --allow-env --allow-run --allow-write --na
 After cloning the repo, run:
 
 ```
-deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name ogs --force src/cli/main.ts
+deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force src/cli/main.ts
 ```
 
 ## Usage
@@ -42,16 +42,16 @@ Then start the project with:
 docker-compose up -d
 ```
 
-**Start OGS server**
+**Start OpenGB server**
 
 ```
-ogs dev start
+opengb dev start
 ```
 
 **Run tests**
 
 ```
-ogs test
+opengb test
 ```
 
 **Creating modules & scripts**
@@ -59,19 +59,19 @@ ogs test
 Create module:
 
 ```
-ogs create module foo
+opengb create module foo
 ```
 
 Create script:
 
 ```
-ogs create script foo bar
+opengb create script foo bar
 ```
 
 **Generate SDKs**
 
 ```
-ogs sdk generate
+opengb sdk generate
 ```
 
 SDKs are generated to `_gen/sdks/`.
@@ -91,7 +91,7 @@ Explore the APIs by opening `_gen/openapi.json` in Postman/Insomnia/Paw.
 - **Strict schemas & documentation** Strict typings & documentation are
   _required_ to make this easy to approach
 - **Portable & lightweight** Built on boring, reliable technology that runs
-  however you want to run OGS
+  however you want to run Open Game Backend
 - **Package manager for game services** Adding backend functionality to your
   game should be as easy as one command
 - **Permissively licensed** Apache 2.0 license allows developers to adapt,
@@ -104,7 +104,7 @@ Explore the APIs by opening `_gen/openapi.json` in Postman/Insomnia/Paw.
 - Database: Postgres
 - ORM: Prisma
 
-## Who uses OGS?
+## Who uses Open Game Backend?
 
 TODO
 
@@ -120,7 +120,7 @@ Create a GitHub issue.
 
 **Enterprise**
 
-The following companies provide enterprise support & custom modules for OGS:
+The following companies provide enterprise support & custom modules for Open Game Backend:
 
 - [Rivet](https://rivet.gg/support)
-- _Create a PR to list your services for OGS_
+- _Create a PR to list your services for Open Game Backend_

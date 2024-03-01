@@ -31,7 +31,7 @@ handle different types of errors.
 
 **Documentation**
 
-One goal of OGS is to have high qulaity documentation, and that includes all
+One goal of Open Game Backend is to have high qulaity documentation, and that includes all
 errors.
 
 This error handling system is inspired by Stripe's well documented error types
