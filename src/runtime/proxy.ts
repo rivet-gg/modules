@@ -3,6 +3,9 @@ import { BaseRegistryBounds } from "../types/registry.ts";
 import { RequestOf } from "../types/registry.ts";
 import { ResponseOf } from "../types/registry.ts";
 
+import { snakeCase } from "https://deno.land/x/case@2.2.0/mod.ts";
+
+
 /**
  * Typed module accessor
  */
@@ -25,6 +28,28 @@ type MappedModuleNullProxy<RegistryT extends BaseRegistryBounds, Module extends 
 	[K in keyof RegistryT[Module]]: null;
 };
 
+const snakeToCamelCache: Record<string, string | undefined> = {};
+const camelToSnakeCache: Record<string, string | undefined> = {};
+const toSnakeCached = (s: string) => {
+	const cached = camelToSnakeCache[s];
+	if (cached) return cached;
+
+	const output = snakeCase(s);
+	camelToSnakeCache[s] = output;
+
+	return output;
+};
+const toCamelCached = (s: string) => {
+	const cached = snakeToCamelCache[s];
+	if (cached) return cached;
+
+	const output = s.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+	snakeToCamelCache[s] = output;
+
+	return output;
+};
+
+
 /**
  * Builds a proxy for the entire registry, with the keys of the modules mapped
  * to script proxies using [`buildModuleProxy`]({@link buildModuleProxy})
@@ -41,7 +66,7 @@ export function buildRegistryProxy<RegistryT extends BaseRegistryBounds>(
 	for (const k of Object.keys(modules)) {
 		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
 		// target[k as keyof RegistryT] = null;
-		(target as any)[k] = null;
+		(target as any)[toCamelCached(k)] = null;
 	}
 
 	/**
@@ -52,7 +77,7 @@ export function buildRegistryProxy<RegistryT extends BaseRegistryBounds>(
 	 */
 	const handler: ProxyHandler<MappedProxy<RegistryT>> = {
 		get: function (_, property) {
-			if (modules[property as keyof typeof modules]) {
+			if (modules[toSnakeCached(property as string) as keyof typeof modules]) {
 				return buildModuleProxy(
 					modules,
 					ctx,
@@ -84,7 +109,7 @@ function buildModuleProxy<
 	moduleName: ModuleName,
 ): MappedModuleProxy<RegistryT, ModuleName> {
 	// Although this should never throw an error, double-checking never hurt anyone
-	const accessedModule = modules[moduleName] as Module | undefined;
+	const accessedModule = modules[toSnakeCached(moduleName)] as Module | undefined;
 	if (!accessedModule) throw new Error(`Module not found: ${moduleName}`);
 
 	/**
@@ -96,7 +121,7 @@ function buildModuleProxy<
 	for (const k of Object.keys(accessedModule.scripts)) {
 		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
 		// target[k as keyof RegistryT[ModuleName]] = null;
-		(target as any)[k] = null;
+		(target as any)[toCamelCached(k)] = null;
 	}
 
 	/**
@@ -108,11 +133,11 @@ function buildModuleProxy<
 	 */
 	const handler: ProxyHandler<MappedModuleProxy<RegistryT, ModuleName>> = {
 		get: function (_, property) {
-			if (Object.hasOwn(accessedModule.scripts, property as string)) {
+			if (Object.hasOwn(accessedModule.scripts, toSnakeCached(property as string))) {
 				return (req: unknown) =>
 					ctx.call(
-						moduleName as ModuleName,
-						property as keyof RegistryT[ModuleName] & string,
+						toSnakeCached(moduleName) as ModuleName,
+						toSnakeCached(property as string) as keyof RegistryT[ModuleName] & string,
 						req as any,
 					);
 			}
