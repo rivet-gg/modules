@@ -9,8 +9,8 @@ export const dbCommand = new Command<GlobalOpts>();
 
 dbCommand.action(() => dbCommand.showHelp());
 
-dbCommand.command("dev").action(async (opts: GlobalOpts) => {
-	await migrateDev(await initProject(opts));
+dbCommand.command("dev").option("-c, --create-only", "Create only", { default: false }).action(async (opts) => {
+	await migrateDev(await initProject(opts), { createOnly: opts.createOnly });
 });
 
 dbCommand.command("status").action(async (opts) => {
