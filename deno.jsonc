@@ -1,0 +1,28 @@
+{
+	"tasks": {
+		// Runs any scripts required to compile the CLI
+		"cli:prepare": "deno task config:generate_schema",
+
+		// Runs the CLI
+		"cli:run": "deno task cli:prepare && deno run -A --check src/cli/main.ts --path tests/test_project",
+
+		// Compiles the CLI to a binary
+		"cli:compile": "deno task cli:prepare && deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --output _gen/cli src/cli/main.ts",
+
+		// Installs the CLI on the local machine
+		"cli:install": "deno task cli:prepare && deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force src/cli/main.ts",
+
+		// Generates schema
+		"config:generate_schema": "deno run --allow-read --allow-write src/config/generate_schema.ts"
+	},
+	"lint": {
+		"include": ["src/"],
+		"exclude": ["tests/"],
+		"rules": {
+			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
+		}
+	},
+	"fmt": {
+		"useTabs": true
+	}
+}

@@ -1,4 +1,5 @@
-import { Ajv, join, parse, tjs } from "../deps.ts";
+import { Ajv, join, parse } from "../deps.ts";
+import schema from "./module_schema.json" with { type: "json" };
 
 export interface ModuleConfig extends Record<string, unknown> {
 	status?: "preview" | "beta" | "stable" | "deprecated";
@@ -30,7 +31,7 @@ export interface ErrorConfig {
 }
 
 const moduleConfigAjv = new Ajv.default({
-	schemas: [generateModuleConfigJsonSchema()],
+	schemas: [schema],
 });
 
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
@@ -54,53 +55,4 @@ export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	}
 
 	return config;
-}
-
-function generateModuleConfigJsonSchema(): tjs.Definition {
-	console.log("Generating registry.ts schema");
-
-	const filename = import.meta.filename;
-    if (!filename) throw new Error("Missing filename");
-
-	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
-	const DEFAULT_COMPILER_OPTIONS = {
-		"allowJs": true,
-		"esModuleInterop": true,
-		"experimentalDecorators": false,
-		"inlineSourceMap": true,
-		"isolatedModules": true,
-		"jsx": "react",
-		"module": "esnext",
-		"moduleDetection": "force",
-		"strict": true,
-		"target": "esnext",
-		"useDefineForClassFields": true,
-
-		"lib": ["esnext", "dom", "dom.iterable"],
-		"allowImportingTsExtensions": true,
-	};
-
-	const schemaFiles = [filename];
-
-	const program = tjs.getProgramFromFiles(
-		schemaFiles,
-		DEFAULT_COMPILER_OPTIONS,
-	);
-
-	const schema = tjs.generateSchema(program, "ModuleConfig", {
-		topRef: true,
-		required: true,
-		strictNullChecks: true,
-		noExtraProps: true,
-		esModuleInterop: true,
-
-		// TODO: Is this needed?
-		include: schemaFiles,
-
-		// TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
-		ignoreErrors: true,
-	});
-	if (schema == null) throw new Error("Failed to generate schema");
-
-	return schema;
 }

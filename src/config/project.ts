@@ -1,4 +1,5 @@
-import { parse, join, Ajv, tjs } from "../deps.ts";
+import { parse, join, Ajv } from "../deps.ts";
+import schema from "./project_schema.json" with { type: "json" };
 
 export interface ProjectConfig extends Record<string, unknown> {
 	registries: { [name: string]: RegistryConfig };
@@ -40,7 +41,7 @@ export interface ProjectModuleConfig extends Record<string, unknown> {
 // }
 
 const projectConfigAjv = new Ajv.default({
-	schemas: [generateProjectConfigJsonSchema()],
+	schemas: [schema],
 });
 
 export async function readConfig(projectPath: string): Promise<ProjectConfig> {
@@ -64,53 +65,4 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	}
 
 	return config;
-}
-
-function generateProjectConfigJsonSchema(): tjs.Definition {
-	console.log("Generating registry.ts schema");
-
-	const filename = import.meta.filename;
-    if (!filename) throw new Error("Missing filename");
-
-	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
-	const DEFAULT_COMPILER_OPTIONS = {
-		"allowJs": true,
-		"esModuleInterop": true,
-		"experimentalDecorators": false,
-		"inlineSourceMap": true,
-		"isolatedModules": true,
-		"jsx": "react",
-		"module": "esnext",
-		"moduleDetection": "force",
-		"strict": true,
-		"target": "esnext",
-		"useDefineForClassFields": true,
-
-		"lib": ["esnext", "dom", "dom.iterable"],
-		"allowImportingTsExtensions": true,
-	};
-
-	const schemaFiles = [filename];
-
-	const program = tjs.getProgramFromFiles(
-		schemaFiles,
-		DEFAULT_COMPILER_OPTIONS,
-	);
-
-	const schema = tjs.generateSchema(program, "ProjectConfig", {
-		topRef: true,
-		required: true,
-		strictNullChecks: true,
-		noExtraProps: true,
-		esModuleInterop: true,
-
-		// TODO: Is this needed?
-		include: schemaFiles,
-
-		// TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
-		ignoreErrors: true,
-	});
-	if (schema == null) throw new Error("Failed to generate schema");
-
-	return schema;
 }
