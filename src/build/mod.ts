@@ -1,4 +1,3 @@
-import { assertExists, exists, join } from "../deps.ts";
 import { crypto, encodeHex } from "./deps.ts";
 import { compileSchema } from "./schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
@@ -14,9 +13,50 @@ import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
 import { Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
+import {
+	assertExists,
+	denoPlugins,
+	esbuild,
+	exists,
+	join,
+	tjs,
+} from "../deps.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
 import { readUInt16BE } from "https://deno.land/x/postgres@v0.17.2/utils/utils.ts";
+
+/**
+ * Which format to use for building.
+ */
+export enum Format {
+	Native,
+	Bundled,
+}
+
+/**
+ * Which runtime to target when building.
+ */
+export enum Runtime {
+	Deno,
+	Cloudflare,
+}
+
+/**
+ * Which DB driver to use for the runtime.
+ */
+export enum DbDriver {
+	NodePostgres,
+	NeonServerless,
+}
+
+/**
+ * Stores options used in the build command.
+ */
+export interface BuildOpts {
+	format: Format;
+	runtime: Runtime;
+	dbDriver: DbDriver;
+}
 
 /**
  * Stores the state of all of the generated files to speed up subsequent build
@@ -82,7 +122,7 @@ export async function hashFile(
 }
 
 /**
- * State for the curent build process.
+ * State for the current build process.
  */
 interface BuildState {
 	cache: BuildCache;
@@ -144,7 +184,7 @@ async function waitForBuildPromises(buildState: BuildState): Promise<void> {
 	await Promise.all(promises);
 }
 
-export async function build(project: Project) {
+export async function build(project: Project, opts: BuildOpts) {
 	const buildCachePath = join(project.path, "_gen", "cache.json");
 
 	// Read hashes from file
@@ -176,7 +216,7 @@ export async function build(project: Project) {
 	} as BuildState;
 
 	// Run build
-	await buildSteps(buildState, project);
+	await buildSteps(buildState, project, opts);
 
 	// Write cache
 	// const writeCache = {
@@ -193,25 +233,22 @@ export async function build(project: Project) {
 	shutdownAllPools();
 }
 
-async function buildSteps(buildState: BuildState, project: Project) {
-	// TODO: This is super messy
-	// TODO: This does not reuse the Prisma dir or the database connection
-	// TODO: Figure out how to make this use one `migrateDev` command and pass in any modified modules
-	// for (const module of project.modules.values()) {
-	// 	if (module.db) {
-	// 		buildStep(buildState, {
-	// 			name: "Prisma schema",
-	// 			module,
-	// 			files: [join(module.path, "db", "schema.prisma")],
-	// 			async build() {
-	// 				await migrateDev(project, [module], { createOnly: false });
-	// 			},
-	// 		});
+async function buildSteps(
+	buildState: BuildState,
+	project: Project,
+	opts: BuildOpts,
+) {
+	const modules = Array.from(project.modules.values());
 
-	// 		// Run for only one database at a time
-	// 		await waitForBuildPromises(buildState);
-	// 	}
-	// }
+	buildStep(buildState, {
+		name: "Prisma schema",
+		files: modules.map((module) => join(module.path, "db", "schema.prisma")),
+		async build() {
+			await migrateDev(project, modules, {
+				createOnly: false,
+			});
+		},
+	});
 
 	buildStep(buildState, {
 		name: "Inflate runtime",
@@ -254,7 +291,7 @@ async function buildSteps(buildState: BuildState, project: Project) {
 		name: "Entrypoint",
 		always: true,
 		async build() {
-			await generateEntrypoint(project);
+			await generateEntrypoint(project, opts);
 		},
 	});
 
@@ -265,6 +302,58 @@ async function buildSteps(buildState: BuildState, project: Project) {
 			await generateOpenApi(project);
 		},
 	});
+
+	if (opts.format == Format.Bundled) {
+		buildStep(buildState, {
+			name: "Bundle",
+			always: true,
+			async build() {
+				const outfile = join(project.path, "_gen", "/output.js");
+
+				await esbuild.build({
+					entryPoints: [join(project.path, "_gen", "entrypoint.ts")],
+					outfile,
+					format: "esm",
+					platform: "neutral",
+					plugins: [
+						...denoPlugins(),
+					],
+					external: ["*.wasm", "*.wasm?module"],
+					bundle: true,
+					minify: true,
+				});
+
+				await esbuild.stop();
+
+				if (opts.runtime == Runtime.Cloudflare) {
+					let data = await Deno.readTextFile(outfile);
+
+					// Remove use of `FinalizationRegistry` (not supported in cf workers)
+					// https://github.com/cloudflare/workers-sdk/issues/2258
+					const registryMatch =
+						/(?<varName>\w+)=new FinalizationRegistry\(\w+=>\w+\.__wbg_digestcontext_free\(\w+>>>0\)\),/
+							.exec(data);
+					if (registryMatch?.groups) {
+						data = data.slice(0, registryMatch.index) +
+							data.slice(registryMatch.index + registryMatch[0].length);
+
+						const registryName = registryMatch.groups.varName;
+						data = data.replace(
+							new RegExp(`${registryName}.register\(\w+,\w+\.__wbg_ptr,\w+\),`),
+							"",
+						);
+						data = data.replace(`${registryName}.unregister\(this\),`, "");
+					}
+
+					// Remove unused import (`node:timers` isn't available in cf workers)
+					// https://developers.cloudflare.com/workers/runtime-apis/nodejs/
+					data = data.replaceAll(`import"node:timers";`, "");
+
+					await Deno.writeTextFile(outfile, data);
+				}
+			},
+		});
+	}
 
 	// TODO: SDKs
 

@@ -53,16 +53,17 @@ export class Context<Registry> {
 				scriptName,
 			);
 
-			// Compile schemas
-			const validateRequest = this.runtime.ajv.compile(script.requestSchema);
-			const validateResponse = this.runtime.ajv.compile(script.responseSchema);
+			// TODO: Replace with OGBE-15
+			// // Compile schemas
+			// const validateRequest = this.runtime.ajv.compile(script.requestSchema);
+			// const validateResponse = this.runtime.ajv.compile(script.responseSchema);
 
-			// Validate request
-			if (!validateRequest(req)) {
-				throw new Error(
-					`Invalid request: ${JSON.stringify(validateRequest.errors)}`,
-				);
-			}
+			// // Validate request
+			// if (!validateRequest(req)) {
+			// 	throw new Error(
+			// 		`Invalid request: ${JSON.stringify(validateRequest.errors)}`,
+			// 	);
+			// }
 
 			// Execute script
 			const res = await ctx.runBlock(async () => await script.run(ctx, req));
@@ -72,12 +73,13 @@ export class Context<Registry> {
 				}`,
 			);
 
-			// Validate response
-			if (!validateResponse(res)) {
-				throw new Error(
-					`Invalid response: ${JSON.stringify(validateResponse.errors)}`,
-				);
-			}
+			// TODO: Replace with OGBE-15
+			// // Validate response
+			// if (!validateResponse(res)) {
+			// 	throw new Error(
+			// 		`Invalid response: ${JSON.stringify(validateResponse.errors)}`,
+			// 	);
+			// }
 
 			return res as any;
 		} catch (cause) {
@@ -125,8 +127,9 @@ export class Context<Registry> {
 		const script = module.scripts[scriptName];
 		if (!script) return false;
 
-		const validateRequest = this.runtime.ajv.compile(script.requestSchema);
-		if (req && !validateRequest(req)) return false;
+		// TODO: Replace with OGBE-15
+		// const validateRequest = this.runtime.ajv.compile(script.requestSchema);
+		// if (req && !validateRequest(req)) return false;
 
 		return true;
 	}

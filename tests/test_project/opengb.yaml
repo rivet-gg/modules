@@ -7,11 +7,11 @@ registries:
   local:
     directory: ./modules
 modules:
-  currency: {}
-  friends: {}
-  rate_limit: {}
-  tokens: {}
-  users: {}
+  # currency: {}
+  # friends: {}
+  # rate_limit: {}
+  # tokens: {}
+  # users: {}
   # auth:
   #   config:
   #     google:

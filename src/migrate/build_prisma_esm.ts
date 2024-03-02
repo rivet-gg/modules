@@ -1,4 +1,4 @@
-import { resolve, join, isAbsolute } from "../deps.ts";
+import { isAbsolute, join, resolve } from "../deps.ts";
 import { esbuild, polyfillNodeForDeno } from "./deps.ts";
 type Plugin = esbuild.Plugin;
 
@@ -68,15 +68,17 @@ function wasmPlugin(): Plugin {
 			// the JavaScript code for compiling the WebAssembly binary. The
 			// binary itself is imported from a second virtual module.
 			build.onLoad({ filter: /.*/, namespace: "wasm-stub" }, async (args) => ({
-				contents: `import wasm from ${JSON.stringify(args.path)}
-        const module = new WebAssembly.Module(wasm);
-        export default module;
-        // export default wasm;
-          // const result = await WebAssembly.instantiate(wasm);
-          // export default result.instance.exports;
-        // export default (imports) =>
-        //   WebAssembly.instantiate(wasm, imports).then(
-        //     result => result.instance.exports)`,
+				contents: `
+					import wasm from ${JSON.stringify(args.path)}
+					const module = new WebAssembly.Module(wasm);
+					export default module;
+					// export default wasm;
+					// const result = await WebAssembly.instantiate(wasm);
+					// export default result.instance.exports;
+					// export default (imports) =>
+					//   WebAssembly.instantiate(wasm, imports).then(
+					//     result => result.instance.exports)
+				`,
 			}));
 
 			// Virtual modules in the "wasm-binary" namespace contain the

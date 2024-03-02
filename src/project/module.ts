@@ -1,4 +1,4 @@
-import { join, exists } from "../deps.ts";
+import { exists, join } from "../deps.ts";
 import { glob } from "./deps.ts";
 import { readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
@@ -71,7 +71,7 @@ export async function loadModule(
 	let db: ModuleDatabase | undefined = undefined;
 	if (await exists(join(modulePath, "db"), { isDirectory: true })) {
 		db = {
-			name: `module_${name.replace("-", "_")}`,
+			name: name.replace("-", "_"),
 		};
 	}
 
