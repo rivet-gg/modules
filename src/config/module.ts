@@ -1,5 +1,5 @@
 import { Ajv, join, parse } from "../deps.ts";
-import schema from "./module_schema.json" with { type: "json" };
+import schema from "../../artifacts/module_schema.json" with { type: "json" };
 
 export interface ModuleConfig extends Record<string, unknown> {
 	status?: "preview" | "beta" | "stable" | "deprecated";

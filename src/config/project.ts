@@ -1,5 +1,5 @@
 import { parse, join, Ajv } from "../deps.ts";
-import schema from "./project_schema.json" with { type: "json" };
+import schema from "../../artifacts/project_schema.json" with { type: "json" };
 
 export interface ProjectConfig extends Record<string, unknown> {
 	registries: { [name: string]: RegistryConfig };

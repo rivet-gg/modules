@@ -1,4 +1,4 @@
-// deno task config:generate_schema
+// deno task artifact:gen_schema
 //
 // Generates schema JSON from the module & project config
 
@@ -22,10 +22,10 @@ for (const { name, type } of CONFIGS) {
     const srcFileName = `${name}.ts`;
     const schemaFileName = `${name}_schema.json`;
 
-    const srcPath = join(dirname, srcFileName);
-    const schemaPath = join(dirname, schemaFileName);
+    const srcPath = join(dirname, "..", "config", srcFileName);
+    const schemaPath = join(dirname, "..", "..", "artifacts", schemaFileName);
 
-    console.log(`Generating schema for ${srcFileName} -> ${schemaFileName}`);
+    console.log(`Generating schema for ${srcPath} -> ${schemaPath}`);
 
     // https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
     const DEFAULT_COMPILER_OPTIONS = {
