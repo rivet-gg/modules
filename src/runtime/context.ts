@@ -49,7 +49,7 @@ export class Context<Registry> {
 					script: { module: moduleName, script: scriptName },
 				}),
 				moduleName,
-				this.runtime.postgres.getOrCreatePool(module)?.prisma,
+				this.runtime.postgres.getOrCreatePool(moduleName, module)?.prisma,
 				scriptName,
 			);
 
