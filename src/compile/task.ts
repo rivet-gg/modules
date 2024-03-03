@@ -1,7 +1,7 @@
 import { glob, globSync } from "./deps.ts";
 
 interface TaskArguments {
-  input?: string;
+  input?: string | string[];
 }
 
 interface TaskConfig {
@@ -9,22 +9,6 @@ interface TaskConfig {
   args: TaskArguments;
   executor: (tools: { files: string[] }) => Promise<void> | void;
   deps?: Task[];
-}
-
-class Semaphore extends Promise<void> {
-  private resolve!: () => void;
-
-  constructor() {
-    let resolve: () => void;
-    super((res) => {
-      resolve = res;
-    });
-    this.resolve = resolve!;
-  }
-
-  release() {
-    return this.resolve();
-  }
 }
 
 export class Task {
@@ -51,10 +35,9 @@ export class Task {
   }
 
   async run() {
-    console.log(`Running... ${this.config.name}`);
-    // console.group(this.config.name);
+    console.group(this.config.name);
     await this.config.executor({ files: this.inputFiles });
-    // console.groupEnd();
+    console.groupEnd();
   }
 
   async watch() {

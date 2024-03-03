@@ -1,10 +1,7 @@
 import { join } from "../deps.ts";
 import { type Project } from "../project/mod.ts";
 import { createTask, type Task } from "./task.ts";
-import { mergeReadableStreams } from "https://deno.land/std@0.141.0/streams/merge.ts";
-import { encodeHex } from "https://deno.land/std@0.207.0/encoding/hex.ts";
-
-import { crypto } from "https://deno.land/std@0.207.0/crypto/mod.ts";
+import { crypto, encodeHex, mergeReadableStreams } from "./deps.ts";
 
 type PipelineFactory = (tools: { task: typeof createTask }) => Task;
 
@@ -26,7 +23,6 @@ export class Pipeline {
   private mainTask: Task;
 
   constructor(private config: PipelineConfig, factory: PipelineFactory) {
-    console.log(config.project);
     this.mainTask = factory({ task: createTask });
   }
 
@@ -53,6 +49,23 @@ export class Pipeline {
       }
     }
     console.groupEnd();
+  }
+
+  async watch() {
+    const allTasks = new Set(findTasks(this.mainTask));
+
+    const paths = [];
+    for (const task of allTasks) {
+      paths.push(...task.input);
+    }
+
+    const watcher = Deno.watchFs(paths, { recursive: true });
+    console.log("Started watching for file changes...");
+    for await (const event of watcher) {
+      console.log("File change", event);
+      // it's safe to run the whole pipeline as individual tasks are cached
+      await this.run();
+    }
   }
 
   static prepare(project: Project) {
@@ -92,9 +105,13 @@ export class Pipeline {
     const clear = async () => {
       for await (const entry of Deno.readDir(join(cacheFilename, "../"))) {
         if (entry.name.startsWith(task.name)) {
-          await Deno.remove(join(cacheFilename, entry.name), {
-            recursive: true,
-          });
+          try {
+            await Deno.remove(join(cacheFilename, entry.name), {
+              recursive: true,
+            });
+          } catch {
+            // ignore
+          }
         }
       }
     };
@@ -128,12 +145,3 @@ export const pipeline = (config: PipelineConfig, factory: PipelineFactory) => {
 };
 
 pipeline.prepare = Pipeline.prepare;
-
-/*
-
-  genDb
-
-  compileModuleInfo
-
-  main - [genDb, compileModuleInfo]
-*/
