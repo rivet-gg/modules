@@ -1,4 +1,5 @@
-import { crypto, encodeHex } from "./deps.ts";
+import { assertExists, exists, join } from "../deps.ts";
+import { crypto, encodeHex, tjs } from "./deps.ts";
 import { compileSchema } from "./schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
 import { generateOpenApi } from "./openapi.ts";
@@ -12,7 +13,6 @@ import { Project } from "../project/project.ts";
 import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
 import { Module, Script } from "../project/mod.ts";
-import { assertExists, exists, join, tjs } from "../deps.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 
@@ -31,7 +31,10 @@ export interface BuildCache {
 interface BuildCachePersist {
 	version: number;
 	fileHashes: Record<string, string>;
-	scriptSchemas: Record<string, Record<string, { request: tjs.Definition, response: tjs.Definition }>>;
+	scriptSchemas: Record<
+		string,
+		Record<string, { request: tjs.Definition; response: tjs.Definition }>
+	>;
 }
 
 /**
@@ -160,8 +163,8 @@ export async function build(project: Project) {
 		newCache: {
 			version: 1,
 			fileHashes: {},
-			scriptSchemas: {}
-		} as BuildCachePersist
+			scriptSchemas: {},
+		} as BuildCachePersist,
 	} as BuildCache;
 
 	// Build state
@@ -178,7 +181,10 @@ export async function build(project: Project) {
 	// 	version: buildState.cache.newCache.version,
 	// 	hashCache: Object.assign({} as Record<string, string>, buildState.cache.oldCache, buildState.cache.newCache),
 	// } as BuildCachePersist;
-	await Deno.writeTextFile(buildCachePath, JSON.stringify(buildState.cache.newCache));
+	await Deno.writeTextFile(
+		buildCachePath,
+		JSON.stringify(buildState.cache.newCache),
+	);
 
 	console.log("✅ Finished");
 
@@ -313,7 +319,8 @@ async function buildScript(
 		},
 		async alreadyCached() {
 			// Read schemas from cache
-			const schemas = buildState.cache.oldCache.scriptSchemas[module.name][script.name];
+			const schemas =
+				buildState.cache.oldCache.scriptSchemas[module.name][script.name];
 			assertExists(schemas);
 			script.requestSchema = schemas.request;
 			script.responseSchema = schemas.response;
@@ -323,13 +330,14 @@ async function buildScript(
 			assertExists(script.responseSchema);
 
 			// Populate cache with response
-			if (!buildState.cache.newCache.scriptSchemas[module.name]) buildState.cache.newCache.scriptSchemas[module.name] = {};
+			if (!buildState.cache.newCache.scriptSchemas[module.name]) {
+				buildState.cache.newCache.scriptSchemas[module.name] = {};
+			}
 			buildState.cache.newCache.scriptSchemas[module.name][script.name] = {
 				request: script.requestSchema,
 				response: script.responseSchema,
-			}
-
-		}
+			};
+		},
 	});
 
 	buildStep(buildState, {

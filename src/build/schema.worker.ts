@@ -4,7 +4,7 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 
-import { tjs } from "../deps.ts";
+import { tjs } from "./deps.ts";
 import { Script } from "../project/mod.ts";
 
 export interface WorkerRequest {

@@ -1,4 +1,4 @@
-import { Ajv, addFormats } from "../deps.ts";
+import { Ajv, addFormats } from "./deps.ts";
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
 import { PrismaClientDummy, Postgres } from "./postgres.ts";
