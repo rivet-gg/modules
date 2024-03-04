@@ -19,6 +19,7 @@ export type ForEachPrismaSchemaCallback = (
 /** Prepares all databases and calls a callback once prepared. */
 export async function forEachDatabase(
 	project: Project,
+	modules: Module[],
 	callback: ForEachDatabaseCallback,
 ) {
 	// Setup database
@@ -30,7 +31,7 @@ export async function forEachDatabase(
 	await defaultClient.connect();
 
 	try {
-		for (const mod of project.modules.values()) {
+		for (const mod of modules) {
 			if (!mod.db) continue;
 			// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/83
 			// if (dbFilter && mod.name !== dbFilter) continue;
@@ -56,9 +57,10 @@ export async function forEachDatabase(
 /** Prepares the Postgres database & creates a temporary Prisma project for each database. */
 export async function forEachPrismaSchema(
 	project: Project,
+	modules: Module[],
 	callback: ForEachPrismaSchemaCallback,
 ) {
-	await forEachDatabase(project, async ({ databaseUrl, module, db }) => {
+	await forEachDatabase(project, modules, async ({ databaseUrl, module, db }) => {
 		const tempDir = await Deno.makeTempDir();
 		const dbDir = join(module.path, "db");
 		const generatedClientDir = join(

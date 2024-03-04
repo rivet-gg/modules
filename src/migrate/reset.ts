@@ -6,7 +6,7 @@ import { Project } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 
 export async function migrateReset(project: Project) {
-	await forEachPrismaSchema(project, async ({ databaseUrl, tempDir }) => {
+	await forEachPrismaSchema(project, [...project.modules.values()], async ({ databaseUrl, tempDir }) => {
 		// Generate migrations & client
 		console.log("Generating migrations");
 		const status = await new Deno.Command("deno", {

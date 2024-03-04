@@ -1,76 +1,75 @@
 import { tjs } from "../deps.ts";
-import { Project } from "../project/mod.ts";
+import { Module, Project, Script } from "../project/mod.ts";
 
-export function compileSchema(project: Project) {
-	for (const module of project.modules.values()) {
-		for (const script of module.scripts.values()) {
-			console.log("Generating schema", script.path);
+// TODO: This function is sync
+export async function compileSchema(
+	project: Project,
+	module: Module,
+	script: Script,
+) {
+	// TODO: Dupe of project.ts
+	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
+	const DEFAULT_COMPILER_OPTIONS = {
+		"allowJs": true,
+		"esModuleInterop": true,
+		"experimentalDecorators": false,
+		"inlineSourceMap": true,
+		"isolatedModules": true,
+		"jsx": "react",
+		"module": "esnext",
+		"moduleDetection": "force",
+		"strict": true,
+		"target": "esnext",
+		"useDefineForClassFields": true,
 
-			// TODO: Dupe of project.ts
-			// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
-			const DEFAULT_COMPILER_OPTIONS = {
-				"allowJs": true,
-				"esModuleInterop": true,
-				"experimentalDecorators": false,
-				"inlineSourceMap": true,
-				"isolatedModules": true,
-				"jsx": "react",
-				"module": "esnext",
-				"moduleDetection": "force",
-				"strict": true,
-				"target": "esnext",
-				"useDefineForClassFields": true,
+		"lib": ["esnext", "dom", "dom.iterable"],
+		"allowImportingTsExtensions": true,
+	};
 
-				"lib": ["esnext", "dom", "dom.iterable"],
-				"allowImportingTsExtensions": true,
-			};
+	const validateConfig = {
+		topRef: true,
+		required: true,
+		strictNullChecks: true,
+		noExtraProps: true,
+		esModuleInterop: true,
 
-			const validateConfig = {
-				topRef: true,
-				required: true,
-				strictNullChecks: true,
-				noExtraProps: true,
-				esModuleInterop: true,
+		// TODO: Is this needed?
+		include: [script.path],
 
-				// TODO: Is this needed?
-				include: [script.path],
+		// TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
+		ignoreErrors: true,
+	};
 
-				// TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
-				ignoreErrors: true,
-			};
+	const program = tjs.getProgramFromFiles(
+		[script.path],
+		DEFAULT_COMPILER_OPTIONS,
+	);
 
-			const program = tjs.getProgramFromFiles(
-				[script.path],
-				DEFAULT_COMPILER_OPTIONS,
-			);
-
-			const requestSchema = tjs.generateSchema(
-				program,
-				"Request",
-				validateConfig,
-				[script.path],
-			);
-			if (requestSchema === null) {
-				throw new Error("Failed to generate request schema for " + script.path);
-			}
-			// patchSchema(null, requestSchema);
-			script.requestSchema = requestSchema;
-
-			const responseSchema = tjs.generateSchema(
-				program,
-				"Response",
-				validateConfig,
-				[script.path],
-			);
-			if (responseSchema === null) {
-				throw new Error(
-					"Failed to generate response schema for " + script.path,
-				);
-			}
-			// patchSchema(null, responseSchema);
-			script.responseSchema = responseSchema;
-		}
+	const requestSchema = tjs.generateSchema(
+		program,
+		"Request",
+		validateConfig,
+		[script.path],
+	);
+	if (requestSchema === null) {
+		throw new Error("Failed to generate request schema for " + script.path);
 	}
+	// patchSchema(null, requestSchema);
+	script.requestSchema = requestSchema;
+
+	const responseSchema = tjs.generateSchema(
+		program,
+		"Response",
+		validateConfig,
+		[script.path],
+	);
+	if (responseSchema === null) {
+		throw new Error(
+			"Failed to generate response schema for " + script.path,
+		);
+	}
+	// patchSchema(null, responseSchema);
+	script.responseSchema = responseSchema;
 }
 
 // function patchSchema(name: string | null, schema: tjs.DefinitionOrBoolean) {

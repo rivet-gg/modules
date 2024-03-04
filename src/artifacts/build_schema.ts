@@ -25,8 +25,6 @@ for (const { name, type } of CONFIGS) {
     const srcPath = join(dirname, "..", "config", srcFileName);
     const schemaPath = join(dirname, "..", "..", "artifacts", schemaFileName);
 
-    console.log(`Generating schema for ${srcPath} -> ${schemaPath}`);
-
     // https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
     const DEFAULT_COMPILER_OPTIONS = {
         "allowJs": true,

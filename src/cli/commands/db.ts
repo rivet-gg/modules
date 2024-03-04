@@ -10,7 +10,8 @@ export const dbCommand = new Command<GlobalOpts>();
 dbCommand.action(() => dbCommand.showHelp());
 
 dbCommand.command("dev").option("-c, --create-only", "Create only", { default: false }).action(async (opts) => {
-	await migrateDev(await initProject(opts), { createOnly: opts.createOnly });
+	const project = await initProject(opts);
+	await migrateDev(project, [...project.modules.values()], { createOnly: opts.createOnly });
 });
 
 dbCommand.command("status").action(async (opts) => {
