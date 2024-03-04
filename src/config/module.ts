@@ -1,6 +1,4 @@
-import { Ajv, fileURLToPath, join, parse, tjs } from "../deps.ts";
-
-const __filename = fileURLToPath(import.meta.url);
+import { Ajv, join, parse, tjs } from "../deps.ts";
 
 export interface ModuleConfig extends Record<string, unknown> {
 	status?: "preview" | "beta" | "stable" | "deprecated";
@@ -61,6 +59,9 @@ export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 function generateModuleConfigJsonSchema(): tjs.Definition {
 	console.log("Generating registry.ts schema");
 
+	const filename = import.meta.filename;
+    if (!filename) throw new Error("Missing filename");
+
 	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
 	const DEFAULT_COMPILER_OPTIONS = {
 		"allowJs": true,
@@ -79,7 +80,7 @@ function generateModuleConfigJsonSchema(): tjs.Definition {
 		"allowImportingTsExtensions": true,
 	};
 
-	const schemaFiles = [__filename];
+	const schemaFiles = [filename];
 
 	const program = tjs.getProgramFromFiles(
 		schemaFiles,

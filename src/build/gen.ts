@@ -33,18 +33,20 @@ async function compileModuleHelper(
 	// Generate source
 	const dbImports = [
 		'import prisma from "./prisma/esm.js";',
-		'export { prisma };',
-		'export const Prisma = prisma.Prisma;',
+		"export { prisma };",
+		"export const Prisma = prisma.Prisma;",
 	];
 	const source = [
 		`import { ModuleContext as ModuleContextInner } from "${runtimePath}";`,
 		`import { Registry as RegistryTypeInner } from "${project.path}/_gen/registry.d.ts";`,
-		'',
+		"",
 		...(module.db ? dbImports : []),
-		'',
+		"",
 		`export { RuntimeError } from "${runtimePath}";`,
-		`export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${module.db ? "prisma.PrismaClient" : "undefined"}>;`,
-		'',
+		`export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${
+			module.db ? "prisma.PrismaClient" : "undefined"
+		}>;`,
+		"",
 	].join("\n");
 
 	// Write source
@@ -65,19 +67,20 @@ async function compileTestHelper(
 		`import { Runtime, TestContext as TestContextInner } from "${runtimePath}";`,
 		`import { Registry as RegistryTypeInner } from "${project.path}/_gen/registry.d.ts";`,
 		`import config from "${project.path}/_gen/runtime_config.ts";`,
-		'',
+		"",
 		'export * from "./mod.ts";',
-		'',
-		`export type TestContext = TestContextInner<RegistryTypeInner, ${module.db ? "module.prisma.PrismaClient" : "undefined"}>;`,
-		'',
-		'export type TestFn = (ctx: TestContext) => Promise<void>;',
-		'',
-		'export function test(name: string, fn: TestFn) {',
+		"",
+		`export type TestContext = TestContextInner<RegistryTypeInner, ${
+			module.db ? "module.prisma.PrismaClient" : "undefined"
+		}>;`,
+		"",
+		"export type TestFn = (ctx: TestContext) => Promise<void>;",
+		"",
+		"export function test(name: string, fn: TestFn) {",
 		`	Runtime.test(config, "${module.name}", name, fn);`,
-		'}',
-		'',
+		"}",
+		"",
 	].join("\n");
-
 
 	// Write source
 	const helperPath = testGenPath(project, module);
@@ -96,14 +99,18 @@ async function compileScriptHelper(
 	const source = [
 		'import * as module from "../mod.ts";',
 		`import { ScriptContext as ScriptContextInner } from "${runtimePath}";`,
-		`import { Registry as RegistryTypeInner } from "${join(project.path, "_gen", "registry.d.ts")}";`,
-		'',
-		module.db ? 'import { PrismaClient } from "../prisma/index.d.ts";' : '', // NOTE: This is not used anywhere
-		'',
+		`import { Registry as RegistryTypeInner } from "${
+			join(project.path, "_gen", "registry.d.ts")
+		}";`,
+		"",
+		module.db ? 'import { PrismaClient } from "../prisma/index.d.ts";' : "", // NOTE: This is not used anywhere
+		"",
 		'export * from "../mod.ts";',
-		'',
-		`export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${module.db ? "module.prisma.PrismaClient" : "undefined"}>;`,
-		'',
+		"",
+		`export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${
+			module.db ? "module.prisma.PrismaClient" : "undefined"
+		}>;`,
+		"",
 	].join("\n");
 
 	// Write source
@@ -156,10 +163,10 @@ async function compileTypeHelpers(project: Project) {
 		}
 
 		const moduleComment = [
-			'//',
+			"//",
 			`// Types for ${module.name}`,
-			'//',
-			'',
+			"//",
+			"",
 			`interface ${moduleInterfaceName} {}`,
 		].join("\n");
 

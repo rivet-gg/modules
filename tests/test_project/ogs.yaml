@@ -3,7 +3,7 @@ registries:
   #   git: https://github.com/rivet-gg/open-game-services.git
   #   branch: main
   default:
-    directory: ../../../ogs/modules
+    directory: ../../../opengb-registry/modules
   local:
     directory: ./modules
 modules:

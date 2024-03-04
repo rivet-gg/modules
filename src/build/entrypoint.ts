@@ -35,8 +35,7 @@ export async function generateEntrypoint(project: Project) {
 		if (mod.db) {
 			const prismaImportName = `prisma$$${mod.name}`;
 			const prismaImportPath = `${mod.path}/_gen/prisma/esm.js`;
-			modImports +=
-				`import ${prismaImportName} from "${prismaImportPath}";\n`;
+			modImports += `import ${prismaImportName} from "${prismaImportPath}";\n`;
 
 			modConfig += `db: {`;
 			modConfig += `name: ${JSON.stringify(mod.db.name)},`;
@@ -104,7 +103,10 @@ main();
 	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
-	await Deno.writeTextFile(join(distDir, ".gitignore"), ".");
+	await Deno.writeTextFile(
+		join(distDir, ".gitignore"),
+		".",
+	);
 
 	// Format files
 	const { success } = await new Deno.Command("deno", {

@@ -1,7 +1,4 @@
 import { initProject } from "../cli/common.ts";
-import { join, dirname, fromFileUrl } from "../deps.ts";
-
-const __dirname = dirname(fromFileUrl(import.meta.url));
 
 export async function generate(path?: string) {
 	interface Generator {
