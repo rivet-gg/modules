@@ -23,6 +23,7 @@ import { Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
+import { readUInt16BE } from "https://deno.land/x/postgres@v0.17.2/utils/utils.ts";
 
 /**
  * Which format to use for building.
@@ -237,18 +238,25 @@ async function buildSteps(
 	project: Project,
 	opts: BuildOpts,
 ) {
-	const modules = Array.from(project.modules.values());
-
-	buildStep(buildState, {
-		name: "Prisma schema",
-		files: modules.map((module) => join(module.path, "db", "schema.prisma")),
-		async build() {
-			await migrateDev(project, modules, {
-				createOnly: false,
+	// TODO: This is super messy
+	// TODO: This does not reuse the Prisma dir or the database connection
+	// TODO: Figure out how to make this use one `migrateDev` command and pass in any modified modules
+	for (const module of project.modules.values()) {
+		if (module.db) {
+			buildStep(buildState, {
+				name: "Prisma schema",
+				module,
+				files: [join(module.path, "db", "schema.prisma")],
+				async build() {
+					await migrateDev(project, [module], { createOnly: false });
+				},
 			});
-		},
-	});
 
+			// Run for only one database at a time
+			await waitForBuildPromises(buildState);
+		}
+	}
+	
 	buildStep(buildState, {
 		name: "Inflate runtime",
 		// TODO: Add way to compare runtime version
