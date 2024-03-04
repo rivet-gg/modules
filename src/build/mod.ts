@@ -16,6 +16,7 @@ import { Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
+import { readUInt16BE } from "https://deno.land/x/postgres@v0.17.2/utils/utils.ts";
 
 /**
  * Stores the state of all of the generated files to speed up subsequent build
@@ -196,21 +197,21 @@ async function buildSteps(buildState: BuildState, project: Project) {
 	// TODO: This is super messy
 	// TODO: This does not reuse the Prisma dir or the database connection
 	// TODO: Figure out how to make this use one `migrateDev` command and pass in any modified modules
-	for (const module of project.modules.values()) {
-		if (module.db) {
-			buildStep(buildState, {
-				name: "Prisma schema",
-				module,
-				files: [join(module.path, "db", "schema.prisma")],
-				async build() {
-					await migrateDev(project, [module], { createOnly: false });
-				},
-			});
+	// for (const module of project.modules.values()) {
+	// 	if (module.db) {
+	// 		buildStep(buildState, {
+	// 			name: "Prisma schema",
+	// 			module,
+	// 			files: [join(module.path, "db", "schema.prisma")],
+	// 			async build() {
+	// 				await migrateDev(project, [module], { createOnly: false });
+	// 			},
+	// 		});
 
-			// Run for only one database at a time
-			await waitForBuildPromises(buildState);
-		}
-	}
+	// 		// Run for only one database at a time
+	// 		await waitForBuildPromises(buildState);
+	// 	}
+	// }
 
 	buildStep(buildState, {
 		name: "Inflate runtime",
