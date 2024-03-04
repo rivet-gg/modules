@@ -1,3 +1,4 @@
+import { crypto, encodeHex } from "./deps.ts";
 import { compileSchema } from "./schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
 import { generateOpenApi } from "./openapi.ts";
@@ -10,18 +11,26 @@ import {
 import { Project } from "../project/project.ts";
 import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
-import { Module, Script, scriptGenPath } from "../project/mod.ts";
-import { join } from "../deps.ts";
+import { Module, Script } from "../project/mod.ts";
+import { assertExists, exists, join, tjs } from "../deps.ts";
 import { migrateDev } from "../migrate/dev.ts";
-import { moduleGenPath } from "../project/module.ts";
 
 /**
  * Stores the state of all of the generated files to speed up subsequent build
  * steps.
  */
 export interface BuildCache {
+	oldCache: BuildCachePersist;
+	newCache: BuildCachePersist;
+}
+
+/**
+ * Data from `BuildCache` that gets persisted.
+ */
+interface BuildCachePersist {
 	version: number;
-	hashCache: Record<string, string>;
+	fileHashes: Record<string, string>;
+	scriptSchemas: Record<string, Record<string, { request: tjs.Definition, response: tjs.Definition }>>;
 }
 
 /**
@@ -31,8 +40,39 @@ export async function compareHash(
 	cache: BuildCache,
 	paths: string[],
 ): Promise<boolean> {
-	// TODO: Implement later
-	return true;
+	// We hash all files regardless of if we already know there was a change so
+	// we can re-use these hashes on the next run to see if anything changed.
+	let hasChanged = false;
+	for (const path of paths) {
+		const oldHash = cache.oldCache.fileHashes[path];
+		const newHash = await hashFile(cache, path);
+		if (newHash != oldHash) {
+			hasChanged = true;
+			console.log(`✏️ ${path}`);
+		}
+	}
+
+	return hasChanged;
+}
+
+export async function hashFile(
+	cache: BuildCache,
+	path: string,
+): Promise<string> {
+	// Return already calculated hash
+	let hash = cache.newCache.fileHashes[path];
+	if (hash) return hash;
+
+	// Calculate hash
+	const file = await Deno.open(path, { read: true });
+	const fileHashBuffer = await crypto.subtle.digest(
+		"SHA-256",
+		file.readable,
+	);
+	hash = encodeHex(fileHashBuffer);
+	cache.newCache.fileHashes[path] = hash;
+
+	return hash;
 }
 
 /**
@@ -48,6 +88,8 @@ interface BuildStepOpts {
 	module?: Module;
 	script?: Script;
 	build: () => Promise<void>;
+	alreadyCached?: () => Promise<void>;
+	finally?: () => Promise<void>;
 	always?: boolean;
 	files?: string[];
 }
@@ -65,7 +107,6 @@ export function buildStep(
 		stepName += ` (${opts.module.name}.${opts.script.name})`;
 	} else if (opts.module) {
 		stepName += ` (${opts.module.name})`;
-
 	}
 
 	const fn = async () => {
@@ -77,7 +118,11 @@ export function buildStep(
 		) {
 			console.log(`🔨 ${stepName}`);
 			await opts.build();
+		} else {
+			if (opts.alreadyCached) await opts.alreadyCached();
 		}
+
+		if (opts.finally) await opts.finally();
 	};
 
 	buildState.promises.push(fn());
@@ -90,38 +135,68 @@ async function waitForBuildPromises(buildState: BuildState): Promise<void> {
 }
 
 export async function build(project: Project) {
+	const buildCachePath = join(project.path, "_gen", "cache.json");
+
+	// Read hashes from file
+	let oldCache: BuildCachePersist;
+	if (await exists(buildCachePath)) {
+		oldCache = JSON.parse(await Deno.readTextFile(buildCachePath));
+	} else {
+		oldCache = {
+			version: 1,
+			fileHashes: {},
+			scriptSchemas: {},
+		};
+	}
+
+	// Build cache
 	const buildCache = {
-		version: 1,
+		oldCache,
+		newCache: {
+			version: 1,
+			fileHashes: {},
+			scriptSchemas: {}
+		} as BuildCachePersist
 	} as BuildCache;
 
+	// Build state
 	const buildState = {
 		cache: buildCache,
 		promises: [],
 	} as BuildState;
 
+	// Run build
 	await buildSteps(buildState, project);
+
+	// Write cache
+	// const writeCache = {
+	// 	version: buildState.cache.newCache.version,
+	// 	hashCache: Object.assign({} as Record<string, string>, buildState.cache.oldCache, buildState.cache.newCache),
+	// } as BuildCachePersist;
+	await Deno.writeTextFile(buildCachePath, JSON.stringify(buildState.cache.newCache));
 
 	console.log("✅ Finished");
 }
 
 async function buildSteps(buildState: BuildState, project: Project) {
 	// TODO: This is super messy
-	// TODO: This does not reuse the Prisma dir
-	// for (const module of project.modules.values()) {
-	// 	if (module.db) {
-	// 		buildStep(buildState, {
-	// 			name: "Prisma schema",
-	// 			module,
-	// 			files: [join(module.path, "db", "schema.prisma")],
-	// 			async build() {
-	// 				await migrateDev(project, [module], { createOnly: false });
-	// 			},
-	// 		});
+	// TODO: This does not reuse the Prisma dir or the database connection
+	// TODO: Figure out how to make this use one `migrateDev` command and pass in any modified modules
+	for (const module of project.modules.values()) {
+		if (module.db) {
+			buildStep(buildState, {
+				name: "Prisma schema",
+				module,
+				files: [join(module.path, "db", "schema.prisma")],
+				async build() {
+					await migrateDev(project, [module], { createOnly: false });
+				},
+			});
 
-	// 		// Run for only one database at a time
-	// 		await waitForBuildPromises(buildState);
-	// 	}
-	// }
+			// Run for only one database at a time
+			await waitForBuildPromises(buildState);
+		}
+	}
 
 	buildStep(buildState, {
 		name: "Inflate runtime",
@@ -224,8 +299,29 @@ async function buildScript(
 		// TODO: use tjs.getProgramFiles() to get the dependent files?
 		files: [join(module.path, "module.yaml"), script.path],
 		async build() {
+			// Compile schema
+			//
+			// This mutates `script`
 			await compileSchema(project, module, script);
 		},
+		async alreadyCached() {
+			// Read schemas from cache
+			const schemas = buildState.cache.oldCache.scriptSchemas[module.name][script.name];
+			assertExists(schemas);
+			script.requestSchema = schemas.request;
+			script.responseSchema = schemas.response;
+		},
+		async finally() {
+			assertExists(script.requestSchema);
+			assertExists(script.responseSchema);
+
+			if (!buildState.cache.newCache.scriptSchemas[module.name]) buildState.cache.newCache.scriptSchemas[module.name] = {};
+			buildState.cache.newCache.scriptSchemas[module.name][script.name] = {
+				request: script.requestSchema,
+				response: script.responseSchema,
+			}
+
+		}
 	});
 
 	buildStep(buildState, {

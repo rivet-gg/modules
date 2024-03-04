@@ -99,7 +99,6 @@ main();
 	const distDir = join(project.path, "_gen");
 	const configPath = join(distDir, "runtime_config.ts");
 	const entrypointPath = join(distDir, "entrypoint.ts");
-	console.log("Writing entrypoint");
 	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);

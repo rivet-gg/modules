@@ -21,8 +21,6 @@ export async function loadModule(
 	modulePath: string,
 	name: string,
 ): Promise<Module> {
-	console.log("Loading module", modulePath);
-
 	// Read config
 	const config = await readModuleConfig(modulePath);
 
