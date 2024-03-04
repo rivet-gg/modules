@@ -1,9 +1,9 @@
 import { join } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { getRuntimePath } from "./ogs_source.ts";
+import { genRuntimeModPath } from "../project/project.ts";
 
 export async function generateEntrypoint(project: Project) {
-	const runtimePath = await getRuntimePath(project);
+	const runtimePath = genRuntimeModPath(project);
 
 	// Generate module configs
 	let modImports = "";

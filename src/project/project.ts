@@ -109,3 +109,11 @@ function moduleNameInRegistry(
 ): string {
 	return module.module ?? moduleName;
 }
+
+export function genRuntimePath(project: Project): string {
+	return join(project.path, "_gen", "runtime");
+}
+
+export function genRuntimeModPath(project: Project): string {
+	return join(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
+}

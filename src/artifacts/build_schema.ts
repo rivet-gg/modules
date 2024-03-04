@@ -1,4 +1,4 @@
-// deno task artifact:gen_schema
+// deno task artifacts:build:schema
 //
 // Generates schema JSON from the module & project config
 
