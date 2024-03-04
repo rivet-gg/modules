@@ -9,25 +9,10 @@ import {
 } from "../project/mod.ts";
 import { genRuntimeModPath } from "../project/project.ts";
 
-export async function compileScriptHelpers(project: Project) {
-	for (const module of project.modules.values()) {
-		await compileModuleHelper(project, module);
-		await compileTestHelper(project, module);
-
-		for (const script of module.scripts.values()) {
-			await compileScriptHelper(project, module, script);
-		}
-	}
-
-	await compileTypeHelpers(project);
-}
-
-async function compileModuleHelper(
+export async function compileModuleHelper(
 	project: Project,
 	module: Module,
 ) {
-	console.log("Generating module", module.path);
-
 	const runtimePath = genRuntimeModPath(project);
 
 	// Generate source
@@ -55,11 +40,10 @@ async function compileModuleHelper(
 	await Deno.writeTextFile(helperPath, source);
 }
 
-async function compileTestHelper(
+export async function compileTestHelper(
 	project: Project,
 	module: Module,
 ) {
-	console.log("Generating test", module.path);
 	const runtimePath = genRuntimeModPath(project);
 
 	const source = [
@@ -88,12 +72,11 @@ async function compileTestHelper(
 	await Deno.writeTextFile(helperPath, source);
 }
 
-async function compileScriptHelper(
+export async function compileScriptHelper(
 	project: Project,
 	module: Module,
 	script: Script,
 ) {
-	console.log("Generating script", script.path);
 	const runtimePath = genRuntimeModPath(project);
 
 	const source = [
@@ -119,7 +102,7 @@ async function compileScriptHelper(
 	await Deno.writeTextFile(helperPath, source);
 }
 
-async function compileTypeHelpers(project: Project) {
+export async function compileTypeHelpers(project: Project) {
 	const typedefPath = join(
 		project.path,
 		"_gen",
