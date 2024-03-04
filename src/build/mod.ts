@@ -1,5 +1,5 @@
 import { assertExists, exists, join } from "../deps.ts";
-import { crypto, encodeHex, tjs } from "./deps.ts";
+import { crypto, encodeHex } from "./deps.ts";
 import { compileSchema } from "./schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
 import { generateOpenApi } from "./openapi.ts";
