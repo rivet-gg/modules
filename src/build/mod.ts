@@ -1,3 +1,11 @@
+import {
+	assertExists,
+	denoPlugins,
+	esbuild,
+	exists,
+	join,
+	tjs,
+} from "../deps.ts";
 import { crypto, encodeHex } from "./deps.ts";
 import { compileSchema } from "./schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
@@ -13,17 +21,8 @@ import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
 import { Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
-import {
-	assertExists,
-	denoPlugins,
-	esbuild,
-	exists,
-	join,
-	tjs,
-} from "../deps.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
-import { readUInt16BE } from "https://deno.land/x/postgres@v0.17.2/utils/utils.ts";
 
 /**
  * Which format to use for building.
