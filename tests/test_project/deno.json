@@ -1,6 +1,6 @@
 {
     "imports": {
-        "@ogs/runtime": "/Users/nathan/rivet/opengb/src/runtime/mod.ts"
+        "@ogs/runtime": "./_gen/runtime/src/runtime/mod.ts"
     },
     "lint": {
         "include": [

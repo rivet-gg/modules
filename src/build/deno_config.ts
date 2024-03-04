@@ -1,12 +1,11 @@
 import { join } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { getRuntimePath } from "./ogs_source.ts";
 
 export async function generateDenoConfig(project: Project) {
     // Build config
     const config = {
         "imports": {
-            "@ogs/runtime": await getRuntimePath(project),
+            "@ogs/runtime": "./_gen/runtime/src/runtime/mod.ts",
         },
         "lint": {
             "include": ["src/"],

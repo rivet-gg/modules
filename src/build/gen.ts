@@ -7,7 +7,7 @@ import {
 	scriptGenPath,
 	testGenPath,
 } from "../project/mod.ts";
-import { getRuntimePath } from "./ogs_source.ts";
+import { genRuntimeModPath } from "../project/project.ts";
 
 export async function compileScriptHelpers(project: Project) {
 	for (const module of project.modules.values()) {
@@ -28,7 +28,7 @@ async function compileModuleHelper(
 ) {
 	console.log("Generating module", module.path);
 
-	const runtimePath = await getRuntimePath(project);
+	const runtimePath = genRuntimeModPath(project);
 
 	// Generate source
 	const dbImports = [
@@ -60,7 +60,7 @@ async function compileTestHelper(
 	module: Module,
 ) {
 	console.log("Generating test", module.path);
-	const runtimePath = await getRuntimePath(project);
+	const runtimePath = genRuntimeModPath(project);
 
 	const source = [
 		'import * as module from "./mod.ts";',
@@ -94,7 +94,7 @@ async function compileScriptHelper(
 	script: Script,
 ) {
 	console.log("Generating script", script.path);
-	const runtimePath = await getRuntimePath(project);
+	const runtimePath = genRuntimeModPath(project);
 
 	const source = [
 		'import * as module from "../mod.ts";',
