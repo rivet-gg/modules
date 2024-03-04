@@ -6,7 +6,6 @@ export function serverHandler<RegistryT>(runtime: Runtime<RegistryT>): Deno.Serv
 		info: Deno.ServeHandlerInfo,
 	): Promise<Response> => {
 		const url = new URL(req.url);
-		console.log("url", url.pathname);
 
 		const moduleCall = /^\/modules\/(\w+)\/scripts\/(\w+)\/call\/?$/;
 		if (req.method == "POST" && moduleCall.test(url.pathname)) {

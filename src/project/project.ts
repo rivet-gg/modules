@@ -18,7 +18,7 @@ export interface LoadProjectOpts {
 export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	const projectRoot = join(Deno.cwd(), opts.path ?? ".");
 
-	console.log("Loading project", projectRoot);
+	// console.log("Loading project", projectRoot);
 
 	// Read project config
 	const projectConfig = await readProjectConfig(

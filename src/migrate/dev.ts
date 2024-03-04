@@ -17,7 +17,6 @@ export async function migrateDev(project: Project, modules: Module[], opts: Migr
 		modules,
 		async ({ databaseUrl, module, tempDir, generatedClientDir }) => {
 			// Generate migrations & client
-			console.log("Generating migrations");
 			const status = await new Deno.Command("deno", {
 				args: [
 					"run",
@@ -72,7 +71,6 @@ export async function migrateDev(project: Project, modules: Module[], opts: Migr
 				})();
 
 				// Compile the ESM library
-				console.log("Compiling ESM library");
 				buildPrismaPackage(
 					generatedClientDir,
 					join(generatedClientDir, "esm.js"),
@@ -80,7 +78,6 @@ export async function migrateDev(project: Project, modules: Module[], opts: Migr
 			}
 
 			// Copy back migrations dir
-			console.log("Copying migrations back");
 			const tempMigrationsDir = join(tempDir, "migrations");
 			const migrationsDir = join(module.path, "db", "migrations");
 			if (await exists(tempMigrationsDir)) {
