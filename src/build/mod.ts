@@ -13,6 +13,7 @@ import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
 import { Module, Script } from "../project/mod.ts";
 import { assertExists, exists, join, tjs } from "../deps.ts";
+import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 
 /**
@@ -94,6 +95,9 @@ interface BuildStepOpts {
 	files?: string[];
 }
 
+// TODO: Convert this to a build flag
+const FORCE_BUILD = false;
+
 /**
  * Plans a build step.
  */
@@ -113,6 +117,7 @@ export function buildStep(
 		// TODO: max parallel build steps
 		// TODO: error handling
 		if (
+			FORCE_BUILD ||
 			opts.always ||
 			(opts.files && await compareHash(buildState.cache, opts.files))
 		) {
@@ -176,6 +181,8 @@ export async function build(project: Project) {
 	await Deno.writeTextFile(buildCachePath, JSON.stringify(buildState.cache.newCache));
 
 	console.log("✅ Finished");
+
+	shutdownAllPools();
 }
 
 async function buildSteps(buildState: BuildState, project: Project) {
@@ -315,6 +322,7 @@ async function buildScript(
 			assertExists(script.requestSchema);
 			assertExists(script.responseSchema);
 
+			// Populate cache with response
 			if (!buildState.cache.newCache.scriptSchemas[module.name]) buildState.cache.newCache.scriptSchemas[module.name] = {};
 			buildState.cache.newCache.scriptSchemas[module.name][script.name] = {
 				request: script.requestSchema,
