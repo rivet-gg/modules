@@ -1,6 +1,7 @@
 # OpenGB
 dist/
 _gen/
+/artifacts/
 
 # Created by https://www.toptal.com/developers/gitignore/api/deno,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=deno,macos
