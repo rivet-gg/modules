@@ -12,7 +12,7 @@ export const setBalance = async (
 ) => {
 	if (balance < 0) throw new RangeError("Invalid balance");
 
-	db.userWallet.upsert({
+	await db.userWallet.upsert({
 		where: {
 			userId,
 		},
