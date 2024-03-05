@@ -2,13 +2,13 @@
 //
 // Generates schema JSON from the module & project config
 
-import { join } from "../deps.ts";
 import { tjs } from "./deps.ts";
+import { dirname as parent, join } from "../deps.ts";
 
 const dirname = import.meta.dirname;
 if (!dirname) throw new Error("Missing dirname");
 
-await Deno.mkdir(join(dirname, "..", "..", "artifacts")).catch(e => {
+await Deno.mkdir(join(dirname, "..", "..", "artifacts")).catch((e) => {
 	if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
 });
 
@@ -70,5 +70,9 @@ for (const { name, type } of CONFIGS) {
 	});
 	if (schema == null) throw new Error("Failed to generate schema");
 
+	// Create artifacts folder if it doesn't already exist
+	await Deno.mkdir(parent(schemaPath), { recursive: true });
+
+	// Write schema to file
 	await Deno.writeTextFile(schemaPath, JSON.stringify(schema, null, "\t"));
 }

@@ -20,6 +20,11 @@ for (const file of files) {
 	archiveFiles[file] = await Deno.readTextFile(join(rootSrc, file));
 }
 
+
+// Create artifacts folder if it doesn't already exist
+await Deno.mkdir(join(rootSrc, "artifacts"), { recursive: true });
+
+// Write schema to file
 await Deno.writeTextFile(
 	join(rootSrc, "artifacts", "runtime_archive.json"),
 	JSON.stringify(archiveFiles),
