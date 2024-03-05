@@ -4,6 +4,7 @@ import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
+import { bold, brightRed } from "https://deno.land/std@0.208.0/fmt/colors.ts";
 
 export interface Project {
 	path: string;
@@ -26,7 +27,7 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	);
 
 	// Load modules
-	const modules = new Map();
+	const modules = new Map<string, Module>();
 	for (const projectModuleName in projectConfig.modules) {
 		const modulePath = await fetchAndResolveModule(
 			projectRoot,
@@ -36,6 +37,49 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 		const module = await loadModule(modulePath, projectModuleName);
 		modules.set(projectModuleName, module);
 	}
+
+
+	// Verify existince of module dependencies
+	const missingDepsByModule = new Map<string, string[]>();
+	for (const module of modules.values()) {
+		const missingDeps = [] as string[];
+		for (const dependencyName in module.config.dependencies) {
+			const dependencyModule = modules.get(dependencyName);
+			if (!dependencyModule) {
+				missingDeps.push(dependencyName);
+			}
+		}
+
+		if (missingDeps.length > 0) {
+			missingDepsByModule.set(module.name, missingDeps);
+		}
+	}
+
+	if (missingDepsByModule.size > 0) {
+		let message = bold(brightRed("Unresolved module dependencies:\n"));
+		for (const [moduleName, missingDeps] of missingDepsByModule) {
+			message += `\tModule ${moduleName} is missing dependencies: ${missingDeps.join(", ")}\n`;
+		}
+		throw new Error(message);
+	}
+
+	// Module can't depend on itself
+	const selfDepModules = [] as string[];
+	for (const module of modules.values()) {
+		if (module.config.dependencies?.[module.name]) {
+			selfDepModules.push(module.name);
+		}
+	}
+
+	if (selfDepModules.length > 0) {
+		let message = bold(brightRed("Modules can't depend on themselves:\n"));
+		for (const moduleName of selfDepModules) {
+			message += `\tModule ${moduleName} can't depend on itself\n`;
+		}
+		throw new Error(message);
+	}
+
+
 
 	return { path: projectRoot, projectConfig, modules };
 }

@@ -13,6 +13,8 @@ export interface ModuleConfig extends Record<string, unknown> {
 
 	scripts: { [name: string]: ScriptConfig };
 	errors: { [name: string]: ErrorConfig };
+
+	dependencies?: { [canonicalName: string]: DependencyConfig };
 }
 
 export interface ScriptConfig {
@@ -29,6 +31,10 @@ export interface ScriptConfig {
 
 export interface ErrorConfig {
 	description?: string;
+}
+
+export interface DependencyConfig {
+	registry?: string;
 }
 
 const moduleConfigAjv = new Ajv.default({

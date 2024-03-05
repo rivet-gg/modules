@@ -1,5 +1,4 @@
 import { Context, Module } from "../runtime/mod.ts";
-import { BaseRegistryBounds } from "../types/registry.ts";
 import { RequestOf } from "../types/registry.ts";
 import { ResponseOf } from "../types/registry.ts";
 
@@ -9,22 +8,22 @@ import { snakeCase } from "https://deno.land/x/case@2.2.0/mod.ts";
 /**
  * Typed module accessor
  */
-type MappedProxy<RegistryT extends BaseRegistryBounds> = Readonly<{
+type MappedProxy<RegistryT> = Readonly<{
 	[K in keyof RegistryT]: MappedModuleProxy<RegistryT, K>;
 }>;
-type MappedNullProxy<RegistryT extends BaseRegistryBounds> = {
+type MappedNullProxy<RegistryT> = {
 	[K in keyof RegistryT]: null;
 };
 
 /**
  * Typed module-specific script accessor
  */
-type MappedModuleProxy<RegistryT extends BaseRegistryBounds, Module extends keyof RegistryT> = Readonly<{
+type MappedModuleProxy<RegistryT, Module extends keyof RegistryT> = Readonly<{
 	[K in keyof RegistryT[Module]]: (
 		request: RequestOf<RegistryT[Module][K]>,
 	) => Promise<ResponseOf<RegistryT[Module][K]>>;
 }>;
-type MappedModuleNullProxy<RegistryT extends BaseRegistryBounds, Module extends keyof RegistryT> = {
+type MappedModuleNullProxy<RegistryT, Module extends keyof RegistryT> = {
 	[K in keyof RegistryT[Module]]: null;
 };
 
@@ -54,7 +53,7 @@ const toCamelCached = (s: string) => {
  * Builds a proxy for the entire registry, with the keys of the modules mapped
  * to script proxies using [`buildModuleProxy`]({@link buildModuleProxy})
  */
-export function buildRegistryProxy<RegistryT extends BaseRegistryBounds>(
+export function buildRegistryProxy<RegistryT>(
 	modules: Record<string, Module>,
 	ctx: Context<RegistryT>,
 ): MappedProxy<RegistryT> {
@@ -101,7 +100,7 @@ export function buildRegistryProxy<RegistryT extends BaseRegistryBounds>(
  * scripts mapped to on-the-fly generated call functions
  */
 function buildModuleProxy<
-	RegistryT extends BaseRegistryBounds,
+	RegistryT,
 	ModuleName extends keyof RegistryT & string,
 >(
 	modules: Record<string, Module>,
