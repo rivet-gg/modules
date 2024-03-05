@@ -1,12 +1,14 @@
-import { RuntimeError, test, TestContext } from "../_gen/test.ts";
+import { assertFalse } from "https://deno.land/std@0.217.0/assert/assert_false.ts";
+import { RuntimeError } from "../_gen/mod.ts";
+import { test, TestContext } from "../_gen/test.ts";
 import { assertEquals, assertRejects } from "https://deno.land/std@0.217.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 
 test (
     "get balance for nonexistent user",
     async (ctx: TestContext) => {
-		const { balance } = await ctx.modules.currency.get_balance({
-			userId: "Not a real user",
+		const { balance } = await ctx.modules.currency.getBalance({
+			userId: "00000000-0000-0000-0000-000000000000",
 		});
         
         assertEquals(balance, 0);
@@ -56,10 +58,13 @@ test(
             identity: { guest: {} },
         });
 
-        const error = await assertRejects(async () => {
-            await ctx.modules.currency.withdraw({ userId: user.id, amount: Infinity });
-        }, RuntimeError);
-        assertEquals(error.code, "INVALID_AMOUNT");
+        // NOTE: OpenAPI says NaN and Infinity are invalid amounts.
+        assertFalse(ctx.canCall("currency", "withdraw", { userId: user.id, amount: Infinity }));
+
+        // const error = await assertRejects(async () => {
+        //     await ctx.modules.currency.withdraw({ userId: user.id, amount: Infinity });
+        // }, RuntimeError);
+        // assertEquals(error.code, "INVALID_AMOUNT");
     }
 )
 
@@ -71,10 +76,12 @@ test(
             identity: { guest: {} },
         });
 
-        const error = await assertRejects(async () => {
-            await ctx.modules.currency.withdraw({ userId: user.id, amount: NaN });
-        }, RuntimeError);
-        assertEquals(error.code, "INVALID_AMOUNT");
+        // NOTE: OpenAPI says NaN and Infinity are invalid amounts.
+        assertFalse(ctx.canCall("currency", "withdraw", { userId: user.id, amount: NaN }));
+        // const error = await assertRejects(async () => {
+        //     await ctx.modules.currency.withdraw({ userId: user.id, amount: NaN });
+        // }, RuntimeError);
+        // assertEquals(error.code, "INVALID_AMOUNT");
     }
 )
 
@@ -86,10 +93,13 @@ test(
             identity: { guest: {} },
         });
 
-        const error = await assertRejects(async () => {
-            await ctx.modules.currency.deposit({ userId: user.id, amount: Infinity });
-        }, RuntimeError);
-        assertEquals(error.code, "INVALID_AMOUNT");
+        // NOTE: OpenAPI says NaN and Infinity are invalid amounts.
+        assertFalse(ctx.canCall("currency", "deposit", { userId: user.id, amount: Infinity }));
+
+        // const error = await assertRejects(async () => {
+        //     await ctx.modules.currency.deposit({ userId: user.id, amount: Infinity });
+        // }, RuntimeError);
+        // assertEquals(error.code, "INVALID_AMOUNT");
     }
 )
 
@@ -101,10 +111,13 @@ test(
             identity: { guest: {} },
         });
 
-        const error = await assertRejects(async () => {
-            await ctx.modules.currency.deposit({ userId: user.id, amount: NaN });
-        }, RuntimeError);
-        assertEquals(error.code, "INVALID_AMOUNT");
+        // NOTE: OpenAPI says NaN and Infinity are invalid amounts.
+        assertFalse(ctx.canCall("currency", "deposit", { userId: user.id, amount: NaN }));
+
+        // const error = await assertRejects(async () => {
+        //     await ctx.modules.currency.deposit({ userId: user.id, amount: NaN });
+        // }, RuntimeError);
+        // assertEquals(error.code, "INVALID_AMOUNT");
     }
 )
 
@@ -132,7 +145,7 @@ test(
 		});
 
         const error = await assertRejects(async () => {
-            await ctx.modules.currency.set_balance({ userId: user.id, balance: -1 });
+            await ctx.modules.currency.setBalance({ userId: user.id, balance: -1 });
 		}, RuntimeError);
 		assertEquals(error.code, "INVALID_AMOUNT");
     }
@@ -146,10 +159,13 @@ test(
 			identity: { guest: {} },
 		});
 
-        const error = await assertRejects(async () => {
-            await ctx.modules.currency.set_balance({ userId: user.id, balance: NaN });
-		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+        // NOTE: OpenAPI says NaN and Infinity are invalid amounts.
+        assertFalse(ctx.canCall("currency", "set_balance", { userId: user.id, balance: NaN }));
+
+        // const error = await assertRejects(async () => {
+        //     await ctx.modules.currency.setBalance({ userId: user.id, balance: NaN });
+		// }, RuntimeError);
+		// assertEquals(error.code, "INVALID_AMOUNT");
     }
 );
 
@@ -162,9 +178,12 @@ test(
 			identity: { guest: {} },
 		});
 
-        const error = await assertRejects(async () => {
-            await ctx.modules.currency.set_balance({ userId: user.id, balance: Infinity });
-		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+        // NOTE: OpenAPI says NaN and Infinity are invalid amounts.
+        assertFalse(ctx.canCall("currency", "set_balance", { userId: user.id, balance: Infinity }));
+
+        // const error = await assertRejects(async () => {
+        //     await ctx.modules.currency.setBalance({ userId: user.id, balance: Infinity });
+		// }, RuntimeError);
+		// assertEquals(error.code, "INVALID_AMOUNT");
     }
 );
