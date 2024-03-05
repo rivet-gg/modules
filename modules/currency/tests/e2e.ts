@@ -17,7 +17,7 @@ test(
 
 		assertEquals(updatedBalance, 100);
 
-		const { balance: initialBalance } = await ctx.modules.currency.get_balance({
+		const { balance: initialBalance } = await ctx.modules.currency.getBalance({
 			userId: user.id,
 		});
 
@@ -30,14 +30,14 @@ test(
 
 		assertEquals(withdraw, 50);
 
-		const { balance: postWithdrawGetBalance } = await ctx.modules.currency.get_balance({
+		const { balance: postWithdrawGetBalance } = await ctx.modules.currency.getBalance({
 			userId: user.id,
 		});
 
 		assertEquals(postWithdrawGetBalance, 50);
 
-		const { balance } = await ctx.modules.currency.get_balance_by_token({
-			userToken: token,
+		const { balance } = await ctx.modules.currency.getBalanceByToken({
+			userToken: token.token,
 		}) ;
 
 		assertEquals(balance, 50);
@@ -46,19 +46,19 @@ test(
 		assertEquals(postWithdrawGetBalance, balance);
 
 		// set bal to 0
-		await ctx.modules.currency.set_balance({
+		await ctx.modules.currency.setBalance({
 			userId: user.id,
 			balance: 0,
 		});
 
-		const { balance: finalBalance } = await ctx.modules.currency.get_balance({
+		const { balance: finalBalance } = await ctx.modules.currency.getBalance({
 			userId: user.id,
 		});
 
 		assertEquals(finalBalance, 0);
 
-		const { balance: finalBalanceByToken } = await ctx.modules.currency.get_balance_by_token({
-			userToken: token,
+		const { balance: finalBalanceByToken } = await ctx.modules.currency.getBalanceByToken({
+			userToken: token.token,
 		});
 
 		assertEquals(finalBalanceByToken, 0);

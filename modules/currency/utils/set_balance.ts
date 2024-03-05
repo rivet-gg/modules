@@ -1,4 +1,4 @@
-import { prisma } from "../_gen/mod.ts";
+import { RuntimeError, prisma } from "../_gen/mod.ts";
 
 type LimittedDB = Omit<
 	prisma.Prisma.DefaultPrismaClient,
@@ -10,7 +10,7 @@ export const setBalance = async (
 	userId: string,
 	balance: number,
 ) => {
-	if (balance < 0) throw new RangeError("Invalid balance");
+	if (balance < 0) throw new RuntimeError("INVALID_BALANCE");
 
 	await db.userWallet.upsert({
 		where: {
