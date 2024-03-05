@@ -37,7 +37,7 @@ test(
 		assertEquals(postWithdrawGetBalance, 50);
 
 		const { balance } = await ctx.modules.currency.get_balance_by_token({
-			userToken: token,
+			userToken: token.token,
 		}) ;
 
 		assertEquals(balance, 50);
@@ -58,7 +58,7 @@ test(
 		assertEquals(finalBalance, 0);
 
 		const { balance: finalBalanceByToken } = await ctx.modules.currency.get_balance_by_token({
-			userToken: token,
+			userToken: token.token,
 		});
 
 		assertEquals(finalBalanceByToken, 0);
