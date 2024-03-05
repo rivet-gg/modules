@@ -77,6 +77,14 @@ export async function loadModule(
 		);
 	}
 
+	// Verify error names
+	for (const errorName in config.errors) {
+		const errorNameIssue = validateIdentifier(errorName, IdentType.Errors);
+		if (errorNameIssue) {
+			throw new Error(errorNameIssue.toString("error"));
+		}
+	}
+
 	// Load db config
 	let db: ModuleDatabase | undefined = undefined;
 	if (await exists(join(modulePath, "db"), { isDirectory: true })) {
