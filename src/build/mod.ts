@@ -15,6 +15,7 @@ import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
 import { Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
+import { compileModuleTypeHelper } from "./gen.ts";
 
 /**
  * Stores the state of all of the generated files to speed up subsequent build
@@ -280,6 +281,15 @@ async function buildModule(
 		files: [join(module.path, "module.yaml")],
 		async build() {
 			await compileModuleHelper(project, module);
+		},
+	});
+
+	buildStep(buildState, {
+		name: "Type helper",
+		module,
+		files: [join(module.path, "module.yaml")],
+		async build() {
+			await compileModuleTypeHelper(project, module);
 		},
 	});
 

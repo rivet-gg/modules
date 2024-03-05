@@ -17,6 +17,7 @@ export interface Module {
 		name: string;
 		createPrisma: (databaseUrl: string) => CreatePrismaOutput;
 	};
+	dependencies: Set<string>;
 }
 
 interface CreatePrismaOutput {

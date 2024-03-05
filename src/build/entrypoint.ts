@@ -31,6 +31,14 @@ export async function generateEntrypoint(project: Project) {
 		// Generate error configs
 		modConfig += `errors: ${JSON.stringify(mod.config.errors)},`;
 
+		// Generate dependency lookup
+		modConfig += `dependencies: new Set([`;
+		modConfig += JSON.stringify(mod.name) + ",";
+		for (const dependencyName in mod.config.dependencies) {
+			modConfig += JSON.stringify(dependencyName) + ",";
+		}
+		modConfig += `]),`;
+
 		// Generate db config
 		if (mod.db) {
 			const prismaImportName = `prisma$$${mod.name}`;
