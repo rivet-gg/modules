@@ -12,7 +12,7 @@ const rootSrc = join(dirname, "..", "..");
 
 // TODO: Limit which files get archived
 const files = await glob.glob([
-	"src/**/*.ts",
+	"src/[!config]**/*.ts",
 ], { cwd: rootSrc });
 
 const archiveFiles: Record<string, string> = {};
