@@ -7,4 +7,6 @@ scripts:
   register:
     public: true
   validate_token: {}
-errors: {}
+errors:
+  TOKEN_NOT_USER_TOKEN: {}
+  UNKNOWN_IDENTITY_TYPE: {}

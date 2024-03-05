@@ -14,7 +14,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", { requests: 25 });
+	await ctx.modules.rateLimit.throttle({ requests: 25 });
 
 	if (req.balance < 0) throw new RuntimeError("INVALID_AMOUNT");
 

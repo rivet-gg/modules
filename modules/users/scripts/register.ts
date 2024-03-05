@@ -1,3 +1,4 @@
+import { RuntimeError } from "../_gen/mod.ts";
 import { ScriptContext } from "../_gen/scripts/get.ts";
 import { User } from "../types/common.ts";
 
@@ -37,7 +38,7 @@ export async function run(
 			},
 		};
 	} else {
-		throw new Error("Unknown identity type");
+		throw new RuntimeError("UNKNOWN_IDENTITY_TYPE");
 	}
 
 	// Create user
