@@ -12,6 +12,10 @@ export class Context<Registry> {
 		public readonly trace: Trace,
 	) {}
 
+	protected isAllowedModuleName(_moduleName: string): boolean {
+		return true;
+	}
+
 	public call: RegistryCallFn<Context<Registry>, Registry> = async function (
 		moduleName,
 		scriptName,
@@ -22,6 +26,14 @@ export class Context<Registry> {
 		);
 
 		try {
+			// Check if calling module is allowed to call target module
+			if (!this.isAllowedModuleName(moduleName)) {
+				throw new RuntimeError(
+					"CANNOT_ACCESS_MODULE",
+					{ cause: `Module \`${moduleName}\` is not a dependency` },
+				);
+			}
+
 			// Lookup module
 			const module = this.runtime.config.modules[moduleName];
 			if (!module) throw new Error(`Module not found: ${moduleName}`);
@@ -78,7 +90,10 @@ export class Context<Registry> {
 	};
 
 	public get modules() {
-		return buildRegistryProxy<CamelifyRegistry<Registry> & BaseRegistryBounds>(this.runtime.config.modules, this);
+		return buildRegistryProxy<CamelifyRegistry<Registry> & BaseRegistryBounds>(
+			this.runtime.config.modules,
+			this,
+		);
 	}
 
 	public async tryCallRaw(
@@ -148,12 +163,20 @@ export class ModuleContext<RegistryT, TDatabase> extends Context<RegistryT> {
 	) {
 		super(runtime, trace);
 	}
+
+	protected isAllowedModuleName(targetModuleName: string): boolean {
+		return this.runtime.config
+			.modules[this.moduleName]
+			?.dependencies
+			.has(targetModuleName);
+	}
 }
 
 /**
  * Context for a script.
  */
-export class ScriptContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {
+export class ScriptContext<RegistryT, TDatabase>
+	extends ModuleContext<RegistryT, TDatabase> {
 	public constructor(
 		runtime: Runtime<RegistryT>,
 		trace: Trace,
@@ -168,4 +191,5 @@ export class ScriptContext<RegistryT, TDatabase> extends ModuleContext<RegistryT
 /**
  * Context for a test.
  */
-export class TestContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {}
+export class TestContext<RegistryT, TDatabase>
+	extends ModuleContext<RegistryT, TDatabase> {}

@@ -102,3 +102,11 @@ export function testGenPath(_project: Project, module: Module): string {
 		"test.ts",
 	);
 }
+
+export function typeGenPath(_project: Project, module: Module): string {
+	return join(
+		module.path,
+		"_gen",
+		"registry.d.ts",
+	);
+}

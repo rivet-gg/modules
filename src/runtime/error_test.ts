@@ -13,6 +13,7 @@ Deno.test("error", async () => {
 				errors: {
 					"TEST_ERROR": {},
 				},
+				dependencies: new Set(["test_module"]),
 			},
 		},
 	});
