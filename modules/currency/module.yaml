@@ -15,3 +15,6 @@ errors:
   INVALID_AMOUNT: {}
   INVALID_BALANCE: {}
   NOT_ENOUGH_FUNDS: {}
+dependencies:
+  rate_limit: {}
+  users: {}
