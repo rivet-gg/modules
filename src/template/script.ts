@@ -86,7 +86,7 @@ export async function run(
 	if (createTest) {
 		// Write default config
 		const testTs =
-			`import { TestContext, Runtime } from "@generated/${moduleName}/test.ts";
+			`import { TestContext, Runtime } from "../_gen/test.ts";
 export { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 test("e2e", async (ctx: TestContext) => {

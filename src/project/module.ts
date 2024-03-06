@@ -65,7 +65,7 @@ export async function loadModule(
 		);
 		throw new Error(
 			`Found extra scripts not registered in module.yaml:\n\n${
-				scriptList.join("")
+				scriptList.join(", ")
 			}\nAdd these scripts to the module.yaml file.`,
 		);
 	}
