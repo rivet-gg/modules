@@ -81,6 +81,13 @@ export const buildCommand = new Command<GlobalOpts>()
 				);
 			}
 		}
+		if (opts.runtime == Runtime.Deno) {
+			if (opts.outputFormat != Format.Native) {
+				throw new ValidationError(
+					`\`format\` must be "native" if \`runtime\` is "deno".`,
+				);
+			}
+		}
 
 		await build(project, {
 			format: opts.outputFormat!,
