@@ -4,7 +4,7 @@ import {
 	HelpCommand,
 	ValidationError,
 } from "./deps.ts";
-import { devCommand } from "./commands/dev.ts";
+import { startCommand } from "./commands/start.ts";
 import { buildCommand } from "./commands/build.ts";
 import { dbCommand } from "./commands/db.ts";
 import { testCommand } from "./commands/test.ts";
@@ -14,7 +14,7 @@ import { createCommand } from "./commands/create.ts";
 const command = await new Command();
 command.action(() => command.showHelp())
 	.globalOption("-p, --path <path>", "Path to project root")
-	.command("dev", devCommand)
+	.command("start", startCommand)
 	.command("test", testCommand)
 	.command("db", dbCommand)
 	.command("build", buildCommand)

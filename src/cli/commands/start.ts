@@ -4,33 +4,7 @@ import { GlobalOpts, initProject } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
 import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
-export const devCommand = new Command<GlobalOpts>();
-
-devCommand.action(() => devCommand.showHelp());
-
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/84
-// devCommand.command("setup").action(async () => {
-// 	const cmd = await new Deno.Command("docker-compose", {
-// 		args: ["up", "-d"],
-// 		stdout: "inherit",
-// 		stderr: "inherit",
-// 	})
-// 		.output();
-// 	if (!cmd.success) throw new Error("Failed to setup Docker Compose");
-// });
-
-// devCommand.command("teardown").action(async () => {
-// 	const cmd = await new Deno.Command("docker-compose", {
-// 		args: ["down", "-d"],
-// 		stdout: "inherit",
-// 		stderr: "inherit",
-// 	})
-// 		.output();
-// 	if (!cmd.success) throw new Error("Failed to teardown Docker Compose");
-// });
-
-devCommand
-	.command("start")
+export const startCommand = new Command<GlobalOpts>()
 	.option("--no-format", "Don't format modules")
 	.option("--no-build", "Don't build source files")
 	.option("--no-migrate", "Don't migrate database")
