@@ -4,11 +4,13 @@ import { readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
 import { Project } from "./project.ts";
+import { Registry } from "./registry.ts";
 
 export interface Module {
 	path: string;
 	name: string;
 	config: ModuleConfig;
+	registry: Registry,
 	scripts: Map<string, Script>;
 	db?: ModuleDatabase;
 }
@@ -20,6 +22,7 @@ export interface ModuleDatabase {
 export async function loadModule(
 	modulePath: string,
 	name: string,
+	registry: Registry,
 ): Promise<Module> {
 	// Read config
 	const config = await readModuleConfig(modulePath);
@@ -79,6 +82,7 @@ export async function loadModule(
 		path: modulePath,
 		name,
 		config,
+		registry,
 		scripts,
 		db,
 	};

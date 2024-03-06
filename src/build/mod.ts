@@ -23,6 +23,7 @@ import { Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
+import { migrateDeploy } from "../migrate/deploy.ts";
 
 /**
  * Which format to use for building.
@@ -237,18 +238,26 @@ async function buildSteps(
 	project: Project,
 	opts: BuildOpts,
 ) {
-	const modules = Array.from(project.modules.values());
-
-	buildStep(buildState, {
-		name: "Prisma schema",
-		files: modules.map((module) => join(module.path, "db", "schema.prisma")),
-		async build() {
-			await migrateDev(project, modules, {
-				createOnly: false,
+	// TODO: This does not reuse the Prisma dir or the database connection, so is extra slow on the first run. Figure out how to make this use one `migrateDev` command and pass in any modified modules For now, these need to be migrated individually because `prisma migrate dev` is an interactive command. Also, making a database change and waiting for all other databases to re-apply will take a long tim.e
+	for (const module of project.modules.values()) {
+		if (module.db) {
+			buildStep(buildState, {
+				name: `Migrate (${module.name})`,
+				module,
+				files: [join(module.path, "db", "schema.prisma")],
+				async build() {
+					if ('directory' in module.registry) {
+						// Update migrations
+						await migrateDev(project, [module], { createOnly: false });
+					} else {
+						// Do not alter migrations, only deploy them
+						await migrateDeploy(project, [module]);
+					}
+				},
 			});
-		},
-	});
-	
+		}
+	}
+
 	buildStep(buildState, {
 		name: "Inflate runtime",
 		// TODO: Add way to compare runtime version

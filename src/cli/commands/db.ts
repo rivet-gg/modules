@@ -23,7 +23,8 @@ dbCommand.command("reset").action(async (opts) => {
 });
 
 dbCommand.command("deploy").action(async (opts) => {
-	await migrateDeploy(await initProject(opts));
+	const project = await initProject(opts);
+	await migrateDeploy(project, [...project.modules.values()]);
 });
 
 // TODO: https://github.com/rivet-gg/open-game-services-engine/issues/84
