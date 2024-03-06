@@ -1,11 +1,4 @@
 registries:
-  default:
-    git:
-      url:
-        https: https://github.com/rivet-gg/open-game-services.git
-        ssh: git@github.com:rivet-gg/opengb-registry.git
-      rev: f28b9c0ddbb69fcc092dfff12a18707065a69251
-      directory: ./modules
   # default:
   #   local:
   #       directory: ../../../opengb-registry/modules
@@ -17,7 +10,7 @@ modules:
   # friends: {}
   # rate_limit: {}
   # tokens: {}
-  # users: {}
+  users: {}
   # auth:
   #   config:
   #     google:

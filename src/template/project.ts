@@ -7,16 +7,6 @@ export async function templateProject(rootPath: string) {
 	// Create backend.yaml
 	const defaultBackend: ProjectConfig = {
 		registries: {
-			default: {
-				git: {
-					url: {
-						https: "https://github.com/rivet-gg/open-game-services.git",
-						ssh: "git@github.com:rivet-gg/opengb-registry.git"
-					},
-					branch: "main",
-					directory: "./modules",
-				},
-			},
 			local: {
 				local: {
 					directory: "modules",
