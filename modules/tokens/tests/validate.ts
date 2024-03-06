@@ -34,23 +34,23 @@ test(
 test(
 	"validate token expired",
 	async (ctx: TestContext) => {
-		const { token } = await ctx.call("tokens", "create", {
+		const { token } = await ctx.modules.tokens.create({
 			type: "test",
 			meta: { foo: "bar" },
-			expireAt: new Date(Date.now() + 100).toISOString(),
-		}) as any;
+			expireAt: new Date(Date.now() + 1000).toISOString(),
+		});
 
 		// Token should be valid
-		let validateRes = await ctx.call("tokens", "validate", {
+		const validateRes = await ctx.modules.tokens.validate({
 			token: token.token,
-		}) as any;
+		});
 		assertEquals(token.id, validateRes.token.id);
 
 		// Wait for token to expire
-		await new Promise((resolve) => setTimeout(resolve, 200));
+		await new Promise((resolve) => setTimeout(resolve, 1100));
 
 		const error = await assertRejects(async () => {
-			await ctx.call("tokens", "validate", { token: token.token }) as any;
+			await ctx.modules.tokens.validate({ token: token.token });
 		}, RuntimeError);
 		assertEquals(error.code, "TOKEN_EXPIRED");
 	},

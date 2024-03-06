@@ -1,0 +1,42 @@
+name: Test all modules E2E
+on:
+  - push
+
+env:
+  CURRENT_WORKING_ENGINE_COMMIT: 920ac277dd0f5378cf8c3cc1ae414340dc6d76a6
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      # Checkout registry repo
+      - name: Checkout registry Repo
+        uses: actions/checkout@v4
+        with:
+          path: opengb-registry
+
+      # Get engine repo to test against
+      - name: Fetch engine repo
+        uses: actions/checkout@v4
+        with:
+          repository: rivet-gg/opengb
+          ssh-key: ${{ secrets.GH_DEPLOY_KEY }}
+          path: opengb
+
+      # Get a version of the engine that we know works
+      - name: Checkout to working commit
+        run: cd opengb/ && git checkout $CURRENT_WORKING_ENGINE_COMMIT
+
+      # Install Deno to run OpenGB
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.41.1"
+
+      # Install OpenGB
+      - name: Install OpenGB
+        run: cd opengb/ && deno task cli:install
+
+      # Run tests on all modules in the registry
+      - name: Run Tests for all modules
+        run: cd ./opengb-registry/tests/basic && opengb test
