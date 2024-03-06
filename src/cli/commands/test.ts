@@ -6,6 +6,7 @@ import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
 // TODO: https://github.com/rivet-gg/open-game-services-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()
+	.description("Run tests")
 	.arguments("[modules...:string]")
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")

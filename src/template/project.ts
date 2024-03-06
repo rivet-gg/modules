@@ -4,20 +4,35 @@ import { ProjectConfig } from "../config/project.ts";
 export async function templateProject(rootPath: string) {
 	await Deno.mkdir(rootPath, { recursive: true });
 
-    // Create backend.yaml
-    const defaultBackend: ProjectConfig = {
-        registries: {
-            local: {
-                local: {
-                    directory: "modules",
-                }
-            }
-        },
-        modules: {
-            users: {},
-        }
-    };
-    await Deno.writeTextFile(resolve(rootPath, "backend.yaml"), stringify(defaultBackend))
+	// Create backend.yaml
+	const defaultBackend: ProjectConfig = {
+		registries: {
+			default: {
+				git: {
+					url: {
+						https: "https://github.com/rivet-gg/open-game-services.git",
+						ssh: "git@github.com:rivet-gg/opengb-registry.git"
+					},
+					branch: "main",
+					directory: "./modules",
+				},
+			},
+			local: {
+				local: {
+					directory: "modules",
+				},
+			},
+		},
+		modules: {
+			users: {},
+			rate_limit: {},
+			tokens: {},
+		},
+	};
+	await Deno.writeTextFile(
+		resolve(rootPath, "backend.yaml"),
+		stringify(defaultBackend),
+	);
 
 	// Create modules directory
 	await Deno.mkdir(resolve(rootPath, "modules"), { recursive: true });

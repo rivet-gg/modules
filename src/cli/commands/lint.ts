@@ -3,6 +3,7 @@ import { GlobalOpts, initProject } from "../common.ts";
 import { listSourceFiles } from "../../project/mod.ts";
 
 export const lintCommand = new Command<GlobalOpts>()
+	.description("Lint source files")
 	.action(
 		async (opts) => {
 			const project = await initProject(opts);
