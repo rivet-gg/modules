@@ -7,7 +7,6 @@ import { Project, genRuntimePath } from "../project/mod.ts";
  */
 export async function inflateRuntimeArchive(project: Project) {
     const inflateRuntimePath = genRuntimePath(project);
-    console.log(`Inflating runtime to ${inflateRuntimePath}`)
 
     await emptyDir(inflateRuntimePath);
     
