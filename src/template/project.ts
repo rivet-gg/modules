@@ -2,7 +2,7 @@ import { resolve, stringify } from "../deps.ts";
 import { ProjectConfig } from "../config/project.ts";
 
 export async function templateProject(rootPath: string) {
-    await Deno.mkdir(rootPath, { recursive: true });
+	await Deno.mkdir(rootPath, { recursive: true });
 
     // Create backend.yaml
     const defaultBackend: ProjectConfig = {
@@ -19,6 +19,6 @@ export async function templateProject(rootPath: string) {
     };
     await Deno.writeTextFile(resolve(rootPath, "backend.yaml"), stringify(defaultBackend))
 
-    // Create modules directory
-    await Deno.mkdir(resolve(rootPath, "modules"), { recursive: true });
+	// Create modules directory
+	await Deno.mkdir(resolve(rootPath, "modules"), { recursive: true });
 }

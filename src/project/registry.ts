@@ -58,18 +58,46 @@ async function resolveRegistryGit(
 
 	// Clone repo if needed
 	if (!await exists(resolve(repoPath, ".git"))) {
-		console.log('📦 Cloning git registry', config.url)
+		// List what remote endpoints to try
+		//
+		// This is important since we don't know if the user is authenticated with Git via SSH or HTTPS
+		const urlList = [];
+		if (typeof config.url === "string") {
+			urlList.push(config.url);
+		} else if (typeof config === "object") {
+			if (config.url.https) urlList.push(config.url.https);
+			if (config.url.ssh) urlList.push(config.url.ssh);
+		}
+
+		// Test each endpoint
+		let originUrl: string | undefined;
+		for (const url of urlList) {
+			const lsRemoteCommand = await new Deno.Command("git", {
+				args: ["ls-remote", url],
+			}).output();
+			if (lsRemoteCommand.success) {
+				originUrl = url;
+				break;
+			}
+		}
+
+		// If no valid endpoint was found
+		if (!originUrl) {
+			throw new Error(`Failed to find valid git endpoint for registry ${name}`);
+		}
+
+		console.log('📦 Cloning git registry', originUrl)
 
 		// Remove potentially dirty existing directory
 		await emptyDir(repoPath);
 
 		// Clone repo
 		const cloneOutput = await new Deno.Command("git", {
-			args: ["clone", "--single-branch", config.url, repoPath],
+			args: ["clone", "--single-branch", originUrl, repoPath],
 		}).output();
 		if (!cloneOutput.success) {
 			throw new Error(
-				`Failed to clone registry ${config.url}:\n${
+				`Failed to clone registry ${originUrl}:\n${
 					new TextDecoder().decode(cloneOutput.stderr)
 				}`,
 			);
@@ -94,7 +122,7 @@ async function resolveRegistryGit(
 		}).output();
 		if (!resetOutput.success) {
 			throw new Error(
-				`Failed to reset registry ${config.url}:\n${
+				`Failed to reset registry ${name}:\n${
 					new TextDecoder().decode(resetOutput.stderr)
 				}`,
 			);
@@ -107,7 +135,7 @@ async function resolveRegistryGit(
 		args: ["cat-file", "-t", gitRef],
 	}).output();
 	if (!catOutput.success) {
-		console.log('📦 Fetching git registry', config.url, gitRef);
+		console.log('📦 Fetching git registry', name, gitRef);
 
 		const fetchOutput = await new Deno.Command("git", {
 			cwd: repoPath,
@@ -115,7 +143,7 @@ async function resolveRegistryGit(
 		}).output();
 		if (!fetchOutput.success) {
 			throw new Error(
-				`Failed to fetch registry ${config.url} at ${gitRef}:\n${
+				`Failed to fetch registry ${name} at ${gitRef}:\n${
 					new TextDecoder().decode(fetchOutput.stderr)
 				}`,
 			);
@@ -129,7 +157,7 @@ async function resolveRegistryGit(
 	}).output();
 	if (!checkoutOutput.success) {
 		throw new Error(
-			`Failed to checkout registry ${config.url} at ${gitRef}:\n${
+			`Failed to checkout registry ${name} at ${gitRef}:\n${
 				new TextDecoder().decode(checkoutOutput.stderr)
 			}`,
 		);
