@@ -1,0 +1,31 @@
+name: E2E
+on:
+  - push
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      # Add private key to be able to access OpenGB repository
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GH_DEPLOY_KEY }}
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.41.1"
+
+      - name: Build OpenGB
+        run: deno task cli:install
+
+      - name: Check Formatting
+        run: cd tests/test_project/ && opengb format --check
+
+      - name: Lint
+        run: cd tests/test_project/ && opengb lint
+
+      - name: Run Tests
+        run: cd tests/test_project/ && opengb test
