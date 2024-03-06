@@ -1,7 +1,7 @@
 import { QueryClient, Transaction } from "./deps.ts";
 import { Module } from "./runtime.ts";
 
-const DEFAULT_DATABASE_URL = "postgres://postgres:password@localhost:5432/postgres";
+const DEFAULT_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres";
 
 type PostgresRunScope<T> = (conn: QueryClient) => Promise<T>;
 type PostgresTransactionScope<T> = (conn: Transaction) => Promise<T>;

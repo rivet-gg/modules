@@ -24,7 +24,7 @@ export async function forEachDatabase(
 ) {
 	// Setup database
 	const defaultDatabaseUrl = Deno.env.get("DATABASE_URL") ??
-		"postgres://postgres:password@localhost:5432/postgres";
+		"postgres://postgres:postgres@localhost:5432/postgres";
 
 	// Create client that connects to the default database
 	// const defaultClient = new PostgresClient(defaultDatabaseUrl);
