@@ -1,4 +1,4 @@
-import { stringify, join } from "../deps.ts";
+import { stringify, resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 
 export async function templateScript(
@@ -12,7 +12,7 @@ export async function templateScript(
 	}
 
 	// Create scripts
-	const scriptPath = join(
+	const scriptPath = resolve(
 		project.path,
 		"modules",
 		moduleName,
@@ -30,7 +30,7 @@ export async function templateScript(
 
 	// Create test if doesn't already exist
 	let createTest = false;
-	const testPath = join(
+	const testPath = resolve(
 		project.path,
 		"modules",
 		moduleName,
@@ -52,7 +52,7 @@ export async function templateScript(
 	newConfig.scripts[scriptName] = {};
 	const newConfigRaw = stringify(newConfig);
 	await Deno.writeTextFile(
-		join(project.path, "modules", moduleName, "module.yaml"),
+		resolve(project.path, "modules", moduleName, "module.yaml"),
 		newConfigRaw,
 	);
 

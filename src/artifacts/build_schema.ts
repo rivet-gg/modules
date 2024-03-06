@@ -3,12 +3,12 @@
 // Generates schema JSON from the module & project config
 
 import { tjs } from "./deps.ts";
-import { dirname as parent, join } from "../deps.ts";
+import { dirname as parent, resolve } from "../deps.ts";
 
 const dirname = import.meta.dirname;
 if (!dirname) throw new Error("Missing dirname");
 
-await Deno.mkdir(join(dirname, "..", "..", "artifacts")).catch((e) => {
+await Deno.mkdir(resolve(dirname, "..", "..", "artifacts")).catch((e) => {
 	if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
 });
 
@@ -27,8 +27,8 @@ for (const { name, type } of CONFIGS) {
 	const srcFileName = `${name}.ts`;
 	const schemaFileName = `${name}_schema.json`;
 
-	const srcPath = join(dirname, "..", "config", srcFileName);
-	const schemaPath = join(dirname, "..", "..", "artifacts", schemaFileName);
+	const srcPath = resolve(dirname, "..", "config", srcFileName);
+	const schemaPath = resolve(dirname, "..", "..", "artifacts", schemaFileName);
 
 	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
 	const DEFAULT_COMPILER_OPTIONS = {

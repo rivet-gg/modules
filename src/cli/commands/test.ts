@@ -1,4 +1,4 @@
-import { join } from "../../deps.ts";
+import { resolve } from "../../deps.ts";
 import { Command, glob } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
@@ -50,9 +50,9 @@ export const testCommand = new Command<GlobalOpts>()
 
 				// Test all modules or filter module tests
 				const testPaths = (await glob.glob("*.ts", {
-					cwd: join(module.path, "tests"),
+					cwd: resolve(module.path, "tests"),
 				}))
-					.map((path) => join(module.path, "tests", path));
+					.map((path) => resolve(module.path, "tests", path));
 				args.push(...testPaths);
 			}
 

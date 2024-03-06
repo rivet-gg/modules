@@ -1,4 +1,4 @@
-import { join } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { tjs } from "./deps.ts";
 import { Module } from "./module.ts";
 import { ScriptConfig } from "../config/module.ts";
@@ -18,7 +18,7 @@ export function scriptGenPath(
 	module: Module,
 	script: Script,
 ): string {
-	return join(
+	return resolve(
 		module.path,
 		"_gen",
 		"scripts",

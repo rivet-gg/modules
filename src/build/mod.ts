@@ -3,7 +3,7 @@ import {
 	denoPlugins,
 	esbuild,
 	exists,
-	join,
+	resolve,
 	tjs,
 } from "../deps.ts";
 import { crypto, encodeHex } from "./deps.ts";
@@ -185,7 +185,7 @@ async function waitForBuildPromises(buildState: BuildState): Promise<void> {
 }
 
 export async function build(project: Project, opts: BuildOpts) {
-	const buildCachePath = join(project.path, "_gen", "cache.json");
+	const buildCachePath = resolve(project.path, "_gen", "cache.json");
 
 	// Read hashes from file
 	let oldCache: BuildCachePersist;
@@ -244,7 +244,7 @@ async function buildSteps(
 			buildStep(buildState, {
 				name: `Migrate (${module.name})`,
 				module,
-				files: [join(module.path, "db", "schema.prisma")],
+				files: [resolve(module.path, "db", "schema.prisma")],
 				async build() {
 					if ('directory' in module.registry) {
 						// Update migrations
@@ -277,7 +277,7 @@ async function buildSteps(
 	buildStep(buildState, {
 		name: "Type helpers",
 		files: [...project.modules.values()].map((m) =>
-			join(m.path, "module.yaml")
+			resolve(m.path, "module.yaml")
 		),
 		async build() {
 			await compileTypeHelpers(project);
@@ -316,10 +316,10 @@ async function buildSteps(
 			name: "Bundle",
 			always: true,
 			async build() {
-				const outfile = join(project.path, "_gen", "/output.js");
+				const outfile = resolve(project.path, "_gen", "/output.js");
 
 				await esbuild.build({
-					entryPoints: [join(project.path, "_gen", "entrypoint.ts")],
+					entryPoints: [resolve(project.path, "_gen", "entrypoint.ts")],
 					outfile,
 					format: "esm",
 					platform: "neutral",
@@ -376,7 +376,7 @@ async function buildModule(
 	buildStep(buildState, {
 		name: "Module helper",
 		module,
-		files: [join(module.path, "module.yaml")],
+		files: [resolve(module.path, "module.yaml")],
 		async build() {
 			await compileModuleHelper(project, module);
 		},
@@ -385,7 +385,7 @@ async function buildModule(
 	buildStep(buildState, {
 		name: "Type helper",
 		module,
-		files: [join(module.path, "module.yaml")],
+		files: [resolve(module.path, "module.yaml")],
 		async build() {
 			await compileModuleTypeHelper(project, module);
 		},
@@ -394,7 +394,7 @@ async function buildModule(
 	buildStep(buildState, {
 		name: "Test helper",
 		module,
-		files: [join(module.path, "module.yaml")],
+		files: [resolve(module.path, "module.yaml")],
 		async build() {
 			await compileTestHelper(project, module);
 		},
@@ -418,7 +418,7 @@ async function buildScript(
 		// TODO: check sections of module config
 		// TODO: This module and all of its dependent modules
 		// TODO: use tjs.getProgramFiles() to get the dependent files?
-		files: [join(module.path, "module.yaml"), script.path],
+		files: [resolve(module.path, "module.yaml"), script.path],
 		async build() {
 			// Compile schema
 			//
@@ -453,7 +453,7 @@ async function buildScript(
 		module,
 		script,
 		// TODO: check sections of module config
-		files: [join(module.path, "module.yaml"), script.path],
+		files: [resolve(module.path, "module.yaml"), script.path],
 		async build() {
 			await compileScriptHelper(project, module, script);
 		},

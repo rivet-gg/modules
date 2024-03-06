@@ -1,4 +1,4 @@
-import { isAbsolute, join, resolve } from "../deps.ts";
+import { isAbsolute, resolve } from "../deps.ts";
 import { esbuild, polyfillNodeForDeno } from "./deps.ts";
 type Plugin = esbuild.Plugin;
 
@@ -59,7 +59,7 @@ function wasmPlugin(): Plugin {
 				return {
 					path: isAbsolute(args.path)
 						? args.path
-						: join(args.resolveDir, args.path),
+						: resolve(args.resolveDir, args.path),
 					namespace: "wasm-stub",
 				};
 			});

@@ -1,4 +1,4 @@
-import { join } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { tjs } from "./deps.ts";
 import { Project } from "../project/mod.ts";
 
@@ -72,7 +72,7 @@ export async function generateOpenApi(project: Project) {
 	}
 
 	await Deno.writeTextFile(
-		join(project.path, "_gen", "openapi.json"),
+		resolve(project.path, "_gen", "openapi.json"),
 		JSON.stringify(schema, null, 4),
 	);
 }
