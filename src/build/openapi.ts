@@ -1,4 +1,5 @@
-import { join, tjs } from "../deps.ts";
+import { join } from "../deps.ts";
+import { tjs } from "./deps.ts";
 import { Project } from "../project/mod.ts";
 
 // deno-lint-ignore no-explicit-any

@@ -2,7 +2,8 @@
 //
 // Generates schema JSON from the module & project config
 
-import { join, tjs } from "../deps.ts";
+import { join } from "../deps.ts";
+import { tjs } from "./deps.ts";
 
 const dirname = import.meta.dirname;
 if (!dirname) throw new Error("Missing dirname");

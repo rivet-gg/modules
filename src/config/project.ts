@@ -1,4 +1,5 @@
-import { parse, join, Ajv } from "../deps.ts";
+import { parse, join } from "../deps.ts";
+import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/project_schema.json" with { type: "json" };
 
 export interface ProjectConfig extends Record<string, unknown> {

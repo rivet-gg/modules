@@ -1,4 +1,5 @@
-import { join, tjs } from "../deps.ts";
+import { join } from "../deps.ts";
+import { tjs } from "./deps.ts";
 import { Module } from "./module.ts";
 import { ScriptConfig } from "../config/module.ts";
 import { Project } from "./project.ts";
