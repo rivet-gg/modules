@@ -1,3 +1,4 @@
+import { dedent } from "./deps.ts";
 import { dirname, join, relative } from "../deps.ts";
 import {
 	Module,
@@ -18,25 +19,26 @@ export async function compileModuleHelper(
 	const runtimePath = genRuntimeModPath(project);
 
 	// Generate source
-	const dbImports = [
-		'import prisma from "./prisma/esm.js";',
-		"export { prisma };",
-		"export const Prisma = prisma.Prisma;",
-	];
-	const source = [
-		autoGenHeader(),
-		"",
-		`import { ModuleContext as ModuleContextInner } from "${runtimePath}";`,
-		`import { Registry as RegistryTypeInner } from "./registry.d.ts";`,
-		"",
-		...(module.db ? dbImports : []),
-		"",
-		`export { RuntimeError } from "${runtimePath}";`,
-		`export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${
-			module.db ? "prisma.PrismaClient" : "undefined"
-		}>;`,
-		"",
-	].join("\n");
+	let dbImports = "";
+	if (module.db) {
+		dbImports = dedent`
+		import prisma from "./prisma/esm.js";
+		export { prisma };
+		export const Prisma = prisma.Prisma;
+	`;
+	}
+
+	const source = dedent`
+		import { ModuleContext as ModuleContextInner } from "${runtimePath}";
+		import { ${module.name}$$Registry as RegistryTypeInner } from "./registry.d.ts";
+		
+		${dbImports}
+		
+		export { RuntimeError } from "${runtimePath}";
+		export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${
+		module.db ? "prisma.PrismaClient" : "undefined"
+	}};
+	`;
 
 	// Write source
 	const helperPath = moduleGenPath(project, module);
@@ -50,26 +52,25 @@ export async function compileTestHelper(
 ) {
 	const runtimePath = genRuntimeModPath(project);
 
-	const source = [
-		autoGenHeader(),
-		'import * as module from "./mod.ts";',
-		`import { Runtime, TestContext as TestContextInner } from "${runtimePath}";`,
-		`import { Registry as RegistryTypeInner } from "./registry.d.ts";`,
-		`import config from "${project.path}/_gen/runtime_config.ts";`,
-		"",
-		'export * from "./mod.ts";',
-		"",
-		`export type TestContext = TestContextInner<RegistryTypeInner, ${
-			module.db ? "module.prisma.PrismaClient" : "undefined"
-		}>;`,
-		"",
-		"export type TestFn = (ctx: TestContext) => Promise<void>;",
-		"",
-		"export function test(name: string, fn: TestFn) {",
-		`	Runtime.test(config, "${module.name}", name, fn);`,
-		"}",
-		"",
-	].join("\n");
+	const source = dedent`
+		${autoGenHeader()}
+		import * as module from "./mod.ts";
+		import { Runtime, TestContext as TestContextInner } from "${runtimePath}";
+		import { Registry as RegistryTypeInner } from "./registry.d.ts";
+		import config from "${project.path}/_gen/runtime_config.ts";
+		
+		export * from "./mod.ts";
+		
+		export type TestContext = TestContextInner<RegistryTypeInner, ${
+		module.db ? "module.prisma.PrismaClient" : "undefined"
+	}};
+		
+		export type TestFn = (ctx: TestContext) => Promise<void>;
+		
+		export function test(name: string, fn: TestFn) {
+			Runtime.test(config, "${module.name}", name, fn);
+		}
+	`;
 
 	// Write source
 	const helperPath = testGenPath(project, module);
@@ -84,21 +85,20 @@ export async function compileScriptHelper(
 ) {
 	const runtimePath = genRuntimeModPath(project);
 
-	const source = [
-		autoGenHeader(),
-		'import * as module from "../mod.ts";',
-		`import { ScriptContext as ScriptContextInner } from "${runtimePath}";`,
-		`import { Registry as RegistryTypeInner } from "../registry.d.ts";`,
-		"",
-		module.db ? 'import { PrismaClient } from "../prisma/index.d.ts";' : "", // NOTE: This is not used anywhere
-		"",
-		'export * from "../mod.ts";',
-		"",
-		`export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${
-			module.db ? "module.prisma.PrismaClient" : "undefined"
-		}>;`,
-		"",
-	].join("\n");
+	const source = dedent`
+		${autoGenHeader()}
+		import * as module from "../mod.ts";
+		import { ScriptContext as ScriptContextInner } from "${runtimePath}";
+		import { Registry as RegistryTypeInner } from "../registry.d.ts";
+		
+		${module.db ? 'import { PrismaClient } from "../prisma/index.d.ts";' : ""}
+		
+		export * from "../mod.ts";
+		
+		export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${
+		module.db ? "module.prisma.PrismaClient" : "undefined"
+	}};
+	`;
 
 	// Write source
 	const helperPath = scriptGenPath(project, module, script);
@@ -113,12 +113,11 @@ export async function compileTypeHelpers(project: Project) {
 		"registry.d.ts",
 	);
 
-	const modules: string[] = [];
-
+	let moduleTypesSource = "";
+	let moduleRegistrySource = "";
 	for (const module of project.modules.values()) {
-		const scripts: string[] = [];
-
-		const moduleInterfaceName = `${module.name}Module`;
+		let scriptImportsSource = "";
+		let scriptInterfaceSource = "";
 		for (const script of module.scripts.values()) {
 			const scriptId = `${module.name}$$${script.name}`;
 
@@ -131,57 +130,62 @@ export async function compileTypeHelpers(project: Project) {
 				`${script.name}.ts`,
 			);
 
-			const pathComment = `// ${module.name}/${script.name}`;
-			const importLine =
-				`import type { Request as ${requestTypeName}, Response as ${responseTypeName} } from ${
-					JSON.stringify(importPath)
-				};`;
+			scriptImportsSource += dedent`
+				// ${module.name}/${script.name}
+				import type { Request as ${requestTypeName}, Response as ${responseTypeName} } from ${
+				JSON.stringify(importPath)
+			};
+			`;
 
-			const interfaceDef = [
-				`interface ${moduleInterfaceName} {`,
-				`\t${script.name}: {`,
-				`\t\trequest: ${requestTypeName};`,
-				`\t\tresponse: ${responseTypeName};`,
-				`\t};`,
-				`}`,
-			].join("\n");
-
-			scripts.push([pathComment, importLine, interfaceDef].join("\n"));
+			scriptInterfaceSource += dedent`
+				${script.name}: {
+					request: ${requestTypeName};
+					response: ${responseTypeName};
+				};
+			`;
 		}
 
-		const moduleComment = [
-			"//",
-			`// Types for ${module.name}`,
-			"//",
-			"",
-			`interface ${moduleInterfaceName} {}`,
-		].join("\n");
+		const moduleInterfaceName = `${module.name}$$Module`;
+		moduleTypesSource += dedent`
+			//
+			// Types for ${module.name}
+			//
 
-		const scriptBody = scripts.join("\n\n");
+			${scriptImportsSource}
 
-		const interfaceDef =
-			`interface Registry {\n\t${module.name}: ${moduleInterfaceName};\n}`;
+			interface ${moduleInterfaceName} {
+				${scriptInterfaceSource}
+			}
+		`;
 
-		modules.push([moduleComment, scriptBody, interfaceDef].join("\n"));
+		moduleRegistrySource += dedent`
+			${module.name}: ${moduleInterfaceName};
+		`;
 	}
 
-	const source = `${autoGenHeader()}${
-		modules.join("\n\n\n\n")
-	}\n\n${registryTypes.trim()}`;
+	const source = dedent`
+		${autoGenHeader()}
+
+		export type RequestOf<T> = T extends { request: any } ? T["request"] : never;
+		export type ResponseOf<T> = T extends { response: any } ? T["response"] : never;
+
+		export type RegistryCallFn<ThisType> = <M extends keyof Registry & string, S extends keyof Registry[M] & string>(
+			this: ThisType,
+			module: M,
+			script: S,
+			req: RequestOf<Registry[M][S]>,
+		) => Promise<ResponseOf<Registry[M][S]>>;
+
+		interface Registry {
+			${moduleRegistrySource}
+		}
+
+		${moduleTypesSource}
+	`;
+
 	await Deno.mkdir(dirname(typedefPath), { recursive: true });
 	await Deno.writeTextFile(typedefPath, source);
 }
-
-const registryTypes = `
-export type RequestOf<T> = T extends { request: any } ? T["request"] : never;
-export type ResponseOf<T> = T extends { response: any } ? T["response"] : never;
-
-export type RegistryCallFn<ThisType> = <M extends keyof Registry & string, S extends keyof Registry[M] & string>(
-	this: ThisType,
-	module: M,
-	script: S,
-	req: RequestOf<Registry[M][S]>,
-) => Promise<ResponseOf<Registry[M][S]>>;`;
 
 export async function compileModuleTypeHelper(
 	project: Project,
@@ -193,15 +197,20 @@ export async function compileModuleTypeHelper(
 		"registry.d.ts",
 	);
 
-	let source = autoGenHeader();
+	const moduleDependencies = Object.keys(module.config.dependencies || {})
+		.map((dependencyName) =>
+			`${dependencyName}: FullRegistry["${dependencyName}"]`
+		)
+		.join(";\n\t");
 
-	source += `import { Registry as FullRegistry } from "${typedefPath}";\n`;
-	source += "export interface Registry {\n";
-	source += `\t${module.name}: FullRegistry["${module.name}"];\n`;
-	for (const dependencyName in module.config.dependencies) {
-		source += `\t${dependencyName}: FullRegistry["${dependencyName}"];\n`;
-	}
-	source += "}\n";
+	const source = dedent`
+		${autoGenHeader()}
+		import { Registry as FullRegistry } from "${typedefPath}";
+		export interface Registry {
+			${module.name}: FullRegistry["${module.name}"];
+			${moduleDependencies}
+		}
+	`;
 
 	const helperPath = typeGenPath(project, module);
 	await Deno.mkdir(dirname(helperPath), { recursive: true });

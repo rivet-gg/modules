@@ -1,4 +1,4 @@
-import { test, TestContext } from "@gen/users/test.ts";
+import { test, TestContext } from "../_gen/test.ts";
 import { faker } from "npm:@faker-js/faker@^8.4.1";
 import {
 	assertEquals,

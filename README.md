@@ -1,5 +1,11 @@
 # Open Game Backend
 
+## Prerequisites
+
+- Deno
+- Docker ([#125](https://github.com/rivet-gg/opengb/issues/125))
+- Git
+
 ## Install
 
 <!--
