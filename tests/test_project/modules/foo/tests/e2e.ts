@@ -11,7 +11,7 @@ test("e2e", async (ctx: TestContext) => {
 		identity: { guest: {} },
 	}) as any;
 
-	const { users: users, token: token2 } = await ctx.call("users", "get", {
+	const { users: users } = await ctx.call("users", "get", {
 		userIds: [user.id],
 	}) as any;
 	assertExists(users[0]);

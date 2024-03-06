@@ -8,7 +8,6 @@ export const lintCommand = new Command<GlobalOpts>()
 			const project = await initProject(opts);
 
 			const sourceFiles = await listSourceFiles(project, { localOnly: true });
-			console.log(sourceFiles);
 
 			const cmd = await new Deno.Command("deno", {
 				args: [
@@ -19,6 +18,6 @@ export const lintCommand = new Command<GlobalOpts>()
 				stderr: "inherit",
 			})
 				.output();
-			if (!cmd.success) throw new Error("Link failed");
+			if (!cmd.success) throw new Error("Lint failed");
 		},
 	);
