@@ -56,5 +56,5 @@ export async function ensurePostgresRunning(project: Project) {
 			"postgres:16",
 		],
 	}).output();
-	if (!runOutput.success) throw new Error("Failed to start the container.");
+	if (!runOutput.success) throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
 }
