@@ -1,11 +1,12 @@
 registries:
-  # default:
-  #   git: https://github.com/rivet-gg/open-game-services.git
-  #   branch: main
   default:
-    directory: ../../../opengb-registry/modules
+    git:
+      url: https://github.com/rivet-gg/open-game-services.git
+      branch: main
+      directory: ./modules
   local:
-    directory: ./modules
+    local:
+        directory: ./modules
 modules:
   # currency: {}
   # friends: {}

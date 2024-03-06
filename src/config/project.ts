@@ -7,17 +7,13 @@ export interface ProjectConfig extends Record<string, unknown> {
 	modules: { [name: string]: ProjectModuleConfig };
 }
 
-export interface RegistryConfig extends Record<string, unknown> {
-	directory?: string;
-	// git?: string;
-	// branch?: string;
-	// rev?: string;
+export type RegistryConfig = { local: RegistryConfigLocal } | { git: RegistryConfigGit };
+
+export interface RegistryConfigLocal {
+	directory: string;
 }
 
-// export interface RegistryConfig extends Record<string, unknown> {
-// 	name: string;
-// 	url: string;
-// }
+export type RegistryConfigGit = { url: string, directory?: string } & ({ branch: string } | { tag: string } | { rev: string });
 
 export interface ProjectModuleConfig extends Record<string, unknown> {
 	/**

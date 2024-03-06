@@ -1,14 +1,15 @@
-import { exists, join } from "../deps.ts";
+import { dirname, exists, join, copy } from "../deps.ts";
+import { bold, brightRed } from "./deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
-import { RegistryConfig } from "../config/project.ts";
+import { loadRegistry, Registry } from "./registry.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
-import { bold, brightRed } from "https://deno.land/std@0.208.0/fmt/colors.ts";
 
 export interface Project {
 	path: string;
-	projectConfig: ProjectConfig;
+	config: ProjectConfig;
+	registries: Map<string, Registry>;
 	modules: Map<string, Module>;
 }
 
@@ -19,25 +20,35 @@ export interface LoadProjectOpts {
 export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	const projectRoot = join(Deno.cwd(), opts.path ?? ".");
 
-	// console.log("Loading project", projectRoot);
-
 	// Read project config
 	const projectConfig = await readProjectConfig(
 		projectRoot,
 	);
 
+	// Load registries
+	const registries = new Map();
+	for (const registryName in projectConfig.registries) {
+		const registryConfig = projectConfig.registries[registryName];
+		const registry = await loadRegistry(
+			projectRoot,
+			registryName,
+			registryConfig,
+		);
+		registries.set(registryName, registry);
+	}
+
 	// Load modules
 	const modules = new Map<string, Module>();
 	for (const projectModuleName in projectConfig.modules) {
-		const modulePath = await fetchAndResolveModule(
+		const { path, registry } = await fetchAndResolveModule(
 			projectRoot,
 			projectConfig,
+			registries,
 			projectModuleName,
 		);
-		const module = await loadModule(modulePath, projectModuleName);
+		const module = await loadModule(path, projectModuleName, registry);
 		modules.set(projectModuleName, module);
 	}
-
 
 	// Verify existince of module dependencies
 	const missingDepsByModule = new Map<string, string[]>();
@@ -81,23 +92,7 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 
 
 
-	return { path: projectRoot, projectConfig, modules };
-}
-
-/**
- * Clones a registry to the local machine if required and returns the path.
- */
-async function fetchAndResolveRegistry(
-	projectRoot: string,
-	registry: RegistryConfig,
-): Promise<string> {
-	// TODO: Impl git cloning
-	if (!registry.directory) throw new Error("Registry directory not set");
-	const registryPath = join(projectRoot, registry.directory);
-	if (!await exists(registryPath)) {
-		throw new Error(`Registry not found at ${registryPath}`);
-	}
-	return registryPath;
+	return { path: projectRoot, config: projectConfig, registries, modules };
 }
 
 /**
@@ -106,29 +101,24 @@ async function fetchAndResolveRegistry(
 async function fetchAndResolveModule(
 	projectRoot: string,
 	projectConfig: ProjectConfig,
+	registries: Map<string, Registry>,
 	moduleName: string,
-): Promise<string> {
+): Promise<{ path: string; registry: Registry }> {
 	// Lookup module
 	const module = projectConfig.modules[moduleName];
 	if (!module) throw new Error(`Module not found ${moduleName}`);
 
 	// Lookup registry
-	const registryName = registryForModule(module);
-	const registryConfig = projectConfig.registries[registryName];
-	if (!registryConfig) {
+	const registryName = registryNameForModule(module);
+	const registry = registries.get(registryName);
+	if (!registry) {
 		throw new Error(`Registry ${registryName} not found for module ${module}`);
 	}
-	const registryPath = await fetchAndResolveRegistry(
-		projectRoot,
-		registryConfig,
-	);
 
 	// Resolve module path
 	const pathModuleName = moduleNameInRegistry(moduleName, module);
-	const modulePath = join(registryPath, pathModuleName);
-	if (await exists(join(modulePath, "module.yaml"))) {
-		return modulePath;
-	} else {
+	const modulePath = join(registry.path, pathModuleName);
+	if (!await exists(join(modulePath, "module.yaml"))) {
 		if (pathModuleName != moduleName) {
 			// Has alias
 			throw new Error(
@@ -141,9 +131,26 @@ async function fetchAndResolveModule(
 			);
 		}
 	}
+
+	// Copy to gen dir
+	//
+	// We do this so generate files into the gen dir without modifying the
+	// original module. For example. if multiple projects are using the same
+	// local registry, we don't want conflicting generated files.
+	const dstPath = join(
+		projectRoot,
+		"_gen",
+		"modules",
+		registryName,
+		moduleName,
+	);
+	await Deno.mkdir(dirname(dstPath), { recursive: true });
+	await copy(modulePath, dstPath, { overwrite: true });
+
+	return { path: dstPath, registry };
 }
 
-function registryForModule(module: ProjectModuleConfig): string {
+function registryNameForModule(module: ProjectModuleConfig): string {
 	return module.registry ?? "default";
 }
 
