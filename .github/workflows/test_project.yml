@@ -1,4 +1,5 @@
-name: E2E
+name: Test Project
+
 on:
   - push
 

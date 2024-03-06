@@ -47,6 +47,24 @@ export async function loadRegistry(
 	};
 }
 
+export async function loadDefaultRegistry(projectRoot: string): Promise<Registry> {
+	return await loadRegistry(
+		projectRoot,
+		"default",
+		{
+			git: {
+				url: {
+					https: "https://github.com/rivet-gg/open-game-services.git",
+					ssh: "git@github.com:rivet-gg/opengb-registry.git",
+				},
+				// TODO: https://github.com/rivet-gg/opengb/issues/151
+				rev: "e613227f95e0d584f611947e1b8d8c0e3ca508c8",
+				directory: "./modules",
+			},
+		},
+	);
+}
+
 interface ResolveRegistryOutput {
 	path: string;
 	isExternal: boolean;

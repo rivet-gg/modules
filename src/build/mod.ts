@@ -268,9 +268,6 @@ async function buildSteps(
 			// Run one migration at a time since Prisma is interactive
 			await waitForBuildPromises(buildState);
 		}
-
-		// Wait for promise since we can't run multiple `migrateDev` commands at once
-		await waitForBuildPromises(buildState);
 	}
 
 	buildStep(buildState, {

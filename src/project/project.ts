@@ -7,6 +7,7 @@ import { loadRegistry, Registry } from "./registry.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { IdentType } from "../types/identifiers/defs.ts";
+import { loadDefaultRegistry } from "./registry.ts";
 
 export interface Project {
 	path: string;
@@ -41,21 +42,7 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	}
 
 	if (!registries.has("default")) {
-		const defaultRegistry = await loadRegistry(
-			projectRoot,
-			"default",
-			{
-				git: {
-					url: {
-						https: "https://github.com/rivet-gg/open-game-services.git",
-						ssh: "git@github.com:rivet-gg/opengb-registry.git",
-					},
-					// TODO: https://github.com/rivet-gg/opengb/issues/151
-					rev: "f28b9c0ddbb69fcc092dfff12a18707065a69251",
-					directory: "./modules",
-				},
-			},
-		);
+		const defaultRegistry = await loadDefaultRegistry(projectRoot);
 		registries.set("default", defaultRegistry);
 	}
 
