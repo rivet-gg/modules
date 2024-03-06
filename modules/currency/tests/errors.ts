@@ -5,7 +5,7 @@ import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 test (
     "get balance for nonexistent user",
     async (ctx: TestContext) => {
-		const { balance } = await ctx.modules.currency.get_balance({
+		const { balance } = await ctx.modules.currency.getBalance({
 			userId: "Not a real user",
 		});
         
@@ -132,7 +132,7 @@ test(
 		});
 
         const error = await assertRejects(async () => {
-            await ctx.modules.currency.set_balance({ userId: user.id, balance: -1 });
+            await ctx.modules.currency.setBalance({ userId: user.id, balance: -1 });
 		}, RuntimeError);
 		assertEquals(error.code, "INVALID_AMOUNT");
     }
@@ -147,7 +147,7 @@ test(
 		});
 
         const error = await assertRejects(async () => {
-            await ctx.modules.currency.set_balance({ userId: user.id, balance: NaN });
+            await ctx.modules.currency.setBalance({ userId: user.id, balance: NaN });
 		}, RuntimeError);
 		assertEquals(error.code, "INVALID_AMOUNT");
     }
@@ -163,7 +163,7 @@ test(
 		});
 
         const error = await assertRejects(async () => {
-            await ctx.modules.currency.set_balance({ userId: user.id, balance: Infinity });
+            await ctx.modules.currency.setBalance({ userId: user.id, balance: Infinity });
 		}, RuntimeError);
 		assertEquals(error.code, "INVALID_AMOUNT");
     }
