@@ -1,23 +1,20 @@
 import { test, TestContext } from "../_gen/test.ts";
-import { faker } from "npm:@faker-js/faker@^8.4.1";
 import {
 	assertEquals,
 	assertExists,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
-test("e2e", async (ctx: TestContext) => {
-	const { user, token } = await ctx.call("users", "register", {
-		username: faker.internet.userName(),
-		identity: { guest: {} },
-	}) as any;
+test("ping-pong", async (ctx: TestContext) => {
+	const { pong } = await ctx.modules.foo.ping({});
+	assertEquals("pong", pong);
+});
 
-	const { users: users } = await ctx.call("users", "get", {
-		userIds: [user.id],
-	}) as any;
-	assertExists(users[0]);
+test("call-self", async (ctx: TestContext) => {
+	const { response } = await ctx.modules.foo.callSelf({});
+	assertEquals("pong", response.pong);
+});
 
-	const { userId } = await ctx.call("users", "validate_token", {
-		userToken: token.token,
-	}) as any;
-	assertEquals(user.id, userId);
+test("create-entry", async (ctx: TestContext) => {
+	const { id } = await ctx.modules.foo.createEntry({});
+	assertExists(id);
 });

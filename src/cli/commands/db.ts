@@ -4,6 +4,7 @@ import { migrateDev } from "../../migrate/dev.ts";
 import { migrateStatus } from "../../migrate/status.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateReset } from "../../migrate/reset.ts";
+import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
 export const dbCommand = new Command<GlobalOpts>();
 
@@ -11,6 +12,7 @@ dbCommand.action(() => dbCommand.showHelp());
 
 dbCommand.command("dev").option("-c, --create-only", "Create only", { default: false }).action(async (opts) => {
 	const project = await initProject(opts);
+	await ensurePostgresRunning(project);
 	await migrateDev(project, [...project.modules.values()], { createOnly: opts.createOnly });
 });
 
@@ -24,6 +26,7 @@ dbCommand.command("reset").action(async (opts) => {
 
 dbCommand.command("deploy").action(async (opts) => {
 	const project = await initProject(opts);
+	await ensurePostgresRunning(project);
 	await migrateDeploy(project, [...project.modules.values()]);
 });
 

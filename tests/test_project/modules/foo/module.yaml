@@ -2,9 +2,11 @@ status: preview
 authors:
   - NathanFlurry
 scripts:
-  get:
+  ping:
     public: true
-  register:
+  create_entry:
     public: true
-  validate_token: {}
-errors: {}
+  call_self:
+    public: true
+errors:
+  DB_ERROR: {}
