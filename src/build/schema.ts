@@ -11,8 +11,8 @@ const WORKER_POOL = createWorkerPool<WorkerRequest, WorkerResponse>({
 
 // TODO: This function is sync
 export async function compileSchema(
-	project: Project,
-	module: Module,
+	_project: Project,
+	_module: Module,
 	script: Script,
 ): Promise<void> {
 	const res = await runJob(WORKER_POOL, { script });

@@ -1,5 +1,5 @@
 import { dedent } from "./deps.ts";
-import { dirname, join, relative } from "../deps.ts";
+import { dirname, join } from "../deps.ts";
 import {
 	Module,
 	moduleGenPath,
