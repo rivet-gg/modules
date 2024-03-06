@@ -9,7 +9,7 @@ export const testCommand = new Command<GlobalOpts>()
 	.arguments("[modules...:string]")
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")
-	.option("--no-watch", "Don't automatically restart server on changes")
+	.option("--unstable-watch", "Automatically restart server on changes. This does not support all features yet.")
 	.action(
 		async (opts, ...modules: string[]) => {
 			const project = await initProject(opts);
@@ -32,7 +32,7 @@ export const testCommand = new Command<GlobalOpts>()
 				"--allow-read",
 			];
 			if (opts.check) args.push("--check");
-			if (opts.watch) args.push("--watch");
+			if (opts.unstableWatch) args.push("--watch");
 
 			// Find test scripts
 			for (const module of project.modules.values()) {

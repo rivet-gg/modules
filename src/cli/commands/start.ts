@@ -7,7 +7,7 @@ import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 export const startCommand = new Command<GlobalOpts>()
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")
-	.option("--no-watch", "Don't automatically restart server on changes")
+	.option("--unstable-watch", "Automatically restart server on changes. This does not support all features yet.")
 	.action(
 		async (opts) => {
 			const project = await initProject(opts);
@@ -32,7 +32,7 @@ export const startCommand = new Command<GlobalOpts>()
 				"--allow-read",
 			];
 			if (opts.check) args.push("--check");
-			if (opts.watch) args.push("--watch");
+			if (opts.unstableWatch) args.push("--watch");
 
 			// Run entrypoint
 			const cmd = await new Deno.Command("deno", {
