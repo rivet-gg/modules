@@ -3,7 +3,7 @@ import { Project } from "../project/mod.ts";
 const CONTAINER_NAME = "opengb-postgres";
 const VOLUME_NAME = "opengb-postgres-data";
 
-export async function ensurePostgresRunning(project: Project) {
+export async function ensurePostgresRunning(_project: Project) {
     // Validate Docker is installed
 	const versionOutput = await new Deno.Command("docker", {
 		args: ["version"],

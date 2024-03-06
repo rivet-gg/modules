@@ -18,7 +18,7 @@ export type ForEachPrismaSchemaCallback = (
 
 /** Prepares all databases and calls a callback once prepared. */
 export async function forEachDatabase(
-	project: Project,
+	_project: Project,
 	modules: Module[],
 	callback: ForEachDatabaseCallback,
 ) {

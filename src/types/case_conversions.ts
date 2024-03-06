@@ -1,5 +1,4 @@
 type SplitChar = '_' | '-';
-const SPLIT_CHARS: SplitChar[] = ['-', '_'];
 
 type BeforeFirstSplit<T extends string> = T extends `${infer F}${SplitChar}${string}`
     ? F extends `${string}${SplitChar}${string}`
