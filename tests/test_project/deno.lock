@@ -6,6 +6,7 @@
       "npm:ajv-formats@^2.1.1": "npm:ajv-formats@2.1.1_ajv@8.12.0",
       "npm:ajv@^8.12.0": "npm:ajv@8.12.0",
       "npm:pg@^8.11.3": "npm:pg@8.11.3",
+      "npm:prisma@5.9.1": "npm:prisma@5.9.1",
       "npm:typescript-json-schema@^0.62.0": "npm:typescript-json-schema@0.62.0_typescript@5.1.6"
     },
     "npm": {
@@ -38,10 +39,41 @@
           "postgres-array": "postgres-array@3.0.2"
         }
       },
+      "@prisma/debug@5.9.1": {
+        "integrity": "sha512-yAHFSFCg8KVoL0oRUno3m60GAjsUKYUDkQ+9BA2X2JfVR3kRVSJFc/GpQ2fSORi4pSHZR9orfM4UC9OVXIFFTA==",
+        "dependencies": {}
+      },
       "@prisma/driver-adapter-utils@5.9.1": {
         "integrity": "sha512-1h1+6kU3PfsE2CvQoU49Jt7yrXybU0C/H/+W8Bh0pJefMAbTY8KoWssYXgwQp1PUKBtdh1GDQsMf9ojFeQ0RWg==",
         "dependencies": {
           "debug": "debug@4.3.4"
+        }
+      },
+      "@prisma/engines-version@5.9.0-32.23fdc5965b1e05fc54e5f26ed3de66776b93de64": {
+        "integrity": "sha512-HFl7275yF0FWbdcNvcSRbbu9JCBSLMcurYwvWc8WGDnpu7APxQo2ONtZrUggU3WxLxUJ2uBX+0GOFIcJeVeOOQ==",
+        "dependencies": {}
+      },
+      "@prisma/engines@5.9.1": {
+        "integrity": "sha512-gkdXmjxQ5jktxWNdDA5aZZ6R8rH74JkoKq6LD5mACSvxd2vbqWeWIOV0Py5wFC8vofOYShbt6XUeCIUmrOzOnQ==",
+        "dependencies": {
+          "@prisma/debug": "@prisma/debug@5.9.1",
+          "@prisma/engines-version": "@prisma/engines-version@5.9.0-32.23fdc5965b1e05fc54e5f26ed3de66776b93de64",
+          "@prisma/fetch-engine": "@prisma/fetch-engine@5.9.1",
+          "@prisma/get-platform": "@prisma/get-platform@5.9.1"
+        }
+      },
+      "@prisma/fetch-engine@5.9.1": {
+        "integrity": "sha512-l0goQOMcNVOJs1kAcwqpKq3ylvkD9F04Ioe1oJoCqmz05mw22bNAKKGWuDd3zTUoUZr97va0c/UfLNru+PDmNA==",
+        "dependencies": {
+          "@prisma/debug": "@prisma/debug@5.9.1",
+          "@prisma/engines-version": "@prisma/engines-version@5.9.0-32.23fdc5965b1e05fc54e5f26ed3de66776b93de64",
+          "@prisma/get-platform": "@prisma/get-platform@5.9.1"
+        }
+      },
+      "@prisma/get-platform@5.9.1": {
+        "integrity": "sha512-6OQsNxTyhvG+T2Ksr8FPFpuPeL4r9u0JF0OZHUBI/Uy9SS43sPyAIutt4ZEAyqWQt104ERh70EZedkHZKsnNbg==",
+        "dependencies": {
+          "@prisma/debug": "@prisma/debug@5.9.1"
         }
       },
       "@tsconfig/node10@1.0.9": {
@@ -315,6 +347,12 @@
           "xtend": "xtend@4.0.2"
         }
       },
+      "prisma@5.9.1": {
+        "integrity": "sha512-Hy/8KJZz0ELtkw4FnG9MS9rNWlXcJhf98Z2QMqi0QiVMoS8PzsBkpla0/Y5hTlob8F3HeECYphBjqmBxrluUrQ==",
+        "dependencies": {
+          "@prisma/engines": "@prisma/engines@5.9.1"
+        }
+      },
       "punycode@2.3.1": {
         "integrity": "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==",
         "dependencies": {}
@@ -437,6 +475,14 @@
         "dependencies": {}
       }
     }
+  },
+  "redirects": {
+    "https://esm.sh/@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@0.9.0",
+    "https://esm.sh/@neondatabase/serverless@^0.9.0": "https://esm.sh/@neondatabase/serverless@0.9.0",
+    "https://esm.sh/@prisma/adapter-neon": "https://esm.sh/@prisma/adapter-neon@5.10.2",
+    "https://esm.sh/@prisma/adapter-neon@^5.10.2": "https://esm.sh/@prisma/adapter-neon@5.10.2",
+    "https://esm.sh/ajv-formats@^2.1.1": "https://esm.sh/ajv-formats@2.1.1",
+    "https://esm.sh/ajv@^8.12.0": "https://esm.sh/ajv@8.12.0"
   },
   "remote": {
     "https://deno.land/std@0.196.0/assert/assert.ts": "9a97dad6d98c238938e7540736b826440ad8c1c1e54430ca4c4e623e585607ee",
@@ -805,6 +851,22 @@
     "https://deno.land/x/postgres@v0.17.2/query/transaction.ts": "8f4eef68f8e9b4be216199404315e6e08fe1fe98afb2e640bffd077662f79678",
     "https://deno.land/x/postgres@v0.17.2/query/types.ts": "540f6f973d493d63f2c0059a09f3368071f57931bba68bea408a635a3e0565d6",
     "https://deno.land/x/postgres@v0.17.2/utils/deferred.ts": "5420531adb6c3ea29ca8aac57b9b59bd3e4b9a938a4996bbd0947a858f611080",
-    "https://deno.land/x/postgres@v0.17.2/utils/utils.ts": "ca47193ea03ff5b585e487a06f106d367e509263a960b787197ce0c03113a738"
+    "https://deno.land/x/postgres@v0.17.2/utils/utils.ts": "ca47193ea03ff5b585e487a06f106d367e509263a960b787197ce0c03113a738",
+    "https://esm.sh/@neondatabase/serverless@0.9.0": "3007f35c946e1ce273f644f2bfee27a9de48d1fbe332dab9d53566d12080e22d",
+    "https://esm.sh/@prisma/adapter-neon@5.10.2": "0139f84d719977a05264596fef6bb34e4d0e9ddf15f73d6fd9ec6ff203a8d432",
+    "https://esm.sh/ajv-formats@2.1.1": "575b3830618970ddc3aba96310bf4df7358bb37fcea101f58b36897ff3ac2ea7",
+    "https://esm.sh/ajv@8.12.0": "cc1a73af661466c7f4e6a94d93ece78542d700f2165bdb16a531e9db8856c5aa",
+    "https://esm.sh/v135/@neondatabase/serverless@0.8.1/denonext/serverless.mjs": "a45acb984910225aa035c9787133d117fb585d6d62536238e135580cf6a0a695",
+    "https://esm.sh/v135/@neondatabase/serverless@0.9.0/denonext/serverless.mjs": "170ea3600a913c22aa959044968d73c6a214f17ce6ea60ce2002d4e9225f2491",
+    "https://esm.sh/v135/@prisma/adapter-neon@5.10.2/denonext/adapter-neon.mjs": "3639e2b49242e394582e1e36623a62ab75c60a487c502bc6d9665944531728dc",
+    "https://esm.sh/v135/@prisma/debug@5.10.2/denonext/debug.mjs": "cab0a6f1eb5df296ddf9b9590519e6bdc851bfad482961b7bd25e5bfe1cc428c",
+    "https://esm.sh/v135/@prisma/driver-adapter-utils@5.10.2/denonext/driver-adapter-utils.mjs": "2266fc26eebd8821b502bb0ada2488062259b3b4d8188cd5692e13f14caa174c",
+    "https://esm.sh/v135/ajv-formats@2.1.1/denonext/ajv-formats.mjs": "06092e00b42202633ae6dab4b53287c133af882ddb14c6707277cdb237634967",
+    "https://esm.sh/v135/ajv@8.12.0/denonext/ajv.mjs": "4645df9093d0f8be0e964070a4a7aea8adea06e8883660340931f7a3f979fc65",
+    "https://esm.sh/v135/ajv@8.12.0/denonext/dist/compile/codegen.js": "d981238e5b1e78217e1c6db59cbd594369279722c608ed630d08717ee44edd84",
+    "https://esm.sh/v135/fast-deep-equal@3.1.3/denonext/fast-deep-equal.mjs": "6313b3e05436550e1c0aeb2a282206b9b8d9213b4c6f247964dd7bb4835fb9e5",
+    "https://esm.sh/v135/json-schema-traverse@1.0.0/denonext/json-schema-traverse.mjs": "c5da8353bc014e49ebbb1a2c0162d29969a14c325da19644e511f96ba670cc45",
+    "https://esm.sh/v135/postgres-array@3.0.2/denonext/postgres-array.mjs": "52b71e002995214ed2309513661ae136f3abe65716dd47a99631b84fc3e0e7a0",
+    "https://esm.sh/v135/uri-js@4.4.1/denonext/uri-js.mjs": "901d462f9db207376b39ec603d841d87e6b9e9568ce97dfaab12aa77d0f99f74"
   }
 }

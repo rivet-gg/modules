@@ -1,4 +1,4 @@
-import { join, copy } from "../deps.ts";
+import { copy, join } from "../deps.ts";
 import { PostgresClient } from "./deps.ts";
 import { Module, ModuleDatabase, Project } from "../project/mod.ts";
 import { assertValidString } from "./validate.ts";
@@ -27,8 +27,8 @@ export async function forEachDatabase(
 		"postgres://postgres:password@localhost:5432/postgres";
 
 	// Create client that connects to the default database
-	const defaultClient = new PostgresClient(defaultDatabaseUrl);
-	await defaultClient.connect();
+	// const defaultClient = new PostgresClient(defaultDatabaseUrl);
+	// await defaultClient.connect();
 
 	try {
 		for (const mod of modules) {
@@ -37,7 +37,7 @@ export async function forEachDatabase(
 			// if (dbFilter && mod.name !== dbFilter) continue;
 
 			// Create database
-			await createDatabases(defaultClient, mod.db);
+			// await createDatabases(defaultClient, mod.db);
 
 			// Build URL
 			const urlParsed = new URL(defaultDatabaseUrl);
@@ -50,7 +50,7 @@ export async function forEachDatabase(
 	} catch (cause) {
 		throw new Error("Failed to iterate databases", { cause });
 	} finally {
-		await defaultClient.end();
+		// await defaultClient.end();
 	}
 }
 
@@ -60,51 +60,54 @@ export async function forEachPrismaSchema(
 	modules: Module[],
 	callback: ForEachPrismaSchemaCallback,
 ) {
-	await forEachDatabase(project, modules, async ({ databaseUrl, module, db }) => {
-		const tempDir = await Deno.makeTempDir();
-		const dbDir = join(module.path, "db");
-		const generatedClientDir = join(
-			module.path,
-			"_gen",
-			"prisma",
-		);
+	await forEachDatabase(
+		project,
+		modules,
+		async ({ databaseUrl, module, db }) => {
+			const tempDir = await Deno.makeTempDir();
+			const dbDir = join(module.path, "db");
+			const generatedClientDir = join(
+				module.path,
+				"_gen",
+				"prisma",
+			);
 
-		// Duplicate db directory
-		await copy(dbDir, tempDir, { overwrite: true });
+			// Duplicate db directory
+			await copy(dbDir, tempDir, { overwrite: true });
 
-		// TODO: This causes a weird error
-		// // Write package.json
-		// const packageJsonPath = join(tempDir, "package.json");
-		// const packageJson = JSON.stringify({
-		//     "devDependencies": {
-		//         "prisma": "^5.9.1"
-		//     },
-		//     "dependencies": {
-		//         "@prisma/client": "^5.9.1"
-		//     },
-		//     "node": {
-		//         "target": "20.11.1"
-		//     }
-		// });
-		// await Deno.writeTextFile(packageJsonPath, packageJson);
+			// TODO: This causes a weird error
+			// // Write package.json
+			// const packageJsonPath = join(tempDir, "package.json");
+			// const packageJson = JSON.stringify({
+			//     "devDependencies": {
+			//         "prisma": "^5.9.1"
+			//     },
+			//     "dependencies": {
+			//         "@prisma/client": "^5.9.1"
+			//     },
+			//     "node": {
+			//         "target": "20.11.1"
+			//     }
+			// });
+			// await Deno.writeTextFile(packageJsonPath, packageJson);
 
-		// Append generator config
-		const tempSchemaPath = join(tempDir, "schema.prisma");
-		let schema = await Deno.readTextFile(tempSchemaPath);
-		schema += `
-generator client {
-    provider = "prisma-client-js"
-    output = "${generatedClientDir}"
-    previewFeatures = ["driverAdapters"]
+			// Append generator config
+			const tempSchemaPath = join(tempDir, "schema.prisma");
+			let schema = await Deno.readTextFile(tempSchemaPath);
+			schema += `
+				generator client {
+					provider = "prisma-client-js"
+					output = "${generatedClientDir}"
+					previewFeatures = ["driverAdapters"]
 
-    // binaryTargets = ["native", "darwin", "darwin-arm64"]
-}
-`;
-		await Deno.writeTextFile(tempSchemaPath, schema);
+					// binaryTargets = ["native", "darwin", "darwin-arm64"]
+				}`;
+			await Deno.writeTextFile(tempSchemaPath, schema);
 
-		// Callback
-		await callback({ databaseUrl, module, db, tempDir, generatedClientDir });
-	});
+			// Callback
+			await callback({ databaseUrl, module, db, tempDir, generatedClientDir });
+		},
+	);
 }
 
 /**

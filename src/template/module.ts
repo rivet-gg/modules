@@ -23,5 +23,5 @@ errors: {}
 
 	// TODO: Write default schema
 
-	// TODO: Add to ogs.yaml
+	// TODO: Add to opengb.yaml
 }

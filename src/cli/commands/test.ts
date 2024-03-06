@@ -1,7 +1,7 @@
 import { join } from "../../deps.ts";
 import { Command, glob } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import { build } from "../../build/mod.ts";
+import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
 
 // TODO: https://github.com/rivet-gg/open-game-services-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()
@@ -32,7 +32,11 @@ export const testCommand = new Command<GlobalOpts>()
 
 			// Build project
 			if (opts.build) {
-				await build(project);
+				await build(project, {
+					runtime: Runtime.Deno,
+					format: Format.Native,
+					dbDriver: DbDriver.NodePostgres,
+				});
 			}
 
 			// Migrate project
@@ -67,7 +71,7 @@ export const testCommand = new Command<GlobalOpts>()
 				// Test all modules or filter module tests
 				const testPaths = await glob.glob(join(module.path, "tests", "*.ts"));
 				args.push(...testPaths);
-				
+
 				// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/86
 				// if (!modules || modules.includes(module.name)) {
 				// 	args.push(join(module.path, "tests", "*.ts"));

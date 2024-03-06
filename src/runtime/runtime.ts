@@ -103,7 +103,7 @@ export class Runtime<RegistryT> {
 						test: { module: moduleName, name: testName },
 					}),
 					moduleName,
-					runtime.postgres.getOrCreatePool(module)?.prisma,
+					runtime.postgres.getOrCreatePool(moduleName, module)?.prisma,
 				);
 
 				// Run test

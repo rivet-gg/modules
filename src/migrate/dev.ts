@@ -11,7 +11,11 @@ export interface MigrateDevOpts {
 	createOnly: boolean;
 }
 
-export async function migrateDev(project: Project, modules: Module[], opts: MigrateDevOpts) {
+export async function migrateDev(
+	project: Project,
+	modules: Module[],
+	opts: MigrateDevOpts,
+) {
 	await forEachPrismaSchema(
 		project,
 		modules,

@@ -21,7 +21,7 @@ export interface ScriptConfig {
 	/**
 	 * If the script can be called from the public HTTP interface.
 	 *
-	 * If enabled, ensure that authentication & rate limits are configued for
+	 * If enabled, ensure that authentication & rate limits are configured for
 	 * this endpoints. See the `user` and `rate_limit` modules.
 	 *
 	 * @default false

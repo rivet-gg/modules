@@ -46,7 +46,7 @@ export async function generateOpenApi(project: Project) {
 			);
 			schema.paths[`/modules/${mod.name}/scripts/${script.name}/call`] = {
 				post: {
-					description: "Call ${mod.name}.${script.name} script.",
+					description: `Call ${mod.name}.${script.name} script.`,
 					tags: ["OpenGB"],
 					operationId: `call_${mod.name}_${script.name}`,
 					requestBody: {

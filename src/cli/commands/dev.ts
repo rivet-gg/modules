@@ -1,7 +1,7 @@
 import { join } from "../../deps.ts";
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import { build } from "../../build/mod.ts";
+import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
 import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
 export const devCommand = new Command<GlobalOpts>();
@@ -62,7 +62,11 @@ devCommand
 
 			// Build project
 			if (opts.build) {
-				await build(project);
+				await build(project, {
+					runtime: Runtime.Deno,
+					format: Format.Native,
+					dbDriver: DbDriver.NodePostgres,
+				});
 			}
 
 			// Migrate project
