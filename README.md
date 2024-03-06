@@ -20,34 +20,6 @@ deno install --allow-net --allow-read --allow-env --allow-run --allow-write --na
 
 ## Usage
 
-**Setup Dev Environment**
-
-[TODO](https://github.com/rivet-gg/open-game-services-engine/issues/84)
-
-Write this `docker-compose.yaml` to the root of your project:
-
-```yaml
-version: '3.1'
-services:
-  postgres:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-volumes:
-  postgres-data:
-```
-
-Then start the project with:
-
-```
-docker-compose up -d
-```
-
 **Start OpenGB server**
 
 ```

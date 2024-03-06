@@ -2,6 +2,7 @@ import { join } from "../../deps.ts";
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build } from "../../build/mod.ts";
+import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
 export const devCommand = new Command<GlobalOpts>();
 
@@ -39,6 +40,8 @@ devCommand
 	.action(
 		async (opts) => {
 			const project = await initProject(opts);
+
+			await ensurePostgresRunning(project);
 
 			const entrypointPath = join(project.path, "_gen", "entrypoint.ts");
 
