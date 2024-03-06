@@ -10,14 +10,18 @@ import { dbCommand } from "./commands/db.ts";
 import { testCommand } from "./commands/test.ts";
 import { sdkCommand } from "./commands/sdk.ts";
 import { createCommand } from "./commands/create.ts";
+import { lintCommand } from "./commands/lint.ts";
+import { formatCommand } from "./commands/format.ts";
 
-const command = await new Command();
+const command = new Command();
 command.action(() => command.showHelp())
 	.globalOption("-p, --path <path>", "Path to project root")
 	.command("start", startCommand)
 	.command("test", testCommand)
 	.command("db", dbCommand)
 	.command("build", buildCommand)
+	.command("lint", lintCommand)
+	.command("format, fmt", formatCommand)
 	.command("sdk", sdkCommand)
 	.command("create", createCommand)
 	.command("help", new HelpCommand().global())

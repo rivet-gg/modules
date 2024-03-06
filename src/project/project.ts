@@ -1,5 +1,5 @@
 import { dirname, exists, join, copy } from "../deps.ts";
-import { bold, brightRed } from "./deps.ts";
+import { glob, bold, brightRed } from "./deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
@@ -167,4 +167,33 @@ export function genRuntimePath(project: Project): string {
 
 export function genRuntimeModPath(project: Project): string {
 	return join(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
+}
+
+export interface ListSourceFileOpts {
+	/**
+	 * Only include local files.
+	 *
+	 * Useful for commands that are only relevant to modules written by the user.
+	 */
+	localOnly?: boolean;
+}
+
+/**
+ * List all paths to TypeScript files in the project.
+ */
+export async function listSourceFiles(
+	project: Project,
+	opts: ListSourceFileOpts = {},
+): Promise<string[]> {
+	const files: string[] = [];
+	for (const module of project.modules.values()) {
+		// Skip non-local files
+		if (opts.localOnly && !("local" in module.registry.config)) continue;
+
+		const moduleFiles =
+			(await glob.glob("**/*.ts", { cwd: module.path, ignore: "_gen/**" }))
+				.map((x) => join(module.path, x));
+		files.push(...moduleFiles);
+	}
+	return files;
 }
