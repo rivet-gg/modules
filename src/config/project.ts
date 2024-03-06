@@ -44,7 +44,7 @@ const projectConfigAjv = new Ajv.default({
 export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	// Read config
 	const configRaw = await Deno.readTextFile(
-		join(projectPath, "opengb.yaml"),
+		join(projectPath, "backend.yaml"),
 	);
 	const config = parse(configRaw) as ProjectConfig;
 

@@ -4,9 +4,6 @@ import { Project } from "../project/mod.ts";
 export async function generateDenoConfig(project: Project) {
 	// Build config
 	const config = {
-		"imports": {
-			"@opengb/runtime": "./_gen/runtime/src/runtime/mod.ts",
-		},
 		"lint": {
 			"include": ["src/"],
 			"exclude": ["tests/"],
