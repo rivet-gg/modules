@@ -22,22 +22,22 @@ export async function compileModuleHelper(
 	let dbImports = "";
 	if (module.db) {
 		dbImports = dedent`
-		import prisma from "./prisma/esm.js";
-		export { prisma };
-		export const Prisma = prisma.Prisma;
-	`;
+			import prisma from "./prisma/esm.js";
+			export { prisma };
+			export const Prisma = prisma.Prisma;
+		`;
 	}
 
 	const source = dedent`
 		import { ModuleContext as ModuleContextInner } from "${runtimePath}";
-		import { ${module.name}$$Registry as RegistryTypeInner } from "./registry.d.ts";
+		import { Registry as RegistryTypeInner } from "./registry.d.ts";
 		
 		${dbImports}
 		
 		export { RuntimeError } from "${runtimePath}";
 		export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${
-		module.db ? "prisma.PrismaClient" : "undefined"
-	}};
+			module.db ? "prisma.PrismaClient" : "undefined"
+		}>;
 	`;
 
 	// Write source
@@ -62,8 +62,8 @@ export async function compileTestHelper(
 		export * from "./mod.ts";
 		
 		export type TestContext = TestContextInner<RegistryTypeInner, ${
-		module.db ? "module.prisma.PrismaClient" : "undefined"
-	}};
+			module.db ? "module.prisma.PrismaClient" : "undefined"
+		}>;
 		
 		export type TestFn = (ctx: TestContext) => Promise<void>;
 		
@@ -96,8 +96,8 @@ export async function compileScriptHelper(
 		export * from "../mod.ts";
 		
 		export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${
-		module.db ? "module.prisma.PrismaClient" : "undefined"
-	}};
+			module.db ? "module.prisma.PrismaClient" : "undefined"
+		}>;
 	`;
 
 	// Write source
