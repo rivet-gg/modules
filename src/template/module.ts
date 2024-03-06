@@ -1,5 +1,7 @@
-import { resolve } from "../deps.ts";
+import { ModuleConfig } from "../config/module.ts";
+import { resolve, stringify } from "../deps.ts";
 import { Project } from "../project/mod.ts";
+import { dedent } from "./deps.ts";
 
 export async function templateModule(project: Project, moduleName: string) {
 	if (project.modules.has(moduleName)) {
@@ -12,16 +14,36 @@ export async function templateModule(project: Project, moduleName: string) {
 	await Deno.mkdir(resolve(modulePath, "scripts"));
 	await Deno.mkdir(resolve(modulePath, "tests"));
 	await Deno.mkdir(resolve(modulePath, "db"));
-	await Deno.mkdir(resolve(modulePath, "db", "migrations"));
-	await Deno.mkdir(resolve(modulePath, "schema"));
 
 	// Write default config
-	const moduleYaml = `scripts: {}
-errors: {}
-`;
-	await Deno.writeTextFile(resolve(modulePath, "module.yaml"), moduleYaml);
+	const defaultModule: ModuleConfig = {
+		scripts: {},
+		errors: {},
+	};
+	await Deno.writeTextFile(
+		resolve(modulePath, "module.yaml"),
+		stringify(defaultModule),
+	);
 
-	// TODO: Write default schema
+	// Write default migration
+	const defaultSchema = dedent`
+		datasource db {
+			provider = "postgresql"
+			url      = env("DATABASE_URL")
+		}
+	`;
+	await Deno.writeTextFile(
+		resolve(modulePath, "db", "schema.prisma"),
+		defaultSchema,
+	);
 
-	// TODO: Add to backend.yaml
+	// Add to backend.yaml
+	const newConfig = structuredClone(project.config);
+	newConfig.modules[moduleName] = {
+		registry: "local",
+	};
+	await Deno.writeTextFile(
+		resolve(project.path, "backend.yaml"),
+		stringify(newConfig),
+	);
 }

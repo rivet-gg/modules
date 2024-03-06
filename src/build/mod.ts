@@ -24,6 +24,7 @@ import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
 import { migrateDeploy } from "../migrate/deploy.ts";
+import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 
 /**
  * Which format to use for building.
@@ -187,6 +188,9 @@ async function waitForBuildPromises(buildState: BuildState): Promise<void> {
 export async function build(project: Project, opts: BuildOpts) {
 	const buildCachePath = resolve(project.path, "_gen", "cache.json");
 
+	// Required for `migrateDev` and `migrateDeploy`
+	await ensurePostgresRunning(project);
+
 	// Read hashes from file
 	let oldCache: BuildCachePersist;
 	if (await exists(buildCachePath)) {
@@ -242,7 +246,7 @@ async function buildSteps(
 	for (const module of project.modules.values()) {
 		if (module.db) {
 			buildStep(buildState, {
-				name: `Migrate (${module.name})`,
+				name: `Migrate`,
 				module,
 				files: [resolve(module.path, "db", "schema.prisma")],
 				async build() {
@@ -255,6 +259,9 @@ async function buildSteps(
 					}
 				},
 			});
+
+			// Run one migration at a time since Prisma is interactive
+			await waitForBuildPromises(buildState);
 		}
 	}
 
