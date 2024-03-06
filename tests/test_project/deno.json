@@ -1,7 +1,4 @@
 {
-    "imports": {
-        "@opengb/runtime": "./_gen/runtime/src/runtime/mod.ts"
-    },
     "lint": {
         "include": [
             "src/"
