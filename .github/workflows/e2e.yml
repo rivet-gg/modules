@@ -27,5 +27,8 @@ jobs:
       - name: Lint
         run: cd tests/test_project/ && opengb lint
 
+      - name: Generate DB Migrations
+        run: cd tests/test_project/ && opengb db dev
+
       - name: Run Tests
         run: cd tests/test_project/ && opengb test
