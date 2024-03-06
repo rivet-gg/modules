@@ -9,9 +9,12 @@ export const testCommand = new Command<GlobalOpts>()
 	.arguments("[modules...:string]")
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")
-	.option("--unstable-watch", "Automatically restart server on changes. This does not support all features yet.")
+	.option(
+		"--unstable-watch",
+		"Automatically restart server on changes. This does not support all features yet.",
+	)
 	.action(
-		async (opts, ...modules: string[]) => {
+		async (opts, ...modulesFilter: string[]) => {
 			const project = await initProject(opts);
 
 			await ensurePostgresRunning(project);
@@ -37,7 +40,13 @@ export const testCommand = new Command<GlobalOpts>()
 			// Find test scripts
 			for (const module of project.modules.values()) {
 				// Filter modules
-				if (modules.length > 0 && !modules.includes(module.name)) continue;
+				if (modulesFilter.length == 0) {
+					// Only test local modules
+					if (!("local" in module.registry.config)) continue;
+				} else {
+					// Only test specified modules. This allows for testing remote modules.
+					if (!modulesFilter.includes(module.name)) continue;
+				}
 
 				// Test all modules or filter module tests
 				const testPaths = (await glob.glob("*.ts", {
