@@ -70,12 +70,10 @@ export async function forEachPrismaSchema(
 		);
 
 		// Duplicate db directory
-		console.log("Copying", dbDir, "to", tempDir);
 		await copy(dbDir, tempDir, { overwrite: true });
 
 		// TODO: This causes a weird error
 		// // Write package.json
-		// console.log('Writing package.json');
 		// const packageJsonPath = join(tempDir, "package.json");
 		// const packageJson = JSON.stringify({
 		//     "devDependencies": {
@@ -91,7 +89,6 @@ export async function forEachPrismaSchema(
 		// await Deno.writeTextFile(packageJsonPath, packageJson);
 
 		// Append generator config
-		console.log("Appending code to schema.prisma");
 		const tempSchemaPath = join(tempDir, "schema.prisma");
 		let schema = await Deno.readTextFile(tempSchemaPath);
 		schema += `

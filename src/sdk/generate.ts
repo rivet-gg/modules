@@ -26,7 +26,6 @@ export async function generate(path?: string) {
 		name: string,
 		config: Generator,
 	) {
-		console.log("Generating", name);
 		const { success } = await new Deno.Command("docker", {
 			args: [
 				"run",
