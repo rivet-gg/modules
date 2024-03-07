@@ -1,5 +1,8 @@
 import { RuntimeError, test, TestContext } from "../_gen/test.ts";
-import { assertEquals, assertRejects } from "https://deno.land/std@0.217.0/assert/mod.ts";
+import {
+	assertEquals,
+	assertRejects,
+} from "https://deno.land/std@0.217.0/assert/mod.ts";
 
 test(
 	"validate token not found",

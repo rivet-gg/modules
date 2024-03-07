@@ -1,4 +1,4 @@
-import { RuntimeError, prisma } from "../_gen/mod.ts";
+import { prisma, RuntimeError } from "../_gen/mod.ts";
 
 type LimittedDB = Omit<
 	prisma.Prisma.DefaultPrismaClient,

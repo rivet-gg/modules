@@ -1,7 +1,4 @@
-import {
-	RuntimeError,
-	ScriptContext,
-} from "../_gen/scripts/validate.ts";
+import { RuntimeError, ScriptContext } from "../_gen/scripts/validate.ts";
 import { Token } from "../types/common.ts";
 
 export interface Request {
