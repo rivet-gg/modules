@@ -1,4 +1,4 @@
-import { join } from "../../deps.ts";
+import { resolve } from "../../deps.ts";
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
@@ -14,7 +14,7 @@ export const startCommand = new Command<GlobalOpts>()
 
 			await ensurePostgresRunning(project);
 
-			const entrypointPath = join(project.path, "_gen", "entrypoint.ts");
+			const entrypointPath = resolve(project.path, "_gen", "entrypoint.ts");
 
 			// Build project
 			if (opts.build) {

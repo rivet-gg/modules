@@ -1,4 +1,4 @@
-import { dirname, exists, join, copy } from "../deps.ts";
+import { dirname, exists, resolve, copy } from "../deps.ts";
 import { glob, bold, brightRed } from "./deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
@@ -20,7 +20,7 @@ export interface LoadProjectOpts {
 }
 
 export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
-	const projectRoot = join(Deno.cwd(), opts.path ?? ".");
+	const projectRoot = resolve(Deno.cwd(), opts.path ?? ".");
 
 	// Read project config
 	const projectConfig = await readProjectConfig(
@@ -124,8 +124,8 @@ async function fetchAndResolveModule(
 
 	// Resolve module path
 	const pathModuleName = moduleNameInRegistry(moduleName, module);
-	const modulePath = join(registry.path, pathModuleName);
-	if (!await exists(join(modulePath, "module.yaml"))) {
+	const modulePath = resolve(registry.path, pathModuleName);
+	if (!await exists(resolve(modulePath, "module.yaml"))) {
 		if (pathModuleName != moduleName) {
 			// Has alias
 			throw new Error(
@@ -144,7 +144,7 @@ async function fetchAndResolveModule(
 	// We do this so generate files into the gen dir without modifying the
 	// original module. For example. if multiple projects are using the same
 	// local registry, we don't want conflicting generated files.
-	const dstPath = join(
+	const dstPath = resolve(
 		projectRoot,
 		"_gen",
 		"modules",
@@ -169,11 +169,11 @@ function moduleNameInRegistry(
 }
 
 export function genRuntimePath(project: Project): string {
-	return join(project.path, "_gen", "runtime");
+	return resolve(project.path, "_gen", "runtime");
 }
 
 export function genRuntimeModPath(project: Project): string {
-	return join(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
+	return resolve(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
 }
 
 export interface ListSourceFileOpts {
@@ -199,7 +199,7 @@ export async function listSourceFiles(
 
 		const moduleFiles =
 			(await glob.glob("**/*.ts", { cwd: module.path, ignore: "_gen/**" }))
-				.map((x) => join(module.path, x));
+				.map((x) => resolve(module.path, x));
 		files.push(...moduleFiles);
 	}
 	return files;

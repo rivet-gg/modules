@@ -1,4 +1,4 @@
-import { join } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 
 export async function generateDenoConfig(project: Project) {
@@ -17,6 +17,6 @@ export async function generateDenoConfig(project: Project) {
 	};
 
 	// Write config
-	const configPath = join(project.path, "deno.json");
+	const configPath = resolve(project.path, "deno.json");
 	await Deno.writeTextFile(configPath, JSON.stringify(config, null, 4));
 }

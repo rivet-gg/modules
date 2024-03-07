@@ -1,4 +1,4 @@
-import { exists, join, emptyDir } from "../deps.ts";
+import { exists, resolve, emptyDir } from "../deps.ts";
 import {
 	RegistryConfig,
 	RegistryConfigGit,
@@ -41,7 +41,7 @@ async function resolveRegistryLocal(
 	config: RegistryConfigLocal,
 ): Promise<string> {
 	// Check that registry exists
-	const path = join(projectRoot, config.directory);
+	const path = resolve(projectRoot, config.directory);
 	if (!await exists(path)) {
 		throw new Error(`Registry not found at ${path}`);
 	}
@@ -53,11 +53,11 @@ async function resolveRegistryGit(
 	name: string,
 	config: RegistryConfigGit,
 ): Promise<string> {
-	const repoPath = join(projectRoot, "_gen", "git_registries", name);
+	const repoPath = resolve(projectRoot, "_gen", "git_registries", name);
 	const gitRef = resolveGitRef(config);
 
 	// Clone repo if needed
-	if (!await exists(join(repoPath, ".git"))) {
+	if (!await exists(resolve(repoPath, ".git"))) {
 		console.log('📦 Cloning git registry', config.url)
 
 		// Remove potentially dirty existing directory
@@ -136,7 +136,7 @@ async function resolveRegistryGit(
 	}
 
 	// Join sub directory
-	const path = join(repoPath, config.directory ?? "");
+	const path = resolve(repoPath, config.directory ?? "");
 	if (!await exists(path)) {
 		throw new Error(`Registry not found at ${path}`);
 	}

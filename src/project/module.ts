@@ -1,4 +1,4 @@
-import { exists, join } from "../deps.ts";
+import { exists, resolve } from "../deps.ts";
 import { glob } from "./deps.ts";
 import { readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
@@ -30,9 +30,9 @@ export async function loadModule(
 	const config = await readModuleConfig(modulePath);
 
 	// Find names of the expected scripts to find. Used to print error for extra scripts.
-	const scriptsPath = join(modulePath, "scripts");
+	const scriptsPath = resolve(modulePath, "scripts");
 	const expectedScripts = new Set(
-		await glob.glob("*.ts", { cwd: join(modulePath, "scripts") }),
+		await glob.glob("*.ts", { cwd: resolve(modulePath, "scripts") }),
 	);
 
 	// Read scripts
@@ -44,7 +44,7 @@ export async function loadModule(
 		}
 
 		// Load script
-		const scriptPath = join(
+		const scriptPath = resolve(
 			scriptsPath,
 			scriptName + ".ts",
 		);
@@ -68,7 +68,7 @@ export async function loadModule(
 	// Throw error extra scripts
 	if (expectedScripts.size > 0) {
 		const scriptList = Array.from(expectedScripts).map((x) =>
-			`- ${join(scriptsPath, x)}\n`
+			`- ${resolve(scriptsPath, x)}\n`
 		);
 		throw new Error(
 			`Found extra scripts not registered in module.yaml:\n\n${
@@ -87,7 +87,7 @@ export async function loadModule(
 
 	// Load db config
 	let db: ModuleDatabase | undefined = undefined;
-	if (await exists(join(modulePath, "db"), { isDirectory: true })) {
+	if (await exists(resolve(modulePath, "db"), { isDirectory: true })) {
 		db = {
 			name: name.replace("-", "_"),
 		};
@@ -107,7 +107,7 @@ export function moduleGenPath(
 	_project: Project,
 	module: Module,
 ): string {
-	return join(
+	return resolve(
 		module.path,
 		"_gen",
 		"mod.ts",
@@ -115,7 +115,7 @@ export function moduleGenPath(
 }
 
 export function testGenPath(_project: Project, module: Module): string {
-	return join(
+	return resolve(
 		module.path,
 		"_gen",
 		"test.ts",
@@ -123,7 +123,7 @@ export function testGenPath(_project: Project, module: Module): string {
 }
 
 export function typeGenPath(_project: Project, module: Module): string {
-	return join(
+	return resolve(
 		module.path,
 		"_gen",
 		"registry.d.ts",

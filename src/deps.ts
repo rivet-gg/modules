@@ -2,9 +2,8 @@ export {
 	dirname,
 	fromFileUrl,
 	isAbsolute,
-	join,
-	relative,
 	resolve,
+	relative,
 } from "https://deno.land/std@0.208.0/path/mod.ts";
 export {
 	copy,

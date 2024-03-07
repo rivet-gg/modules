@@ -1,5 +1,5 @@
 import { dedent } from "./deps.ts";
-import { dirname, join } from "../deps.ts";
+import { dirname, resolve } from "../deps.ts";
 import {
 	Module,
 	moduleGenPath,
@@ -107,7 +107,7 @@ export async function compileScriptHelper(
 }
 
 export async function compileTypeHelpers(project: Project) {
-	const typedefPath = join(
+	const typedefPath = resolve(
 		project.path,
 		"_gen",
 		"registry.d.ts",
@@ -124,7 +124,7 @@ export async function compileTypeHelpers(project: Project) {
 			const requestTypeName = `${scriptId}Req`;
 			const responseTypeName = `${scriptId}Res`;
 
-			const importPath = join(
+			const importPath = resolve(
 				module.path,
 				"scripts",
 				`${script.name}.ts`,
@@ -191,7 +191,7 @@ export async function compileModuleTypeHelper(
 	project: Project,
 	module: Module,
 ) {
-	const typedefPath = join(
+	const typedefPath = resolve(
 		project.path,
 		"_gen",
 		"registry.d.ts",

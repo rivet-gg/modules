@@ -1,4 +1,4 @@
-import { join, parse } from "../deps.ts";
+import { resolve, parse } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/module_schema.json" with { type: "json" };
 
@@ -44,7 +44,7 @@ const moduleConfigAjv = new Ajv.default({
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	// Read config
 	const configRaw = await Deno.readTextFile(
-		join(modulePath, "module.yaml"),
+		resolve(modulePath, "module.yaml"),
 	);
 	const config = parse(configRaw) as ModuleConfig;
 

@@ -2,7 +2,7 @@
 //
 // Wrapper around `prisma migrate dev`
 
-import { copy, exists, join } from "../deps.ts";
+import { copy, exists, resolve } from "../deps.ts";
 import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
@@ -54,7 +54,7 @@ export async function migrateDev(
 							"edge.d.ts",
 						]
 					) {
-						const filePath = join(generatedClientDir, filename);
+						const filePath = resolve(generatedClientDir, filename);
 						let content = await Deno.readTextFile(filePath);
 						const replaceLineA =
 							`import * as runtime from './runtime/library.js'`;
@@ -77,13 +77,13 @@ export async function migrateDev(
 				// Compile the ESM library
 				buildPrismaPackage(
 					generatedClientDir,
-					join(generatedClientDir, "esm.js"),
+					resolve(generatedClientDir, "esm.js"),
 				);
 			}
 
 			// Copy back migrations dir
-			const tempMigrationsDir = join(tempDir, "migrations");
-			const migrationsDir = join(module.path, "db", "migrations");
+			const tempMigrationsDir = resolve(tempDir, "migrations");
+			const migrationsDir = resolve(module.path, "db", "migrations");
 			if (await exists(tempMigrationsDir)) {
 				await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
 			}
@@ -103,8 +103,8 @@ export async function migrateDev(
 
 // 	// Create dirs
 // 	const tempDir = await Deno.makeTempDir();
-// 	const dbDir = join(module.path, "db");
-// 	const generatedClientDir = join(
+// 	const dbDir = resolve(module.path, "db");
+// 	const generatedClientDir = resolve(
 // 		module.path,
 // 		"_gen",
 // 		"prisma",
@@ -148,7 +148,7 @@ export async function migrateDev(
 // 					"edge.d.ts",
 // 				]
 // 			) {
-// 				const filePath = join(generatedClientDir, filename);
+// 				const filePath = resolve(generatedClientDir, filename);
 // 				let content = await Deno.readTextFile(filePath);
 // 				const replaceLineA = `import * as runtime from './runtime/library.js'`;
 // 				const replaceLineB = `import * as runtime from './runtime/binary.js'`;
@@ -170,14 +170,14 @@ export async function migrateDev(
 // 		console.log("Compiling ESM library");
 // 		buildPrismaPackage(
 // 			generatedClientDir,
-// 			join(generatedClientDir, "esm.js"),
+// 			resolve(generatedClientDir, "esm.js"),
 // 		);
 // 	}
 
 // 	// Copy back migrations dir
 // 	console.log("Copying migrations back");
-// 	const tempMigrationsDir = join(tempDir, "migrations");
-// 	const migrationsDir = join(module.path, "db", "migrations");
+// 	const tempMigrationsDir = resolve(tempDir, "migrations");
+// 	const migrationsDir = resolve(module.path, "db", "migrations");
 // 	if (await exists(tempMigrationsDir)) {
 // 		await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
 // 	}

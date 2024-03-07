@@ -1,4 +1,4 @@
-import { join } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 
 export async function templateModule(project: Project, moduleName: string) {
@@ -7,19 +7,19 @@ export async function templateModule(project: Project, moduleName: string) {
 	}
 
 	// Create directires
-	const modulePath = join(project.path, "modules", moduleName);
+	const modulePath = resolve(project.path, "modules", moduleName);
 	await Deno.mkdir(modulePath);
-	await Deno.mkdir(join(modulePath, "scripts"));
-	await Deno.mkdir(join(modulePath, "tests"));
-	await Deno.mkdir(join(modulePath, "db"));
-	await Deno.mkdir(join(modulePath, "db", "migrations"));
-	await Deno.mkdir(join(modulePath, "schema"));
+	await Deno.mkdir(resolve(modulePath, "scripts"));
+	await Deno.mkdir(resolve(modulePath, "tests"));
+	await Deno.mkdir(resolve(modulePath, "db"));
+	await Deno.mkdir(resolve(modulePath, "db", "migrations"));
+	await Deno.mkdir(resolve(modulePath, "schema"));
 
 	// Write default config
 	const moduleYaml = `scripts: {}
 errors: {}
 `;
-	await Deno.writeTextFile(join(modulePath, "module.yaml"), moduleYaml);
+	await Deno.writeTextFile(resolve(modulePath, "module.yaml"), moduleYaml);
 
 	// TODO: Write default schema
 

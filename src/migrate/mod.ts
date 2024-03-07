@@ -1,4 +1,4 @@
-import { copy, join } from "../deps.ts";
+import { copy, resolve } from "../deps.ts";
 import { PostgresClient } from "./deps.ts";
 import { Module, ModuleDatabase, Project } from "../project/mod.ts";
 import { assertValidString } from "./validate.ts";
@@ -65,8 +65,8 @@ export async function forEachPrismaSchema(
 		modules,
 		async ({ databaseUrl, module, db }) => {
 			const tempDir = await Deno.makeTempDir();
-			const dbDir = join(module.path, "db");
-			const generatedClientDir = join(
+			const dbDir = resolve(module.path, "db");
+			const generatedClientDir = resolve(
 				module.path,
 				"_gen",
 				"prisma",
@@ -77,7 +77,7 @@ export async function forEachPrismaSchema(
 
 			// TODO: This causes a weird error
 			// // Write package.json
-			// const packageJsonPath = join(tempDir, "package.json");
+			// const packageJsonPath = resolve(tempDir, "package.json");
 			// const packageJson = JSON.stringify({
 			//     "devDependencies": {
 			//         "prisma": "^5.9.1"
@@ -92,7 +92,7 @@ export async function forEachPrismaSchema(
 			// await Deno.writeTextFile(packageJsonPath, packageJson);
 
 			// Append generator config
-			const tempSchemaPath = join(tempDir, "schema.prisma");
+			const tempSchemaPath = resolve(tempDir, "schema.prisma");
 			let schema = await Deno.readTextFile(tempSchemaPath);
 			schema += `
 				generator client {

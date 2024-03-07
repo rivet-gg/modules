@@ -1,4 +1,4 @@
-import { join } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 import { genRuntimeModPath, genRuntimePath } from "../project/project.ts";
 import { autoGenHeader } from "./misc.ts";
@@ -68,7 +68,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			`;
 	} else if (opts.runtime == Runtime.Cloudflare) {
 		const runtimePath = genRuntimePath(project);
-		const serverTsPath = join(runtimePath, "src", "runtime", "server.ts");
+		const serverTsPath = resolve(runtimePath, "src", "runtime", "server.ts");
 
 		entrypointSource = `
 			${autoGenHeader()}
@@ -103,14 +103,14 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	}
 
 	// Write files
-	const distDir = join(project.path, "_gen");
-	const configPath = join(distDir, "runtime_config.ts");
-	const entrypointPath = join(distDir, "entrypoint.ts");
+	const distDir = resolve(project.path, "_gen");
+	const configPath = resolve(distDir, "runtime_config.ts");
+	const entrypointPath = resolve(distDir, "entrypoint.ts");
 	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
 	await Deno.writeTextFile(
-		join(distDir, ".gitignore"),
+		resolve(distDir, ".gitignore"),
 		".",
 	);
 

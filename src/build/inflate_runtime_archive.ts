@@ -1,5 +1,5 @@
 import runtimeArchive from "../../artifacts/runtime_archive.json" with { type: "json" };
-import { join, emptyDir, dirname } from "../deps.ts";
+import { resolve, emptyDir, dirname } from "../deps.ts";
 import { Project, genRuntimePath } from "../project/mod.ts";
 
 /**
@@ -11,7 +11,7 @@ export async function inflateRuntimeArchive(project: Project) {
     await emptyDir(inflateRuntimePath);
     
     for (const [file, value] of Object.entries(runtimeArchive)) {
-        const absPath = join(inflateRuntimePath, file);
+        const absPath = resolve(inflateRuntimePath, file);
         await Deno.mkdir(dirname(absPath), { recursive: true });
         await Deno.writeTextFile(absPath, value);
     }

@@ -2,13 +2,13 @@
 //
 // Generates a JSON file with all of the runtime's source that can be used to re-populate the source
 
-import { join } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { glob } from "./deps.ts";
 
 const dirname = import.meta.dirname;
 if (!dirname) throw new Error("Missing dirname");
 
-const rootSrc = join(dirname, "..", "..");
+const rootSrc = resolve(dirname, "..", "..");
 
 const files = await glob.glob([
 	"src/{runtime,types}/*.ts",
@@ -17,15 +17,15 @@ const files = await glob.glob([
 
 const archiveFiles: Record<string, string> = {};
 for (const file of files) {
-	archiveFiles[file] = await Deno.readTextFile(join(rootSrc, file));
+	archiveFiles[file] = await Deno.readTextFile(resolve(rootSrc, file));
 }
 
 
 // Create artifacts folder if it doesn't already exist
-await Deno.mkdir(join(rootSrc, "artifacts"), { recursive: true });
+await Deno.mkdir(resolve(rootSrc, "artifacts"), { recursive: true });
 
 // Write schema to file
 await Deno.writeTextFile(
-	join(rootSrc, "artifacts", "runtime_archive.json"),
+	resolve(rootSrc, "artifacts", "runtime_archive.json"),
 	JSON.stringify(archiveFiles),
 );
