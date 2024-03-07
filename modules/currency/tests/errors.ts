@@ -6,7 +6,7 @@ test (
     "get balance for nonexistent user",
     async (ctx: TestContext) => {
 		const { balance } = await ctx.modules.currency.getBalance({
-			userId: "Not a real user",
+			userId: "00000000-0000-0000-0000-000000000000",
 		});
         
         assertEquals(balance, 0);
