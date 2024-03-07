@@ -4,18 +4,18 @@ import { assertEquals } from "https://deno.land/std@0.217.0/assert/assert_equals
 import { assertExists } from "https://deno.land/std@0.217.0/assert/assert_exists.ts";
 
 test("e2e", async (ctx: TestContext) => {
-	const { user, token } = await ctx.call("users", "register", {
+	const { user, token } = await ctx.modules.users.register({
 		username: faker.internet.userName(),
 		identity: { guest: {} },
-	}) as any;
+	});
 
-	const { users: users, token: token2 } = await ctx.call("users", "get", {
+	const { users } = await ctx.modules.users.get({
 		userIds: [user.id],
-	}) as any;
+	});
 	assertExists(users[0]);
 
-	const { userId } = await ctx.call("users", "validate_token", {
+	const { userId } = await ctx.modules.users.validateToken({
 		userToken: token.token,
-	}) as any;
+	});
 	assertEquals(user.id, userId);
 });

@@ -19,7 +19,7 @@ test(
 test(
 	"withdraw more than balance",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -39,7 +39,7 @@ test(
 test(
 	"withdraw negative amount",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -54,7 +54,7 @@ test(
 test(
 	"withdraw Infinity",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -72,7 +72,7 @@ test(
 test(
 	"withdraw NaN",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -87,7 +87,7 @@ test(
 test(
 	"deposit Infinity",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -102,7 +102,7 @@ test(
 test(
 	"deposit NaN",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -117,7 +117,7 @@ test(
 test(
 	"deposit negative amount",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -132,7 +132,7 @@ test(
 test(
 	"set balance to negative",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -147,7 +147,7 @@ test(
 test(
 	"set balance to NaN",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});
@@ -163,7 +163,7 @@ test(
 test(
 	"set balance to infinity",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user, token: _token } = await ctx.modules.users.register({
 			username: faker.internet.userName(),
 			identity: { guest: {} },
 		});

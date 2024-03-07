@@ -6,45 +6,45 @@ import {
 import { TokenUpdate } from "../scripts/revoke.ts";
 
 test("e2e", async (ctx: TestContext) => {
-	const { token } = await ctx.call("tokens", "create", {
+	const { token } = await ctx.modules.tokens.create({
 		type: "test",
 		meta: { foo: "bar" },
 		expireAt: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString(),
-	}) as any;
+	});
 
-	const getRes = await ctx.call("tokens", "get", {
+	const getRes = await ctx.modules.tokens.get({
 		tokenIds: [token.id],
-	}) as any;
+	});
 	assertExists(getRes.tokens[0]);
 
-	const getByTokenRes = await ctx.call("tokens", "get_by_token", {
+	const getByTokenRes = await ctx.modules.tokens.getByToken({
 		tokens: [token.token],
-	}) as any;
+	});
 	assertExists(getByTokenRes.tokens[0]);
 
-	const validateRes = await ctx.call("tokens", "validate", {
+	const validateRes = await ctx.modules.tokens.validate({
 		token: token.token,
-	}) as any;
+	});
 	assertEquals(token.id, validateRes.token.id);
 
-	const revokeRes = await ctx.call("tokens", "revoke", {
+	const revokeRes = await ctx.modules.tokens.revoke({
 		tokenIds: [token.id],
-	}) as any;
+	});
 	assertEquals(revokeRes.updates[token.id], TokenUpdate.Revoked);
 
-	const getRes2 = await ctx.call("tokens", "get", {
+	const getAfterRevoke = await ctx.modules.tokens.get({
 		tokenIds: [token.id],
-	}) as any;
-	assertExists(getRes2.tokens[0].revokedAt);
+	});
+	assertExists(getAfterRevoke.tokens[0].revokedAt);
 
-	const revokeRes2 = await ctx.call("tokens", "revoke", {
+	const revokeTwiceRes = await ctx.modules.tokens.revoke({
 		tokenIds: [token.id],
-	}) as any;
-	assertEquals(revokeRes2.updates[token.id], TokenUpdate.AlreadyRevoked);
+	});
+	assertEquals(revokeTwiceRes.updates[token.id], TokenUpdate.AlreadyRevoked);
 
 	const nonexistentTokenId = crypto.randomUUID();
-	const revokeRes3 = await ctx.call("tokens", "revoke", {
+	const revokeNonexistentRes = await ctx.modules.tokens.revoke({
 		tokenIds: [nonexistentTokenId],
-	}) as any;
-	assertEquals(revokeRes3.updates[nonexistentTokenId], TokenUpdate.NotFound);
+	});
+	assertEquals(revokeNonexistentRes.updates[nonexistentTokenId], TokenUpdate.NotFound);
 });

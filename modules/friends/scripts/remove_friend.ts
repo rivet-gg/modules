@@ -5,17 +5,15 @@ export interface Request {
 	targetUserId: string;
 }
 
-export interface Response {
-}
+export type Response = Record<string, never>;
 
 export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", { requests: 50 });
-	const { userId } = await ctx.call("users", "validate_token", {
-		userToken: req.userToken,
-	}) as any;
+	await ctx.modules.rateLimit.throttle({ requests: 50 });
+
+	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
 
 	// Sort the user IDs to ensure consistency
 	const [userIdA, userIdB] = [userId, req.targetUserId].sort();

@@ -14,11 +14,9 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", {});
+	await ctx.modules.rateLimit.throttle({ });
 
-	const { userId } = await ctx.call("users", "validate_token", {
-		userToken: req.userToken,
-	});
+	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
 
 	if (userId === req.targetUserId) {
 		throw new RuntimeError("CANNOT_SEND_TO_SELF");
@@ -29,6 +27,7 @@ export async function run(
 
 	const row = await ctx.db.$transaction(async (tx) => {
 		// Validate that the users are not already friends
+		// TODO: Remove this `any` and replace with a proper type
 		const existingFriendRows = await tx.$queryRaw<any[]>`
 			SELECT 1
 			FROM "Friend"

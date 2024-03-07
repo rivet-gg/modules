@@ -1,12 +1,8 @@
 import { RuntimeError } from "../_gen/mod.ts";
 import { ScriptContext } from "../_gen/scripts/get.ts";
 import { User } from "../types/common.ts";
+import { TokenWithSecret } from "../../tokens/types/common.ts";
 
-// TODO:
-// import { TokenWithSecret } from "../../tokens/types/common.ts";
-// import { Response as TokenCreateResponse } from "../../tokens/scripts/create.ts";
-type TokenWithSecret = any;
-type TokenCreateResponse = any;
 
 export interface Request {
 	username: string;
@@ -20,14 +16,13 @@ export interface Response {
 
 export type IdentityType = { guest: IdentityTypeGuest };
 
-export interface IdentityTypeGuest {
-}
+export type IdentityTypeGuest = Record<string, never>;
 
 export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	// await ctx.call("rate_limit", "throttle", { requests: 2, period: 5 * 60 });
+	await ctx.modules.rateLimit.throttle({ requests: 2, period: 5 * 60 });
 
 	// Configure identity
 	let identitiesCreate;
@@ -52,11 +47,11 @@ export async function run(
 	});
 
 	// Create token
-	const { token } = await ctx.call("tokens", "create", {
+	const { token } = await ctx.modules.tokens.create({
 		type: "user",
 		meta: { userId: user.id },
 		expireAt: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
-	}) as TokenCreateResponse;
+	});
 
 	return {
 		user,

@@ -8,7 +8,7 @@ export interface Request {
 	balance: number;
 }
 
-export interface Response {}
+export type Response = Record<string, never>;
 
 export async function run(
 	ctx: ScriptContext,
