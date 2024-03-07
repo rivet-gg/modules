@@ -1,13 +1,13 @@
 /**
  * A collection of workers used to run jobs with a max concurrency.
- * 
+ *
  * Useful for easily implementing multi-threading by running jobs in the background.
  */
 export interface WorkerPool<Req, Res> {
 	source: string;
 	workers: WorkerInstance[];
 	pendingJobs: PendingJob<Req, Res>[];
-    shutdown: boolean;
+	shutdown: boolean;
 }
 
 interface WorkerInstance {
@@ -38,7 +38,7 @@ export function createWorkerPool<Req, Res>(
 			() => ({ busy: false, worker: undefined }),
 		),
 		pendingJobs: [],
-        shutdown: false,
+		shutdown: false,
 	};
 	ALL_POOLS.add(pool);
 	return pool;
@@ -60,10 +60,10 @@ export function runJob<Req, Res>(
  * Called any time a worker becomes available or a job is pushed to the pool.
  */
 function tickPool<Req, Res>(pool: WorkerPool<Req, Res>) {
-    if (pool.shutdown) throw new Error("Pool is shut down");
+	if (pool.shutdown) throw new Error("Pool is shut down");
 
 	while (true) {
-        // console.log(`Tick pool (workers: ${pool.workers.filter(w => !w.busy).length}/${pool.workers.length}, pendingJobs: ${pool.pendingJobs.length})`);
+		// console.log(`Tick pool (workers: ${pool.workers.filter(w => !w.busy).length}/${pool.workers.length}, pendingJobs: ${pool.pendingJobs.length})`);
 
 		// Find available worker
 		const availableWorker = pool.workers.find((worker) => !worker.busy);
@@ -100,11 +100,11 @@ function tickPool<Req, Res>(pool: WorkerPool<Req, Res>) {
 }
 
 export function shutdownPool(pool: WorkerPool<unknown, unknown>) {
-    pool.shutdown = true;
+	pool.shutdown = true;
 	for (const worker of pool.workers) {
 		if (worker.worker) {
 			worker.worker.terminate();
-            worker.worker = undefined;
+			worker.worker = undefined;
 		}
 	}
 	ALL_POOLS.delete(pool);

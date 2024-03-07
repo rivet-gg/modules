@@ -1,4 +1,4 @@
-import { resolve, parse } from "../deps.ts";
+import { parse, resolve } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/module_schema.json" with { type: "json" };
 
@@ -34,7 +34,6 @@ export interface ErrorConfig {
 }
 
 export interface DependencyConfig {
-	
 }
 
 const moduleConfigAjv = new Ajv.default({

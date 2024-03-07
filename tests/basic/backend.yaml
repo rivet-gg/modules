@@ -1,7 +1,7 @@
 registries:
-  default:
-    local:
-        directory: ../../../opengb-registry/modules
+  # default:
+  #   local:
+  #       directory: ../../../opengb-registry/modules
   local:
     local:
         directory: ./modules

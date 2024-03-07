@@ -1,9 +1,4 @@
-import {
-	Command,
-	CompletionsCommand,
-	HelpCommand,
-	ValidationError,
-} from "./deps.ts";
+import { Command, CompletionsCommand, HelpCommand, ValidationError } from "./deps.ts";
 import { startCommand } from "./commands/start.ts";
 import { buildCommand } from "./commands/build.ts";
 import { dbCommand } from "./commands/db.ts";

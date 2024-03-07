@@ -12,11 +12,11 @@ export function validateIdentifier(
 	if (!printableAsciiRegex.test(ident)) {
 		return new IdentError("must contain only printable ASCII characters", ident);
 	}
-	
+
 	const regex = regexes[identType];
 	if (!regex.test(ident)) {
 		return new IdentError(`must be ${identType} (match the pattern ${regex})`, ident);
 	}
 
 	return null;
-};
+}

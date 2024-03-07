@@ -12,7 +12,7 @@
  **From GitHub (recommended)**
 
 ```
-deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force https://raw.githubusercontent.com/rivet-gg/open-game-services-engine/main/src/cli/main.ts
+deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force https://raw.githubusercontent.com/rivet-gg/opengb-engine/main/src/cli/main.ts
 ```
 -->
 

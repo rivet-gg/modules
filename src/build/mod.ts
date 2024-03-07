@@ -1,21 +1,9 @@
-import {
-	assertExists,
-	denoPlugins,
-	esbuild,
-	exists,
-	resolve,
-	tjs,
-} from "../deps.ts";
+import { assertExists, denoPlugins, esbuild, exists, resolve, tjs } from "../deps.ts";
 import { crypto, encodeHex } from "./deps.ts";
 import { compileSchema } from "./schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
 import { generateOpenApi } from "./openapi.ts";
-import {
-	compileModuleHelper,
-	compileScriptHelper,
-	compileTestHelper,
-	compileTypeHelpers,
-} from "./gen.ts";
+import { compileModuleHelper, compileScriptHelper, compileTestHelper, compileTypeHelpers } from "./gen.ts";
 import { Project } from "../project/project.ts";
 import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
@@ -268,9 +256,6 @@ async function buildSteps(
 			// Run one migration at a time since Prisma is interactive
 			await waitForBuildPromises(buildState);
 		}
-
-		// Wait for promise since we can't run multiple `migrateDev` commands at once
-		await waitForBuildPromises(buildState);
 	}
 
 	buildStep(buildState, {
@@ -291,9 +276,7 @@ async function buildSteps(
 
 	buildStep(buildState, {
 		name: "Type helpers",
-		files: [...project.modules.values()].map((m) =>
-			resolve(m.path, "module.yaml")
-		),
+		files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
 		async build() {
 			await compileTypeHelpers(project);
 		},
@@ -442,8 +425,7 @@ async function buildScript(
 		},
 		async alreadyCached() {
 			// Read schemas from cache
-			const schemas =
-				buildState.cache.oldCache.scriptSchemas[module.name][script.name];
+			const schemas = buildState.cache.oldCache.scriptSchemas[module.name][script.name];
 			assertExists(schemas);
 			script.requestSchema = schemas.request;
 			script.responseSchema = schemas.response;

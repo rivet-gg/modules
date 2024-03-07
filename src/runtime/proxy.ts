@@ -4,13 +4,14 @@ import { ResponseOf } from "../types/registry.ts";
 
 import { snakeCase } from "https://deno.land/x/case@2.2.0/mod.ts";
 
-
 /**
  * Typed module accessor
  */
-type MappedProxy<RegistryT> = Readonly<{
-	[K in keyof RegistryT]: MappedModuleProxy<RegistryT, K>;
-}>;
+type MappedProxy<RegistryT> = Readonly<
+	{
+		[K in keyof RegistryT]: MappedModuleProxy<RegistryT, K>;
+	}
+>;
 type MappedNullProxy<RegistryT> = {
 	[K in keyof RegistryT]: null;
 };
@@ -18,11 +19,13 @@ type MappedNullProxy<RegistryT> = {
 /**
  * Typed module-specific script accessor
  */
-type MappedModuleProxy<RegistryT, Module extends keyof RegistryT> = Readonly<{
-	[K in keyof RegistryT[Module]]: (
-		request: RequestOf<RegistryT[Module][K]>,
-	) => Promise<ResponseOf<RegistryT[Module][K]>>;
-}>;
+type MappedModuleProxy<RegistryT, Module extends keyof RegistryT> = Readonly<
+	{
+		[K in keyof RegistryT[Module]]: (
+			request: RequestOf<RegistryT[Module][K]>,
+		) => Promise<ResponseOf<RegistryT[Module][K]>>;
+	}
+>;
 type MappedModuleNullProxy<RegistryT, Module extends keyof RegistryT> = {
 	[K in keyof RegistryT[Module]]: null;
 };
@@ -48,7 +51,6 @@ const toCamelCached = (s: string) => {
 	return output;
 };
 
-
 /**
  * Builds a proxy for the entire registry, with the keys of the modules mapped
  * to script proxies using [`buildModuleProxy`]({@link buildModuleProxy})
@@ -63,7 +65,7 @@ export function buildRegistryProxy<RegistryT>(
 	 */
 	const target: MappedNullProxy<RegistryT> = {} as any;
 	for (const k of Object.keys(modules)) {
-		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+		// TODO: https://github.com/rivet-gg/opengb-engine/issues/79
 		// target[k as keyof RegistryT] = null;
 		(target as any)[toCamelCached(k)] = null;
 	}
@@ -118,7 +120,7 @@ function buildModuleProxy<
 	 */
 	const target: MappedModuleNullProxy<RegistryT, ModuleName> = {} as any;
 	for (const k of Object.keys(accessedModule.scripts)) {
-		// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/79
+		// TODO: https://github.com/rivet-gg/opengb-engine/issues/79
 		// target[k as keyof RegistryT[ModuleName]] = null;
 		(target as any)[toCamelCached(k)] = null;
 	}

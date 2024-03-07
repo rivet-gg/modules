@@ -1,4 +1,4 @@
-import { stringify, resolve } from "../deps.ts";
+import { resolve, stringify } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 
 export async function templateScript(
@@ -85,8 +85,7 @@ export async function run(
 
 	if (createTest) {
 		// Write default config
-		const testTs =
-			`import { TestContext, Runtime } from "../_gen/test.ts";
+		const testTs = `import { TestContext, Runtime } from "../_gen/test.ts";
 export { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 test("e2e", async (ctx: TestContext) => {

@@ -4,7 +4,7 @@ const CONTAINER_NAME = "opengb-postgres";
 const VOLUME_NAME = "opengb-postgres-data";
 
 export async function ensurePostgresRunning(_project: Project) {
-    // Validate Docker is installed
+	// Validate Docker is installed
 	const versionOutput = await new Deno.Command("docker", {
 		args: ["version"],
 		stdout: "piped",
@@ -50,11 +50,23 @@ export async function ensurePostgresRunning(_project: Project) {
 			CONTAINER_NAME,
 			"-v",
 			`${VOLUME_NAME}:/var/lib/postgresql/data`,
-            "-p", "5432:5432",
+			"-p",
+			"5432:5432",
 			"-e",
 			"POSTGRES_PASSWORD=postgres",
 			"postgres:16",
 		],
 	}).output();
-	if (!runOutput.success) throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
+	if (!runOutput.success) {
+		throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
+	}
+
+	// Wait until Postgres is accessible
+	while (true) {
+		const checkOutput = await new Deno.Command("docker", {
+			args: ["exec", CONTAINER_NAME, "pg_isready"],
+		}).output();
+		if (checkOutput.success) break;
+		await new Promise((r) => setTimeout(r, 500));
+	}
 }

@@ -1,9 +1,10 @@
-name: E2E
+name: OpenGB
+
 on:
   - push
 
 jobs:
-  build:
+  test-core:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -32,3 +33,21 @@ jobs:
 
       - name: Run Tests
         run: cd tests/basic/ && opengb test
+
+  test-project:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      # Add private key to be able to access OpenGB repository
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GH_DEPLOY_KEY }}
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.41.1"
+
+      - name: Test
+        run: deno task test:core

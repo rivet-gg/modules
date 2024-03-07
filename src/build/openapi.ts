@@ -98,8 +98,7 @@ function injectSchema(
 		// Update $refs to point to the new location
 		replaceRefs(
 			definition,
-			(ref) =>
-				ref.replace("#/definitions/", `#/components/schemas/${prefix}__`),
+			(ref) => ref.replace("#/definitions/", `#/components/schemas/${prefix}__`),
 		);
 
 		// Add the definition to the OpenAPI schema

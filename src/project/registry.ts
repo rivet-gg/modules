@@ -1,9 +1,5 @@
-import { exists, resolve, emptyDir } from "../deps.ts";
-import {
-	RegistryConfig,
-	RegistryConfigGit,
-	RegistryConfigLocal,
-} from "../config/project.ts";
+import { emptyDir, exists, resolve } from "../deps.ts";
+import { RegistryConfig, RegistryConfigGit, RegistryConfigLocal } from "../config/project.ts";
 
 export interface Registry {
 	path: string;
@@ -12,9 +8,9 @@ export interface Registry {
 
 	/**
 	 * If the source code for this registry does not belong to this project.
-	 * 
+	 *
 	 * If true, modules will be copied to the _gen dir and will be read-only.
-	 * 
+	 *
 	 * If this is true, the module should be treated as read-only and should not
 	 * be tested, formatted, linted, and generate Prisma migrations.
 	 */
@@ -45,6 +41,24 @@ export async function loadRegistry(
 		config,
 		isExternal: output.isExternal,
 	};
+}
+
+export async function loadDefaultRegistry(projectRoot: string): Promise<Registry> {
+	return await loadRegistry(
+		projectRoot,
+		"default",
+		{
+			git: {
+				url: {
+					https: "https://github.com/rivet-gg/opengb-registry.git",
+					ssh: "git@github.com:rivet-gg/opengb-registry.git",
+				},
+				// TODO: https://github.com/rivet-gg/opengb/issues/151
+				rev: "e613227f95e0d584f611947e1b8d8c0e3ca508c8",
+				directory: "./modules",
+			},
+		},
+	);
 }
 
 interface ResolveRegistryOutput {
@@ -105,7 +119,7 @@ async function resolveRegistryGit(
 			throw new Error(`Failed to find valid git endpoint for registry ${name}`);
 		}
 
-		console.log('📦 Cloning git registry', originUrl)
+		console.log("📦 Cloning git registry", originUrl);
 
 		// Remove potentially dirty existing directory
 		await emptyDir(repoPath);
@@ -116,14 +130,12 @@ async function resolveRegistryGit(
 		}).output();
 		if (!cloneOutput.success) {
 			throw new Error(
-				`Failed to clone registry ${originUrl}:\n${
-					new TextDecoder().decode(cloneOutput.stderr)
-				}`,
+				`Failed to clone registry ${originUrl}:\n${new TextDecoder().decode(cloneOutput.stderr)}`,
 			);
 		}
 	}
 
-    // Discard any changes
+	// Discard any changes
 	const unstagedDiffOutput = await new Deno.Command("git", {
 		cwd: repoPath,
 		args: ["diff", "--quiet"],
@@ -133,7 +145,7 @@ async function resolveRegistryGit(
 		args: ["diff", "--quiet", "--cached"],
 	}).output();
 	if (!unstagedDiffOutput.success || !stagedDiffOutput.success) {
-        console.warn("💣 Discarding changes in git registry", name);
+		console.warn("💣 Discarding changes in git registry", name);
 
 		const resetOutput = await new Deno.Command("git", {
 			cwd: repoPath,
@@ -141,9 +153,7 @@ async function resolveRegistryGit(
 		}).output();
 		if (!resetOutput.success) {
 			throw new Error(
-				`Failed to reset registry ${name}:\n${
-					new TextDecoder().decode(resetOutput.stderr)
-				}`,
+				`Failed to reset registry ${name}:\n${new TextDecoder().decode(resetOutput.stderr)}`,
 			);
 		}
 	}
@@ -154,7 +164,7 @@ async function resolveRegistryGit(
 		args: ["cat-file", "-t", gitRef],
 	}).output();
 	if (!catOutput.success) {
-		console.log('📦 Fetching git registry', name, gitRef);
+		console.log("📦 Fetching git registry", name, gitRef);
 
 		const fetchOutput = await new Deno.Command("git", {
 			cwd: repoPath,
@@ -162,9 +172,7 @@ async function resolveRegistryGit(
 		}).output();
 		if (!fetchOutput.success) {
 			throw new Error(
-				`Failed to fetch registry ${name} at ${gitRef}:\n${
-					new TextDecoder().decode(fetchOutput.stderr)
-				}`,
+				`Failed to fetch registry ${name} at ${gitRef}:\n${new TextDecoder().decode(fetchOutput.stderr)}`,
 			);
 		}
 	}
@@ -176,9 +184,7 @@ async function resolveRegistryGit(
 	}).output();
 	if (!checkoutOutput.success) {
 		throw new Error(
-			`Failed to checkout registry ${name} at ${gitRef}:\n${
-				new TextDecoder().decode(checkoutOutput.stderr)
-			}`,
+			`Failed to checkout registry ${name} at ${gitRef}:\n${new TextDecoder().decode(checkoutOutput.stderr)}`,
 		);
 	}
 
@@ -192,11 +198,11 @@ async function resolveRegistryGit(
 }
 
 function resolveGitRef(registryConfig: RegistryConfigGit): string {
-	if ('rev' in registryConfig) {
+	if ("rev" in registryConfig) {
 		return registryConfig.rev;
-	} else if ('branch' in registryConfig) {
+	} else if ("branch" in registryConfig) {
 		return registryConfig.branch;
-	} else if ('tag' in registryConfig) {
+	} else if ("tag" in registryConfig) {
 		return `tags/${registryConfig.tag}`;
 	} else {
 		throw new Error("Unreachable");

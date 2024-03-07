@@ -1,7 +1,7 @@
-import { Ajv, addFormats } from "./deps.ts";
+import { addFormats, Ajv } from "./deps.ts";
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
-import { PrismaClientDummy, Postgres } from "./postgres.ts";
+import { Postgres, PrismaClientDummy } from "./postgres.ts";
 import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
@@ -88,7 +88,7 @@ export class Runtime<RegistryT> {
 		Deno.test({
 			name: testName,
 
-			// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/35
+			// TODO: https://github.com/rivet-gg/opengb-engine/issues/35
 			sanitizeOps: false,
 			sanitizeResources: false,
 

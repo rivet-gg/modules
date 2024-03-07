@@ -11,13 +11,13 @@ import { IdentType } from "../types/identifiers/defs.ts";
 export interface Module {
 	/**
 	 * The path to the module in the project's _gen directory.
-	 * 
+	 *
 	 * This path can be modified and will be discarded on the next codegen.
 	 */
 	path: string;
 	name: string;
 	config: ModuleConfig;
-	registry: Registry,
+	registry: Registry;
 	scripts: Map<string, Script>;
 	db?: ModuleDatabase;
 }
@@ -72,9 +72,7 @@ export async function loadModule(
 
 	// Throw error extra scripts
 	if (expectedScripts.size > 0) {
-		const scriptList = Array.from(expectedScripts).map((x) =>
-			`- ${resolve(scriptsPath, x)}\n`
-		);
+		const scriptList = Array.from(expectedScripts).map((x) => `- ${resolve(scriptsPath, x)}\n`);
 		throw new Error(
 			`Found extra scripts not registered in module.yaml:\n\n${
 				scriptList.join("")

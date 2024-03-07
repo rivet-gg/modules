@@ -57,9 +57,7 @@ function wasmPlugin(): Plugin {
 					return; // Ignore unresolvable paths
 				}
 				return {
-					path: isAbsolute(args.path)
-						? args.path
-						: resolve(args.resolveDir, args.path),
+					path: isAbsolute(args.path) ? args.path : resolve(args.resolveDir, args.path),
 					namespace: "wasm-stub",
 				};
 			});

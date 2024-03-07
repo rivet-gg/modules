@@ -11,10 +11,14 @@ export const dbCommand = new Command<GlobalOpts>()
 
 dbCommand.action(() => dbCommand.showHelp());
 
-dbCommand.command("dev").option("-c, --create-only", "Create only", { default: false }).action(async (opts) => {
+dbCommand.command("dev").option("-c, --create-only", "Create only", {
+	default: false,
+}).action(async (opts) => {
 	const project = await initProject(opts);
+	const modules = Array.from(project.modules.values())
+		.filter((m) => !m.registry.isExternal);
 	await ensurePostgresRunning(project);
-	await migrateDev(project, [...project.modules.values()], { createOnly: opts.createOnly });
+	await migrateDev(project, modules, { createOnly: opts.createOnly });
 });
 
 dbCommand.command("status").action(async (opts) => {
@@ -31,8 +35,8 @@ dbCommand.command("deploy").action(async (opts) => {
 	await migrateDeploy(project, [...project.modules.values()]);
 });
 
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/84
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/85
+// TODO: https://github.com/rivet-gg/opengb-engine/issues/84
+// TODO: https://github.com/rivet-gg/opengb-engine/issues/85
 // dbCommand.command("sh").action(async () => {
 // 	const cmd = await new Deno.Command("docker-compose", {
 // 		args: ["exec", "-it", "postgres", "psql", "--username", "postgres"],

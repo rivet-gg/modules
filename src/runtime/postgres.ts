@@ -38,8 +38,8 @@ export class Postgres {
 		} else {
 			const moduleDbUrl = Deno.env.get(`DATABASE_URL_${moduleName}__${module.db.name}`);
 			let url;
-			
-			if(moduleDbUrl) {
+
+			if (moduleDbUrl) {
 				url = new URL(moduleDbUrl);
 			} else {
 				// Build URL for this database
