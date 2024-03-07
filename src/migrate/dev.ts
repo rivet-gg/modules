@@ -2,7 +2,7 @@
 //
 // Wrapper around `prisma migrate dev`
 
-import { assert, copy, exists, resolve } from "../deps.ts";
+import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 
@@ -50,8 +50,13 @@ export async function migrateDev(
 			// `sourcePath` (which is the original module's source)
 			const tempMigrationsDir = resolve(tempDir, "migrations");
 			if (await exists(tempMigrationsDir)) {
-				await copy(tempMigrationsDir, resolve(module.path, "db", "migrations"), { overwrite: true });
-				await copy(tempMigrationsDir, resolve(module.sourcePath, "db", "migrations"), { overwrite: true });
+				const migrationsDir = resolve(module.path, "db", "migrations");
+				await emptyDir(migrationsDir);
+				await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
+
+				const sourceMigrationsDir = resolve(module.sourcePath, "db", "migrations");
+				await emptyDir(sourceMigrationsDir);
+				await copy(tempMigrationsDir, sourceMigrationsDir, { overwrite: true });
 			}
 		},
 	);
