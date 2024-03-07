@@ -1,6 +1,9 @@
 status: preview
 authors:
   - NathanFlurry
+dependencies:
+  rate_limit: {}
+  users: {}
 scripts:
   send_request:
     public: true
@@ -24,6 +27,3 @@ errors:
   FRIEND_REQUEST_ALREADY_ACCEPTED: {}
   FRIEND_REQUEST_ALREADY_DECLINED: {}
   CANNOT_SEND_TO_SELF: {}
-dependencies:
-  rate_limit: {}
-  users: {}
