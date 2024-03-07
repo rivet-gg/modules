@@ -21,6 +21,19 @@ export type ForEachPrismaSchemaCallback = (
 	},
 ) => Promise<void>;
 
+interface DbState {
+	defaultClient: PostgresClient | null;
+	createdDatabases: Set<string>;
+}
+
+/**
+ * State about the databases for the current process.
+ */
+const DB_STATE: DbState = {
+	defaultClient: null,
+	createdDatabases: new Set(),
+};
+
 /** Prepares all databases and calls a callback once prepared. */
 export async function forEachDatabase(
 	_project: Project,
@@ -32,28 +45,28 @@ export async function forEachDatabase(
 		"postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable";
 
 	// Create client that connects to the default database
-	const defaultClient = new PostgresClient(defaultDatabaseUrl);
-	await defaultClient.connect();
+	if (!DB_STATE.defaultClient) {
+		DB_STATE.defaultClient = new PostgresClient(defaultDatabaseUrl);
+		await DB_STATE.defaultClient.connect();
 
-	try {
-		for (const mod of modules) {
-			if (!mod.db) continue;
+		globalThis.addEventListener("unload", async () => {
+			await DB_STATE.defaultClient?.end();
+		});
+	}
 
-			// Create database
-			await createDatabases(defaultClient, mod.db);
+	for (const mod of modules) {
+		if (!mod.db) continue;
 
-			// Build URL
-			const urlParsed = new URL(defaultDatabaseUrl);
-			urlParsed.pathname = `/${mod.db.name}`;
-			const databaseUrl = urlParsed.toString();
+		// Create database
+		await createDatabases(DB_STATE.defaultClient, mod.db);
 
-			// Callback
-			await callback({ databaseUrl, module: mod, db: mod.db });
-		}
-	} catch (cause) {
-		throw new Error("Failed to iterate databases", { cause });
-	} finally {
-		await defaultClient.end();
+		// Build URL
+		const urlParsed = new URL(defaultDatabaseUrl);
+		urlParsed.pathname = `/${mod.db.name}`;
+		const databaseUrl = urlParsed.toString();
+
+		// Callback
+		await callback({ databaseUrl, module: mod, db: mod.db });
 	}
 }
 
@@ -106,6 +119,9 @@ export async function forEachPrismaSchema(
  * Create databases for a module.
  */
 async function createDatabases(client: PostgresClient, db: ModuleDatabase) {
+	// Check if already created
+	if (DB_STATE.createdDatabases.has(db.name)) return;
+
 	// Create database
 	const existsQuery = await client.queryObject<
 		{ exists: boolean }
@@ -113,6 +129,9 @@ async function createDatabases(client: PostgresClient, db: ModuleDatabase) {
 	if (!existsQuery.rows[0].exists) {
 		await client.queryObject(`CREATE DATABASE ${assertValidString(db.name)}`);
 	}
+
+	// Save as created
+	DB_STATE.createdDatabases.add(db.name);
 }
 
 /**
@@ -163,6 +182,8 @@ async function ensurePrismaWorkspace(project: Project): Promise<string> {
 		if (!runOutput.success) {
 			throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
 		}
+
+		globalThis.addEventListener("unload", shutdownNodeContainer);
 
 		PRISMA_WORKSPACE_STATE.didStartContainer = true;
 	}
@@ -236,6 +257,20 @@ async function ensurePrismaWorkspace(project: Project): Promise<string> {
 	}
 
 	return prismaDir;
+}
+
+/**
+ * Shutdown the Node helper container.
+ *
+ * This is sync so it can run in `unload`.
+ */
+async function shutdownNodeContainer() {
+	const shutdownOutput = await new Deno.Command("docker", {
+		args: ["rm", "-f", NODE_CONTAINER_NAME],
+	}).outputSync();
+	if (!shutdownOutput.success) {
+		throw new Error("Failed to stop the container.");
+	}
 }
 
 export interface RunPrismaCommandOpts {
