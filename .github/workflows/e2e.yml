@@ -22,13 +22,13 @@ jobs:
         run: deno task cli:install
 
       - name: Check Formatting
-        run: cd tests/test_project/ && opengb format --check
+        run: cd tests/basic/ && opengb format --check
 
       - name: Lint
-        run: cd tests/test_project/ && opengb lint
+        run: cd tests/basic/ && opengb lint
 
       - name: Generate DB Migrations
-        run: cd tests/test_project/ && opengb db dev
+        run: cd tests/basic/ && opengb db dev
 
       - name: Run Tests
-        run: cd tests/test_project/ && opengb test
+        run: cd tests/basic/ && opengb test
