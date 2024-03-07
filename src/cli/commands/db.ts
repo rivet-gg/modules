@@ -6,7 +6,8 @@ import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateReset } from "../../migrate/reset.ts";
 import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
-export const dbCommand = new Command<GlobalOpts>();
+export const dbCommand = new Command<GlobalOpts>()
+	.description("Database commands");
 
 dbCommand.action(() => dbCommand.showHelp());
 

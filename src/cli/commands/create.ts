@@ -2,7 +2,6 @@ import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { templateScript } from "../../template/script.ts";
 import { templateModule } from "../../template/module.ts";
-
 import { validateIdentifier } from "../../types/identifiers/mod.ts";
 import { IdentType } from "../../types/identifiers/defs.ts";
 
@@ -17,7 +16,8 @@ const handleNames = (name: string, type: string) => {
 	}
 };
 
-export const createCommand = new Command<GlobalOpts>();
+export const createCommand = new Command<GlobalOpts>()
+	.description("Create a new module or script");
 
 createCommand.action(() => createCommand.showHelp());
 

@@ -12,18 +12,20 @@ import { sdkCommand } from "./commands/sdk.ts";
 import { createCommand } from "./commands/create.ts";
 import { lintCommand } from "./commands/lint.ts";
 import { formatCommand } from "./commands/format.ts";
+import { initCommand } from "./commands/init.ts";
 
 const command = new Command();
 command.action(() => command.showHelp())
 	.globalOption("-p, --path <path>", "Path to project root")
+	.command("init", initCommand)
+	.command("create", createCommand)
 	.command("start", startCommand)
 	.command("test", testCommand)
 	.command("db", dbCommand)
-	.command("build", buildCommand)
-	.command("lint", lintCommand)
-	.command("format, fmt", formatCommand)
 	.command("sdk", sdkCommand)
-	.command("create", createCommand)
+	.command("format, fmt", formatCommand)
+	.command("lint", lintCommand)
+	.command("build", buildCommand)
 	.command("help", new HelpCommand().global())
 	.command("completions", new CompletionsCommand())
 	.error((error, cmd) => {

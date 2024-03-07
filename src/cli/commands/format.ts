@@ -3,6 +3,7 @@ import { GlobalOpts, initProject } from "../common.ts";
 import { listSourceFiles } from "../../project/mod.ts";
 
 export const formatCommand = new Command<GlobalOpts>()
+	.description("Format source files")
 	.option("--check, -c", "Check if files are formatted")
 	.action(
 		async (opts) => {

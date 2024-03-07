@@ -3,7 +3,8 @@ import { GlobalOpts } from "../common.ts";
 import { generate } from "../../sdk/generate.ts";
 "";
 
-export const sdkCommand = new Command<GlobalOpts>();
+export const sdkCommand = new Command<GlobalOpts>()
+	.description("SDK commands");
 
 sdkCommand.action(() => sdkCommand.showHelp());
 

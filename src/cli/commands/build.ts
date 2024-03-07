@@ -3,6 +3,7 @@ import { GlobalOpts, initProject } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
 
 export const buildCommand = new Command<GlobalOpts>()
+	.description("Build the project")
 	.option(
 		"-r, --runtime <runtime:string>",
 		"Set target runtime (deno, cloudflare)",
