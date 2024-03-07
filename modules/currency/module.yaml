@@ -1,6 +1,9 @@
 status: preview
 authors:
   - ABCxFF
+dependencies:
+  rate_limit: {}
+  users: {}
 scripts:
   # Maybe deposit?
   deposit: {}
@@ -14,6 +17,3 @@ errors:
   INVALID_USER: {}
   INVALID_AMOUNT: {}
   NOT_ENOUGH_FUNDS: {}
-dependencies:
-  rate_limit: {}
-  users: {}

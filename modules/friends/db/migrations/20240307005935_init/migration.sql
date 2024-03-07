@@ -26,8 +26,3 @@ CREATE UNIQUE INDEX "Friend_friendRequestId_key" ON "Friend"("friendRequestId");
 
 -- AddForeignKey
 ALTER TABLE "Friend" ADD CONSTRAINT "Friend_friendRequestId_fkey" FOREIGN KEY ("friendRequestId") REFERENCES "FriendRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- Constraints
-ALTER TABLE "Friend" ADD CONSTRAINT "Friend_userIdA_lt_userIdB" CHECK ("userIdA" < "userIdB" AND "userIdA" != "userIdB");
-CREATE UNIQUE INDEX "FriendRequest_senderUserId_targetUserId" ON "FriendRequest" ("senderUserId","targetUserId") WHERE "declinedAt" IS NULL AND "acceptedAt" IS NULL;
-ALTER TABLE "FriendRequest" ADD CONSTRAINT "FriendRequest_senderUserId_ne_targetUserId" CHECK ("senderUserId" != "targetUserId");

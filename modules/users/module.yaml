@@ -1,6 +1,9 @@
 status: preview
 authors:
   - NathanFlurry
+dependencies:
+  rate_limit: {}
+  tokens: {}
 scripts:
   get:
     public: true
@@ -10,6 +13,3 @@ scripts:
 errors:
   TOKEN_NOT_USER_TOKEN: {}
   UNKNOWN_IDENTITY_TYPE: {}
-dependencies:
-  rate_limit: {}
-  tokens: {}
