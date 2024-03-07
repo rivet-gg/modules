@@ -5,7 +5,7 @@
 import { resolve } from "../deps.ts";
 import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { Module, Project } from "../project/mod.ts";
-import { forEachPrismaSchema } from "./mod.ts";
+import { forEachPrismaSchema, runPrismaCommand } from "./mod.ts";
 
 export async function generateClient(
 	project: Project,
@@ -14,27 +14,15 @@ export async function generateClient(
 	await forEachPrismaSchema(
 		project,
 		modules,
-		async ({ databaseUrl, tempDir, generatedClientDir }) => {
-			// Generate migrations & client
-			const status = await new Deno.Command("deno", {
-				args: [
-					"run",
-					"-A",
-					"npm:prisma@5.9.1",
-					"generate",
-				],
-				cwd: tempDir,
-				stdin: "inherit",
-				stdout: "inherit",
-				stderr: "inherit",
+		async ({ databaseUrl, generatedClientDir }) => {
+			// Generate client
+			await runPrismaCommand(project, {
+				args: ["generate"],
 				env: {
 					DATABASE_URL: databaseUrl,
 					PRISMA_CLIENT_FORCE_WASM: "true",
 				},
-			}).output();
-			if (!status.success) {
-				throw new Error("Failed to generate migrations");
-			}
+			});
 
 			// Specify the path to the library & binary types
 			for (

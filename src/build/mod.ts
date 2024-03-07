@@ -231,7 +231,6 @@ async function buildSteps(
 	project: Project,
 	opts: BuildOpts,
 ) {
-	// TODO: This does not reuse the Prisma dir or the database connection, so is extra slow on the first run. Figure out how to make this use one `migrateDev` command and pass in any modified modules For now, these need to be migrated individually because `prisma migrate dev` is an interactive command. Also, making a database change and waiting for all other databases to re-apply will take a long tim.e
 	for (const module of project.modules.values()) {
 		if (module.db) {
 			buildStep(buildState, {
