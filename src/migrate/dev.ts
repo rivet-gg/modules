@@ -4,6 +4,7 @@
 
 import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
 import { Module, Project } from "../project/mod.ts";
+import { runPrismaCommand } from "./mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 
 export interface MigrateDevOpts {
@@ -24,28 +25,18 @@ export async function migrateDev(
 		project,
 		modules,
 		async ({ databaseUrl, module, tempDir }) => {
-			// Generate migrations & client
-			const status = await new Deno.Command("deno", {
+			// Generate migrations
+			await runPrismaCommand(project, {
 				args: [
-					"run",
-					"-A",
-					"npm:prisma@5.9.1",
 					"migrate",
 					"dev",
 					"--skip-generate",
 					...(opts.createOnly ? ["--create-only"] : []),
 				],
-				cwd: tempDir,
-				stdin: "inherit",
-				stdout: "inherit",
-				stderr: "inherit",
 				env: {
 					DATABASE_URL: databaseUrl,
 				},
-			}).output();
-			if (!status.success) {
-				throw new Error("Failed to generate migrations");
-			}
+			});
 
 			// Copy back migrations dir
 			//
