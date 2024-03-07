@@ -19,8 +19,7 @@ export interface Request {
 	period?: number;
 }
 
-export interface Response {
-}
+export type Response = Record<string, never>;
 
 export async function run(
 	_ctx: ScriptContext,

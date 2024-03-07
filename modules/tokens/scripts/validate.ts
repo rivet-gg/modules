@@ -13,9 +13,9 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const { tokens } = await ctx.call("tokens", "get_by_token", {
+	const { tokens } = await ctx.modules.tokens.getByToken({
 		tokens: [req.token],
-	}) as any;
+	});
 	const token = tokens[0];
 
 	if (!token) throw new RuntimeError("TOKEN_NOT_FOUND");

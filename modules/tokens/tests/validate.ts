@@ -8,7 +8,7 @@ test(
 	"validate token not found",
 	async (ctx: TestContext) => {
 		const error = await assertRejects(async () => {
-			await ctx.call("tokens", "validate", { token: "invalid token" }) as any;
+			await ctx.modules.tokens.validate({ token: "invalid token" });
 		}, RuntimeError);
 		assertEquals(error.code, "TOKEN_NOT_FOUND");
 	},
@@ -17,15 +17,15 @@ test(
 test(
 	"validate token revoked",
 	async (ctx: TestContext) => {
-		const { token } = await ctx.call("tokens", "create", {
+		const { token } = await ctx.modules.tokens.create({
 			type: "test",
 			meta: { foo: "bar" },
-		}) as any;
+		});
 
-		await ctx.call("tokens", "revoke", { tokenIds: [token.id] }) as any;
+		await ctx.modules.tokens.revoke({ tokenIds: [token.id] });
 
 		const error = await assertRejects(async () => {
-			await ctx.call("tokens", "validate", { token: token.token }) as any;
+			await ctx.modules.tokens.validate({ token: token.token });
 		}, RuntimeError);
 		assertEquals(error.code, "TOKEN_REVOKED");
 	},
