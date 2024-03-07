@@ -62,13 +62,13 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	// Load modules
 	const modules = new Map<string, Module>();
 	for (const projectModuleName in projectConfig.modules) {
-		const { genPath, sourcePath, registry } = await fetchAndResolveModule(
+		const { path, registry } = await fetchAndResolveModule(
 			projectRoot,
 			projectConfig,
 			registries,
 			projectModuleName,
 		);
-		const module = await loadModule(genPath, sourcePath, projectModuleName, registry);
+		const module = await loadModule(path, projectModuleName, registry);
 		modules.set(projectModuleName, module);
 	}
 
@@ -91,7 +91,7 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	if (missingDepsByModule.size > 0) {
 		let message = bold(brightRed("Unresolved module dependencies:\n"));
 		for (const [moduleName, missingDeps] of missingDepsByModule) {
-			message += `\tModule ${moduleName} is missing dependencies: ${
+			message += `\tCannot resolve dependencies for ${moduleName}: ${
 				missingDeps.join(", ")
 			}\n`;
 		}
@@ -121,7 +121,7 @@ interface FetchAndResolveModuleOutput {
 	/**
 	 * Path the module was copied to in _gen.
 	 */
-	genPath: string;
+	path: string;
 
 	/**
 	 * Path to the original module source code.
@@ -161,8 +161,8 @@ async function fetchAndResolveModule(
 
 	// Resolve module path
 	const pathModuleName = moduleNameInRegistry(moduleName, module);
-	const modulePath = resolve(registry.path, pathModuleName);
-	if (!await exists(resolve(modulePath, "module.yaml"))) {
+	const sourcePath = resolve(registry.path, pathModuleName);
+	if (!await exists(resolve(sourcePath, "module.yaml"))) {
 		if (pathModuleName != moduleName) {
 			// Has alias
 			throw new Error(
@@ -176,21 +176,27 @@ async function fetchAndResolveModule(
 		}
 	}
 
-	// Copy to gen dir
-	//
-	// We do this so generate files into the gen dir without modifying the
-	// original module. For example. if multiple projects are using the same
-	// local registry, we don't want conflicting generated files.
-	const dstPath = resolve(
-		projectRoot,
-		"_gen",
-		"modules",
-		moduleName,
-	);
-	await emptyDir(dstPath);
-	await copy(modulePath, dstPath, { overwrite: true });
+	let path: string;
+	if (registry.isExternal) {
+		// Copy to gen dir
+		//
+		// We do this so generate files into the gen dir without modifying the
+		// original module. For example. if multiple projects are using the same
+		// local registry, we don't want conflicting generated files.
+		path = resolve(
+			projectRoot,
+			"_gen",
+			"external_modules",
+			moduleName,
+		);
+		await emptyDir(path);
+		await copy(sourcePath, path, { overwrite: true });
+	} else {
+		// Use original path
+		path = sourcePath;
+	}
 
-	return { genPath: dstPath, sourcePath: modulePath, registry };
+	return { path, sourcePath: sourcePath, registry };
 }
 
 function registryNameForModule(module: ProjectModuleConfig): string {
@@ -231,7 +237,7 @@ export async function listSourceFiles(
 	const files: string[] = [];
 	for (const module of project.modules.values()) {
 		// Skip non-local files
-		if (opts.localOnly && !("local" in module.registry.config)) continue;
+		if (opts.localOnly && module.registry.isExternal) continue;
 
 		const moduleFiles =
 			(await glob.glob("**/*.ts", { cwd: module.path, ignore: "_gen/**" }))

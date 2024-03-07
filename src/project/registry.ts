@@ -9,6 +9,16 @@ export interface Registry {
 	path: string;
 	name: string;
 	config: RegistryConfig;
+
+	/**
+	 * If the source code for this registry does not belong to this project.
+	 * 
+	 * If true, modules will be copied to the _gen dir and will be read-only.
+	 * 
+	 * If this is true, the module should be treated as read-only and should not
+	 * be tested, formatted, linted, and generate Prisma migrations.
+	 */
+	isExternal: boolean;
 }
 
 /**
@@ -19,40 +29,49 @@ export async function loadRegistry(
 	name: string,
 	config: RegistryConfig,
 ): Promise<Registry> {
-	let path: string;
+	let output: ResolveRegistryOutput;
 	if ("local" in config) {
-		path = await resolveRegistryLocal(projectRoot, config.local);
+		output = await resolveRegistryLocal(projectRoot, config.local);
 	} else if ("git" in config) {
-		path = await resolveRegistryGit(projectRoot, name, config.git);
+		output = await resolveRegistryGit(projectRoot, name, config.git);
 	} else {
 		// Unknown project config
 		throw new Error("Unreachable");
 	}
 
 	return {
-		path,
+		path: output.path,
 		name,
 		config,
+		isExternal: output.isExternal,
 	};
+}
+
+interface ResolveRegistryOutput {
+	path: string;
+	isExternal: boolean;
 }
 
 async function resolveRegistryLocal(
 	projectRoot: string,
 	config: RegistryConfigLocal,
-): Promise<string> {
+): Promise<ResolveRegistryOutput> {
+	const isExternal = config.isExternal ?? false;
+
 	// Check that registry exists
 	const path = resolve(projectRoot, config.directory);
 	if (!await exists(path)) {
 		throw new Error(`Registry not found at ${path}`);
 	}
-	return path;
+
+	return { path, isExternal };
 }
 
 async function resolveRegistryGit(
 	projectRoot: string,
 	name: string,
 	config: RegistryConfigGit,
-): Promise<string> {
+): Promise<ResolveRegistryOutput> {
 	const repoPath = resolve(projectRoot, "_gen", "git_registries", name);
 	const gitRef = resolveGitRef(config);
 
@@ -169,7 +188,7 @@ async function resolveRegistryGit(
 		throw new Error(`Registry not found at ${path}`);
 	}
 
-	return path;
+	return { path, isExternal: true };
 }
 
 function resolveGitRef(registryConfig: RegistryConfigGit): string {

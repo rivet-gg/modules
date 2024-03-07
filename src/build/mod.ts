@@ -252,12 +252,12 @@ async function buildSteps(
 				// TODO: Also watch migrations folder in case a migration is created/destroyed
 				files: [resolve(module.path, "db", "schema.prisma")],
 				async build() {
-					if ("local" in module.registry.config) {
-						// Update migrations
-						await migrateDev(project, [module], { createOnly: false });
-					} else {
+					if (module.registry.isExternal) {
 						// Do not alter migrations, only deploy them
 						await migrateDeploy(project, [module]);
+					} else {
+						// Update migrations
+						await migrateDev(project, [module], { createOnly: false });
 					}
 
 					// Generate client

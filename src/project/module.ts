@@ -15,15 +15,6 @@ export interface Module {
 	 * This path can be modified and will be discarded on the next codegen.
 	 */
 	path: string;
-	
-	/**
-	 * The path to the module's source code.
-	 * 
-	 * This path almost never be modified (including _gen), except for
-	 * exclusions where auto-generating code (e.g. prisma migrate dev).
-	 */
-	sourcePath: string;
-
 	name: string;
 	config: ModuleConfig;
 	registry: Registry,
@@ -37,7 +28,6 @@ export interface ModuleDatabase {
 
 export async function loadModule(
 	modulePath: string,
-	sourcePath: string,
 	name: string,
 	registry: Registry,
 ): Promise<Module> {
@@ -110,7 +100,6 @@ export async function loadModule(
 
 	return {
 		path: modulePath,
-		sourcePath,
 		name,
 		config,
 		registry,

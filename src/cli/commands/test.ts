@@ -43,7 +43,7 @@ export const testCommand = new Command<GlobalOpts>()
 				// Filter modules
 				if (modulesFilter.length == 0) {
 					// Only test local modules
-					if (!("local" in module.registry.config)) continue;
+					if (module.registry.isExternal) continue;
 				} else {
 					// Only test specified modules. This allows for testing remote modules.
 					if (!modulesFilter.includes(module.name)) continue;
