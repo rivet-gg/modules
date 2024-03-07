@@ -1,10 +1,9 @@
 registries:
   default:
     git:
-      # TODO: Add back HTTP fetches if SSH isn't supported
-      # url: https://github.com/rivet-gg/open-game-services.git
-      # TODO: This may not work for Windows users
-      url: git@github.com:rivet-gg/opengb-registry.git
+      url:
+        https: https://github.com/rivet-gg/open-game-services.git
+        ssh: git@github.com:rivet-gg/opengb-registry.git
       rev: f28b9c0ddbb69fcc092dfff12a18707065a69251
       directory: ./modules
   # default:

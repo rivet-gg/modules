@@ -13,7 +13,15 @@ export interface RegistryConfigLocal {
 	directory: string;
 }
 
-export type RegistryConfigGit = { url: string, directory?: string } & ({ branch: string } | { tag: string } | { rev: string });
+export type RegistryConfigGit = { url: RegistryConfigGitUrl, directory?: string } & ({ branch: string } | { tag: string } | { rev: string });
+
+/**
+ * The URL to the git repository.
+ * 
+ * If both HTTPS and SSH URL are provided, they will both be tried and use the
+ * one that works.
+ */
+export type RegistryConfigGitUrl = string | { https?: string, ssh?: string };
 
 export interface ProjectModuleConfig extends Record<string, unknown> {
 	/**
