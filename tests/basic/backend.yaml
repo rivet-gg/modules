@@ -1,0 +1,10 @@
+registries:
+  default:
+    local:
+      directory: ../../modules
+modules:
+  currency: {}
+  friends: {}
+  rate_limit: {}
+  tokens: {}
+  users: {}
