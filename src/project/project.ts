@@ -5,6 +5,8 @@ import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
 import { loadRegistry, Registry } from "./registry.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
+import { validateIdentifier } from "../types/identifiers/mod.ts";
+import { IdentType } from "../types/identifiers/defs.ts";
 
 export interface Project {
 	path: string;
@@ -104,6 +106,11 @@ async function fetchAndResolveModule(
 	registries: Map<string, Registry>,
 	moduleName: string,
 ): Promise<{ path: string; registry: Registry }> {
+	const moduleNameIssue = validateIdentifier(moduleName, IdentType.ModuleScripts);
+	if (moduleNameIssue) {
+		throw new Error(moduleNameIssue.toString("module"));
+	}
+
 	// Lookup module
 	const module = projectConfig.modules[moduleName];
 	if (!module) throw new Error(`Module not found ${moduleName}`);

@@ -5,6 +5,8 @@ import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
 import { Project } from "./project.ts";
 import { Registry } from "./registry.ts";
+import { validateIdentifier } from "../types/identifiers/mod.ts";
+import { IdentType } from "../types/identifiers/defs.ts";
 
 export interface Module {
 	path: string;
@@ -34,8 +36,13 @@ export async function loadModule(
 	);
 
 	// Read scripts
-	const scripts = new Map();
+	const scripts = new Map<string, Script>();
 	for (const scriptName in config.scripts) {
+		const scriptNameIssue = validateIdentifier(scriptName, IdentType.ModuleScripts);
+		if (scriptNameIssue) {
+			throw new Error(scriptNameIssue.toString("script"));
+		}
+
 		// Load script
 		const scriptPath = join(
 			scriptsPath,
