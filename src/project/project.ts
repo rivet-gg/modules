@@ -1,4 +1,4 @@
-import { copy, dirname, exists, resolve } from "../deps.ts";
+import { copy, emptyDir, exists, resolve } from "../deps.ts";
 import { bold, brightRed, glob } from "./deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
@@ -187,7 +187,7 @@ async function fetchAndResolveModule(
 		"modules",
 		moduleName,
 	);
-	await Deno.mkdir(dirname(dstPath), { recursive: true });
+	await emptyDir(dstPath);
 	await copy(modulePath, dstPath, { overwrite: true });
 
 	return { genPath: dstPath, sourcePath: modulePath, registry };
