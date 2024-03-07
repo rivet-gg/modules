@@ -250,7 +250,7 @@ async function buildSteps(
 				module,
 				files: [resolve(module.path, "db", "schema.prisma")],
 				async build() {
-					if ('directory' in module.registry) {
+					if ("local" in module.registry.config) {
 						// Update migrations
 						await migrateDev(project, [module], { createOnly: false });
 					} else {
