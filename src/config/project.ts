@@ -11,6 +11,15 @@ export type RegistryConfig = { local: RegistryConfigLocal } | { git: RegistryCon
 
 export interface RegistryConfigLocal {
 	directory: string;
+
+	/**
+	 * If true, this will be treated like an external registry. This is
+	 * important if multiple projects are using the same registry locally.
+	 * 
+	 *  Modules from this directory will not be tested, formatted, linted, and
+	 *  generate Prisma migrations.
+	 */
+	isExternal?: boolean;
 }
 
 export type RegistryConfigGit = { url: RegistryConfigGitUrl, directory?: string } & ({ branch: string } | { tag: string } | { rev: string });

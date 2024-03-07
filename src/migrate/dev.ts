@@ -15,7 +15,7 @@ export async function migrateDev(
 	modules: Module[],
 	opts: MigrateDevOpts,
 ) {
-	assert(modules.every(m => ("local" in m.registry.config)), "Only local modules can run migrateDev because it generates migration files");
+	assert(modules.every(m => !m.registry.isExternal), "Only modules from local registries can run migrateDev because it generates migration files");
 
 	await forEachPrismaSchema(
 		project,
@@ -53,10 +53,6 @@ export async function migrateDev(
 				const migrationsDir = resolve(module.path, "db", "migrations");
 				await emptyDir(migrationsDir);
 				await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
-
-				const sourceMigrationsDir = resolve(module.sourcePath, "db", "migrations");
-				await emptyDir(sourceMigrationsDir);
-				await copy(tempMigrationsDir, sourceMigrationsDir, { overwrite: true });
 			}
 		},
 	);
