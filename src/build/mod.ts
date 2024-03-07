@@ -1,19 +1,23 @@
 import { assertExists, denoPlugins, esbuild, exists, resolve, tjs } from "../deps.ts";
 import { crypto, encodeHex } from "./deps.ts";
-import { compileSchema } from "./schema.ts";
+import { compileScriptSchema } from "./script_schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
 import { generateOpenApi } from "./openapi.ts";
 import { compileModuleHelper, compileScriptHelper, compileTestHelper, compileTypeHelpers } from "./gen.ts";
 import { Project } from "../project/project.ts";
 import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
-import { Module, Script } from "../project/mod.ts";
+import { configPath, Module, Script } from "../project/mod.ts";
 import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
 import { migrateDeploy } from "../migrate/deploy.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { generateClient } from "../migrate/generate.ts";
+import { compileModuleConfigSchema } from "./module_config_schema.ts";
+
+// TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
+const CACHE_VERSION = 2;
 
 /**
  * Which format to use for building.
@@ -62,12 +66,25 @@ export interface BuildCache {
  */
 interface BuildCachePersist {
 	version: number;
-	fileHashes: Record<string, string>;
+	fileHashes: Record<string, FileHash>;
 	exprHashes: Record<string, string>;
+	moduleConfigSchemas: Record<string, tjs.Definition>;
 	scriptSchemas: Record<
 		string,
 		Record<string, { request: tjs.Definition; response: tjs.Definition }>
 	>;
+}
+
+type FileHash = { hash: string } | { missing: true };
+
+function createDefaultCache(): BuildCachePersist {
+	return {
+		version: CACHE_VERSION,
+		fileHashes: {},
+		exprHashes: {},
+		moduleConfigSchemas: {},
+		scriptSchemas: {},
+	};
 }
 
 /**
@@ -83,10 +100,17 @@ export async function compareHash(
 	for (const path of paths) {
 		const oldHash = cache.oldCache.fileHashes[path];
 		const newHash = await hashFile(cache, path);
-		if (newHash != oldHash) {
+		if (!oldHash) {
 			hasChanged = true;
-			console.log(`✏️  ${path}`);
+		} else if ("missing" in oldHash && "missing" in newHash) {
+			hasChanged = oldHash.missing != newHash.missing;
+		} else if ("hash" in oldHash && "hash" in newHash) {
+			hasChanged = oldHash.hash != newHash.hash;
+		} else {
+			hasChanged = true;
 		}
+
+		if (hasChanged) console.log(`✏️ ${path}`);
 	}
 
 	return hasChanged;
@@ -95,20 +119,25 @@ export async function compareHash(
 export async function hashFile(
 	cache: BuildCache,
 	path: string,
-): Promise<string> {
+): Promise<FileHash> {
 	// Return already calculated hash
 	let hash = cache.newCache.fileHashes[path];
 	if (hash) return hash;
 
-	// Calculate hash
-	const file = await Deno.open(path, { read: true });
-	const fileHashBuffer = await crypto.subtle.digest(
-		"SHA-256",
-		file.readable,
-	);
-	hash = encodeHex(fileHashBuffer);
-	cache.newCache.fileHashes[path] = hash;
+	if (await exists(path)) {
+		// Calculate hash
+		const file = await Deno.open(path, { read: true });
+		const fileHashBuffer = await crypto.subtle.digest(
+			"SHA-256",
+			file.readable,
+		);
+		hash = { hash: encodeHex(fileHashBuffer) };
+	} else {
+		// Specify missing
+		hash = { missing: true };
+	}
 
+	cache.newCache.fileHashes[path] = hash;
 	return hash;
 }
 
@@ -233,25 +262,22 @@ export async function build(project: Project, opts: BuildOpts) {
 	// Read hashes from file
 	let oldCache: BuildCachePersist;
 	if (await exists(buildCachePath)) {
-		oldCache = JSON.parse(await Deno.readTextFile(buildCachePath));
+		const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
+
+		// Validate version
+		if (oldCacheAny.version == CACHE_VERSION) {
+			oldCache = oldCacheAny;
+		} else {
+			oldCache = createDefaultCache();
+		}
 	} else {
-		oldCache = {
-			version: 1,
-			fileHashes: {},
-			exprHashes: {},
-			scriptSchemas: {},
-		};
+		oldCache = createDefaultCache();
 	}
 
 	// Build cache
 	const buildCache = {
 		oldCache,
-		newCache: {
-			version: 1,
-			fileHashes: {},
-			exprHashes: {},
-			scriptSchemas: {},
-		} as BuildCachePersist,
+		newCache: createDefaultCache(),
 	} as BuildCache;
 
 	// Build state
@@ -264,10 +290,6 @@ export async function build(project: Project, opts: BuildOpts) {
 	await buildSteps(buildState, project, opts);
 
 	// Write cache
-	// const writeCache = {
-	// 	version: buildState.cache.newCache.version,
-	// 	hashCache: Object.assign({} as Record<string, string>, buildState.cache.oldCache, buildState.cache.newCache),
-	// } as BuildCachePersist;
 	await Deno.writeTextFile(
 		buildCachePath,
 		JSON.stringify(buildState.cache.newCache),
@@ -467,6 +489,28 @@ async function buildModule(
 	project: Project,
 	module: Module,
 ) {
+	// TODO: This has problems with missing files
+	buildStep(buildState, {
+		name: "Module config",
+		module,
+		// TODO: use tjs.getProgramFiles() to get the dependent files?
+		files: [configPath(module)],
+		async build() {
+			// Compile schema
+			//
+			// This mutates `module`
+			await compileModuleConfigSchema(project, module);
+		},
+		async alreadyCached() {
+			// Read schema from cache
+			module.configSchema = buildState.cache.oldCache.moduleConfigSchemas[module.name];
+		},
+		async finally() {
+			// Populate cache with response
+			if (module.configSchema) buildState.cache.newCache.moduleConfigSchemas[module.name] = module.configSchema;
+		},
+	});
+
 	buildStep(buildState, {
 		name: "Module helper",
 		module,
@@ -509,7 +553,7 @@ async function buildScript(
 		name: "Script schema",
 		module,
 		script,
-		// TODO: check sections of module config
+		// TODO: `scripts` portion of module config instead of entire file
 		// TODO: This module and all of its dependent modules
 		// TODO: use tjs.getProgramFiles() to get the dependent files?
 		files: [resolve(module.path, "module.yaml"), script.path],
@@ -517,7 +561,7 @@ async function buildScript(
 			// Compile schema
 			//
 			// This mutates `script`
-			await compileSchema(project, module, script);
+			await compileScriptSchema(project, module, script);
 		},
 		async alreadyCached() {
 			// Read schemas from cache
