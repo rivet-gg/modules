@@ -1,21 +1,15 @@
 registries:
-  # default:
-  #   local:
-  #       directory: ../../../opengb-registry/modules
+  default:
+    local:
+        directory: ../../../opengb-registry/modules
   local:
     local:
         directory: ./modules
 modules:
-  # currency: {}
-  # friends: {}
-  # rate_limit: {}
-  # tokens: {}
+  currency: {}
+  friends: {}
+  rate_limit: {}
+  tokens: {}
   users: {}
-  # auth:
-  #   config:
-  #     google:
-  #       token: abc123
-  #     discord:
-  #       token: abc123
   foo:
     registry: local

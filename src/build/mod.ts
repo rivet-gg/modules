@@ -249,6 +249,7 @@ async function buildSteps(
 			buildStep(buildState, {
 				name: `Migrate`,
 				module,
+				// TODO: Also watch migrations folder in case a migration is created/destroyed
 				files: [resolve(module.path, "db", "schema.prisma")],
 				async build() {
 					if ("local" in module.registry.config) {
