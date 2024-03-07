@@ -1,4 +1,4 @@
-import { resolve, parse } from "../deps.ts";
+import { parse, resolve } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/project_schema.json" with { type: "json" };
 
@@ -15,22 +15,24 @@ export interface RegistryConfigLocal {
 	/**
 	 * If true, this will be treated like an external registry. This is
 	 * important if multiple projects are using the same registry locally.
-	 * 
+	 *
 	 *  Modules from this directory will not be tested, formatted, linted, and
 	 *  generate Prisma migrations.
 	 */
 	isExternal?: boolean;
 }
 
-export type RegistryConfigGit = { url: RegistryConfigGitUrl, directory?: string } & ({ branch: string } | { tag: string } | { rev: string });
+export type RegistryConfigGit =
+	& { url: RegistryConfigGitUrl; directory?: string }
+	& ({ branch: string } | { tag: string } | { rev: string });
 
 /**
  * The URL to the git repository.
- * 
+ *
  * If both HTTPS and SSH URL are provided, they will both be tried and use the
  * one that works.
  */
-export type RegistryConfigGitUrl = string | { https?: string, ssh?: string };
+export type RegistryConfigGitUrl = string | { https?: string; ssh?: string };
 
 export interface ProjectModuleConfig extends Record<string, unknown> {
 	/**

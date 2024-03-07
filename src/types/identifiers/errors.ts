@@ -1,5 +1,5 @@
 import { printableAsciiRegex } from "./defs.ts";
-import { brightRed, bold } from "./deps.ts";
+import { bold, brightRed } from "./deps.ts";
 
 export class IdentError extends Error {
 	public constructor(private issue: string, private identifier: string) {
@@ -11,24 +11,23 @@ export class IdentError extends Error {
 	public toString(identifierType = "identifier") {
 		const highlightedIdentifier = brightRed(bold(debugIdentifier(this.identifier)));
 		return `invalid ${identifierType} ${highlightedIdentifier}: ${this.issue}`;
-
 	}
 }
 
 /**
  * Converts an identifier into a string that can be printed to the console.
- * 
+ *
  * This function should be used when working with unverified
  * module/script/error names, as it is guaranteed it won't mess up the
  * terminal or obscure logging with control characters.
- * 
+ *
  * Examples:
  * ```ts
  * IdentError.debugIdentifier("hello") // "hello"
  * IdentError.debugIdentifier("hello\x20world") // "hello world"
  * IdentError.debugIdentifier("hello\x7fworld") // "hello\7fworld"
  * IdentError.debugIdentifier("hello_wòrld") // "hello_w\xf2rld"
- * 
+ *
  * @param ident The identifier to be converted into a safe debugged string
  * @returns A string containing all string-safe printable ascii characters, with
  * non-printable characters escaped as hex or unicode.

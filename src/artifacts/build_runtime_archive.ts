@@ -20,7 +20,6 @@ for (const file of files) {
 	archiveFiles[file] = await Deno.readTextFile(resolve(rootSrc, file));
 }
 
-
 // Create artifacts folder if it doesn't already exist
 await Deno.mkdir(resolve(rootSrc, "artifacts"), { recursive: true });
 

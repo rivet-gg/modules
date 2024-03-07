@@ -13,6 +13,13 @@
 		"artifacts:build:all": "deno task artifacts:build:schema && deno task artifacts:build:runtime_archive",
 		"artifacts:build:schema": "deno run --allow-env --allow-read --allow-write src/artifacts/build_schema.ts",
 		"artifacts:build:runtime_archive": "deno run --allow-env --allow-read --allow-write src/artifacts/build_runtime_archive.ts",
+
+		// Format
+		"format": "deno fmt src/",
+		"format:check": "deno fmt --check src/",
+
+		// Lint
+		"lint": "deno task artifacts:build:all && deno lint src/",
 		
 		// Runs tests
 		"test:core": "deno task artifacts:build:all && deno test -A src/",
@@ -26,6 +33,7 @@
 		}
 	},
 	"fmt": {
+		"lineWidth": 120,
 		"useTabs": true
 	}
 }

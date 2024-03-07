@@ -68,9 +68,7 @@ export class Context<Registry> {
 			// Execute script
 			const res = await ctx.runBlock(async () => await script.run(ctx, req));
 			console.log(
-				`Response ${moduleName}.${scriptName}:\n${
-					JSON.stringify(res, null, 2)
-				}`,
+				`Response ${moduleName}.${scriptName}:\n${JSON.stringify(res, null, 2)}`,
 			);
 
 			// TODO: Replace with OGBE-15
@@ -117,7 +115,7 @@ export class Context<Registry> {
 	public canCall(
 		moduleName: string,
 		scriptName: string,
-		req?: unknown,
+		_req?: unknown,
 	): boolean {
 		// Lookup module
 		const module = this.runtime.config.modules[moduleName];
@@ -178,8 +176,7 @@ export class ModuleContext<RegistryT, TDatabase> extends Context<RegistryT> {
 /**
  * Context for a script.
  */
-export class ScriptContext<RegistryT, TDatabase>
-	extends ModuleContext<RegistryT, TDatabase> {
+export class ScriptContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {
 	public constructor(
 		runtime: Runtime<RegistryT>,
 		trace: Trace,
@@ -194,5 +191,4 @@ export class ScriptContext<RegistryT, TDatabase>
 /**
  * Context for a test.
  */
-export class TestContext<RegistryT, TDatabase>
-	extends ModuleContext<RegistryT, TDatabase> {}
+export class TestContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {}

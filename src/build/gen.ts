@@ -1,14 +1,6 @@
 import { dedent } from "./deps.ts";
 import { dirname, resolve } from "../deps.ts";
-import {
-	Module,
-	moduleGenPath,
-	Project,
-	Script,
-	scriptGenPath,
-	testGenPath,
-	typeGenPath,
-} from "../project/mod.ts";
+import { Module, moduleGenPath, Project, Script, scriptGenPath, testGenPath, typeGenPath } from "../project/mod.ts";
 import { genRuntimeModPath } from "../project/project.ts";
 import { autoGenHeader } from "./misc.ts";
 
@@ -36,8 +28,8 @@ export async function compileModuleHelper(
 		
 		export { RuntimeError } from "${runtimePath}";
 		export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${
-			module.db ? "prisma.PrismaClient" : "undefined"
-		}>;
+		module.db ? "prisma.PrismaClient" : "undefined"
+	}>;
 	`;
 
 	// Write source
@@ -62,8 +54,8 @@ export async function compileTestHelper(
 		export * from "./mod.ts";
 		
 		export type TestContext = TestContextInner<RegistryTypeInner, ${
-			module.db ? "module.prisma.PrismaClient" : "undefined"
-		}>;
+		module.db ? "module.prisma.PrismaClient" : "undefined"
+	}>;
 		
 		export type TestFn = (ctx: TestContext) => Promise<void>;
 		
@@ -96,8 +88,8 @@ export async function compileScriptHelper(
 		export * from "../mod.ts";
 		
 		export type ScriptContext = ScriptContextInner<RegistryTypeInner, ${
-			module.db ? "module.prisma.PrismaClient" : "undefined"
-		}>;
+		module.db ? "module.prisma.PrismaClient" : "undefined"
+	}>;
 	`;
 
 	// Write source
@@ -198,9 +190,7 @@ export async function compileModuleTypeHelper(
 	);
 
 	const moduleDependencies = Object.keys(module.config.dependencies || {})
-		.map((dependencyName) =>
-			`${dependencyName}: FullRegistry["${dependencyName}"]`
-		)
+		.map((dependencyName) => `${dependencyName}: FullRegistry["${dependencyName}"]`)
 		.join(";\n\t");
 
 	const source = dedent`

@@ -35,8 +35,8 @@ dbCommand.command("deploy").action(async (opts) => {
 	await migrateDeploy(project, [...project.modules.values()]);
 });
 
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/84
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/85
+// TODO: https://github.com/rivet-gg/opengb-engine/issues/84
+// TODO: https://github.com/rivet-gg/opengb-engine/issues/85
 // dbCommand.command("sh").action(async () => {
 // 	const cmd = await new Deno.Command("docker-compose", {
 // 		args: ["exec", "-it", "postgres", "psql", "--username", "postgres"],

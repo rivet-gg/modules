@@ -27,17 +27,15 @@ export async function forEachDatabase(
 		"postgres://postgres:postgres@localhost:5432/postgres";
 
 	// Create client that connects to the default database
-	// const defaultClient = new PostgresClient(defaultDatabaseUrl);
-	// await defaultClient.connect();
+	const defaultClient = new PostgresClient(defaultDatabaseUrl);
+	await defaultClient.connect();
 
 	try {
 		for (const mod of modules) {
 			if (!mod.db) continue;
-			// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/83
-			// if (dbFilter && mod.name !== dbFilter) continue;
 
 			// Create database
-			// await createDatabases(defaultClient, mod.db);
+			await createDatabases(defaultClient, mod.db);
 
 			// Build URL
 			const urlParsed = new URL(defaultDatabaseUrl);

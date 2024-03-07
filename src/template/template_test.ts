@@ -10,7 +10,7 @@ import { templateScript } from "./script.ts";
 Deno.test({
 	name: "e2e",
 
-	// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/35
+	// TODO: https://github.com/rivet-gg/opengb-engine/issues/35
 	sanitizeOps: false,
 	sanitizeResources: false,
 

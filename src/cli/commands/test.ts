@@ -4,7 +4,7 @@ import { GlobalOpts, initProject } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
 import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 
-// TODO: https://github.com/rivet-gg/open-game-services-engine/issues/86
+// TODO: https://github.com/rivet-gg/opengb-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()
 	.description("Run tests")
 	.arguments("[modules...:string]")

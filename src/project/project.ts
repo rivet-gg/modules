@@ -78,9 +78,7 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	if (missingDepsByModule.size > 0) {
 		let message = bold(brightRed("Unresolved module dependencies:\n"));
 		for (const [moduleName, missingDeps] of missingDepsByModule) {
-			message += `\tCannot resolve dependencies for ${moduleName}: ${
-				missingDeps.join(", ")
-			}\n`;
+			message += `\tCannot resolve dependencies for ${moduleName}: ${missingDeps.join(", ")}\n`;
 		}
 		throw new Error(message);
 	}
@@ -226,9 +224,8 @@ export async function listSourceFiles(
 		// Skip non-local files
 		if (opts.localOnly && module.registry.isExternal) continue;
 
-		const moduleFiles =
-			(await glob.glob("**/*.ts", { cwd: module.path, ignore: "_gen/**" }))
-				.map((x) => resolve(module.path, x));
+		const moduleFiles = (await glob.glob("**/*.ts", { cwd: module.path, ignore: "_gen/**" }))
+			.map((x) => resolve(module.path, x));
 		files.push(...moduleFiles);
 	}
 	return files;

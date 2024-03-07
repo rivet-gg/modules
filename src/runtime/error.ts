@@ -53,10 +53,9 @@ export class RuntimeError extends Error {
 			if (errorConfig) {
 				this.errorConfig = errorConfig;
 				if (errorConfig.description) {
-					this.message =
-						`${this.moduleName}[${this.code}]: ${errorConfig.description}\nTrace: ${
-							JSON.stringify(context.trace)
-						}`;
+					this.message = `${this.moduleName}[${this.code}]: ${errorConfig.description}\nTrace: ${
+						JSON.stringify(context.trace)
+					}`;
 				}
 			} else {
 				console.warn(`Error config not found for ${this.code}`);

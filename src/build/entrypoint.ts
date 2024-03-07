@@ -8,7 +8,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
 
 	// Generate module configs
-	let [modImports, modConfig] = generateModImports(project, opts);
+	const [modImports, modConfig] = generateModImports(project, opts);
 
 	let imports = "";
 
@@ -132,8 +132,7 @@ function generateModImports(project: Project, opts: BuildOpts) {
 		for (const script of mod.scripts.values()) {
 			const runIdent = `modules$$${mod.name}$$${script.name}$$run`;
 
-			modImports +=
-				`import { run as ${runIdent} } from '${mod.path}/scripts/${script.name}.ts';\n`;
+			modImports += `import { run as ${runIdent} } from '${mod.path}/scripts/${script.name}.ts';\n`;
 
 			modConfig += `${JSON.stringify(script.name)}: {`;
 			modConfig += `run: ${runIdent},`;

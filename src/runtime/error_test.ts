@@ -1,4 +1,4 @@
-import { assertExists, assertEquals } from "../deps.ts";
+import { assertEquals, assertExists } from "../deps.ts";
 import { ModuleContext } from "./context.ts";
 import { RuntimeError } from "./error.ts";
 import { newTrace } from "./mod.ts";

@@ -15,7 +15,10 @@ export async function migrateDev(
 	modules: Module[],
 	opts: MigrateDevOpts,
 ) {
-	assert(modules.every(m => !m.registry.isExternal), "Only modules from local registries can run migrateDev because it generates migration files");
+	assert(
+		modules.every((m) => !m.registry.isExternal),
+		"Only modules from local registries can run migrateDev because it generates migration files",
+	);
 
 	await forEachPrismaSchema(
 		project,
