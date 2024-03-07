@@ -324,7 +324,7 @@ export async function runPrismaCommand(
 	const prismaOutput = await new Deno.Command("docker", {
 		args: [
 			"exec",
-			"-ii",
+			...(Deno.stdin.isTerminal() ? ["-it"] : []),
 			"--workdir=/prisma/db",
 			`--user=node:node`,
 			...envFlags,
