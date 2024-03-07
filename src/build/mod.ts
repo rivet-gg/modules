@@ -239,7 +239,7 @@ async function buildSteps(
 				// TODO: Also watch migrations folder in case a migration is created/destroyed
 				files: [resolve(module.path, "db", "schema.prisma")],
 				async build() {
-					if (module.registry.isExternal) {
+					if (module.registry.isExternal || Deno.env.get("CI") === "true") {
 						// Do not alter migrations, only deploy them
 						await migrateDeploy(project, [module]);
 					} else {
