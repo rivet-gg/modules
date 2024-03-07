@@ -1,5 +1,5 @@
-import { dirname, exists, resolve, copy } from "../deps.ts";
-import { glob, bold, brightRed } from "./deps.ts";
+import { copy, dirname, exists, resolve } from "../deps.ts";
+import { bold, brightRed, glob } from "./deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
@@ -29,6 +29,7 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 
 	// Load registries
 	const registries = new Map();
+
 	for (const registryName in projectConfig.registries) {
 		const registryConfig = projectConfig.registries[registryName];
 		const registry = await loadRegistry(
@@ -37,6 +38,25 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 			registryConfig,
 		);
 		registries.set(registryName, registry);
+	}
+
+	if (!registries.has("default")) {
+		const defaultRegistry = await loadRegistry(
+			projectRoot,
+			"default",
+			{
+				git: {
+					url: {
+						https: "https://github.com/rivet-gg/open-game-services.git",
+						ssh: "git@github.com:rivet-gg/opengb-registry.git",
+					},
+					// TODO: https://github.com/rivet-gg/opengb/issues/151
+					rev: "f28b9c0ddbb69fcc092dfff12a18707065a69251",
+					directory: "./modules",
+				},
+			},
+		);
+		registries.set("default", defaultRegistry);
 	}
 
 	// Load modules
@@ -71,7 +91,9 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	if (missingDepsByModule.size > 0) {
 		let message = bold(brightRed("Unresolved module dependencies:\n"));
 		for (const [moduleName, missingDeps] of missingDepsByModule) {
-			message += `\tModule ${moduleName} is missing dependencies: ${missingDeps.join(", ")}\n`;
+			message += `\tModule ${moduleName} is missing dependencies: ${
+				missingDeps.join(", ")
+			}\n`;
 		}
 		throw new Error(message);
 	}
@@ -91,8 +113,6 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 		}
 		throw new Error(message);
 	}
-
-
 
 	return { path: projectRoot, config: projectConfig, registries, modules };
 }
