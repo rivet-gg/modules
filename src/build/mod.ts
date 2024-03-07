@@ -25,6 +25,7 @@ import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
 import { migrateDeploy } from "../migrate/deploy.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
+import { generateClient } from "../migrate/generate.ts";
 
 /**
  * Which format to use for building.
@@ -257,12 +258,18 @@ async function buildSteps(
 						// Do not alter migrations, only deploy them
 						await migrateDeploy(project, [module]);
 					}
+
+					// Generate client
+					await generateClient(project, [module]);
 				},
 			});
 
 			// Run one migration at a time since Prisma is interactive
 			await waitForBuildPromises(buildState);
 		}
+
+		// Wait for promise since we can't run multiple `migrateDev` commands at once
+		await waitForBuildPromises(buildState);
 	}
 
 	buildStep(buildState, {

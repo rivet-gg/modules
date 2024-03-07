@@ -62,13 +62,13 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	// Load modules
 	const modules = new Map<string, Module>();
 	for (const projectModuleName in projectConfig.modules) {
-		const { path, registry } = await fetchAndResolveModule(
+		const { genPath, sourcePath, registry } = await fetchAndResolveModule(
 			projectRoot,
 			projectConfig,
 			registries,
 			projectModuleName,
 		);
-		const module = await loadModule(path, projectModuleName, registry);
+		const module = await loadModule(genPath, sourcePath, projectModuleName, registry);
 		modules.set(projectModuleName, module);
 	}
 
@@ -117,6 +117,23 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	return { path: projectRoot, config: projectConfig, registries, modules };
 }
 
+interface FetchAndResolveModuleOutput {
+	/**
+	 * Path the module was copied to in _gen.
+	 */
+	genPath: string;
+
+	/**
+	 * Path to the original module source code.
+	 */
+	sourcePath: string;
+
+	/**
+	 * Registry the module was fetched from.
+	 */
+	registry: Registry;
+}
+
 /**
  * Clones a registry to a local machine and resovles the path to the module.
  */
@@ -125,7 +142,7 @@ async function fetchAndResolveModule(
 	projectConfig: ProjectConfig,
 	registries: Map<string, Registry>,
 	moduleName: string,
-): Promise<{ path: string; registry: Registry }> {
+): Promise<FetchAndResolveModuleOutput> {
 	const moduleNameIssue = validateIdentifier(moduleName, IdentType.ModuleScripts);
 	if (moduleNameIssue) {
 		throw new Error(moduleNameIssue.toString("module"));
@@ -168,13 +185,12 @@ async function fetchAndResolveModule(
 		projectRoot,
 		"_gen",
 		"modules",
-		registryName,
 		moduleName,
 	);
 	await Deno.mkdir(dirname(dstPath), { recursive: true });
 	await copy(modulePath, dstPath, { overwrite: true });
 
-	return { path: dstPath, registry };
+	return { genPath: dstPath, sourcePath: modulePath, registry };
 }
 
 function registryNameForModule(module: ProjectModuleConfig): string {
@@ -223,4 +239,8 @@ export async function listSourceFiles(
 		files.push(...moduleFiles);
 	}
 	return files;
+}
+
+export async function cleanProject(project: Project) {
+	await Deno.remove(resolve(project.path, "_gen"), { recursive: true });
 }

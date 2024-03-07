@@ -1,3 +1,5 @@
+// Deploys SQL migrations. See `dev.ts` to generate migrations.
+//
 // Wrapper around `prisma migrate deploy`
 
 import { Module, Project } from "../project/mod.ts";
