@@ -1,7 +1,4 @@
-import {
-	RuntimeError,
-	ScriptContext,
-} from "../_gen/scripts/withdraw.ts";
+import { RuntimeError, ScriptContext } from "../_gen/scripts/withdraw.ts";
 
 import { getBalance } from "../utils/get_balance.ts";
 import { setBalance } from "../utils/set_balance.ts";
@@ -21,7 +18,9 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttle({ requests: 25 });
 
-	if (req.amount < 0 || !Number.isFinite(req.amount)) throw new RuntimeError("INVALID_AMOUNT");
+	if (req.amount < 0 || !Number.isFinite(req.amount)) {
+		throw new RuntimeError("INVALID_AMOUNT");
+	}
 
 	return ctx.db.$transaction(async (tx) => {
 		const balance = await getBalance(tx, req.userId);

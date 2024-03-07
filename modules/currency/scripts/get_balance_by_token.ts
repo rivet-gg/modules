@@ -15,7 +15,9 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttle({ requests: 25 });
 
-	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
+	const { userId } = await ctx.modules.users.validateToken({
+		userToken: req.userToken,
+	});
 	const { balance } = await ctx.modules.currency.getBalance({ userId });
 
 	return {

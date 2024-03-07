@@ -1,7 +1,4 @@
-import {
-	RuntimeError,
-	ScriptContext,
-} from "../_gen/scripts/remove_friend.ts";
+import { RuntimeError, ScriptContext } from "../_gen/scripts/remove_friend.ts";
 
 export interface Request {
 	userToken: string;
