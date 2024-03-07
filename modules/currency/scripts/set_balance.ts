@@ -16,12 +16,12 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttle({ requests: 25 });
 
-	if (req.balance < 0) throw new RuntimeError("INVALID_AMOUNT");
+	if (req.balance < 0 || !Number.isFinite(req.balance)) throw new RuntimeError("INVALID_AMOUNT");
 
 	try {
 		await setBalance(ctx.db, req.userId, req.balance);
 	} catch {
-		throw new RuntimeError("INVALID_BALANCE");
+		throw new RuntimeError("INVALID_AMOUNT");
 	}
 
 	return {};

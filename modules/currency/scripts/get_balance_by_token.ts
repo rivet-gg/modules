@@ -13,15 +13,10 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", { requests: 25 });
+	await ctx.modules.rateLimit.throttle({ requests: 25 });
 
-	const { userId } = await ctx.call("users", "validate_token", {
-		userToken: req.userToken,
-	}) as any;
-
-	const { balance } = await ctx.call("currency", "get_balance", {
-		userId,
-	}) as any;
+	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
+	const { balance } = await ctx.modules.currency.getBalance({ userId });
 
 	return {
 		userId,

@@ -10,7 +10,7 @@ export const setBalance = async (
 	userId: string,
 	balance: number,
 ) => {
-	if (balance < 0) throw new RuntimeError("INVALID_BALANCE");
+	if (balance < 0) throw new RuntimeError("INVALID_AMOUNT");
 
 	await db.userWallet.upsert({
 		where: {
