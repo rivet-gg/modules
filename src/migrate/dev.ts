@@ -1,9 +1,8 @@
-// Generates SQL migrations & generates client library.
+// Generates & deploys SQL migrations. See `deploy.ts` to only deploy migrations.
 //
 // Wrapper around `prisma migrate dev`
 
-import { copy, exists, resolve } from "../deps.ts";
-import { buildPrismaPackage } from "./build_prisma_esm.ts";
+import { assert, copy, exists, resolve } from "../deps.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachPrismaSchema } from "./mod.ts";
 
@@ -16,10 +15,12 @@ export async function migrateDev(
 	modules: Module[],
 	opts: MigrateDevOpts,
 ) {
+	assert(modules.every(m => ("local" in m.registry.config)), "Only local modules can run migrateDev because it generates migration files");
+
 	await forEachPrismaSchema(
 		project,
 		modules,
-		async ({ databaseUrl, module, tempDir, generatedClientDir }) => {
+		async ({ databaseUrl, module, tempDir }) => {
 			// Generate migrations & client
 			const status = await new Deno.Command("deno", {
 				args: [
@@ -28,6 +29,7 @@ export async function migrateDev(
 					"npm:prisma@5.9.1",
 					"migrate",
 					"dev",
+					"--skip-generate",
 					...(opts.createOnly ? ["--create-only"] : []),
 				],
 				cwd: tempDir,
@@ -36,149 +38,21 @@ export async function migrateDev(
 				stderr: "inherit",
 				env: {
 					DATABASE_URL: databaseUrl,
-					PRISMA_CLIENT_FORCE_WASM: "true",
 				},
 			}).output();
 			if (!status.success) {
 				throw new Error("Failed to generate migrations");
 			}
 
-			if (!opts.createOnly) {
-				// Specify the path to the library & binary types
-				await (async () => {
-					for (
-						const filename of [
-							"index.d.ts",
-							"default.d.ts",
-							"wasm.d.ts",
-							"edge.d.ts",
-						]
-					) {
-						const filePath = resolve(generatedClientDir, filename);
-						let content = await Deno.readTextFile(filePath);
-						const replaceLineA =
-							`import * as runtime from './runtime/library.js'`;
-						const replaceLineB =
-							`import * as runtime from './runtime/binary.js'`;
-						content = content
-							.replace(
-								replaceLineA,
-								`// @deno-types="./runtime/library.d.ts"\n${replaceLineA}`,
-							)
-							.replace(
-								replaceLineB,
-								`// @deno-types="./runtime/binary.d.ts"\n${replaceLineB}`,
-							)
-							.replace(/from '.\/default'/g, `from './default.d.ts'`);
-						await Deno.writeTextFile(filePath, content);
-					}
-				})();
-
-				// Compile the ESM library
-				buildPrismaPackage(
-					generatedClientDir,
-					resolve(generatedClientDir, "esm.js"),
-				);
-			}
-
 			// Copy back migrations dir
+			//
+			// Copy for both `path` (that we'll use later in this script) and
+			// `sourcePath` (which is the original module's source)
 			const tempMigrationsDir = resolve(tempDir, "migrations");
-			const migrationsDir = resolve(module.path, "db", "migrations");
 			if (await exists(tempMigrationsDir)) {
-				await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
+				await copy(tempMigrationsDir, resolve(module.path, "db", "migrations"), { overwrite: true });
+				await copy(tempMigrationsDir, resolve(module.sourcePath, "db", "migrations"), { overwrite: true });
 			}
 		},
 	);
 }
-
-// export async function __TEMP__migrateDev(
-// 	project: Project,
-// 	module: Module,
-// 	opts: MigrateDevOpts,
-// ) {
-// 	const databaseUrl = "postgres://username:password@localhost:5432/database";
-// 	// Setup database
-// 	const defaultDatabaseUrl = Deno.env.get("DATABASE_URL") ??
-// 		"postgres://postgres:password@localhost:5432/postgres";
-
-// 	// Create dirs
-// 	const tempDir = await Deno.makeTempDir();
-// 	const dbDir = resolve(module.path, "db");
-// 	const generatedClientDir = resolve(
-// 		module.path,
-// 		"_gen",
-// 		"prisma",
-// 	);
-
-// 	// Copy db
-// 	await copy(dbDir, tempDir, { overwrite: true });
-
-// 	// Generate migrations & client
-// 	console.log("Generating migrations");
-// 	const status = await new Deno.Command("deno", {
-// 		args: [
-// 			"run",
-// 			"-A",
-// 			"npm:prisma@5.9.1",
-// 			"migrate",
-// 			"dev",
-// 			...(opts.createOnly ? ["--create-only"] : []),
-// 		],
-// 		cwd: tempDir,
-// 		stdin: "inherit",
-// 		stdout: "inherit",
-// 		stderr: "inherit",
-// 		env: {
-// 			DATABASE_URL: databaseUrl,
-// 			PRISMA_CLIENT_FORCE_WASM: "true",
-// 		},
-// 	}).output();
-// 	if (!status.success) {
-// 		throw new Error("Failed to generate migrations");
-// 	}
-
-// 	if (!opts.createOnly) {
-// 		// Specify the path to the library & binary types
-// 		await (async () => {
-// 			for (
-// 				const filename of [
-// 					"index.d.ts",
-// 					"default.d.ts",
-// 					"wasm.d.ts",
-// 					"edge.d.ts",
-// 				]
-// 			) {
-// 				const filePath = resolve(generatedClientDir, filename);
-// 				let content = await Deno.readTextFile(filePath);
-// 				const replaceLineA = `import * as runtime from './runtime/library.js'`;
-// 				const replaceLineB = `import * as runtime from './runtime/binary.js'`;
-// 				content = content
-// 					.replace(
-// 						replaceLineA,
-// 						`// @deno-types="./runtime/library.d.ts"\n${replaceLineA}`,
-// 					)
-// 					.replace(
-// 						replaceLineB,
-// 						`// @deno-types="./runtime/binary.d.ts"\n${replaceLineB}`,
-// 					)
-// 					.replace(/from '.\/default'/g, `from './default.d.ts'`);
-// 				await Deno.writeTextFile(filePath, content);
-// 			}
-// 		})();
-
-// 		// Compile the ESM library
-// 		console.log("Compiling ESM library");
-// 		buildPrismaPackage(
-// 			generatedClientDir,
-// 			resolve(generatedClientDir, "esm.js"),
-// 		);
-// 	}
-
-// 	// Copy back migrations dir
-// 	console.log("Copying migrations back");
-// 	const tempMigrationsDir = resolve(tempDir, "migrations");
-// 	const migrationsDir = resolve(module.path, "db", "migrations");
-// 	if (await exists(tempMigrationsDir)) {
-// 		await copy(tempMigrationsDir, migrationsDir, { overwrite: true });
-// 	}
-// }

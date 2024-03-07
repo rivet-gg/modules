@@ -13,6 +13,7 @@ import { createCommand } from "./commands/create.ts";
 import { lintCommand } from "./commands/lint.ts";
 import { formatCommand } from "./commands/format.ts";
 import { initCommand } from "./commands/init.ts";
+import { cleanCommand } from "./commands/clean.ts";
 
 const command = new Command();
 command.action(() => command.showHelp())
@@ -21,11 +22,12 @@ command.action(() => command.showHelp())
 	.command("create", createCommand)
 	.command("start", startCommand)
 	.command("test", testCommand)
-	.command("db", dbCommand)
+	.command("database, db", dbCommand)
 	.command("sdk", sdkCommand)
 	.command("format, fmt", formatCommand)
 	.command("lint", lintCommand)
 	.command("build", buildCommand)
+	.command("clean", cleanCommand)
 	.command("help", new HelpCommand().global())
 	.command("completions", new CompletionsCommand())
 	.error((error, cmd) => {
