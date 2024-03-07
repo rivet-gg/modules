@@ -2,7 +2,7 @@
 //
 // Wrapper around `prisma generate`
 
-import { resolve } from "../deps.ts";
+import { copy, emptyDir, resolve } from "../deps.ts";
 import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachPrismaSchema, runPrismaCommand } from "./mod.ts";
@@ -14,7 +14,10 @@ export async function generateClient(
 	await forEachPrismaSchema(
 		project,
 		modules,
-		async ({ databaseUrl, generatedClientDir }) => {
+		async ({ module, databaseUrl, generatedClientDir }) => {
+			// Clear generated dir
+			await emptyDir(generatedClientDir);
+
 			// Generate client
 			await runPrismaCommand(project, {
 				args: ["generate"],
@@ -55,6 +58,11 @@ export async function generateClient(
 				generatedClientDir,
 				resolve(generatedClientDir, "esm.js"),
 			);
+
+			// Copy to module
+			const dstDir = resolve(module.path, "_gen", "prisma");
+			await emptyDir(dstDir);
+			await copy(generatedClientDir, dstDir, { overwrite: true });
 		},
 	);
 }

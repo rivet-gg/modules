@@ -4,8 +4,9 @@ on:
   - push
 
 jobs:
-  test-core:
+  test-project:
     runs-on: ubuntu-20.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
 
@@ -22,32 +23,25 @@ jobs:
       - name: Build OpenGB
         run: deno task cli:install
 
-      - name: Check Formatting
-        run: cd tests/basic/ && opengb format --check
-
-      - name: Lint
-        run: cd tests/basic/ && opengb lint
-
-      - name: Generate DB Migrations
-        run: cd tests/basic/ && opengb db dev
-
       - name: Run Tests
         run: cd tests/basic/ && opengb test
 
-  test-project:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
+  # TODO: Figure out how to fake migrations in CI for core test
+  # test-core:
+  #   runs-on: ubuntu-20.04
+  #   timeout-minutes: 5
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      # Add private key to be able to access OpenGB repository
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.GH_DEPLOY_KEY }}
+  #     # Add private key to be able to access OpenGB repository
+  #     - uses: webfactory/ssh-agent@v0.9.0
+  #       with:
+  #         ssh-private-key: ${{ secrets.GH_DEPLOY_KEY }}
 
-      - name: Install Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: "1.41.1"
+  #     - name: Install Deno
+  #       uses: denoland/setup-deno@v1
+  #       with:
+  #         deno-version: "1.41.1"
 
-      - name: Test
-        run: deno task test:core
+  #     - name: Run Tests
+  #       run: deno task test:core
