@@ -47,7 +47,19 @@ export async function forEachDatabase(
 	// Create client that connects to the default database
 	if (!DB_STATE.defaultClient) {
 		DB_STATE.defaultClient = new PostgresClient(defaultDatabaseUrl);
-		await DB_STATE.defaultClient.connect();
+		for (let i = 0; i < 5; i++) {
+			try {
+				await DB_STATE.defaultClient.connect();
+			} catch (e) {
+				if (i >= 4) throw e;
+
+				console.error(e);
+				console.error("Failed to connect to the default database, retrying in 1s...");
+				await new Promise((r) => setTimeout(r, 1000));
+				DB_STATE.defaultClient = new PostgresClient(defaultDatabaseUrl);
+				continue;
+			}
+		}
 
 		globalThis.addEventListener("unload", async () => {
 			await DB_STATE.defaultClient?.end();
