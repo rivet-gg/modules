@@ -2,21 +2,21 @@ import { Runtime } from "./runtime.ts";
 import { Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
-import { buildRegistryProxy } from "./proxy.ts";
-import { BaseRegistryBounds, RegistryCallFn } from "../types/registry.ts";
-import { CamelifyRegistry } from "../types/case_conversions.ts";
+import { buildRegistryProxy, MapFrom } from "./proxy.ts";
+import { RegistryCallFn } from "../types/registry.ts";
 
-export class Context<Registry> {
+export class Context<RegistryT, RegistryCamelT> {
 	public constructor(
-		protected readonly runtime: Runtime<Registry>,
+		protected readonly runtime: Runtime<RegistryT, RegistryCamelT>,
 		public readonly trace: Trace,
+		private readonly camelMap: MapFrom<RegistryCamelT, RegistryT>,
 	) {}
 
 	protected isAllowedModuleName(_moduleName: string): boolean {
 		return true;
 	}
 
-	public call: RegistryCallFn<Context<Registry>, Registry> = async function (
+	public call: RegistryCallFn<this, RegistryT> = async function (
 		moduleName,
 		scriptName,
 		req,
@@ -51,6 +51,7 @@ export class Context<Registry> {
 				moduleName,
 				this.runtime.postgres.getOrCreatePool(moduleName, module)?.prisma,
 				scriptName,
+				this.camelMap,
 			);
 
 			// TODO: Replace with OGBE-15
@@ -90,9 +91,9 @@ export class Context<Registry> {
 	};
 
 	public get modules() {
-		return buildRegistryProxy<CamelifyRegistry<Registry> & BaseRegistryBounds>(
-			this.runtime.config.modules,
+		return buildRegistryProxy<RegistryT, RegistryCamelT>(
 			this,
+			this.camelMap,
 		);
 	}
 
@@ -155,14 +156,15 @@ export class Context<Registry> {
 /**
  * Context for a module.
  */
-export class ModuleContext<RegistryT, TDatabase> extends Context<RegistryT> {
+export class ModuleContext<RegistryT, RegistryCamelT, TDatabase> extends Context<RegistryT, RegistryCamelT> {
 	public constructor(
-		runtime: Runtime<RegistryT>,
+		runtime: Runtime<RegistryT, RegistryCamelT>,
 		trace: Trace,
 		public readonly moduleName: string,
 		public readonly db: TDatabase,
+		camelMap: MapFrom<RegistryCamelT, RegistryT>,
 	) {
-		super(runtime, trace);
+		super(runtime, trace, camelMap);
 	}
 
 	protected isAllowedModuleName(targetModuleName: string): boolean {
@@ -176,19 +178,22 @@ export class ModuleContext<RegistryT, TDatabase> extends Context<RegistryT> {
 /**
  * Context for a script.
  */
-export class ScriptContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {
+export class ScriptContext<RegistryT, RegistryCamelT, TDatabase>
+	extends ModuleContext<RegistryT, RegistryCamelT, TDatabase> {
 	public constructor(
-		runtime: Runtime<RegistryT>,
+		runtime: Runtime<RegistryT, RegistryCamelT>,
 		trace: Trace,
 		moduleName: string,
 		db: TDatabase,
 		public readonly scriptName: string,
+		camelMap: MapFrom<RegistryCamelT, RegistryT>,
 	) {
-		super(runtime, trace, moduleName, db);
+		super(runtime, trace, moduleName, db, camelMap);
 	}
 }
 
 /**
  * Context for a test.
  */
-export class TestContext<RegistryT, TDatabase> extends ModuleContext<RegistryT, TDatabase> {}
+export class TestContext<RegistryT, RegistryCamelT, TDatabase>
+	extends ModuleContext<RegistryT, RegistryCamelT, TDatabase> {}

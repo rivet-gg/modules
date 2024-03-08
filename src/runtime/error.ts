@@ -39,7 +39,11 @@ export class RuntimeError extends Error {
 	/**
 	 * Called by `Context` when an error is caught.
 	 */
-	public enrich<RegistryT>(runtime: Runtime<RegistryT>, context: Context<RegistryT>) {
+	public enrich<
+		RegistryT,
+		RuntimeCamelT,
+		Ctx extends Context<RegistryT, RuntimeCamelT>,
+	>(runtime: Runtime<RegistryT, RuntimeCamelT>, context: Ctx) {
 		// Add context to error
 		if (context instanceof ModuleContext) {
 			this.moduleName = context.moduleName;

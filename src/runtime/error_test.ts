@@ -4,9 +4,15 @@ import { RuntimeError } from "./error.ts";
 import { newTrace } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
 
+type ErrReg = { test_module: Record<string, never> };
+type ErrRegCamel = { testModule: Record<string, never> };
+
 Deno.test("error", async () => {
+	const camelMap = {
+		testModule: {},
+	} as const;
 	// Setup
-	const runtime = new Runtime({
+	const runtime = new Runtime<ErrReg, ErrRegCamel>({
 		modules: {
 			test_module: {
 				scripts: {},
@@ -16,12 +22,13 @@ Deno.test("error", async () => {
 				dependencies: new Set(["test_module"]),
 			},
 		},
-	});
-	const moduleContext = new ModuleContext(
+	}, camelMap);
+	const moduleContext = new ModuleContext<ErrReg, ErrRegCamel, undefined>(
 		runtime,
 		newTrace({ internalTest: {} }),
 		"test_module",
 		undefined,
+		camelMap,
 	);
 
 	// Create error

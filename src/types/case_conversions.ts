@@ -1,50 +1,12 @@
-type SplitChar = "_" | "-";
+export function camelify(snake: string) {
+	return snake.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+}
 
-type BeforeFirstSplit<T extends string> = T extends `${infer F}${SplitChar}${string}`
-	? F extends `${string}${SplitChar}${string}` ? never
-	: F
-	: T;
-type AfterFirstSplit<T extends string> = T extends `${BeforeFirstSplit<T>}${SplitChar}${infer R}` ? R
-	: "";
+export function pascalify(snake: string) {
+	const camel = camelify(snake);
+	return camel[0].toUpperCase() + camel.slice(1);
+}
 
-type LowerAsciiChar =
-	| "a"
-	| "b"
-	| "c"
-	| "d"
-	| "e"
-	| "f"
-	| "g"
-	| "h"
-	| "i"
-	| "j"
-	| "k"
-	| "l"
-	| "m"
-	| "n"
-	| "o"
-	| "p"
-	| "q"
-	| "r"
-	| "s"
-	| "t"
-	| "u"
-	| "v"
-	| "w"
-	| "x"
-	| "y"
-	| "z";
-type AsciiChar = Uppercase<LowerAsciiChar> | LowerAsciiChar;
-
-type NonFirstChars<T extends string> = T extends `${AsciiChar}${infer NonFirst}` ? NonFirst : "";
-type FirstChar<T extends string> = T extends `${infer First}${NonFirstChars<T>}` ? First : "";
-type CapitalizeFirst<T extends string> = `${Uppercase<FirstChar<T>>}${NonFirstChars<T>}`;
-
-export type CamelCasified<T extends string> = T extends "" ? T
-	: `${BeforeFirstSplit<T>}${CapitalizeFirst<CamelCasified<AfterFirstSplit<T>>>}`;
-
-export type CamelifyRegistry<Registry> = {
-	[Module in keyof Registry & string as CamelCasified<Module>]: {
-		[Script in keyof Registry[Module] & string as CamelCasified<Script>]: Registry[Module][Script];
-	};
-};
+export function snakeify(camel: string) {
+	return camel.replace(/[A-Z]/g, (g) => `_${g.toLowerCase()}`);
+}
