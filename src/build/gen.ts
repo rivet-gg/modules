@@ -26,6 +26,14 @@ export async function compileModuleHelper(
 		
 		${dbImports}
 		
+		/**
+		 * Empty Request/Response type.
+		 * 
+		 * This only exists because of some quirks of empty interfaces in
+		 * typescript that can be read more about here:
+		 * https://www.totaltypescript.com/the-empty-object-type-in-typescript
+		 */
+		export type Empty = Record<string, never>;
 		export { RuntimeError } from "${runtimePath}";
 		export type ModuleContext = ModuleContextInner<RegistryTypeInner, ${
 		module.db ? "prisma.PrismaClient" : "undefined"
