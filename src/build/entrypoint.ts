@@ -190,13 +190,13 @@ function generateDbDriver(opts: BuildOpts, prismaImportName: string) {
 		dbDriver += `},`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		dbDriver += `(url: string) => {
-			const pgPool = new neon.Client({ connectionString: url });
-			const adapter = new PrismaNeonHTTP(pgPool);
+			const client = neon.neon(url);
+			const adapter = new PrismaNeonHTTP(client);
 			const prisma = new ${prismaImportName}.PrismaClient({
 				adapter,
 				log: ['query', 'info', 'warn', 'error'],
 			});
-			return { prisma, pgPool };
+			return { prisma, pgPool: undefined };
 		},`;
 		dbDriver += `},`;
 	}

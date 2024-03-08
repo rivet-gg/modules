@@ -63,6 +63,7 @@ export interface BuildCache {
 interface BuildCachePersist {
 	version: number;
 	fileHashes: Record<string, string>;
+	exprHashes: Record<string, string>;
 	scriptSchemas: Record<
 		string,
 		Record<string, { request: tjs.Definition; response: tjs.Definition }>
@@ -84,7 +85,7 @@ export async function compareHash(
 		const newHash = await hashFile(cache, path);
 		if (newHash != oldHash) {
 			hasChanged = true;
-			console.log(`✏️ ${path}`);
+			console.log(`✏️  ${path}`);
 		}
 	}
 
@@ -112,6 +113,48 @@ export async function hashFile(
 }
 
 /**
+ * Checks if the hash of an expression has changed. Returns true if expression changed.
+ */
+export async function compareExprHash(
+	cache: BuildCache,
+	exprs: Record<string, string>,
+): Promise<boolean> {
+	// We hash all files regardless of if we already know there was a change so
+	// we can re-use these hashes on the next run to see if anything changed.
+	let hasChanged = false;
+	for (const [name, value] of Object.entries(exprs)) {
+		const oldHash = cache.oldCache.exprHashes[name];
+		const newHash = await hashExpr(cache, name, value);
+		if (newHash != oldHash) {
+			hasChanged = true;
+			console.log(`✏️  ${name}`);
+		}
+	}
+
+	return hasChanged;
+}
+
+export async function hashExpr(
+	cache: BuildCache,
+	name: string,
+	value: any,
+): Promise<string> {
+	// Return already calculated hash
+	let hash = cache.newCache.exprHashes[name];
+	if (hash) return hash;
+
+	// Calculate hash
+	const exprHashBuffer = await crypto.subtle.digest(
+		"SHA-256",
+		await new Blob([value]).arrayBuffer(),
+	);
+	hash = encodeHex(exprHashBuffer);
+	cache.newCache.exprHashes[name] = hash;
+
+	return hash;
+}
+
+/**
  * State for the current build process.
  */
 interface BuildState {
@@ -128,6 +171,7 @@ interface BuildStepOpts {
 	finally?: () => Promise<void>;
 	always?: boolean;
 	files?: string[];
+	expressions?: Record<string, any>;
 }
 
 // TODO: Convert this to a build flag
@@ -149,12 +193,18 @@ export function buildStep(
 	}
 
 	const fn = async () => {
+		// These are not lazily evaluated one after the other because the hashes for both need to be calculated
+		const fileDiff = opts.files && await compareHash(buildState.cache, opts.files);
+		const exprDiff = opts.expressions &&
+			await compareExprHash(buildState.cache, opts.expressions);
+
 		// TODO: max parallel build steps
 		// TODO: error handling
 		if (
 			FORCE_BUILD ||
 			opts.always ||
-			(opts.files && await compareHash(buildState.cache, opts.files))
+			fileDiff ||
+			exprDiff
 		) {
 			console.log(`🔨 ${stepName}`);
 			await opts.build();
@@ -188,6 +238,7 @@ export async function build(project: Project, opts: BuildOpts) {
 		oldCache = {
 			version: 1,
 			fileHashes: {},
+			exprHashes: {},
 			scriptSchemas: {},
 		};
 	}
@@ -198,6 +249,7 @@ export async function build(project: Project, opts: BuildOpts) {
 		newCache: {
 			version: 1,
 			fileHashes: {},
+			exprHashes: {},
 			scriptSchemas: {},
 		} as BuildCachePersist,
 	} as BuildCache;
@@ -231,6 +283,10 @@ async function buildSteps(
 	project: Project,
 	opts: BuildOpts,
 ) {
+	// TODO: This does not reuse the Prisma dir or the database connection, so is extra slow on the first run.
+	// Figure out how to make this use one `migrateDev` command and pass in any modified modules For now,
+	// these need to be migrated individually because `prisma migrate dev` is an interactive command. Also,
+	// making a database change and waiting for all other databases to re-apply will take a long time.
 	for (const module of project.modules.values()) {
 		if (module.db) {
 			buildStep(buildState, {
@@ -238,17 +294,22 @@ async function buildSteps(
 				module,
 				// TODO: Also watch migrations folder in case a migration is created/destroyed
 				files: [resolve(module.path, "db", "schema.prisma")],
+				expressions: {
+					"Runtime": opts.runtime,
+				},
 				async build() {
 					if (module.registry.isExternal || Deno.env.get("CI") === "true") {
 						// Do not alter migrations, only deploy them
 						await migrateDeploy(project, [module]);
 					} else {
 						// Update migrations
-						await migrateDev(project, [module], { createOnly: false });
+						await migrateDev(project, [module], {
+							createOnly: false,
+						});
 					}
 
 					// Generate client
-					await generateClient(project, [module]);
+					await generateClient(project, [module], opts.runtime);
 				},
 			});
 
@@ -313,48 +374,84 @@ async function buildSteps(
 			name: "Bundle",
 			always: true,
 			async build() {
-				const outfile = resolve(project.path, "_gen", "/output.js");
+				const gen = resolve(project.path, "_gen");
+				const bundledFile = resolve(gen, "/output.js");
 
 				await esbuild.build({
-					entryPoints: [resolve(project.path, "_gen", "entrypoint.ts")],
-					outfile,
+					entryPoints: [resolve(gen, "entrypoint.ts")],
+					outfile: bundledFile,
 					format: "esm",
 					platform: "neutral",
-					plugins: [
-						...denoPlugins(),
+					plugins: [...denoPlugins()],
+					external: [
+						// Don't include deno's crypto, its a standard js API
+						"*crypto/crypto.ts",
+						// Exclude node APIs, most are included in CF workers with
+						// https://developers.cloudflare.com/workers/runtime-apis/nodejs/
+						"node:*",
+						// Wasm must be loaded as a separate file manually, cannot be bundled
+						"*.wasm",
+						"*.wasm?module",
 					],
-					external: ["*.wasm", "*.wasm?module"],
 					bundle: true,
 					minify: true,
 				});
 
-				await esbuild.stop();
+				// For some reason causes the program to exit early instead of waiting
+				// await esbuild.stop();
 
 				if (opts.runtime == Runtime.Cloudflare) {
-					let data = await Deno.readTextFile(outfile);
+					let bundleStr = await Deno.readTextFile(bundledFile);
 
-					// Remove use of `FinalizationRegistry` (not supported in cf workers)
-					// https://github.com/cloudflare/workers-sdk/issues/2258
-					const registryMatch =
-						/(?<varName>\w+)=new FinalizationRegistry\(\w+=>\w+\.__wbg_digestcontext_free\(\w+>>>0\)\),/
-							.exec(data);
-					if (registryMatch?.groups) {
-						data = data.slice(0, registryMatch.index) +
-							data.slice(registryMatch.index + registryMatch[0].length);
-
-						const registryName = registryMatch.groups.varName;
-						data = data.replace(
-							new RegExp(`${registryName}.register\(\w+,\w+\.__wbg_ptr,\w+\),`),
-							"",
-						);
-						data = data.replace(`${registryName}.unregister\(this\),`, "");
-					}
+					// Remove unused import to deno crypto
+					bundleStr = bundleStr.replace(
+						/import\{crypto as \w+\}from"https:\/\/deno\.land\/std@[\d\.]+\/crypto\/crypto\.ts";/,
+						"",
+					);
 
 					// Remove unused import (`node:timers` isn't available in cf workers)
 					// https://developers.cloudflare.com/workers/runtime-apis/nodejs/
-					data = data.replaceAll(`import"node:timers";`, "");
+					bundleStr = bundleStr.replaceAll(`import"node:timers";`, "");
 
-					await Deno.writeTextFile(outfile, data);
+					// Find any `query-engine.wasm`
+					let wasmPath;
+					for (const module of project.modules.values()) {
+						const moduleWasmPath = resolve(
+							module.path,
+							"_gen",
+							"prisma",
+							"query-engine.wasm",
+						);
+
+						if (await exists(moduleWasmPath)) {
+							wasmPath = moduleWasmPath;
+							break;
+						}
+					}
+
+					// Check if wasm is actually required
+					if (wasmPath) {
+						// Make wasm import relative
+						bundleStr = bundleStr.replaceAll(
+							/file:[\w\\/\.\-]+query-engine\.wasm/g,
+							"query-engine.wasm",
+						);
+					} else if (/"[\w\\/\.\-]+query-engine\.wasm/.test(bundleStr)) {
+						throw new Error("Failed to find required query-engine.wasm");
+					}
+
+					await Deno.writeTextFile(bundledFile, bundleStr);
+
+					// Write manifest of file paths for easier upload from Rivet CLI
+					const manifest = {
+						bundle: bundledFile,
+						wasm: wasmPath,
+					};
+
+					await Deno.writeTextFile(
+						resolve(gen, "manifest.json"),
+						JSON.stringify(manifest),
+					);
 				}
 			},
 		});
