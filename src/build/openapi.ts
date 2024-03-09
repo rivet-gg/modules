@@ -9,7 +9,7 @@ export async function generateOpenApi(project: Project) {
 	const schema: OpenApiDefinition = {
 		openapi: "3.1.0",
 		info: {
-			title: "Open Game Services",
+			title: "Open Game Backend",
 			version: "1.0.0",
 		},
 		servers: [
@@ -21,7 +21,7 @@ export async function generateOpenApi(project: Project) {
 		tags: [
 			{
 				name: "Open Game Backend",
-				description: "Open Game Services",
+				description: "Open Game Backend",
 			},
 		],
 		paths: {} as Record<string, OpenApiDefinition>,
