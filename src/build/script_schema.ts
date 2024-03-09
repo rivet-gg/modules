@@ -5,8 +5,6 @@ import { createWorkerPool } from "../utils/worker_pool.ts";
 
 const WORKER_POOL = createWorkerPool<WorkerRequest, WorkerResponse>({
 	source: import.meta.resolve("./script_schema.worker.ts"),
-	// Leave 1 CPU core free
-	count: Math.max(1, navigator.hardwareConcurrency - 1),
 });
 
 export async function compileScriptSchema(
