@@ -1,5 +1,4 @@
-import { assertExists, denoPlugins, esbuild, exists, resolve, tjs } from "../deps.ts";
-import { crypto, encodeHex } from "./deps.ts";
+import { assertExists, denoPlugins, esbuild, exists, resolve } from "../deps.ts";
 import { compileScriptSchema } from "./script_schema.ts";
 import { generateEntrypoint } from "./entrypoint.ts";
 import { generateOpenApi } from "./openapi.ts";
@@ -15,9 +14,7 @@ import { migrateDeploy } from "../migrate/deploy.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { generateClient } from "../migrate/generate.ts";
 import { compileModuleConfigSchema } from "./module_config_schema.ts";
-
-// TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
-const CACHE_VERSION = 3;
+import { BuildState, buildStep, createBuildState, waitForBuildPromises, writeBuildState } from "../build_state/mod.ts";
 
 /**
  * Which format to use for building.
@@ -52,248 +49,16 @@ export interface BuildOpts {
 	dbDriver: DbDriver;
 }
 
-/**
- * Stores the state of all of the generated files to speed up subsequent build
- * steps.
- */
-export interface BuildCache {
-	oldCache: BuildCachePersist;
-	newCache: BuildCachePersist;
-}
-
-/**
- * Data from `BuildCache` that gets persisted.
- */
-interface BuildCachePersist {
-	version: number;
-	fileHashes: Record<string, FileHash>;
-	exprHashes: Record<string, string>;
-	moduleConfigSchemas: Record<string, tjs.Definition>;
-	scriptSchemas: Record<
-		string,
-		Record<string, { request: tjs.Definition; response: tjs.Definition }>
-	>;
-}
-
-type FileHash = { hash: string } | { missing: true };
-
-function createDefaultCache(): BuildCachePersist {
-	return {
-		version: CACHE_VERSION,
-		fileHashes: {},
-		exprHashes: {},
-		moduleConfigSchemas: {},
-		scriptSchemas: {},
-	};
-}
-
-/**
- * Checks if the hash of a file has changed. Returns true if file changed.
- */
-export async function compareHash(
-	cache: BuildCache,
-	paths: string[],
-): Promise<boolean> {
-	// We hash all files regardless of if we already know there was a change so
-	// we can re-use these hashes on the next run to see if anything changed.
-	let hasChanged = false;
-	for (const path of paths) {
-		const oldHash = cache.oldCache.fileHashes[path];
-		const newHash = await hashFile(cache, path);
-		if (!oldHash) {
-			hasChanged = true;
-		} else if ("missing" in oldHash && "missing" in newHash) {
-			hasChanged = oldHash.missing != newHash.missing;
-		} else if ("hash" in oldHash && "hash" in newHash) {
-			hasChanged = oldHash.hash != newHash.hash;
-		} else {
-			hasChanged = true;
-		}
-
-		if (hasChanged) console.log(`✏️ ${path}`);
-	}
-
-	return hasChanged;
-}
-
-export async function hashFile(
-	cache: BuildCache,
-	path: string,
-): Promise<FileHash> {
-	// Return already calculated hash
-	let hash = cache.newCache.fileHashes[path];
-	if (hash) return hash;
-
-	if (await exists(path)) {
-		// Calculate hash
-		const file = await Deno.open(path, { read: true });
-		const fileHashBuffer = await crypto.subtle.digest(
-			"SHA-256",
-			file.readable,
-		);
-		hash = { hash: encodeHex(fileHashBuffer) };
-	} else {
-		// Specify missing
-		hash = { missing: true };
-	}
-
-	cache.newCache.fileHashes[path] = hash;
-	return hash;
-}
-
-/**
- * Checks if the hash of an expression has changed. Returns true if expression changed.
- */
-export async function compareExprHash(
-	cache: BuildCache,
-	exprs: Record<string, string>,
-): Promise<boolean> {
-	// We hash all files regardless of if we already know there was a change so
-	// we can re-use these hashes on the next run to see if anything changed.
-	let hasChanged = false;
-	for (const [name, value] of Object.entries(exprs)) {
-		const oldHash = cache.oldCache.exprHashes[name];
-		const newHash = await hashExpr(cache, name, value);
-		if (newHash != oldHash) {
-			hasChanged = true;
-			console.log(`✏️  ${name}`);
-		}
-	}
-
-	return hasChanged;
-}
-
-export async function hashExpr(
-	cache: BuildCache,
-	name: string,
-	value: any,
-): Promise<string> {
-	// Return already calculated hash
-	let hash = cache.newCache.exprHashes[name];
-	if (hash) return hash;
-
-	// Calculate hash
-	const exprHashBuffer = await crypto.subtle.digest(
-		"SHA-256",
-		await new Blob([value]).arrayBuffer(),
-	);
-	hash = encodeHex(exprHashBuffer);
-	cache.newCache.exprHashes[name] = hash;
-
-	return hash;
-}
-
-/**
- * State for the current build process.
- */
-interface BuildState {
-	cache: BuildCache;
-	promises: Promise<void>[];
-}
-
-interface BuildStepOpts {
-	name: string;
-	module?: Module;
-	script?: Script;
-	build: () => Promise<void>;
-	alreadyCached?: () => Promise<void>;
-	finally?: () => Promise<void>;
-	always?: boolean;
-	files?: string[];
-	expressions?: Record<string, any>;
-}
-
-// TODO: Convert this to a build flag
-const FORCE_BUILD = false;
-
-/**
- * Plans a build step.
- */
-export function buildStep(
-	buildState: BuildState,
-	opts: BuildStepOpts,
-) {
-	// Build step name
-	let stepName = opts.name;
-	if (opts.module && opts.script) {
-		stepName += ` (${opts.module.name}.${opts.script.name})`;
-	} else if (opts.module) {
-		stepName += ` (${opts.module.name})`;
-	}
-
-	const fn = async () => {
-		// These are not lazily evaluated one after the other because the hashes for both need to be calculated
-		const fileDiff = opts.files && await compareHash(buildState.cache, opts.files);
-		const exprDiff = opts.expressions &&
-			await compareExprHash(buildState.cache, opts.expressions);
-
-		// TODO: max parallel build steps
-		// TODO: error handling
-		if (
-			FORCE_BUILD ||
-			opts.always ||
-			fileDiff ||
-			exprDiff
-		) {
-			console.log(`🔨 ${stepName}`);
-			await opts.build();
-		} else {
-			if (opts.alreadyCached) await opts.alreadyCached();
-		}
-
-		if (opts.finally) await opts.finally();
-	};
-
-	buildState.promises.push(fn());
-}
-
-async function waitForBuildPromises(buildState: BuildState): Promise<void> {
-	const promises = buildState.promises;
-	buildState.promises = [];
-	await Promise.all(promises);
-}
-
 export async function build(project: Project, opts: BuildOpts) {
-	const buildCachePath = resolve(project.path, "_gen", "cache.json");
-
 	// Required for `migrateDev` and `migrateDeploy`
 	await ensurePostgresRunning(project);
 
-	// Read hashes from file
-	let oldCache: BuildCachePersist;
-	if (await exists(buildCachePath)) {
-		const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
-
-		// Validate version
-		if (oldCacheAny.version == CACHE_VERSION) {
-			oldCache = oldCacheAny;
-		} else {
-			oldCache = createDefaultCache();
-		}
-	} else {
-		oldCache = createDefaultCache();
-	}
-
-	// Build cache
-	const buildCache = {
-		oldCache,
-		newCache: createDefaultCache(),
-	} as BuildCache;
-
-	// Build state
-	const buildState = {
-		cache: buildCache,
-		promises: [],
-	} as BuildState;
+	const buildState = await createBuildState(project);
 
 	// Run build
 	await buildSteps(buildState, project, opts);
 
-	// Write cache
-	await Deno.writeTextFile(
-		buildCachePath,
-		JSON.stringify(buildState.cache.newCache),
-	);
+	await writeBuildState(buildState);
 
 	console.log("✅ Finished");
 
@@ -502,7 +267,7 @@ async function buildModule(
 		},
 		async alreadyCached() {
 			// Read schema from cache
-			const schema = buildState.cache.oldCache.moduleConfigSchemas[module.name];
+			const schema = buildState.oldCache.moduleConfigSchemas[module.name];
 			assertExists(schema);
 			module.configSchema = schema;
 		},
@@ -510,7 +275,7 @@ async function buildModule(
 			assertExists(module.configSchema);
 
 			// Populate cache with response
-			buildState.cache.newCache.moduleConfigSchemas[module.name] = module.configSchema;
+			buildState.cache.moduleConfigSchemas[module.name] = module.configSchema;
 		},
 	});
 
@@ -568,7 +333,7 @@ async function buildScript(
 		},
 		async alreadyCached() {
 			// Read schemas from cache
-			const schemas = buildState.cache.oldCache.scriptSchemas[module.name][script.name];
+			const schemas = buildState.oldCache.scriptSchemas[module.name][script.name];
 			assertExists(schemas);
 			script.requestSchema = schemas.request;
 			script.responseSchema = schemas.response;
@@ -578,10 +343,10 @@ async function buildScript(
 			assertExists(script.responseSchema);
 
 			// Populate cache with response
-			if (!buildState.cache.newCache.scriptSchemas[module.name]) {
-				buildState.cache.newCache.scriptSchemas[module.name] = {};
+			if (!buildState.cache.scriptSchemas[module.name]) {
+				buildState.cache.scriptSchemas[module.name] = {};
 			}
-			buildState.cache.newCache.scriptSchemas[module.name][script.name] = {
+			buildState.cache.scriptSchemas[module.name][script.name] = {
 				request: script.requestSchema,
 				response: script.responseSchema,
 			};
