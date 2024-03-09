@@ -33,6 +33,9 @@ interface PendingJob<Req, Res> {
 
 	/** Reject promise. */
 	reject: (err: ErrorEvent) => void;
+
+	/** Called when job started. */
+	onStart?: () => void;
 }
 
 const GLOBAL_STATE: GlobalState = {
@@ -77,13 +80,16 @@ export function createWorkerPool<Req, Res>(
 	return pool;
 }
 
+export interface RunJobOpts<Req, Res> {
+	pool: WorkerPool<Req, Res>;
+	request: Req;
+	onStart?: () => void;
+}
+
 /**
  * Runs a job on a pool once a worker becomes available.
  */
-export function runJob<Req, Res>(
-	pool: WorkerPool<Req, Res>,
-	request: Req,
-): Promise<Res> {
+export function runJob<Req, Res>({ pool, request, onStart }: RunJobOpts<Req, Res>): Promise<Res> {
 	if (pool.shutdown) throw new Error("Pool is shut down");
 
 	return new Promise<Res>((resolve: (x: Res) => void, reject) => {
@@ -92,6 +98,7 @@ export function runJob<Req, Res>(
 			request,
 			resolve,
 			reject,
+			onStart,
 		};
 		GLOBAL_STATE.pendingJobs.push(pendingJob as PendingJob<unknown, unknown>);
 		tickGlobalState();
@@ -133,6 +140,7 @@ function tickGlobalState() {
 		// Run job
 		worker.busy = true;
 		GLOBAL_STATE.activeWorkers++;
+		job.onStart?.();
 		worker.worker.onmessage = (ev) => {
 			const res = ev.data;
 			job.resolve(res);

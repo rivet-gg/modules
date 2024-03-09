@@ -263,11 +263,12 @@ async function buildModule(
 			// TODO: use tjs.getProgramFiles() to get the dependent files?
 			files: [configPath(module)],
 		},
-		async build() {
+		delayedStart: true,
+		async build({ onStart }) {
 			// Compile schema
 			//
 			// This mutates `module`
-			await compileModuleConfigSchema(project, module);
+			await compileModuleConfigSchema(project, module, onStart);
 		},
 		async alreadyCached() {
 			// Read schema from cache
@@ -342,11 +343,12 @@ async function buildScript(
 				"module.scripts": module.scripts,
 			},
 		},
-		async build() {
+		delayedStart: true,
+		async build({ onStart }) {
 			// Compile schema
 			//
 			// This mutates `script`
-			await compileScriptSchema(project, module, script);
+			await compileScriptSchema(project, module, script, onStart);
 		},
 		async alreadyCached() {
 			// Read schemas from cache

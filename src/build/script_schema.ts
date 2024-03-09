@@ -11,8 +11,9 @@ export async function compileScriptSchema(
 	_project: Project,
 	_module: Module,
 	script: Script,
+	onStart: () => void,
 ): Promise<void> {
-	const res = await runJob(WORKER_POOL, { script });
+	const res = await runJob({ pool: WORKER_POOL, request: { script }, onStart });
 	script.requestSchema = res.requestSchema;
 	script.responseSchema = res.responseSchema;
 }

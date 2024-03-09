@@ -48,8 +48,16 @@ interface BuildStepOpts {
 	 */
 	condition?: BuildStepCondition;
 
+	/**
+	 * If true, the build step will not log until the start callback is called.
+	 *
+	 * This is useful for steps that are waiting on a queue to start the heavy
+	 * workload for this buid step, such as uses of `runJob`.
+	 */
+	delayedStart?: boolean;
+
 	/** Runs if the step is not cached. */
-	build: () => Promise<void>;
+	build: (opts: BuildStepCallbackBuildOpts) => Promise<void>;
 
 	/** Runs if the step is cached. */
 	alreadyCached?: () => Promise<void>;
@@ -64,6 +72,10 @@ interface BuildStepCondition {
 
 	/** Runs if any of these expressions change. */
 	expressions?: Record<string, any>;
+}
+
+interface BuildStepCallbackBuildOpts {
+	onStart: () => void;
 }
 
 /**
@@ -102,8 +114,21 @@ export function buildStep(
 		// TODO: max parallel build steps
 		// TODO: error handling
 		if (needsBuild) {
-			console.log(`🔨 ${stepName}`);
-			await opts.build();
+			let onStart: () => void | undefined;
+			if (opts.delayedStart) {
+				// Wait to log start
+				onStart = () => logBuildStepStart(stepName);
+			} else {
+				// Log start immediately
+				logBuildStepStart(stepName);
+				onStart = () => {
+					console.warn(`onStart was called for ${stepName} but it can't have a delayed start`);
+				};
+			}
+
+			await opts.build({
+				onStart,
+			});
 		} else {
 			if (opts.alreadyCached) await opts.alreadyCached();
 		}
@@ -112,6 +137,10 @@ export function buildStep(
 	};
 
 	buildState.promises.push(fn());
+}
+
+function logBuildStepStart(name: string) {
+	console.log(`🔨 ${name}`);
 }
 
 export async function waitForBuildPromises(buildState: BuildState): Promise<void> {

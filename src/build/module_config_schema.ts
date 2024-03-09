@@ -12,11 +12,12 @@ const WORKER_POOL = createWorkerPool<WorkerRequest, WorkerResponse>({
 export async function compileModuleConfigSchema(
 	_project: Project,
 	module: Module,
+	onStart: () => void,
 ): Promise<void> {
 	// Read schema
 	if (await exists(configPath(module))) {
 		// Load config
-		const res = await runJob(WORKER_POOL, { module });
+		const res = await runJob({ pool: WORKER_POOL, request: { module }, onStart });
 		module.configSchema = res.moduleConfigSchema;
 	} else {
 		// No config
