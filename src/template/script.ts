@@ -74,8 +74,6 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.call("rate_limit", "throttle", {});
-
 	// TODO: Implement code for ${moduleName}/${scriptName}
     throw new Error("Unimplemented");
 }
@@ -85,8 +83,8 @@ export async function run(
 
 	if (createTest) {
 		// Write default config
-		const testTs = `import { TestContext, Runtime } from "../_gen/test.ts";
-export { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
+		const testTs = `import { TestContext, test } from "../_gen/test.ts";
+import { assert, assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 test("e2e", async (ctx: TestContext) => {
 	const res = await ctx.call("${moduleName}", "${scriptName}", {
