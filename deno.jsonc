@@ -1,7 +1,8 @@
 {
 	"tasks": {
 		// Runs the CLI
-		"cli:run": "deno task artifacts:build:all && deno run -A --check src/cli/main.ts --path tests/basic",
+		"cli:run": "deno task artifacts:build:all && deno task cli:run:dirty",
+		"cli:run:dirty": "deno run -A --check src/cli/main.ts --path tests/basic",
 
 		// Compiles the CLI to a binary
 		"cli:compile": "deno task artifacts:build:all && deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output _gen/cli src/cli/main.ts",
