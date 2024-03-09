@@ -2,8 +2,8 @@ import { Runtime } from "./runtime.ts";
 
 const MODULE_CALL = /^\/modules\/(?<module>\w+)\/scripts\/(?<script>\w+)\/call\/?$/;
 
-export function serverHandler<RegistryT>(
-	runtime: Runtime<RegistryT>,
+export function serverHandler<RegistryT, RegistryCamelT>(
+	runtime: Runtime<RegistryT, RegistryCamelT>,
 ): Deno.ServeHandler {
 	return async (
 		req: Request,

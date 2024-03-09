@@ -1,11 +1,12 @@
 import { resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { genRuntimeModPath, genRuntimePath } from "../project/project.ts";
+import { genRegistryMapPath, genRuntimeModPath, genRuntimePath } from "../project/project.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
+	const registryMapPath = genRegistryMapPath(project);
 
 	// Generate module configs
 	const [modImports, modConfig] = generateModImports(project, opts);
@@ -57,10 +58,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
+			import { camelToSnake } from "${registryMapPath};
 			import config from "./runtime_config.ts";
 
 			async function main() {
-				const runtime = new Runtime(config);
+				const runtime = new Runtime(config, camelToSnake);
 				await runtime.serve();
 			}
 
@@ -73,10 +75,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
+			import { camelToSnake } from "${registryMapPath}";
 			import config from "./runtime_config.ts";
 			import { serverHandler } from "${serverTsPath}";
 
-			const RUNTIME = new Runtime(config);
+			const RUNTIME = new Runtime(config, camelToSnake);
 			const SERVER_HANDLER = serverHandler(RUNTIME);
 
 			export default {
