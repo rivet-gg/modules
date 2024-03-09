@@ -176,8 +176,24 @@ async function fetchAndResolveModule(
 			"external_modules",
 			moduleName,
 		);
+
+		// HACK: Copy _gen dir to temp dir to avoid overwriting it
+		const genPath = resolve(path, "_gen");
+		let tempGenDir: string | undefined;
+		if (await exists(genPath, { isDirectory: true })) {
+			tempGenDir = await Deno.makeTempDir();
+			await copy(genPath, tempGenDir, { overwrite: true });
+		}
+
+		// TODO: Only copy when needed, this copies every time the CLI is ran
 		await emptyDir(path);
 		await copy(sourcePath, path, { overwrite: true });
+
+		// HACK: Restore _gen dir
+		if (tempGenDir) {
+			await emptyDir(genPath);
+			await copy(tempGenDir, genPath, { overwrite: true });
+		}
 	} else {
 		// Use original path
 		path = sourcePath;
