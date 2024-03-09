@@ -4,6 +4,11 @@
 		"cli:run": "deno task artifacts:build:all && deno task cli:run:dirty",
 		"cli:run:dirty": "deno run -A --check src/cli/main.ts --path tests/basic",
 
+		// Specific CLI tasks
+		"cli:run:build": "deno task cli:run build",
+		"cli:run:clean_build": "deno task artifacts:build:all && deno task cli:run:dirty clean && deno task cli:run build",
+
+
 		// Compiles the CLI to a binary
 		"cli:compile": "deno task artifacts:build:all && deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output _gen/cli src/cli/main.ts",
 

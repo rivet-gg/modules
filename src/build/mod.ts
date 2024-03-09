@@ -7,14 +7,19 @@ import { Project } from "../project/project.ts";
 import { generateDenoConfig } from "./deno_config.ts";
 import { inflateRuntimeArchive } from "./inflate_runtime_archive.ts";
 import { configPath, Module, Script } from "../project/mod.ts";
-import { shutdownAllPools } from "../utils/worker_pool.ts";
 import { migrateDev } from "../migrate/dev.ts";
 import { compileModuleTypeHelper } from "./gen.ts";
 import { migrateDeploy } from "../migrate/deploy.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { generateClient } from "../migrate/generate.ts";
 import { compileModuleConfigSchema } from "./module_config_schema.ts";
-import { BuildState, buildStep, createBuildState, waitForBuildPromises, writeBuildState } from "../build_state/mod.ts";
+import {
+	BuildState,
+	buildStep,
+	createBuildState,
+	shutdownBuildState,
+	waitForBuildPromises,
+} from "../build_state/mod.ts";
 
 /**
  * Which format to use for building.
@@ -58,11 +63,9 @@ export async function build(project: Project, opts: BuildOpts) {
 	// Run build
 	await buildSteps(buildState, project, opts);
 
-	await writeBuildState(buildState);
+	await shutdownBuildState(buildState);
 
 	console.log("✅ Finished");
-
-	shutdownAllPools();
 }
 
 async function buildSteps(
@@ -80,9 +83,11 @@ async function buildSteps(
 				name: `Migrate`,
 				module,
 				// TODO: Also watch migrations folder in case a migration is created/destroyed
-				files: [resolve(module.path, "db", "schema.prisma")],
-				expressions: {
-					"Runtime": opts.runtime,
+				condition: {
+					files: [resolve(module.path, "db", "schema.prisma")],
+					expressions: {
+						"Runtime": opts.runtime,
+					},
 				},
 				async build() {
 					if (module.registry.isExternal || Deno.env.get("CI") === "true") {
@@ -105,10 +110,9 @@ async function buildSteps(
 		}
 	}
 
+	// TODO: Add way to compare runtime artifacts (or let this be handled by the cache version and never rerun?)
 	buildStep(buildState, {
 		name: "Inflate runtime",
-		// TODO: Add way to compare runtime version
-		always: true,
 		async build() {
 			await inflateRuntimeArchive(project);
 		},
@@ -123,7 +127,9 @@ async function buildSteps(
 
 	buildStep(buildState, {
 		name: "Type helpers",
-		files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
+		condition: {
+			files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
+		},
 		async build() {
 			await compileTypeHelpers(project);
 		},
@@ -131,7 +137,6 @@ async function buildSteps(
 
 	buildStep(buildState, {
 		name: "Deno config",
-		always: true,
 		async build() {
 			await generateDenoConfig(project);
 		},
@@ -142,7 +147,6 @@ async function buildSteps(
 
 	buildStep(buildState, {
 		name: "Entrypoint",
-		always: true,
 		async build() {
 			await generateEntrypoint(project, opts);
 		},
@@ -150,7 +154,6 @@ async function buildSteps(
 
 	buildStep(buildState, {
 		name: "OpenAPI",
-		always: true,
 		async build() {
 			await generateOpenApi(project);
 		},
@@ -159,7 +162,6 @@ async function buildSteps(
 	if (opts.format == Format.Bundled) {
 		buildStep(buildState, {
 			name: "Bundle",
-			always: true,
 			async build() {
 				const gen = resolve(project.path, "_gen");
 				const bundledFile = resolve(gen, "/output.js");
@@ -257,8 +259,10 @@ async function buildModule(
 	buildStep(buildState, {
 		name: "Module config",
 		module,
-		// TODO: use tjs.getProgramFiles() to get the dependent files?
-		files: [configPath(module)],
+		condition: {
+			// TODO: use tjs.getProgramFiles() to get the dependent files?
+			files: [configPath(module)],
+		},
 		async build() {
 			// Compile schema
 			//
@@ -267,7 +271,7 @@ async function buildModule(
 		},
 		async alreadyCached() {
 			// Read schema from cache
-			const schema = buildState.oldCache.moduleConfigSchemas[module.name];
+			const schema = buildState.cache.persist.moduleConfigSchemas[module.name];
 			assertExists(schema);
 			module.configSchema = schema;
 		},
@@ -275,14 +279,16 @@ async function buildModule(
 			assertExists(module.configSchema);
 
 			// Populate cache with response
-			buildState.cache.moduleConfigSchemas[module.name] = module.configSchema;
+			buildState.cache.persist.moduleConfigSchemas[module.name] = module.configSchema;
 		},
 	});
 
 	buildStep(buildState, {
 		name: "Module helper",
 		module,
-		files: [resolve(module.path, "module.yaml")],
+		condition: {
+			files: [resolve(module.path, "module.yaml")],
+		},
 		async build() {
 			await compileModuleHelper(project, module);
 		},
@@ -291,7 +297,9 @@ async function buildModule(
 	buildStep(buildState, {
 		name: "Type helper",
 		module,
-		files: [resolve(module.path, "module.yaml")],
+		condition: {
+			files: [resolve(module.path, "module.yaml")],
+		},
 		async build() {
 			await compileModuleTypeHelper(project, module);
 		},
@@ -300,7 +308,9 @@ async function buildModule(
 	buildStep(buildState, {
 		name: "Test helper",
 		module,
-		files: [resolve(module.path, "module.yaml")],
+		condition: {
+			files: [resolve(module.path, "module.yaml")],
+		},
 		async build() {
 			await compileTestHelper(project, module);
 		},
@@ -321,10 +331,17 @@ async function buildScript(
 		name: "Script schema",
 		module,
 		script,
-		// TODO: `scripts` portion of module config instead of entire file
-		// TODO: This module and all of its dependent modules
-		// TODO: use tjs.getProgramFiles() to get the dependent files?
-		files: [resolve(module.path, "module.yaml"), script.path],
+		condition: {
+			// TODO: This module and all of its dependent scripts. Use tjs.getProgramFiles() to get the dependent files?
+			files: [
+				// If the script is modified
+				script.path,
+			],
+			expressions: {
+				// If a script is added, removed, or the config is changed
+				"module.scripts": module.scripts,
+			},
+		},
 		async build() {
 			// Compile schema
 			//
@@ -333,7 +350,7 @@ async function buildScript(
 		},
 		async alreadyCached() {
 			// Read schemas from cache
-			const schemas = buildState.oldCache.scriptSchemas[module.name][script.name];
+			const schemas = buildState.cache.persist.scriptSchemas[module.name][script.name];
 			assertExists(schemas);
 			script.requestSchema = schemas.request;
 			script.responseSchema = schemas.response;
@@ -343,10 +360,10 @@ async function buildScript(
 			assertExists(script.responseSchema);
 
 			// Populate cache with response
-			if (!buildState.cache.scriptSchemas[module.name]) {
-				buildState.cache.scriptSchemas[module.name] = {};
+			if (!buildState.cache.persist.scriptSchemas[module.name]) {
+				buildState.cache.persist.scriptSchemas[module.name] = {};
 			}
-			buildState.cache.scriptSchemas[module.name][script.name] = {
+			buildState.cache.persist.scriptSchemas[module.name][script.name] = {
 				request: script.requestSchema,
 				response: script.responseSchema,
 			};
@@ -357,8 +374,10 @@ async function buildScript(
 		name: "Script helper",
 		module,
 		script,
-		// TODO: check sections of module config
-		files: [resolve(module.path, "module.yaml"), script.path],
+		condition: {
+			// TODO: check specifically scripts section of module config
+			files: [resolve(module.path, "module.yaml"), script.path],
+		},
 		async build() {
 			await compileScriptHelper(project, module, script);
 		},

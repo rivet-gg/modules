@@ -163,7 +163,7 @@ export function shutdownPool(pool: WorkerPool<unknown, unknown>) {
 	GLOBAL_STATE.allPools.delete(pool);
 }
 
-export function shutdownAllPools() {
+export function cleanupAllPools() {
 	GLOBAL_STATE.shutdown = true;
 	for (const pool of GLOBAL_STATE.allPools) {
 		shutdownPool(pool);

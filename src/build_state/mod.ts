@@ -1,6 +1,5 @@
-import { exists, resolve } from "../deps.ts";
 import { Module, Project, Script } from "../project/mod.ts";
-import { BuildCache, CACHE_VERSION, compareExprHash, compareHash, createDefaultCache } from "./cache.ts";
+import { Cache, compareExprHash, compareFileHash, loadCache, shutdownCache } from "./cache.ts";
 
 // TODO: Convert this to a build flag
 export const FORCE_BUILD = false;
@@ -10,59 +9,60 @@ export const FORCE_BUILD = false;
  */
 export interface BuildState {
 	project: Project;
-
-	/**
-	 * The old cache from the last build. This will be discarded.
-	 */
-	oldCache: BuildCache;
-
-	/**
-	 * The new cache that will be written to disk. This is a clone of
-	 * `oldCache`.
-	 */
-	cache: BuildCache;
-
+	cache: Cache;
 	promises: Promise<void>[];
 }
 
 export async function createBuildState(project: Project): Promise<BuildState> {
-	const buildCachePath = resolve(project.path, "_gen", "cache.json");
-
-	// Read hashes from file
-	let oldCache: BuildCache;
-	if (await exists(buildCachePath)) {
-		const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
-
-		// Validate version
-		if (oldCacheAny.version == CACHE_VERSION) {
-			oldCache = oldCacheAny;
-		} else {
-			oldCache = createDefaultCache();
-		}
-	} else {
-		oldCache = createDefaultCache();
-	}
+	const cache = await loadCache(project);
 
 	// Build state
 	const buildState: BuildState = {
 		project,
-		oldCache,
-		cache: structuredClone(oldCache),
+		cache,
 		promises: [],
 	};
+
+	globalThis.addEventListener("unload", async () => await shutdownBuildState(buildState));
 
 	return buildState;
 }
 
+export async function shutdownBuildState(buildState: BuildState) {
+	await shutdownCache(buildState.project, buildState.cache);
+}
+
 interface BuildStepOpts {
 	name: string;
+
+	/** Module this build step is relevant to. Only affects printed status. */
 	module?: Module;
+
+	/** Script this build step is relevant to. Only affects printed status. */
 	script?: Script;
+
+	/**
+	 * If specified, this build step will only run if any of the conditions are met.
+	 *
+	 * If not specified, the build step will always run.
+	 */
+	condition?: BuildStepCondition;
+
+	/** Runs if the step is not cached. */
 	build: () => Promise<void>;
+
+	/** Runs if the step is cached. */
 	alreadyCached?: () => Promise<void>;
+
+	/** Runs after the step finishes. */
 	finally?: () => Promise<void>;
-	always?: boolean;
+}
+
+interface BuildStepCondition {
+	/** Runs if any of these files are changed, created, or deleted. */
 	files?: string[];
+
+	/** Runs if any of these expressions change. */
 	expressions?: Record<string, any>;
 }
 
@@ -82,19 +82,26 @@ export function buildStep(
 	}
 
 	const fn = async () => {
-		// These are not lazily evaluated one after the other because the hashes for both need to be calculated
-		const fileDiff = opts.files && await compareHash(buildState, opts.files);
-		const exprDiff = opts.expressions &&
-			await compareExprHash(buildState, opts.expressions);
+		// Determine if needs to be built
+		let needsBuild: boolean;
+		if (FORCE_BUILD || opts.condition === undefined) {
+			needsBuild = true;
+		} else {
+			// Both of these are evaluated since both need to be persisted to the
+			// cache if they change. Otherwise, if both a file and expr is change,
+			// the next build will have a false positive when it hashes the
+			// expression.
+			const fileDiff = opts.condition?.files ? await compareFileHash(buildState.cache, opts.condition.files) : false;
+			const exprDiff = opts.condition?.expressions
+				? await compareExprHash(buildState.cache, opts.condition.expressions)
+				: false;
+
+			needsBuild = fileDiff || exprDiff;
+		}
 
 		// TODO: max parallel build steps
 		// TODO: error handling
-		if (
-			FORCE_BUILD ||
-			opts.always ||
-			fileDiff ||
-			exprDiff
-		) {
+		if (needsBuild) {
 			console.log(`🔨 ${stepName}`);
 			await opts.build();
 		} else {
@@ -111,14 +118,4 @@ export async function waitForBuildPromises(buildState: BuildState): Promise<void
 	const promises = buildState.promises;
 	buildState.promises = [];
 	await Promise.all(promises);
-}
-
-export async function writeBuildState(buildState: BuildState) {
-	const buildCachePath = resolve(buildState.project.path, "_gen", "cache.json");
-
-	// Write cache
-	await Deno.writeTextFile(
-		buildCachePath,
-		JSON.stringify(buildState.cache),
-	);
 }

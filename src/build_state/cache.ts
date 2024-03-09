@@ -1,14 +1,26 @@
-import { exists, tjs } from "../deps.ts";
+import { exists, resolve, tjs } from "../deps.ts";
+import { Project } from "../project/project.ts";
 import { crypto, encodeHex } from "./deps.ts";
-import { BuildState } from "./mod.ts";
 
 // TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
 export const CACHE_VERSION = 4;
 
-/**
- * Data from `BuildCache` that gets persisted.
- */
-export interface BuildCache {
+export interface Cache {
+	persist: CachePersist;
+
+	/**
+	 * Files that have been compared in this process.
+	 */
+	fileDiffs: Map<string, boolean>;
+
+	/**
+	 * Expressions that have been compared in this process.
+	 */
+	exprDiffs: Map<string, boolean>;
+}
+
+/** Cache data that gets persisted to disk. */
+export interface CachePersist {
 	version: number;
 	fileHashes: Record<string, FileHash>;
 	exprHashes: Record<string, string>;
@@ -26,7 +38,42 @@ export interface CacheScriptSchema {
 
 export type FileHash = { hash: string } | { missing: true };
 
-export function createDefaultCache(): BuildCache {
+export async function loadCache(project: Project): Promise<Cache> {
+	const buildCachePath = resolve(project.path, "_gen", "cache.json");
+
+	// Read hashes from file
+	let persist: CachePersist;
+	if (await exists(buildCachePath)) {
+		const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
+
+		// Validate version
+		if (oldCacheAny.version == CACHE_VERSION) {
+			persist = oldCacheAny;
+		} else {
+			persist = createEmptyCachePersist();
+		}
+	} else {
+		persist = createEmptyCachePersist();
+	}
+
+	return {
+		persist,
+		fileDiffs: new Map(),
+		exprDiffs: new Map(),
+	};
+}
+
+export async function shutdownCache(project: Project, cache: Cache) {
+	const buildCachePath = resolve(project.path, "_gen", "cache.json");
+
+	// Write cache
+	await Deno.writeTextFile(
+		buildCachePath,
+		JSON.stringify(cache.persist),
+	);
+}
+
+function createEmptyCachePersist(): CachePersist {
 	return {
 		version: CACHE_VERSION,
 		fileHashes: {},
@@ -39,16 +86,26 @@ export function createDefaultCache(): BuildCache {
 /**
  * Checks if the hash of a file has changed. Returns true if file changed.
  */
-export async function compareHash(
-	buildState: BuildState,
+export async function compareFileHash(
+	cache: Cache,
 	paths: string[],
 ): Promise<boolean> {
 	// We hash all files regardless of if we already know there was a change so
 	// we can re-use these hashes on the next run to see if anything changed.
+	// Otherwise, this would return a false positive for future runs if multiple
+	// files were changed in one run.
 	let hasChanged = false;
 	for (const path of paths) {
-		const oldHash = buildState.oldCache.fileHashes[path];
-		const newHash = await hashFile(buildState, path);
+		// Check if already diffed this process
+		const diff = cache.fileDiffs.get(path);
+		if (diff !== undefined) {
+			if (diff) hasChanged = true;
+			continue;
+		}
+
+		// Compre hash
+		const oldHash = cache.persist.fileHashes[path];
+		const newHash = await hashFile(cache, path);
 		if (!oldHash) {
 			hasChanged = true;
 		} else if ("missing" in oldHash && "missing" in newHash) {
@@ -59,6 +116,9 @@ export async function compareHash(
 			hasChanged = true;
 		}
 
+		// Cache diff so we don't have to rehash the file
+		cache.fileDiffs.set(path, hasChanged);
+
 		if (hasChanged) console.log(`✏️ ${path}`);
 	}
 
@@ -66,13 +126,10 @@ export async function compareHash(
 }
 
 export async function hashFile(
-	buildState: BuildState,
+	cache: Cache,
 	path: string,
 ): Promise<FileHash> {
-	// Return already calculated hash
-	let hash = buildState.cache.fileHashes[path];
-	if (hash) return hash;
-
+	let hash: FileHash;
 	if (await exists(path)) {
 		// Calculate hash
 		const file = await Deno.open(path, { read: true });
@@ -86,7 +143,8 @@ export async function hashFile(
 		hash = { missing: true };
 	}
 
-	buildState.cache.fileHashes[path] = hash;
+	cache.persist.fileHashes[path] = hash;
+
 	return hash;
 }
 
@@ -94,40 +152,49 @@ export async function hashFile(
  * Checks if the hash of an expression has changed. Returns true if expression changed.
  */
 export async function compareExprHash(
-	buildState: BuildState,
+	cache: Cache,
 	exprs: Record<string, string>,
 ): Promise<boolean> {
 	// We hash all files regardless of if we already know there was a change so
 	// we can re-use these hashes on the next run to see if anything changed.
+	// Otherwise, this would return a false positive for future runs if multiple
+	// files were changed in one run.
 	let hasChanged = false;
 	for (const [name, value] of Object.entries(exprs)) {
-		const oldHash = buildState.oldCache.exprHashes[name];
-		const newHash = await hashExpr(buildState, name, value);
+		// Check if already diffed this process
+		const diff = cache.exprDiffs.get(name);
+		if (diff !== undefined) {
+			if (diff) hasChanged = true;
+			continue;
+		}
+
+		// Compare hash
+		const oldHash = cache.persist.exprHashes[name];
+		const newHash = await hashExpr(cache, name, value);
 		if (newHash != oldHash) {
 			hasChanged = true;
 			console.log(`✏️  ${name}`);
 		}
+
+		// Cache diff so we don't have to rehash the expr
+		cache.exprDiffs.set(name, hasChanged);
 	}
 
 	return hasChanged;
 }
 
 export async function hashExpr(
-	buildState: BuildState,
+	cache: Cache,
 	name: string,
 	value: any,
 ): Promise<string> {
-	// Return already calculated hash
-	let hash = buildState.cache.exprHashes[name];
-	if (hash) return hash;
-
 	// Calculate hash
 	const exprHashBuffer = await crypto.subtle.digest(
 		"SHA-256",
 		await new Blob([value]).arrayBuffer(),
 	);
-	hash = encodeHex(exprHashBuffer);
-	buildState.cache.exprHashes[name] = hash;
+	const hash = encodeHex(exprHashBuffer);
+	cache.persist.exprHashes[name] = hash;
 
 	return hash;
 }

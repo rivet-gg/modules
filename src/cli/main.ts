@@ -9,7 +9,9 @@ import { lintCommand } from "./commands/lint.ts";
 import { formatCommand } from "./commands/format.ts";
 import { initCommand } from "./commands/init.ts";
 import { cleanCommand } from "./commands/clean.ts";
+import { cleanupAllPools } from "../utils/worker_pool.ts";
 
+// Run command
 const command = new Command();
 command.action(() => command.showHelp())
 	.globalOption("-p, --path <path>", "Path to project root")
@@ -32,5 +34,8 @@ command.action(() => command.showHelp())
 			console.error(error);
 		}
 		Deno.exit(error instanceof ValidationError ? error.exitCode : 1);
-	})
-	.parse(Deno.args);
+	});
+await command.parse(Deno.args);
+
+// Cleanup
+cleanupAllPools();
