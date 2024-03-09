@@ -1,5 +1,5 @@
 import { exists, resolve } from "../deps.ts";
-import { glob } from "./deps.ts";
+import { glob, tjs } from "./deps.ts";
 import { readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
@@ -17,7 +17,19 @@ export interface Module {
 	path: string;
 	name: string;
 	config: ModuleConfig;
+
+	/**
+	 * The registry that the module was pulled from.
+	 */
 	registry: Registry;
+
+	/**
+	 * The schema for the module's config file.
+	 *
+	 * Generated from config.ts
+	 */
+	configSchema?: tjs.Definition;
+
 	scripts: Map<string, Script>;
 	db?: ModuleDatabase;
 }
@@ -131,4 +143,8 @@ export function typeGenPath(_project: Project, module: Module): string {
 		"_gen",
 		"registry.d.ts",
 	);
+}
+
+export function configPath(module: Module): string {
+	return resolve(module.path, "config.ts");
 }
