@@ -6,10 +6,12 @@ import { copy, emptyDir, resolve } from "../deps.ts";
 import { buildPrismaPackage } from "./build_prisma_esm.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachPrismaSchema, runPrismaCommand } from "./mod.ts";
+import { Runtime } from "../build/mod.ts";
 
 export async function generateClient(
 	project: Project,
 	modules: Module[],
+	runtime: Runtime,
 ) {
 	await forEachPrismaSchema(
 		project,
@@ -57,6 +59,7 @@ export async function generateClient(
 			await buildPrismaPackage(
 				generatedClientDir,
 				resolve(generatedClientDir, "esm.js"),
+				runtime,
 			);
 
 			// Copy to module

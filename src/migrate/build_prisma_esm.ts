@@ -1,4 +1,5 @@
 import { isAbsolute, resolve } from "../deps.ts";
+import { Runtime } from "../build/mod.ts";
 import { esbuild, polyfillNodeForDeno } from "./deps.ts";
 type Plugin = esbuild.Plugin;
 
@@ -6,6 +7,7 @@ type Plugin = esbuild.Plugin;
 export async function buildPrismaPackage(
 	prismaModuleDir: string,
 	outFile: string,
+	runtime: Runtime,
 ) {
 	// Build the ESM file
 	await esbuild.build({
@@ -16,8 +18,10 @@ export async function buildPrismaPackage(
 			polyfillNodeForDeno({
 				globals: true,
 			}),
-			wasmPlugin(),
+			// Cloudflare does not support inlined WASM
+			...(runtime == Runtime.Cloudflare ? [] : [wasmPlugin()]),
 		],
+		external: runtime == Runtime.Cloudflare ? ["*.wasm", "*.wasm?module"] : [],
 		format: "esm",
 		platform: "neutral",
 	});
