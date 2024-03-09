@@ -25,12 +25,22 @@ export async function templateModule(project: Project, moduleName: string) {
 		stringify(defaultModule),
 	);
 
+	// Write default config
+	const defaultConfig = dedent`
+		export interface Config {
+			// Add your module configuration here
+		}
+	`;
+	await Deno.writeTextFile(resolve(modulePath, "config.ts"), defaultConfig);
+
 	// Write default migration
 	const defaultSchema = dedent`
 		datasource db {
 			provider = "postgresql"
 			url      = env("DATABASE_URL")
 		}
+
+		// Add your database schema here
 	`;
 	await Deno.writeTextFile(
 		resolve(modulePath, "db", "schema.prisma"),
