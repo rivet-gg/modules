@@ -26,6 +26,7 @@ export const testCommand = new Command<GlobalOpts>()
 					// Build project
 					if (opts.build) {
 						await build(project, {
+							force: false,
 							runtime: Runtime.Deno,
 							format: Format.Native,
 							dbDriver: DbDriver.NodePostgres,

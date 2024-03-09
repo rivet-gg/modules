@@ -158,12 +158,8 @@ export async function hashFile(
  */
 export async function compareExprHash(
 	cache: Cache,
-	exprs: Record<string, string>,
+	exprs: Record<string, any>,
 ): Promise<boolean> {
-	// We hash all files regardless of if we already know there was a change so
-	// we can re-use these hashes on the next run to see if anything changed.
-	// Otherwise, this would return a false positive for future runs if multiple
-	// files were changed in one run.
 	let hasChanged = false;
 	for (const [name, value] of Object.entries(exprs)) {
 		// Check if already diffed this process

@@ -6,6 +6,7 @@ import { Project } from "../../project/mod.ts";
 
 export const buildCommand = new Command<GlobalOpts>()
 	.description("Build the project")
+	.option("-f, --force", "Force all build steps to trigger")
 	.option("--watch", "Automatically rebuid on changes", { default: false })
 	.option(
 		"-r, --runtime <runtime:string>",
@@ -24,9 +25,8 @@ export const buildCommand = new Command<GlobalOpts>()
 				}
 			},
 		},
-	)
-	.option(
-		"-f, --output-format <format:string>",
+	).option(
+		"-o, --output-format <format:string>",
 		"Set output format (native, bundled)",
 		{
 			// default: "native",
@@ -103,6 +103,7 @@ export const buildCommand = new Command<GlobalOpts>()
 			disableWatch: !opts.watch,
 			async fn(project: Project, signal: AbortSignal) {
 				await build(project, {
+					force: !!opts.force,
 					format: opts.outputFormat!,
 					runtime: opts.runtime,
 					dbDriver: opts.dbDriver!,

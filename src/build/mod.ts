@@ -32,6 +32,7 @@ export enum DbDriver {
  * Stores options used in the build command.
  */
 export interface BuildOpts {
+	force: boolean;
 	format: Format;
 	runtime: Runtime;
 	dbDriver: DbDriver;

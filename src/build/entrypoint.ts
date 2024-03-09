@@ -92,6 +92,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 						env: {
 							get(name) {
 								return env.hasOwnProperty(name) ? env[name] : undefined;
+							},
+							toObject() {
+								return Object.fromEntries(
+									Object.entries(env)
+										.filter(([k, v]) => typeof value === 'string')
+									);
 							}
 						}
 					};

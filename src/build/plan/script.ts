@@ -2,6 +2,7 @@ import { BuildState, buildStep } from "../../build_state/mod.ts";
 import { assertExists, resolve } from "../../deps.ts";
 import { Module, Project, Script } from "../../project/mod.ts";
 import { compileScriptHelper } from "../gen.ts";
+import { BuildOpts } from "../mod.ts";
 import { compileScriptSchema } from "../script_schema.ts";
 
 export async function planScriptBuild(
@@ -9,6 +10,7 @@ export async function planScriptBuild(
 	project: Project,
 	module: Module,
 	script: Script,
+	opts: BuildOpts,
 ) {
 	buildStep(buildState, {
 		name: "Parse",
@@ -16,6 +18,7 @@ export async function planScriptBuild(
 		module,
 		script,
 		condition: {
+			force: opts.force,
 			// TODO: This module and all of its dependent scripts. Use tjs.getProgramFiles() to get the dependent files?
 			files: [
 				// If the script is modified
@@ -61,6 +64,7 @@ export async function planScriptBuild(
 		module,
 		script,
 		condition: {
+			force: opts.force,
 			// TODO: check specifically scripts section of module config
 			files: [resolve(module.path, "module.yaml"), script.path],
 		},

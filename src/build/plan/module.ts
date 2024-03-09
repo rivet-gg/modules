@@ -2,6 +2,7 @@ import { BuildState, buildStep } from "../../build_state/mod.ts";
 import { assertExists, resolve } from "../../deps.ts";
 import { configPath, Module, Project } from "../../project/mod.ts";
 import { compileModuleHelper, compileModuleTypeHelper, compileTestHelper } from "../gen.ts";
+import { BuildOpts } from "../mod.ts";
 import { compileModuleConfigSchema } from "../module_config_schema.ts";
 import { planScriptBuild } from "./script.ts";
 
@@ -9,12 +10,14 @@ export async function planModuleBuild(
 	buildState: BuildState,
 	project: Project,
 	module: Module,
+	opts: BuildOpts,
 ) {
 	buildStep(buildState, {
 		name: "Parse",
 		description: `modules/${module.name}/config.ts`,
 		module,
 		condition: {
+			force: opts.force,
 			// TODO: use tjs.getProgramFiles() to get the dependent files?
 			files: [configPath(module)],
 		},
@@ -44,6 +47,7 @@ export async function planModuleBuild(
 		description: `modules/${module.name}/_gen/registry.d.ts`,
 		module,
 		condition: {
+			force: opts.force,
 			files: [resolve(module.path, "module.yaml")],
 		},
 		async build() {
@@ -56,6 +60,7 @@ export async function planModuleBuild(
 		description: `modules/${module.name}/_gen/mod.ts`,
 		module,
 		condition: {
+			force: opts.force,
 			files: [resolve(module.path, "module.yaml")],
 		},
 		async build() {
@@ -68,6 +73,7 @@ export async function planModuleBuild(
 		description: `modules/${module.name}/_gen/test.ts`,
 		module,
 		condition: {
+			force: opts.force,
 			files: [resolve(module.path, "module.yaml")],
 		},
 		async build() {
@@ -76,6 +82,6 @@ export async function planModuleBuild(
 	});
 
 	for (const script of module.scripts.values()) {
-		await planScriptBuild(buildState, project, module, script);
+		await planScriptBuild(buildState, project, module, script, opts);
 	}
 }

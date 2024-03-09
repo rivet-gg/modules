@@ -4,9 +4,6 @@ import { progress } from "../term/status.ts";
 import { assert } from "../deps.ts";
 import { CombinedError } from "../error/mod.ts";
 
-// TODO: Convert this to a build flag
-export const FORCE_BUILD = false;
-
 /**
  * State for the current build process.
  */
@@ -75,6 +72,8 @@ interface BuildStepOpts {
 }
 
 interface BuildStepCondition {
+	force?: boolean;
+
 	/** Runs if any of these files are changed, created, or deleted. */
 	files?: string[];
 
@@ -104,7 +103,7 @@ export function buildStep(
 	const fn = async () => {
 		// Determine if needs to be built
 		let needsBuild: boolean;
-		if (FORCE_BUILD || opts.condition === undefined) {
+		if (opts.condition === undefined) {
 			needsBuild = true;
 		} else {
 			// Both of these are evaluated since both need to be persisted to the
@@ -121,7 +120,7 @@ export function buildStep(
 
 		// TODO: max parallel build steps
 		// TODO: error handling
-		if (needsBuild) {
+		if (needsBuild || opts.condition!.force) {
 			let onStart: () => void | undefined;
 			if (opts.delayedStart) {
 				// Wait to log start
