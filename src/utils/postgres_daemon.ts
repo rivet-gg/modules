@@ -13,6 +13,8 @@ const POSTGRES_STATE = {
 export async function ensurePostgresRunning(_project: Project) {
 	if (POSTGRES_STATE.running) return;
 
+	console.log("Starting Postgres server...");
+
 	// Validate Docker is installed
 	const versionOutput = await new Deno.Command("docker", {
 		args: ["version"],
@@ -70,6 +72,8 @@ export async function ensurePostgresRunning(_project: Project) {
 		throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
 	}
 
+	console.log("Waiting for pg_isready");
+
 	// Wait until Postgres is accessible
 	while (true) {
 		const checkOutput = await new Deno.Command("docker", {
@@ -78,6 +82,12 @@ export async function ensurePostgresRunning(_project: Project) {
 		if (checkOutput.success) break;
 		await new Promise((r) => setTimeout(r, 500));
 	}
+
+	console.log("Ready");
+
+	await new Promise((r) => setTimeout(r, 1000));
+
+	console.log("Sleeping");
 
 	POSTGRES_STATE.running = true;
 }
