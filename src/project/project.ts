@@ -49,13 +49,15 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	// Load modules
 	const modules = new Map<string, Module>();
 	for (const projectModuleName in projectConfig.modules) {
+		const projectModuleConfig = projectConfig.modules[projectModuleName];
+
 		const { path, registry } = await fetchAndResolveModule(
 			projectRoot,
 			projectConfig,
 			registries,
 			projectModuleName,
 		);
-		const module = await loadModule(path, projectModuleName, registry);
+		const module = await loadModule(path, projectModuleName, projectModuleConfig, registry);
 		modules.set(projectModuleName, module);
 	}
 

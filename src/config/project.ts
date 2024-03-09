@@ -46,9 +46,9 @@ export interface ProjectModuleConfig extends Record<string, unknown> {
 	module?: string;
 
 	/**
-	 * The config to pass to the registry.
+	 * The config that configures how this module is ran at runtime.
 	 */
-	// config?: any;
+	config?: any;
 }
 
 // export async function readConfig(path: string): Promise<ProjectConfig> {

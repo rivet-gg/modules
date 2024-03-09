@@ -17,7 +17,7 @@ import { generateClient } from "../migrate/generate.ts";
 import { compileModuleConfigSchema } from "./module_config_schema.ts";
 
 // TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 /**
  * Which format to use for building.
@@ -489,7 +489,6 @@ async function buildModule(
 	project: Project,
 	module: Module,
 ) {
-	// TODO: This has problems with missing files
 	buildStep(buildState, {
 		name: "Module config",
 		module,
@@ -503,11 +502,15 @@ async function buildModule(
 		},
 		async alreadyCached() {
 			// Read schema from cache
-			module.configSchema = buildState.cache.oldCache.moduleConfigSchemas[module.name];
+			const schema = buildState.cache.oldCache.moduleConfigSchemas[module.name];
+			assertExists(schema);
+			module.configSchema = schema;
 		},
 		async finally() {
+			assertExists(module.configSchema);
+
 			// Populate cache with response
-			if (module.configSchema) buildState.cache.newCache.moduleConfigSchemas[module.name] = module.configSchema;
+			buildState.cache.newCache.moduleConfigSchemas[module.name] = module.configSchema;
 		},
 	});
 

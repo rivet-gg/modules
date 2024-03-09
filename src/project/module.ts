@@ -7,6 +7,7 @@ import { Project } from "./project.ts";
 import { Registry } from "./registry.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { IdentType } from "../types/identifiers/defs.ts";
+import { ProjectModuleConfig } from "../config/project.ts";
 
 export interface Module {
 	/**
@@ -16,7 +17,21 @@ export interface Module {
 	 */
 	path: string;
 	name: string;
+
+	/**
+	 * Config from the project.yaml file.
+	 */
+	projectModuleConfig: ProjectModuleConfig;
+
+	/**
+	 * Config from the module.yaml file.
+	 */
 	config: ModuleConfig;
+
+	/**
+	 * The config passed to this module in the project.yaml file.
+	 */
+	userConfig: any;
 
 	/**
 	 * The registry that the module was pulled from.
@@ -41,6 +56,7 @@ export interface ModuleDatabase {
 export async function loadModule(
 	modulePath: string,
 	name: string,
+	projectModuleConfig: ProjectModuleConfig,
 	registry: Registry,
 ): Promise<Module> {
 	// Read config
@@ -108,9 +124,14 @@ export async function loadModule(
 		};
 	}
 
+	// Derive config
+	const userConfig = projectModuleConfig.config ?? null;
+
 	return {
 		path: modulePath,
 		name,
+		projectModuleConfig,
+		userConfig,
 		config,
 		registry,
 		scripts,

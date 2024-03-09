@@ -1,10 +1,7 @@
 registries:
-  # default:
-  #   local:
-  #       directory: ../../../opengb-registry/modules
   local:
     local:
-        directory: ./modules
+      directory: ./modules
 modules:
   currency: {}
   friends: {}
@@ -13,3 +10,8 @@ modules:
   users: {}
   foo:
     registry: local
+  config_test:
+    registry: local
+    config:
+      foo: hello world
+      bar: 1234
