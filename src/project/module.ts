@@ -31,7 +31,7 @@ export interface Module {
 	/**
 	 * The config passed to this module in the project.yaml file.
 	 */
-	userConfig: any;
+	userConfig: unknown;
 
 	/**
 	 * The registry that the module was pulled from.

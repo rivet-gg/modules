@@ -19,6 +19,7 @@ export interface Module {
 		createPrisma: (databaseUrl: string) => CreatePrismaOutput;
 	};
 	dependencies: Set<string>;
+	userConfig: unknown;
 }
 
 interface CreatePrismaOutput {
@@ -28,7 +29,7 @@ interface CreatePrismaOutput {
 
 export interface Script {
 	// deno-lint-ignore no-explicit-any
-	run: ScriptRun<any, any, any>;
+	run: ScriptRun<any, any, any, any>;
 	// deno-lint-ignore no-explicit-any
 	requestSchema: any;
 	// deno-lint-ignore no-explicit-any
@@ -36,8 +37,8 @@ export interface Script {
 	public: boolean;
 }
 
-export type ScriptRun<Req, Res, DatabaseT> = (
-	ctx: ScriptContext<any, any, DatabaseT>,
+export type ScriptRun<Req, Res, UserConfigT, DatabaseT> = (
+	ctx: ScriptContext<any, any, UserConfigT, DatabaseT>,
 	req: Req,
 ) => Promise<Res>;
 
@@ -80,11 +81,11 @@ export class Runtime<RegistryT, RegistryCamelT> {
 	/**
 	 * Registers a module test with the Deno runtime.
 	 */
-	public static test<RegistryT, RegistryCamelT>(
+	public static test<RegistryT, RegistryCamelT, UserConfigT>(
 		config: Config,
 		moduleName: string,
 		testName: string,
-		fn: (ctx: TestContext<RegistryT, RegistryCamelT, any>) => Promise<void>,
+		fn: (ctx: TestContext<RegistryT, RegistryCamelT, UserConfigT, any>) => Promise<void>,
 		map: MapFrom<RegistryCamelT, RegistryT>,
 	) {
 		Deno.test({
@@ -99,7 +100,7 @@ export class Runtime<RegistryT, RegistryCamelT> {
 
 				// Build context
 				const module = config.modules[moduleName];
-				const ctx = new TestContext<RegistryT, RegistryCamelT, PrismaClientDummy | undefined>(
+				const ctx = new TestContext<RegistryT, RegistryCamelT, UserConfigT, PrismaClientDummy | undefined>(
 					runtime,
 					newTrace({
 						test: { module: moduleName, name: testName },

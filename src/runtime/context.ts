@@ -156,7 +156,8 @@ export class Context<RegistryT, RegistryCamelT> {
 /**
  * Context for a module.
  */
-export class ModuleContext<RegistryT, RegistryCamelT, DatabaseT> extends Context<RegistryT, RegistryCamelT> {
+export class ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
+	extends Context<RegistryT, RegistryCamelT> {
 	public constructor(
 		runtime: Runtime<RegistryT, RegistryCamelT>,
 		trace: Trace,
@@ -173,13 +174,17 @@ export class ModuleContext<RegistryT, RegistryCamelT, DatabaseT> extends Context
 			?.dependencies
 			.has(targetModuleName);
 	}
+
+	public get userConfig(): UserConfigT {
+		return this.runtime.config.modules[this.moduleName].userConfig as UserConfigT;
+	}
 }
 
 /**
  * Context for a script.
  */
-export class ScriptContext<RegistryT, RegistryCamelT, DatabaseT>
-	extends ModuleContext<RegistryT, RegistryCamelT, DatabaseT> {
+export class ScriptContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
+	extends ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT> {
 	public constructor(
 		runtime: Runtime<RegistryT, RegistryCamelT>,
 		trace: Trace,
@@ -195,5 +200,5 @@ export class ScriptContext<RegistryT, RegistryCamelT, DatabaseT>
 /**
  * Context for a test.
  */
-export class TestContext<RegistryT, RegistryCamelT, DatabaseT>
-	extends ModuleContext<RegistryT, RegistryCamelT, DatabaseT> {}
+export class TestContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
+	extends ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT> {}

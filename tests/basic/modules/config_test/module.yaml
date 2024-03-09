@@ -1,2 +1,3 @@
-scripts: {}
+scripts:
+  read_config: {}
 errors: {}

@@ -20,10 +20,11 @@ Deno.test("error", async () => {
 					"TEST_ERROR": {},
 				},
 				dependencies: new Set(["test_module"]),
+				userConfig: null,
 			},
 		},
 	}, camelMap);
-	const moduleContext = new ModuleContext<ErrReg, ErrRegCamel, undefined>(
+	const moduleContext = new ModuleContext<ErrReg, ErrRegCamel, null, undefined>(
 		runtime,
 		newTrace({ internalTest: {} }),
 		"test_module",
