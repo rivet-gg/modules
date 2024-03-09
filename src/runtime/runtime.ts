@@ -36,8 +36,8 @@ export interface Script {
 	public: boolean;
 }
 
-export type ScriptRun<Req, Res, TDatabase> = (
-	ctx: ScriptContext<any, any, TDatabase>,
+export type ScriptRun<Req, Res, DatabaseT> = (
+	ctx: ScriptContext<any, any, DatabaseT>,
 	req: Req,
 ) => Promise<Res>;
 

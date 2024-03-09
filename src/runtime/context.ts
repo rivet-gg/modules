@@ -156,12 +156,12 @@ export class Context<RegistryT, RegistryCamelT> {
 /**
  * Context for a module.
  */
-export class ModuleContext<RegistryT, RegistryCamelT, TDatabase> extends Context<RegistryT, RegistryCamelT> {
+export class ModuleContext<RegistryT, RegistryCamelT, DatabaseT> extends Context<RegistryT, RegistryCamelT> {
 	public constructor(
 		runtime: Runtime<RegistryT, RegistryCamelT>,
 		trace: Trace,
 		public readonly moduleName: string,
-		public readonly db: TDatabase,
+		public readonly db: DatabaseT,
 		camelMap: MapFrom<RegistryCamelT, RegistryT>,
 	) {
 		super(runtime, trace, camelMap);
@@ -178,13 +178,13 @@ export class ModuleContext<RegistryT, RegistryCamelT, TDatabase> extends Context
 /**
  * Context for a script.
  */
-export class ScriptContext<RegistryT, RegistryCamelT, TDatabase>
-	extends ModuleContext<RegistryT, RegistryCamelT, TDatabase> {
+export class ScriptContext<RegistryT, RegistryCamelT, DatabaseT>
+	extends ModuleContext<RegistryT, RegistryCamelT, DatabaseT> {
 	public constructor(
 		runtime: Runtime<RegistryT, RegistryCamelT>,
 		trace: Trace,
 		moduleName: string,
-		db: TDatabase,
+		db: DatabaseT,
 		public readonly scriptName: string,
 		camelMap: MapFrom<RegistryCamelT, RegistryT>,
 	) {
@@ -195,5 +195,5 @@ export class ScriptContext<RegistryT, RegistryCamelT, TDatabase>
 /**
  * Context for a test.
  */
-export class TestContext<RegistryT, RegistryCamelT, TDatabase>
-	extends ModuleContext<RegistryT, RegistryCamelT, TDatabase> {}
+export class TestContext<RegistryT, RegistryCamelT, DatabaseT>
+	extends ModuleContext<RegistryT, RegistryCamelT, DatabaseT> {}
