@@ -1,5 +1,6 @@
 import { exists, resolve, tjs } from "../deps.ts";
 import { Project } from "../project/project.ts";
+import { verbose } from "../term/status.ts";
 import { crypto, encodeHex } from "./deps.ts";
 
 // TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
@@ -108,18 +109,22 @@ export async function compareFileHash(
 		const newHash = await hashFile(cache, path);
 		if (!oldHash) {
 			hasChanged = true;
+			verbose("Created", path);
 		} else if ("missing" in oldHash && "missing" in newHash) {
-			hasChanged = oldHash.missing != newHash.missing;
+			// Do nothing
 		} else if ("hash" in oldHash && "hash" in newHash) {
-			hasChanged = oldHash.hash != newHash.hash;
+			if (oldHash.hash != newHash.hash) {
+				hasChanged = true;
+				verbose("Edited", path);
+			}
 		} else {
 			hasChanged = true;
+			if ("missing" in oldHash) verbose("Created", path);
+			else verbose("Removed", path);
 		}
 
 		// Cache diff so we don't have to rehash the file
 		cache.fileDiffs.set(path, hasChanged);
-
-		if (hasChanged) console.log(`✏️ ${path}`);
 	}
 
 	return hasChanged;
@@ -173,7 +178,8 @@ export async function compareExprHash(
 		const newHash = await hashExpr(cache, name, value);
 		if (newHash != oldHash) {
 			hasChanged = true;
-			console.log(`✏️  ${name}`);
+
+			verbose("Changed", name);
 		}
 
 		// Cache diff so we don't have to rehash the expr

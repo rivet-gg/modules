@@ -1,5 +1,6 @@
 import { Module, Project, Script } from "../project/mod.ts";
 import { Cache, compareExprHash, compareFileHash, loadCache, shutdownCache } from "./cache.ts";
+import { progress } from "../term/status.ts";
 
 // TODO: Convert this to a build flag
 export const FORCE_BUILD = false;
@@ -34,6 +35,7 @@ export async function shutdownBuildState(buildState: BuildState) {
 
 interface BuildStepOpts {
 	name: string;
+	description?: string;
 
 	/** Module this build step is relevant to. Only affects printed status. */
 	module?: Module;
@@ -85,14 +87,6 @@ export function buildStep(
 	buildState: BuildState,
 	opts: BuildStepOpts,
 ) {
-	// Build step name
-	let stepName = opts.name;
-	if (opts.module && opts.script) {
-		stepName += ` (${opts.module.name}.${opts.script.name})`;
-	} else if (opts.module) {
-		stepName += ` (${opts.module.name})`;
-	}
-
 	const fn = async () => {
 		// Determine if needs to be built
 		let needsBuild: boolean;
@@ -117,12 +111,12 @@ export function buildStep(
 			let onStart: () => void | undefined;
 			if (opts.delayedStart) {
 				// Wait to log start
-				onStart = () => logBuildStepStart(stepName);
+				onStart = () => logBuildStepStart(opts);
 			} else {
 				// Log start immediately
-				logBuildStepStart(stepName);
+				logBuildStepStart(opts);
 				onStart = () => {
-					console.warn(`onStart was called for ${stepName} but it can't have a delayed start`);
+					console.warn(`onStart was called for ${opts.name} but it can't have a delayed start`);
 				};
 			}
 
@@ -139,8 +133,8 @@ export function buildStep(
 	buildState.promises.push(fn());
 }
 
-function logBuildStepStart(name: string) {
-	console.log(`🔨 ${name}`);
+function logBuildStepStart(opts: BuildStepOpts) {
+	progress(opts.name, opts.description);
 }
 
 export async function waitForBuildPromises(buildState: BuildState): Promise<void> {

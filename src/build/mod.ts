@@ -20,6 +20,7 @@ import {
 	shutdownBuildState,
 	waitForBuildPromises,
 } from "../build_state/mod.ts";
+import { success } from "../term/status.ts";
 
 /**
  * Which format to use for building.
@@ -65,7 +66,7 @@ export async function build(project: Project, opts: BuildOpts) {
 
 	await shutdownBuildState(buildState);
 
-	console.log("✅ Finished");
+	success("Success");
 }
 
 async function buildSteps(
@@ -80,7 +81,8 @@ async function buildSteps(
 	for (const module of project.modules.values()) {
 		if (module.db) {
 			buildStep(buildState, {
-				name: `Migrate`,
+				name: "Migrate",
+				description: `modules/${module.name}/db/schema.prisma`,
 				module,
 				// TODO: Also watch migrations folder in case a migration is created/destroyed
 				condition: {
@@ -112,7 +114,8 @@ async function buildSteps(
 
 	// TODO: Add way to compare runtime artifacts (or let this be handled by the cache version and never rerun?)
 	buildStep(buildState, {
-		name: "Inflate runtime",
+		name: "Generate",
+		description: "_gen/runtime/",
 		async build() {
 			await inflateRuntimeArchive(project);
 		},
@@ -126,7 +129,8 @@ async function buildSteps(
 	}
 
 	buildStep(buildState, {
-		name: "Type helpers",
+		name: "Generate",
+		description: "_gen/registry.d.ts",
 		condition: {
 			files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
 		},
@@ -136,7 +140,8 @@ async function buildSteps(
 	});
 
 	buildStep(buildState, {
-		name: "Deno config",
+		name: "Generate",
+		description: "deno.json",
 		async build() {
 			await generateDenoConfig(project);
 		},
@@ -146,14 +151,16 @@ async function buildSteps(
 	await waitForBuildPromises(buildState);
 
 	buildStep(buildState, {
-		name: "Entrypoint",
+		name: "Generate",
+		description: "_gen/entrypoint.ts",
 		async build() {
 			await generateEntrypoint(project, opts);
 		},
 	});
 
 	buildStep(buildState, {
-		name: "OpenAPI",
+		name: "Generate",
+		description: "_gen/openapi.json",
 		async build() {
 			await generateOpenApi(project);
 		},
@@ -162,6 +169,7 @@ async function buildSteps(
 	if (opts.format == Format.Bundled) {
 		buildStep(buildState, {
 			name: "Bundle",
+			description: "_gen/output.js",
 			async build() {
 				const gen = resolve(project.path, "_gen");
 				const bundledFile = resolve(gen, "/output.js");
@@ -257,7 +265,8 @@ async function buildModule(
 	module: Module,
 ) {
 	buildStep(buildState, {
-		name: "Module config",
+		name: "Parse",
+		description: `modules/${module.name}/config.ts`,
 		module,
 		condition: {
 			// TODO: use tjs.getProgramFiles() to get the dependent files?
@@ -285,18 +294,8 @@ async function buildModule(
 	});
 
 	buildStep(buildState, {
-		name: "Module helper",
-		module,
-		condition: {
-			files: [resolve(module.path, "module.yaml")],
-		},
-		async build() {
-			await compileModuleHelper(project, module);
-		},
-	});
-
-	buildStep(buildState, {
-		name: "Type helper",
+		name: "Generate",
+		description: `modules/${module.name}/_gen/registry.d.ts`,
 		module,
 		condition: {
 			files: [resolve(module.path, "module.yaml")],
@@ -307,7 +306,20 @@ async function buildModule(
 	});
 
 	buildStep(buildState, {
-		name: "Test helper",
+		name: "Generate",
+		description: `modules/${module.name}/_gen/mod.ts`,
+		module,
+		condition: {
+			files: [resolve(module.path, "module.yaml")],
+		},
+		async build() {
+			await compileModuleHelper(project, module);
+		},
+	});
+
+	buildStep(buildState, {
+		name: "Generate",
+		description: `modules/${module.name}/_gen/test.ts`,
 		module,
 		condition: {
 			files: [resolve(module.path, "module.yaml")],
@@ -329,7 +341,8 @@ async function buildScript(
 	script: Script,
 ) {
 	buildStep(buildState, {
-		name: "Script schema",
+		name: "Parse",
+		description: `modules/${module.name}/scripts/${script.name}.ts`,
 		module,
 		script,
 		condition: {
@@ -373,7 +386,8 @@ async function buildScript(
 	});
 
 	buildStep(buildState, {
-		name: "Script helper",
+		name: "Generate",
+		description: `modules/${module.name}/_gen/scripts/${script.name}.ts`,
 		module,
 		script,
 		condition: {

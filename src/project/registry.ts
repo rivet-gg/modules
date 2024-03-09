@@ -1,5 +1,6 @@
 import { emptyDir, exists, resolve } from "../deps.ts";
 import { RegistryConfig, RegistryConfigGit, RegistryConfigLocal } from "../config/project.ts";
+import { progress } from "../term/status.ts";
 
 export interface Registry {
 	path: string;
@@ -119,7 +120,7 @@ async function resolveRegistryGit(
 			throw new Error(`Failed to find valid git endpoint for registry ${name}`);
 		}
 
-		console.log("📦 Cloning git registry", originUrl);
+		progress("Fetching", originUrl);
 
 		// Remove potentially dirty existing directory
 		await emptyDir(repoPath);
@@ -164,7 +165,7 @@ async function resolveRegistryGit(
 		args: ["cat-file", "-t", gitRef],
 	}).output();
 	if (!catOutput.success) {
-		console.log("📦 Fetching git registry", name, gitRef);
+		progress("Fetching", name);
 
 		const fetchOutput = await new Deno.Command("git", {
 			cwd: repoPath,
