@@ -63,9 +63,12 @@ export async function generateClient(
 			);
 
 			// Copy to module
-			const dstDir = resolve(module.path, "_gen", "prisma");
+			const dstDir = resolve(module.path, "_gen", "prisma", "client", "js");
 			await emptyDir(dstDir);
 			await copy(generatedClientDir, dstDir, { overwrite: true });
+
+			// HACK: Remove the generated client dir to work around a bug in the Prisma CLI
+			await emptyDir(generatedClientDir);
 		},
 	);
 }
