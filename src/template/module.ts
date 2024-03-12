@@ -1,15 +1,19 @@
 import { ModuleConfig } from "../config/module.ts";
 import { resolve, stringify } from "../deps.ts";
-import { Project } from "../project/mod.ts";
+import { getLocalRegistry, Project } from "../project/mod.ts";
 import { dedent } from "./deps.ts";
 
 export async function templateModule(project: Project, moduleName: string) {
+	const localRegistry = getLocalRegistry(project);
+	if (!localRegistry) throw new Error("Local registry not configured");
+	const localModulesPath = localRegistry.path;
+
 	if (project.modules.has(moduleName)) {
 		throw new Error("Module already exists");
 	}
 
 	// Create directires
-	const modulePath = resolve(project.path, "modules", moduleName);
+	const modulePath = resolve(localModulesPath, moduleName);
 	await Deno.mkdir(modulePath);
 	await Deno.mkdir(resolve(modulePath, "scripts"));
 	await Deno.mkdir(resolve(modulePath, "tests"));
