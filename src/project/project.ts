@@ -1,4 +1,4 @@
-import { copy, emptyDir, exists, resolve } from "../deps.ts";
+import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
 import { bold, brightRed, glob } from "./deps.ts";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
@@ -44,6 +44,13 @@ export async function loadProject(opts: LoadProjectOpts): Promise<Project> {
 	if (!registries.has("default")) {
 		const defaultRegistry = await loadDefaultRegistry(projectRoot);
 		registries.set("default", defaultRegistry);
+	}
+
+	// Validate local registry
+	const localRegistry = registries.get("local");
+	if (localRegistry) {
+		if (!("local" in localRegistry.config)) throw new Error("Local registry must be configured with local");
+		if (localRegistry.isExternal) throw new Error("Local registry can't be external");
 	}
 
 	// Load modules
@@ -255,4 +262,21 @@ export async function listSourceFiles(
 
 export async function cleanProject(project: Project) {
 	await Deno.remove(resolve(project.path, "_gen"), { recursive: true });
+}
+
+export function getDefaultRegistry(project: Project): Registry | undefined {
+	return project.registries.get("default");
+}
+
+export function getLocalRegistry(
+	project: Project,
+): Registry | undefined {
+	const localRegistry = project.registries.get("local");
+	if (localRegistry) {
+		assert("local" in localRegistry.config);
+		assert(!localRegistry.isExternal);
+		return localRegistry;
+	} else {
+		return undefined;
+	}
 }
