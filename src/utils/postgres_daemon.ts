@@ -1,4 +1,5 @@
 import { Project } from "../project/mod.ts";
+import { verbose } from "../term/status.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
 const VOLUME_NAME = "opengb-postgres-data";
@@ -14,7 +15,7 @@ export async function ensurePostgresRunning(_project: Project) {
 	if (POSTGRES_STATE.running) return;
 	POSTGRES_STATE.running = true;
 
-	console.log("Starting Postgres server...");
+	verbose("Starting Postgres server...");
 
 	// Validate Docker is installed
 	const versionOutput = await new Deno.Command("docker", {
@@ -73,7 +74,7 @@ export async function ensurePostgresRunning(_project: Project) {
 		throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
 	}
 
-	console.log("Waiting for pg_isready");
+	verbose("Waiting for pg_isready");
 
 	// Wait until Postgres is accessible
 	while (true) {
@@ -86,5 +87,11 @@ export async function ensurePostgresRunning(_project: Project) {
 		await new Promise((r) => setTimeout(r, 500));
 	}
 
-	console.log("Ready");
+	// HACK: https://github.com/rivet-gg/opengb/issues/200
+	// CI needs a bit more time to be able to connect to the server
+	if (Deno.env.get("CI") === "true") {
+		await new Promise((r) => setTimeout(r, 1000));
+	}
+
+	verbose("Ready");
 }
