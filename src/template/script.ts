@@ -6,16 +6,17 @@ export async function templateScript(
 	moduleName: string,
 	scriptName: string,
 ) {
+	// if (!project.localRegistry) throw new Error("Local registry not configured");
+	// const modulesPath = project.localRegistry.path;
+
 	const mod = project.modules.get(moduleName);
-	if (!mod) {
-		throw new Error(`Missing module ${moduleName}`);
-	}
+	if (!mod) throw new Error(`Missing module ${moduleName}`);
+	if (!("local" in mod.registry.config)) throw new Error(`Module ${moduleName} is not in a local registry`);
+	if (mod.registry.isExternal) throw new Error(`Module ${moduleName} is in an external registry`);
 
 	// Create scripts
 	const scriptPath = resolve(
-		project.path,
-		"modules",
-		moduleName,
+		mod.path,
 		"scripts",
 		scriptName + ".ts",
 	);
@@ -31,9 +32,7 @@ export async function templateScript(
 	// Create test if doesn't already exist
 	let createTest = false;
 	const testPath = resolve(
-		project.path,
-		"modules",
-		moduleName,
+		mod.path,
 		"tests",
 		scriptName + ".ts",
 	);
@@ -52,7 +51,7 @@ export async function templateScript(
 	newConfig.scripts[scriptName] = {};
 	const newConfigRaw = stringify(newConfig);
 	await Deno.writeTextFile(
-		resolve(project.path, "modules", moduleName, "module.yaml"),
+		resolve(mod.path, "module.yaml"),
 		newConfigRaw,
 	);
 
