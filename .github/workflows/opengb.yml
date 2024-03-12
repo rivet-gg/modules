@@ -24,6 +24,8 @@ jobs:
         run: deno task cli:install
 
       - name: Run Tests
+        env:
+          VERBOSE: true
         run: cd tests/basic/ && opengb test || docker ps
 
       # Inspect containers running after tests finish
