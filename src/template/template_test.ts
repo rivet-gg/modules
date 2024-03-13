@@ -39,6 +39,8 @@ Deno.test({
 			format: Format.Native,
 			runtime: Runtime.Deno,
 			dbDriver: DbDriver.NodePostgres,
+			autoMigrate: false,
+			skipDenoCheck: false,
 		});
 	},
 });

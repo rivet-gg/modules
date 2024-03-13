@@ -1,20 +1,23 @@
+import { CommandError, UserError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
 import { verbose } from "../term/status.ts";
+import { createOnce, getOrInitOnce } from "./once.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
 const VOLUME_NAME = "opengb-postgres-data";
 
+const POSTGRES_ONCE = createOnce<void>();
+
 /**
- * Context about the Postgres server for the current process.
+ * Ensures that Postgres server is running for development.
  */
-const POSTGRES_STATE = {
-	running: false,
-};
+export async function ensurePostgresRunning(project: Project) {
+	return await getOrInitOnce(POSTGRES_ONCE, async () => {
+		await ensurePostgresRunningInner(project);
+	});
+}
 
-export async function ensurePostgresRunning(_project: Project) {
-	if (POSTGRES_STATE.running) return;
-	POSTGRES_STATE.running = true;
-
+async function ensurePostgresRunningInner(_project: Project) {
 	verbose("Starting Postgres server...");
 
 	// Validate Docker is installed
@@ -24,8 +27,11 @@ export async function ensurePostgresRunning(_project: Project) {
 		stderr: "piped",
 	}).output();
 	if (!versionOutput.success) {
-		throw new Error(
-			"Docker is not installed or running. Install here: https://docs.docker.com/get-docker/",
+		throw new UserError(
+			"Docker is not installed or running.",
+			{
+				suggest: "Install here: https://docs.docker.com/get-docker/",
+			},
 		);
 	}
 
@@ -41,7 +47,7 @@ export async function ensurePostgresRunning(_project: Project) {
 			args: ["volume", "create", VOLUME_NAME],
 		}).output();
 		if (!volumeCreateOutput.success) {
-			throw new Error("Failed to create the volume.");
+			throw new CommandError("Failed to create Postgres volume.", { commandOutput: volumeCreateOutput });
 		}
 	}
 
@@ -51,7 +57,7 @@ export async function ensurePostgresRunning(_project: Project) {
 		args: ["rm", "-f", CONTAINER_NAME],
 	}).output();
 	if (!rmOutput.success) {
-		throw new Error("Failed to remove the existing container.");
+		throw new CommandError("Failed to remove the existing Postgres container.", { commandOutput: rmOutput });
 	}
 
 	// Start the container
@@ -71,7 +77,7 @@ export async function ensurePostgresRunning(_project: Project) {
 		],
 	}).output();
 	if (!runOutput.success) {
-		throw new Error("Failed to start the container:\n" + new TextDecoder().decode(runOutput.stderr));
+		throw new CommandError("Failed to start the Postgres container.", { commandOutput: runOutput });
 	}
 
 	verbose("Waiting for pg_isready");
@@ -80,11 +86,9 @@ export async function ensurePostgresRunning(_project: Project) {
 	while (true) {
 		const checkOutput = await new Deno.Command("docker", {
 			args: ["exec", CONTAINER_NAME, "pg_isready"],
-			stdout: "inherit",
-			stderr: "inherit",
 		}).output();
 		if (checkOutput.success) break;
-		await new Promise((r) => setTimeout(r, 500));
+		await new Promise((r) => setTimeout(r, 50));
 	}
 
 	// HACK: https://github.com/rivet-gg/opengb/issues/200
