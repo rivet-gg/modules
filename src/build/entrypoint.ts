@@ -1,6 +1,7 @@
 import { resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
 import { genRegistryMapPath, genRuntimeModPath, genRuntimePath } from "../project/project.ts";
+import { CommandError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
 
@@ -59,10 +60,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
 			import { camelToSnake } from "${registryMapPath};
+			import type { Registry, RegistryCamel } from "./registry.d.ts";
 			import config from "./runtime_config.ts";
 
 			async function main() {
-				const runtime = new Runtime(config, camelToSnake);
+				const runtime = new Runtime<Registry, RegistryCamel>(config, camelToSnake);
 				await runtime.serve();
 			}
 
@@ -76,10 +78,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
 			import { camelToSnake } from "${registryMapPath}";
+			import type { Registry, RegistryCamel } from "./registry.d.ts";
 			import config from "./runtime_config.ts";
 			import { serverHandler } from "${serverTsPath}";
 
-			const RUNTIME = new Runtime(config, camelToSnake);
+			const RUNTIME = new Runtime<Registry, RegistryCamel>(config, camelToSnake);
 			const SERVER_HANDLER = serverHandler(RUNTIME);
 
 			export default {
@@ -118,10 +121,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	);
 
 	// Format files
-	const { success } = await new Deno.Command("deno", {
+	const fmtOutput = await new Deno.Command("deno", {
 		args: ["fmt", configPath, entrypointPath],
+		signal: opts.signal,
 	}).output();
-	if (!success) throw new Error(`Failed to format generated files`);
+	if (!fmtOutput.success) throw new CommandError("Failed to format generated files.", { commandOutput: fmtOutput });
 }
 
 function generateModImports(project: Project, opts: BuildOpts) {
@@ -169,6 +173,9 @@ function generateModImports(project: Project, opts: BuildOpts) {
 		} else {
 			modConfig += `db: undefined,`;
 		}
+
+		// Generate user config
+		modConfig += `userConfig: ${JSON.stringify(mod.userConfig)},`;
 
 		modConfig += "},";
 	}
