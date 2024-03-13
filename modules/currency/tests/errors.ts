@@ -19,9 +19,8 @@ test(
 test(
 	"withdraw more than balance",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const { updatedBalance: _ } = await ctx.modules.currency.deposit({
@@ -39,9 +38,8 @@ test(
 test(
 	"withdraw negative amount",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -54,9 +52,8 @@ test(
 test(
 	"withdraw Infinity",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -72,9 +69,8 @@ test(
 test(
 	"withdraw NaN",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -87,9 +83,8 @@ test(
 test(
 	"deposit Infinity",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -102,9 +97,8 @@ test(
 test(
 	"deposit NaN",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -117,9 +111,8 @@ test(
 test(
 	"deposit negative amount",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -132,9 +125,8 @@ test(
 test(
 	"set balance to negative",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -147,9 +139,8 @@ test(
 test(
 	"set balance to NaN",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {
@@ -163,9 +154,8 @@ test(
 test(
 	"set balance to infinity",
 	async (ctx: TestContext) => {
-		const { user: user, token: _token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
 		});
 
 		const error = await assertRejects(async () => {

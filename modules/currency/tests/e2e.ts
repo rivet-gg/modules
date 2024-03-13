@@ -5,9 +5,11 @@ import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 test(
 	"e2e transaction",
 	async (ctx: TestContext) => {
-		const { user: user, token: token } = await ctx.modules.users.register({
+		const { user: user } = await ctx.modules.users.createUser({
 			username: faker.internet.userName(),
-			identity: { guest: {} },
+		});
+		const { token } = await ctx.modules.users.createUserToken({
+			userId: user.id,
 		});
 
 		const { updatedBalance } = await ctx.modules.currency.deposit({

@@ -14,7 +14,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.modules.rateLimit.throttle({ requests: 50 });
+	await ctx.modules.rateLimit.throttlePublic({ requests: 50 });
 
 	const { userId } = await ctx.modules.users.validateUserToken({
 		userToken: req.userToken,

@@ -14,7 +14,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.modules.rateLimit.throttle({ requests: 25 });
+	await ctx.modules.rateLimit.throttlePublic({ requests: 25 });
 
 	return {
 		balance: await getBalance(ctx.db, req.userId),

@@ -8,7 +8,8 @@ scripts:
   get_user:
     public: true
   create_user: {}
-  validate_user_token: {}
+  validate_user_token:
+    public: true
   create_user_token: {}
 errors:
   TOKEN_NOT_USER_TOKEN: {}

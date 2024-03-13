@@ -3,4 +3,6 @@ authors:
   - NathanFlurry
 scripts:
   throttle: {}
-errors: {}
+  throttle_public: {}
+errors:
+  RATE_LIMIT_EXCEEDED: {}

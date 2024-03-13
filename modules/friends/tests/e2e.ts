@@ -3,15 +3,15 @@ import { assertEquals } from "https://deno.land/std@0.217.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 
 test("e2e accept", async (ctx: TestContext) => {
-	const { user: _userA, token: tokenA } = await ctx.modules.users.register({
+	const { user: userA } = await ctx.modules.users.createUser({
 		username: faker.internet.userName(),
-		identity: { guest: {} },
 	});
+	const { token: tokenA } = await ctx.modules.users.createUserToken({ userId: userA.id });
 
-	const { user: userB, token: tokenB } = await ctx.modules.users.register({
+	const { user: userB } = await ctx.modules.users.createUser({
 		username: faker.internet.userName(),
-		identity: { guest: {} },
 	});
+	const { token: tokenB } = await ctx.modules.users.createUserToken({ userId: userB.id });
 
 	const { friendRequest } = await ctx.modules.friends.sendRequest({
 		userToken: tokenA.token,
@@ -57,15 +57,15 @@ test("e2e accept", async (ctx: TestContext) => {
 });
 
 test("e2e reject", async (ctx: TestContext) => {
-	const { user: _userA, token: tokenA } = await ctx.modules.users.register({
+	const { user: userA } = await ctx.modules.users.createUser({
 		username: faker.internet.userName(),
-		identity: { guest: {} },
 	});
+	const { token: tokenA } = await ctx.modules.users.createUserToken({ userId: userA.id });
 
-	const { user: userB, token: tokenB } = await ctx.modules.users.register({
+	const { user: userB } = await ctx.modules.users.createUser({
 		username: faker.internet.userName(),
-		identity: { guest: {} },
 	});
+	const { token: tokenB } = await ctx.modules.users.createUserToken({ userId: userB.id });
 
 	const { friendRequest } = await ctx.modules.friends.sendRequest({
 		userToken: tokenA.token,

@@ -15,9 +15,9 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	if (!ctx.userConfig.email) throw new RuntimeError("PROVIDER_DISABLED");
+	await ctx.modules.rateLimit.throttlePublic({});
 
-	await ctx.modules.rateLimit.throttle({});
+	if (!ctx.userConfig.email) throw new RuntimeError("PROVIDER_DISABLED");
 
 	// Fetch existing user if session token is provided
 	let userId: string | undefined;

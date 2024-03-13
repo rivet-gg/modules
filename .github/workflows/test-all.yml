@@ -3,7 +3,7 @@ on:
   - push
 
 env:
-  CURRENT_WORKING_ENGINE_COMMIT: 920ac277dd0f5378cf8c3cc1ae414340dc6d76a6
+  CURRENT_WORKING_ENGINE_COMMIT: cbdd1e1b364b1906347b3ef541a4a5057651650f
 
 jobs:
   build:
@@ -40,4 +40,4 @@ jobs:
 
       # Run tests on all modules in the registry
       - name: Run Tests for all modules
-        run: cd ./opengb-registry/tests/basic && opengb test
+        run: cd ./opengb-registry/tests/basic && opengb test --strict-schemas --force-deploy-migrations
