@@ -261,7 +261,18 @@ export async function listSourceFiles(
 }
 
 export async function cleanProject(project: Project) {
+	// Remove project dir
 	await Deno.remove(resolve(project.path, "_gen"), { recursive: true });
+
+	// Remove module gen dir
+	for (const module of project.modules.values()) {
+		if (module.registry.isExternal) continue;
+
+		const genPath = resolve(module.path, "_gen");
+		if (await exists(genPath, { isDirectory: true })) {
+			await Deno.remove(genPath, { recursive: true });
+		}
+	}
 }
 
 export function getDefaultRegistry(project: Project): Registry | undefined {
