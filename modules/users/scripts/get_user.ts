@@ -1,5 +1,5 @@
-import { ScriptContext } from "../_gen/scripts/get.ts";
-import { User } from "../types/common.ts";
+import { ScriptContext } from "../_gen/scripts/get_user.ts";
+import { User } from "../utils/types.ts";
 
 export interface Request {
 	userIds: string[];

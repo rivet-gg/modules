@@ -1,0 +1,20 @@
+{
+    "lint": {
+        "include": [
+            "src/"
+        ],
+        "exclude": [
+            "tests/"
+        ],
+        "rules": {
+            "exclude": [
+                "no-empty-interface",
+                "no-explicit-any",
+                "require-await"
+            ]
+        }
+    },
+    "fmt": {
+        "useTabs": true
+    }
+}

@@ -18,14 +18,16 @@ test("e2e accept", async (ctx: TestContext) => {
 		targetUserId: userB.id,
 	});
 
-	const { friendRequests: outgoingRequests } = await ctx.modules.friends.listOutgoingFriendRequests({
-		userToken: tokenA.token,
-	});
+	const { friendRequests: outgoingRequests } = await ctx.modules.friends
+		.listOutgoingFriendRequests({
+			userToken: tokenA.token,
+		});
 	assertEquals(outgoingRequests.length, 1);
 
-	const { friendRequests: incomingRequests } = await ctx.modules.friends.listIncomingFriendRequests({
-		userToken: tokenB.token,
-	});
+	const { friendRequests: incomingRequests } = await ctx.modules.friends
+		.listIncomingFriendRequests({
+			userToken: tokenB.token,
+		});
 	assertEquals(incomingRequests.length, 1);
 
 	await ctx.modules.friends.acceptRequest({
@@ -37,7 +39,6 @@ test("e2e accept", async (ctx: TestContext) => {
 		userToken: tokenA.token,
 	});
 	assertEquals(friendsA.friends.length, 1);
-
 
 	const friendsB = await ctx.modules.friends.listFriends({
 		userToken: tokenB.token,
@@ -76,13 +77,15 @@ test("e2e reject", async (ctx: TestContext) => {
 		friendRequestId: friendRequest.id,
 	});
 
-	const { friendRequests: outgoingRequests } = await ctx.modules.friends.listOutgoingFriendRequests({
-		userToken: tokenA.token,
-	});
+	const { friendRequests: outgoingRequests } = await ctx.modules.friends
+		.listOutgoingFriendRequests({
+			userToken: tokenA.token,
+		});
 	assertEquals(outgoingRequests.length, 0);
 
-	const { friendRequests: incomingRequests } = await ctx.modules.friends.listIncomingFriendRequests({
-		userToken: tokenB.token,
-	});
+	const { friendRequests: incomingRequests } = await ctx.modules.friends
+		.listIncomingFriendRequests({
+			userToken: tokenB.token,
+		});
 	assertEquals(incomingRequests.length, 0);
 });

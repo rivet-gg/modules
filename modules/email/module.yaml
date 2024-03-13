@@ -1,0 +1,6 @@
+scripts:
+  send_email: {}
+errors:
+  EMAIL_MISSING_CONTENT:
+    description: Email must have `html` and/or `text`
+  SENDGRID_ERROR: {}

@@ -8,6 +8,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    timeout-minutes: 5
     steps:
       # Checkout registry repo
       - name: Checkout registry Repo

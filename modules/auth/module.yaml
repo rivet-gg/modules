@@ -1,0 +1,16 @@
+dependencies:
+  email: {}
+  users: {}
+  rate_limit: {}
+scripts:
+  auth_email_passwordless:
+    public: true
+  verify_email_passwordless:
+    public: true
+errors:
+  PROVIDER_DISABLED: {}
+  VERIFICATION_CODE_INVALID: {}
+  VERIFICATION_CODE_ATTEMPT_LIMIT: {}
+  VERIFICATION_CODE_EXPIRED: {}
+  VERIFICATION_CODE_ALREADY_USED: {}
+  EMAIL_ALREADY_USED: {}

@@ -1,10 +1,27 @@
 registries:
-  default:
+  local:
     local:
       directory: ../../modules
 modules:
-  currency: {}
-  friends: {}
-  rate_limit: {}
-  tokens: {}
-  users: {}
+  currency:
+    registry: local
+  friends:
+    registry: local
+  rate_limit:
+    registry: local
+  tokens:
+    registry: local
+  users:
+    registry: local
+  auth:
+    registry: local
+    config:
+      email:
+        fromEmail: hello@rivet.gg
+  email:
+    registry: local
+    config:
+      provider:
+        test: {}
+        # sendGrid:
+        #   apiKeyVariable: SENDGRID_API_KEY

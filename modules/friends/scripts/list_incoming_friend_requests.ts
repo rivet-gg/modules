@@ -15,7 +15,9 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttle({ requests: 50 });
 
-	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
+	const { userId } = await ctx.modules.users.validateUserToken({
+		userToken: req.userToken,
+	});
 
 	const rows = await ctx.db.friendRequest.findMany({
 		where: {

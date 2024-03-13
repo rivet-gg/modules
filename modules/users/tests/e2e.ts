@@ -14,7 +14,7 @@ test("e2e", async (ctx: TestContext) => {
 	});
 	assertExists(users[0]);
 
-	const { userId } = await ctx.modules.users.validateToken({
+	const { userId } = await ctx.modules.users.validateUserToken({
 		userToken: token.token,
 	});
 	assertEquals(user.id, userId);

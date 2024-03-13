@@ -13,9 +13,11 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.modules.rateLimit.throttle({ });
+	await ctx.modules.rateLimit.throttle({});
 
-	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
+	const { userId } = await ctx.modules.users.validateUserToken({
+		userToken: req.userToken,
+	});
 
 	const rows = await ctx.db.friendRequest.findMany({
 		where: {

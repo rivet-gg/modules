@@ -14,9 +14,11 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.modules.rateLimit.throttle({ });
+	await ctx.modules.rateLimit.throttle({});
 
-	const { userId } = await ctx.modules.users.validateToken({ userToken: req.userToken });
+	const { userId } = await ctx.modules.users.validateUserToken({
+		userToken: req.userToken,
+	});
 
 	if (userId === req.targetUserId) {
 		throw new RuntimeError("CANNOT_SEND_TO_SELF");

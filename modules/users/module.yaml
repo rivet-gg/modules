@@ -5,11 +5,11 @@ dependencies:
   rate_limit: {}
   tokens: {}
 scripts:
-  get:
+  get_user:
     public: true
-  register:
-    public: true
-  validate_token: {}
+  create_user: {}
+  validate_user_token: {}
+  create_user_token: {}
 errors:
   TOKEN_NOT_USER_TOKEN: {}
   UNKNOWN_IDENTITY_TYPE: {}

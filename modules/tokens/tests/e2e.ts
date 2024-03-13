@@ -46,5 +46,8 @@ test("e2e", async (ctx: TestContext) => {
 	const revokeNonexistentRes = await ctx.modules.tokens.revoke({
 		tokenIds: [nonexistentTokenId],
 	});
-	assertEquals(revokeNonexistentRes.updates[nonexistentTokenId], TokenUpdate.NotFound);
+	assertEquals(
+		revokeNonexistentRes.updates[nonexistentTokenId],
+		TokenUpdate.NotFound,
+	);
 });
