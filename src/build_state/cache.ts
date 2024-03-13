@@ -45,12 +45,18 @@ export async function loadCache(project: Project): Promise<Cache> {
 	// Read hashes from file
 	let persist: CachePersist;
 	if (await exists(buildCachePath)) {
-		const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
+		try {
+			// Try to parse the old cache
+			const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
 
-		// Validate version
-		if (oldCacheAny.version == CACHE_VERSION) {
-			persist = oldCacheAny;
-		} else {
+			// Validate version
+			if (oldCacheAny.version == CACHE_VERSION) {
+				persist = oldCacheAny;
+			} else {
+				persist = createEmptyCachePersist();
+			}
+		} catch {
+			// If parsing fails or the cache isn't readable, reset the cache.
 			persist = createEmptyCachePersist();
 		}
 	} else {
