@@ -3,7 +3,7 @@ import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { resolve, tjs } from "../deps.ts";
 import { hasUserConfigSchema, Project } from "../project/mod.ts";
-import { snakeify } from "../types/case_conversions.ts";
+import { camelify, pascalify } from "../types/case_conversions.ts";
 
 export interface ProjectMeta {
 	config: ProjectConfig;
@@ -22,6 +22,7 @@ export interface ModuleMeta {
 	path: string;
 	name: string;
 	nameCamel: string;
+	namePascal: string;
 	config: ModuleConfig;
 	registryName: string;
 	userConfig: unknown;
@@ -39,6 +40,7 @@ export interface ScriptMeta {
 	path: string;
 	name: string;
 	nameCamel: string;
+	namePascal: string;
 	config: ScriptConfig;
 	requestSchema: tjs.Definition;
 	responseSchema: tjs.Definition;
@@ -64,7 +66,8 @@ export async function generateMeta(project: Project) {
 		modules[module.name] = {
 			path: module.path,
 			name: module.name,
-			nameCamel: snakeify(module.name),
+			nameCamel: camelify(module.name),
+			namePascal: pascalify(module.name),
 			config: module.config,
 			registryName: module.registry.name,
 			userConfig: module.userConfig,
@@ -73,7 +76,8 @@ export async function generateMeta(project: Project) {
 				Array.from(module.scripts.entries()).map(([name, script]) => [name, {
 					path: script.path,
 					name: name,
-					nameCamel: snakeify(name),
+					nameCamel: camelify(name),
+					namePascal: pascalify(name),
 					config: script.config,
 					requestSchema: script.requestSchema!,
 					responseSchema: script.responseSchema!,
