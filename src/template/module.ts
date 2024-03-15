@@ -32,6 +32,7 @@ export async function templateModule(project: Project, moduleName: string) {
 
 	// Write default migration
 	const defaultSchema = dedent`
+		// Do not modify this \`datasource\` block
 		datasource db {
 			provider = "postgresql"
 			url      = env("DATABASE_URL")
