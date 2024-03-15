@@ -39,12 +39,11 @@ self.onmessage = async (ev) => {
 		"allowImportingTsExtensions": true,
 	};
 
-	const validateConfig = {
-		topRef: true,
+	const validateConfig: tjs.PartialArgs = {
+		esModuleInterop: true,
+		noExtraProps: true,
 		required: true,
 		strictNullChecks: true,
-		noExtraProps: true,
-		esModuleInterop: true,
 
 		// TODO: Is this needed?
 		include: [moduleConfigPath],

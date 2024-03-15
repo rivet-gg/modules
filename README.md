@@ -1,125 +1,67 @@
 # Open Game Backend
 
+_Open-source modular backend for all games and tools._
+
+![Backend Made Simple](./media/hero.png)
+
+- **Modular**: Mix, match, & modify modules as needed to fit your game's unique requirements.
+- **Script like a game engine**: Easily extend & adapt on top of the [OpenGB Engine](/engine/introduction) using
+  TypeScript. Designed to be scripted by game developers.
+- **Batteries included**: Provides thoroughly reviewed, tested, and documented modules to get you started quickly &
+  allow you to customize to fit your needs.
+- **Secure, load-tested, & resilient**: Built to withstand the chaos that games need to grow & stay online. Load
+  testing, rate limits, captchas, strict schemas, and more are all enforced by default.
+- **Open-source & permissively licensed**: Apache 2.0 license allows you to adapt, modify, & redistribute freely.
+  _[Trust no one, own your backend.](https://delistedgames.com/gamesparks-service-to-end-in-september-potential-threat-to-thousands-of-titles/)_
+
 ## Prerequisites
 
-- Deno
-- Docker ([#125](https://github.com/rivet-gg/opengb/issues/125))
+- [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+- [Docker](https://docs.docker.com/get-docker/) ([#125](https://github.com/rivet-gg/opengb/issues/125))
 - Git
 
 ## Install
 
-<!--
- **From GitHub (recommended)**
+**From GitHub (recommended)**
 
 ```
-deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force https://raw.githubusercontent.com/rivet-gg/opengb-engine/main/src/cli/main.ts
+deno install --name opengb --force --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys https://raw.githubusercontent.com/rivet-gg/opengb/main/src/cli/main.ts
 ```
--->
 
 **From source**
 
 After cloning the repo, run:
 
 ```
-deno install --allow-net --allow-read --allow-env --allow-run --allow-write --name opengb --force src/cli/main.ts
+git clone https://github.com/rivet-gg/opengb.git
+cd opengb
+deno task cli:install
 ```
-
-## Usage
-
-**Start development server**
-
-```
-opengb dev
-```
-
-This will automatically restart when files change.
-
-> **Tip**
->
-> You can configure the database url using the `DATABASE_URL` env var. This will
-default to `postgres://postgres:password@localhost:5432/postgres`
-
-**Run tests**
-
-```
-opengb test
-```
-
-To automatically rerun tests when files change, run:
-
-```
-opengb test --watch
-```
-
-To test a specific file:
-
-```
-opengb test foo
-```
-
-**Creating modules & scripts**
-
-Create module:
-
-```
-opengb create module foo
-```
-
-Create script:
-
-```
-opengb create script foo bar
-```
-
-**Generate SDKs**
-
-```
-opengb sdk generate
-```
-
-SDKs are generated to `_gen/sdks/`.
-
-**OpenAPI & Postman/Insomnia/Paw**
-
-Explore the APIs by opening `_gen/openapi.json` in Postman/Insomnia/Paw.
-
-## Goals
-
-- **Modular** Add, remove, and modify modules from the backend to fit the use
-  case for your game
-- **Easy to use for game devs** The Engine takes care of the hard stuff so
-  adding functionality is dead simple
-- **Secure & load tested** Security, laod testing & anti-botting is not an
-  afterthought
-- **Strict schemas & documentation** Strict typings & documentation are
-  _required_ to make this easy to approach
-- **Portable & lightweight** Built on boring, reliable technology that runs
-  however you want to run Open Game Backend
-- **Package manager for game services** Adding backend functionality to your
-  game should be as easy as one command
-- **Permissively licensed** Apache 2.0 license allows developers to adapt,
-  modify, & redistribute
 
 ## Technologies Used
 
-- Language: TypeScript
-- Runtime: Deno
-- Database: Postgres
-- ORM: Prisma
+- **Language** TypeScript
+- **Runtime** Deno
+- **Database** Postgres
+- **ORM** Prisma
 
-## Who uses Open Game Backend?
+## Documentation
 
-TODO
+- [Quickstart](http://opengb.dev/concepts/quickstart)
+- [All available modules](http://opengb.dev/modules)
+- [Building modules](https://opengb.dev/build/crash-course)
+- [OpenGB Engine internals](http://opengb.dev/engine/introduction)
+- Visit [opengb.dev](http://opengb.dev/introduction) for more
 
-## FAQ
+## Looking for the module registry?
 
-See [here](./docs/FAQ.md).
+See [rivet-gg/opengb-registry](https://github.com/rivet-gg/opengb-registry.git).
 
 ## Support
 
 **Community**
 
-Create a GitHub issue.
+[Create a GitHub issue](https://github.com/rivet-gg/opengb/issues) or [join our Discord](https://rivet.gg/discord).
 
 **Enterprise**
 

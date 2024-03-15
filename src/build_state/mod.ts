@@ -1,5 +1,5 @@
 import { Module, Project, Script } from "../project/mod.ts";
-import { Cache, compareExprHash, compareFileHash, loadCache, writeCache } from "./cache.ts";
+import { Cache, compareFileHash, compareHash, HashValue, loadCache, writeCache } from "./cache.ts";
 import { progress } from "../term/status.ts";
 import { assert } from "../deps.ts";
 import { CombinedError } from "../error/mod.ts";
@@ -40,6 +40,7 @@ export async function writeBuildState(buildState: BuildState) {
 }
 
 interface BuildStepOpts {
+	id: string;
 	name: string;
 	description?: string;
 
@@ -79,7 +80,7 @@ interface BuildStepCondition {
 	files?: string[];
 
 	/** Runs if any of these expressions change. */
-	expressions?: Record<string, any>;
+	expressions?: Record<string, HashValue>;
 }
 
 interface BuildStepCallbackOpts {
@@ -111,9 +112,11 @@ export function buildStep(
 			// cache if they change. Otherwise, if both a file and expr is change,
 			// the next build will have a false positive when it hashes the
 			// expression.
-			const fileDiff = opts.condition?.files ? await compareFileHash(buildState.cache, opts.condition.files) : false;
+			const fileDiff = opts.condition?.files
+				? await compareFileHash(buildState.cache, opts.id, opts.condition.files)
+				: false;
 			const exprDiff = opts.condition?.expressions
-				? await compareExprHash(buildState.cache, opts.condition.expressions)
+				? await compareHash(buildState.cache, opts.id, opts.condition.expressions)
 				: false;
 
 			needsBuild = fileDiff || exprDiff;
@@ -182,4 +185,9 @@ export async function waitForBuildPromises(buildState: BuildState): Promise<void
 			throw new CombinedError(errorResponses);
 		}
 	}
+
+	buildState.signal.throwIfAborted();
+
+	// Write cache if all succeeded
+	await writeBuildState(buildState);
 }

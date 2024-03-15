@@ -13,6 +13,7 @@ export async function planScriptBuild(
 	opts: BuildOpts,
 ) {
 	buildStep(buildState, {
+		id: `module.${module.name}.script.${script.name}.parse`,
 		name: "Parse",
 		description: `${script.name}.ts`,
 		module,
@@ -22,9 +23,6 @@ export async function planScriptBuild(
 			files: opts.strictSchemas ? [script.path] : [],
 			expressions: {
 				strictSchemas: opts.strictSchemas,
-
-				// If a script is added, removed, or the config is changed
-				"module.scripts": module.scripts,
 			},
 		},
 		delayedStart: true,
@@ -57,6 +55,7 @@ export async function planScriptBuild(
 	});
 
 	buildStep(buildState, {
+		id: `module.${module.name}.script.${script.name}.generate`,
 		name: "Generate",
 		description: `_gen/scripts/${script.name}.ts`,
 		module,
@@ -64,6 +63,9 @@ export async function planScriptBuild(
 		condition: {
 			// TODO: check specifically scripts section of module config
 			files: [resolve(module.path, "module.yaml"), script.path],
+			expressions: {
+				db: !!module.config.db,
+			},
 		},
 		async build() {
 			await compileScriptHelper(project, module, script);

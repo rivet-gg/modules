@@ -1,0 +1,4 @@
+# These files are generated, so don't bother with conflicts.
+/artifacts/ merge=ours
+
+*.png binary

@@ -33,12 +33,8 @@ export async function compileModuleConfigSchema(
 			// No schema
 			module.userConfigSchema = {
 				"$schema": "http://json-schema.org/draft-07/schema#",
-				"$ref": "#/definitions/Config",
-				"definitions": {
-					"Config": {
-						"type": "object",
-					},
-				},
+				"type": "object",
+				"additionalProperties": true,
 			};
 		}
 	} else {
@@ -61,9 +57,7 @@ export async function compileModuleConfigSchema(
 		schemas: [module.userConfigSchema],
 	});
 
-	const moduleConfigSchema = moduleConfigAjv.getSchema(
-		"#/definitions/Config",
-	);
+	const moduleConfigSchema = moduleConfigAjv.getSchema("#");
 	if (!moduleConfigSchema) {
 		throw new UserError("Type `Config` does not exist.", { path: resolve(module.path, "config.ts") });
 	}

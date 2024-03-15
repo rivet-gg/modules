@@ -1,52 +1,52 @@
+import { move } from "../deps.ts";
 import { CommandError } from "../error/mod.ts";
-import { initProject } from "../cli/common.ts";
+import { Project } from "../project/mod.ts";
 
-export async function generate(path?: string) {
-	interface Generator {
-		generator: string;
-	}
+export enum SdkTarget {
+	TypeScript,
+}
 
-	const GENERATORS: Record<string, Generator> = {
-		typescript: {
-			generator: "typescript-fetch",
+interface Generator {
+	generator: string;
+	options: Record<string, string>;
+}
+
+const GENERATORS: Record<SdkTarget, Generator> = {
+	[SdkTarget.TypeScript]: {
+		generator: "typescript",
+		options: {
+			npmName: "opengb-sdk",
 		},
-	};
+	},
+};
 
-	async function main(path?: string) {
-		const project = await initProject({ path });
-		const rootPath = project.path;
+export async function generateSdk(
+	project: Project,
+	target: SdkTarget,
+	output: string,
+) {
+	const config = GENERATORS[target]!;
 
-		for (const name in GENERATORS) {
-			const generator = GENERATORS[name];
-			await generateSdk(rootPath, name, generator);
-		}
+	const buildOutput = await new Deno.Command("docker", {
+		args: [
+			"run",
+			"--rm",
+			"-v",
+			`${project.path}:/local`,
+			"openapitools/openapi-generator-cli:v7.2.0",
+			"generate",
+			"-i",
+			"/local/_gen/openapi.json",
+			"-g",
+			config.generator,
+			"-o",
+			`/local/_gen/sdk/`,
+			...Object.entries(config.options).map(([key, value]) => `--additional-properties=${key}=${value}`),
+		],
+	}).output();
+	if (!buildOutput.success) {
+		throw new CommandError("Failed to generate OpenAPI SDK.", { commandOutput: buildOutput });
 	}
 
-	async function generateSdk(
-		rootPath: string,
-		name: string,
-		config: Generator,
-	) {
-		const buildOutput = await new Deno.Command("docker", {
-			args: [
-				"run",
-				"--rm",
-				"-v",
-				`${rootPath}:/local`,
-				"openapitools/openapi-generator-cli:v7.2.0",
-				"generate",
-				"-i",
-				"/local/_gen/openapi.json",
-				"-g",
-				config.generator,
-				"-o",
-				`/local/_gen/sdks/${name}/`,
-			],
-		}).output();
-		if (!buildOutput.success) {
-			throw new CommandError("Failed to generate OpenAPI SDK.", { commandOutput: buildOutput });
-		}
-	}
-
-	main(path);
+	await move(`${project.path}/_gen/sdk`, output, { overwrite: true });
 }

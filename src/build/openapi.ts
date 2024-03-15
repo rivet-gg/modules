@@ -47,7 +47,7 @@ export async function generateOpenApi(project: Project) {
 			schema.paths[`/modules/${mod.name}/scripts/${script.name}/call`] = {
 				post: {
 					description: `Call ${mod.name}.${script.name} script.`,
-					tags: ["OpenGB"],
+					tags: ["Backend"],
 					operationId: `call_${mod.name}_${script.name}`,
 					requestBody: {
 						content: {
@@ -91,19 +91,27 @@ function injectSchema(
 	prefix: string,
 	rootDefinition: string,
 ) {
-	// Add the definition to the OpenAPI schema
+	schema = structuredClone(schema);
+
+	// Add the root definition to the OpenAPI schema
+	replaceRefs(
+		schema,
+		(ref) => ref.replace("#/definitions/", `#/components/schemas/${prefix}__`),
+	);
+	openapi.components.schemas[`${prefix}__${rootDefinition}`] = schema;
+
+	// Add the definition to the OpenAPI schema and remove it from the JSON schema
 	for (const definitionName in schema.definitions) {
 		const definition = schema.definitions[definitionName];
 
-		// Update $refs to point to the new location
+		// Add the definition to the OpenAPI schema
 		replaceRefs(
 			definition,
 			(ref) => ref.replace("#/definitions/", `#/components/schemas/${prefix}__`),
 		);
-
-		// Add the definition to the OpenAPI schema
 		openapi.components.schemas[`${prefix}__${definitionName}`] = definition;
 	}
+	delete schema.definitions;
 
 	return `#/components/schemas/${prefix}__${rootDefinition}`;
 }

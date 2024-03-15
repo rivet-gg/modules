@@ -56,11 +56,10 @@ for (const { name, type } of CONFIGS) {
 	);
 
 	const schema = tjs.generateSchema(program, type, {
-		topRef: true,
+		esModuleInterop: true,
+		noExtraProps: true,
 		required: true,
 		strictNullChecks: true,
-		noExtraProps: true,
-		esModuleInterop: true,
 
 		// TODO: Is this needed?
 		include: schemaFiles,
@@ -74,5 +73,5 @@ for (const { name, type } of CONFIGS) {
 	await Deno.mkdir(parent(schemaPath), { recursive: true });
 
 	// Write schema to file
-	await Deno.writeTextFile(schemaPath, JSON.stringify(schema, null, "\t"));
+	await Deno.writeTextFile(schemaPath, JSON.stringify(schema));
 }

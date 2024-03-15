@@ -4,8 +4,27 @@ import schema from "../../artifacts/module_schema.json" with { type: "json" };
 import { InternalError } from "../error/mod.ts";
 
 export interface ModuleConfig extends Record<string, unknown> {
-	status?: "preview" | "beta" | "stable" | "deprecated";
+	status?: "preview" | "beta" | "stable" | "maintenance" | "end_of_life";
+
+	/**
+	 * The human readable name of the module.
+	 */
+	name?: string;
+
+	/**
+	 * A short description of the module.
+	 */
 	description?: string;
+
+	/**
+	 * The [Font Awesome](https://fontawesome.com/icons) icon name of the module.
+	 */
+	icon?: string;
+
+	/**
+	 * The tags associated with this module.
+	 */
+	tags?: string[];
 
 	/**
 	 * The GitHub handle of the authors of the module.
@@ -18,7 +37,19 @@ export interface ModuleConfig extends Record<string, unknown> {
 	dependencies?: { [canonicalName: string]: DependencyConfig };
 }
 
+export type ModuleStatus = "preview" | "beta" | "stable" | "deprecated";
+
 export interface ScriptConfig {
+	/**
+	 * The human readable name of the script.
+	 */
+	name?: string;
+
+	/**
+	 * A short description of the script.
+	 */
+	description?: string;
+
 	/**
 	 * If the script can be called from the public HTTP interface.
 	 *
@@ -31,6 +62,14 @@ export interface ScriptConfig {
 }
 
 export interface ErrorConfig {
+	/**
+	 * The human readable name of the error.
+	 */
+	name?: string;
+
+	/**
+	 * A short description of the error.
+	 */
 	description?: string;
 }
 
@@ -49,9 +88,7 @@ export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	const config = parse(configRaw) as ModuleConfig;
 
 	// Validate config
-	const moduleConfigSchema = moduleConfigAjv.getSchema(
-		"#/definitions/ModuleConfig",
-	);
+	const moduleConfigSchema = moduleConfigAjv.getSchema("#");
 	if (!moduleConfigSchema) {
 		throw new InternalError("Failed to get module config schema");
 	}

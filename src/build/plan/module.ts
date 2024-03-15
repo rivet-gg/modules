@@ -13,6 +13,7 @@ export async function planModuleBuild(
 	opts: BuildOpts,
 ) {
 	buildStep(buildState, {
+		id: `module.${module.name}.parse`,
 		name: "Parse",
 		description: `config.ts`,
 		module,
@@ -45,11 +46,12 @@ export async function planModuleBuild(
 	});
 
 	buildStep(buildState, {
+		id: `module.${module.name}.generate.registry`,
 		name: "Generate",
 		description: `_gen/registry.d.ts`,
 		module,
 		condition: {
-			files: [resolve(module.path, "module.yaml")],
+			files: [resolve(module.path, "module.yaml"), configPath(module)],
 		},
 		async build() {
 			await compileModuleTypeHelper(project, module);
@@ -57,11 +59,15 @@ export async function planModuleBuild(
 	});
 
 	buildStep(buildState, {
+		id: `module.${module.name}.generate.mod`,
 		name: "Generate",
 		description: `_gen/mod.ts`,
 		module,
 		condition: {
-			files: [resolve(module.path, "module.yaml")],
+			files: [resolve(module.path, "module.yaml"), configPath(module)],
+			expressions: {
+				db: !!module.db,
+			},
 		},
 		async build() {
 			await compileModuleHelper(project, module);
@@ -69,11 +75,15 @@ export async function planModuleBuild(
 	});
 
 	buildStep(buildState, {
+		id: `module.${module.name}.generate.test`,
 		name: "Generate",
 		description: `_gen/test.ts`,
 		module,
 		condition: {
-			files: [resolve(module.path, "module.yaml")],
+			files: [resolve(module.path, "module.yaml"), configPath(module)],
+			expressions: {
+				db: !!module.db,
+			},
 		},
 		async build() {
 			await compileTestHelper(project, module);

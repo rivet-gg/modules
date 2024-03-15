@@ -10,8 +10,8 @@ export enum Casing {
  * `identType`.
  */
 export const regexes: Record<Casing, RegExp> = {
-	[Casing.Snake]: /^[a-z]+(_[a-z0-9]+)*$/,
-	[Casing.ScreamingSnake]: /^[A-Z]+(_[A-Z0-9]+)*$/,
+	[Casing.Snake]: /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/,
+	[Casing.ScreamingSnake]: /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$/,
 };
 
 /**
