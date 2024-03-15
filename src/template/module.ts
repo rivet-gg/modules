@@ -30,14 +30,6 @@ export async function templateModule(project: Project, moduleName: string) {
 		stringify(defaultModule),
 	);
 
-	// Write default config
-	const defaultConfig = dedent`
-		export interface Config {
-			// Add your module configuration here
-		}
-	`;
-	await Deno.writeTextFile(resolve(modulePath, "config.ts"), defaultConfig);
-
 	// Write default migration
 	const defaultSchema = dedent`
 		datasource db {
