@@ -73,5 +73,5 @@ for (const { name, type } of CONFIGS) {
 	await Deno.mkdir(parent(schemaPath), { recursive: true });
 
 	// Write schema to file
-	await Deno.writeTextFile(schemaPath, JSON.stringify(schema, null, "\t"));
+	await Deno.writeTextFile(schemaPath, JSON.stringify(schema));
 }
