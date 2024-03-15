@@ -13,7 +13,6 @@ import { InternalError } from "../../error/mod.ts";
 import { UserError } from "../../error/mod.ts";
 import { glob } from "../../project/deps.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
-import { migrateDev } from "../../migrate/dev.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -32,7 +31,7 @@ export async function planProjectBuild(
 				condition: {
 					files: [resolve(module.path, "db", "schema.prisma")],
 					expressions: {
-						"Runtime": opts.runtime,
+						runtime: opts.runtime,
 					},
 				},
 				async build({ signal }) {
@@ -229,33 +228,6 @@ export async function planProjectBuild(
 						await migrateDeploy(project, [module], signal);
 					},
 				});
-			}
-		}
-
-		await waitForBuildPromises(buildState);
-
-		// Deploy dev migrations one at a time
-		for (const module of project.modules.values()) {
-			if (module.db && !opts.migrate.forceDeploy && !module.registry.isExternal) {
-				const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
-				buildStep(buildState, {
-					name: "Migrate Database",
-					module,
-					description: "develop",
-					condition: {
-						files: [resolve(module.path, "db", "schema.prisma"), ...migrations],
-					},
-					async build({ signal }) {
-						await migrateDev(project, [module], {
-							createOnly: false,
-							// HACK: Disable lock since running this command in watch does not clear the lock correctly
-							disableSchemaLock: true,
-							signal,
-						});
-					},
-				});
-
-				await waitForBuildPromises(buildState);
 			}
 		}
 	}
