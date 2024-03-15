@@ -13,6 +13,8 @@ import { InternalError } from "../../error/mod.ts";
 import { UserError } from "../../error/mod.ts";
 import { glob } from "../../project/deps.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
+import { migrateDev } from "../../migrate/dev.ts";
+import { generateMeta } from "../meta.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -99,6 +101,15 @@ export async function planProjectBuild(
 		description: "_gen/openapi.json",
 		async build() {
 			await generateOpenApi(project);
+		},
+	});
+
+	buildStep(buildState, {
+		id: `project.generate.meta`,
+		name: "Generate",
+		description: "_gen/meta.json",
+		async build() {
+			await generateMeta(project);
 		},
 	});
 
