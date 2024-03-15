@@ -1,13 +1,32 @@
-status: preview
+name: Tokens
+description: Create & verify tokens for authorization purposes.
+icon: lock
+tags:
+  - core
+  - utility
 authors:
+  - rivet-gg
   - NathanFlurry
+status: stable
 scripts:
-  create: {}
-  get: {}
-  get_by_token: {}
-  revoke: {}
-  validate: {}
+  create:
+    name: Create Token
+  get:
+    name: Get Token
+    description: Get a token by its ID.
+  get_by_token:
+    name: Get Token by Token
+    description: Get a token by its secret token.
+  revoke:
+    name: Revoke Token
+    description: Revoke a token, preventing it from being used again.
+  validate:
+    name: Validate Token
+    description: Validate a token. Throws an error if the token is invalid.
 errors:
-  TOKEN_NOT_FOUND: {}
-  TOKEN_REVOKED: {}
-  TOKEN_EXPIRED: {}
+  token_not_found:
+    name: Token Not Found
+  token_revoked:
+    name: Token Revoked
+  token_expired:
+    name: Token Expired

@@ -18,7 +18,7 @@ export async function run(
 	const { token } = await ctx.modules.tokens.validate({
 		token: req.userToken,
 	});
-	if (token.type !== "user") throw new RuntimeError("TOKEN_NOT_USER_TOKEN");
+	if (token.type !== "user") throw new RuntimeError("token_not_user_token");
 	const userId = token.meta.userId;
 
 	return { userId };

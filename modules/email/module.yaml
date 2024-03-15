@@ -1,6 +1,18 @@
+name: Email
+description: Send emails using multiple providers.
+icon: envelope
+tags:
+  - email
+authors:
+  - rivet-gg
+  - NathanFlurry
+status: stable
 scripts:
-  send_email: {}
+  send_email:
+    name: Send Email
 errors:
-  EMAIL_MISSING_CONTENT:
+  email_missing_content:
+    name: Email Missing Content
     description: Email must have `html` and/or `text`
-  SENDGRID_ERROR: {}
+  sendgrid_error:
+    name: SendGrid Error

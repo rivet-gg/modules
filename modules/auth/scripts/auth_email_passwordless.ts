@@ -17,7 +17,7 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	if (!ctx.userConfig.email) throw new RuntimeError("PROVIDER_DISABLED");
+	if (!ctx.userConfig.email) throw new RuntimeError("provider_disabled");
 
 	// Fetch existing user if session token is provided
 	let userId: string | undefined;
@@ -31,7 +31,7 @@ export async function run(
 			where: { email: req.email },
 		});
 		if (existingIdentity && existingIdentity.userId !== userId) {
-			throw new RuntimeError("EMAIL_ALREADY_USED");
+			throw new RuntimeError("email_already_used");
 		}
 	}
 

@@ -19,7 +19,7 @@ export async function run(
 	await ctx.modules.rateLimit.throttlePublic({ requests: 25 });
 
 	if (req.amount < 0 || !Number.isFinite(req.amount)) {
-		throw new RuntimeError("INVALID_AMOUNT");
+		throw new RuntimeError("invalid_amount");
 	}
 
 	return ctx.db.$transaction(async (tx) => {
@@ -27,12 +27,12 @@ export async function run(
 
 		const updatedBalance = balance - req.amount;
 
-		if (updatedBalance < 0) throw new RuntimeError("NOT_ENOUGH_FUNDS");
+		if (updatedBalance < 0) throw new RuntimeError("not_enough_funds");
 
 		try {
 			await setBalance(tx, req.userId, updatedBalance);
 		} catch {
-			throw new RuntimeError("INVALID_AMOUNT");
+			throw new RuntimeError("invalid_amount");
 		}
 
 		return {

@@ -22,7 +22,7 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
 	if (!req.html && !req.text) {
-		throw new RuntimeError("EMAIL_MISSING_CONTENT");
+		throw new RuntimeError("email_missing_content");
 	}
 
 	if ("test" in ctx.userConfig.provider) {
@@ -30,7 +30,7 @@ export async function run(
 	} else if ("sendGrid" in ctx.userConfig.provider) {
 		await useSendGrid(ctx.userConfig.provider.sendGrid, req);
 	} else {
-		throw new RuntimeError("UNREACHABLE");
+		throw new RuntimeError("unreachable");
 	}
 
 	return {};

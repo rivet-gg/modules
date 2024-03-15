@@ -1,16 +1,31 @@
-status: preview
+name: Users
+description: Identify and manage users.
+icon: user
+tags:
+  - core
+  - social
 authors:
+  - rivet-gg
   - NathanFlurry
+status: stable
 dependencies:
   rate_limit: {}
   tokens: {}
 scripts:
   get_user:
+    name: Get User
     public: true
-  create_user: {}
+  create_user:
+    name: Create User
   validate_user_token:
+    name: Validate User Token
+    description: Validate a user token. Throws an error if the token is invalid.
     public: true
-  create_user_token: {}
+  create_user_token:
+    name: Create User Token
+    description: Create a token for a user to authenticate future requests.
 errors:
-  TOKEN_NOT_USER_TOKEN: {}
-  UNKNOWN_IDENTITY_TYPE: {}
+  token_not_user_token:
+    name: Token Not User Token
+  unknown_identity_type:
+    name: Unknown Identity Type

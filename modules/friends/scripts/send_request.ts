@@ -21,7 +21,7 @@ export async function run(
 	});
 
 	if (userId === req.targetUserId) {
-		throw new RuntimeError("CANNOT_SEND_TO_SELF");
+		throw new RuntimeError("cannot_send_to_self");
 	}
 
 	// Sort the user IDs to ensure consistency

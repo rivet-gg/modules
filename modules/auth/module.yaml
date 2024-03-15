@@ -1,16 +1,37 @@
+name: Authentication
+description: Authenticate users with multiple authentication methods.
+icon: key
+tags:
+  - core
+  - auth
+  - user
+authors:
+  - rivet-gg
+  - NathanFlurry
+status: stable
 dependencies:
   email: {}
   users: {}
   rate_limit: {}
 scripts:
   auth_email_passwordless:
+    name: Authenticate Email Passwordless
+    description: Send a one-time verification code to a user's email address to authenticate them.
     public: true
   verify_email_passwordless:
+    name: Verify Email Passwordless
+    description: Verify a user's email address with a one-time verification code.
     public: true
 errors:
-  PROVIDER_DISABLED: {}
-  VERIFICATION_CODE_INVALID: {}
-  VERIFICATION_CODE_ATTEMPT_LIMIT: {}
-  VERIFICATION_CODE_EXPIRED: {}
-  VERIFICATION_CODE_ALREADY_USED: {}
-  EMAIL_ALREADY_USED: {}
+  provider_disabled:
+    name: Provider Disabled
+  verification_code_invalid:
+    name: Verification Code Invalid
+  verification_code_attempt_limit:
+    name: Verification Code Attempt Limit
+  verification_code_expired:
+    name: Verification Code Expired
+  verification_code_already_used:
+    name: Verification Code Already Used
+  email_already_used:
+    name: Email Already Used

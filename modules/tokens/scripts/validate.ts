@@ -18,15 +18,15 @@ export async function run(
 	});
 	const token = tokens[0];
 
-	if (!token) throw new RuntimeError("TOKEN_NOT_FOUND");
+	if (!token) throw new RuntimeError("token_not_found");
 
-	if (token.revokedAt) throw new RuntimeError("TOKEN_REVOKED");
+	if (token.revokedAt) throw new RuntimeError("token_revoked");
 
 	if (token.expireAt) {
 		const expireAt = new Date(token.expireAt);
 		const now = new Date();
 		if (expireAt < now) {
-			throw new RuntimeError("TOKEN_EXPIRED");
+			throw new RuntimeError("token_expired");
 		}
 	}
 

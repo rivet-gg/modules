@@ -45,20 +45,20 @@ export async function run(
 			},
 		});
 		if (!verification) {
-			throw new RuntimeError("VERIFICATION_CODE_INVALID");
+			throw new RuntimeError("verification_code_invalid");
 		}
 		if (verification.attemptCount >= verification.maxAttemptCount) {
-			throw new RuntimeError("VERIFICATION_CODE_ATTEMPT_LIMIT");
+			throw new RuntimeError("verification_code_attempt_limit");
 		}
 		if (verification.completedAt !== null) {
-			throw new RuntimeError("VERIFICATION_CODE_ALREADY_USED");
+			throw new RuntimeError("verification_code_already_used");
 		}
 		if (verification.code !== code) {
 			// Same error as above to prevent exploitation
-			throw new RuntimeError("VERIFICATION_CODE_INVALID");
+			throw new RuntimeError("verification_code_invalid");
 		}
 		if (verification.expireAt < new Date()) {
-			throw new RuntimeError("VERIFICATION_CODE_EXPIRED");
+			throw new RuntimeError("verification_code_expired");
 		}
 
 		// Mark as used
@@ -73,7 +73,7 @@ export async function run(
 				},
 			});
 		if (verificationConfirmation === null) {
-			throw new RuntimeError("VERIFICATION_CODE_ALREADY_USED");
+			throw new RuntimeError("verification_code_already_used");
 		}
 
 		// Get or create user
