@@ -4,6 +4,7 @@ import { templateScript } from "../../template/script.ts";
 import { templateModule } from "../../template/module.ts";
 import { validateIdentifier } from "../../types/identifiers/mod.ts";
 import { Casing } from "../../types/identifiers/defs.ts";
+import { templateTest } from "../../template/test.ts";
 
 export const createCommand = new Command<GlobalOpts>()
 	.description("Create a new module or script");
@@ -33,5 +34,20 @@ createCommand.command("script").arguments("<module> <script>").action(
 		);
 
 		await templateScript(await initProject(opts), module, script);
+	},
+);
+
+createCommand.command("test").arguments("<module> <test>").action(
+	async (opts, module, test) => {
+		validateIdentifier(
+			module,
+			Casing.Snake,
+		);
+		validateIdentifier(
+			test,
+			Casing.Snake,
+		);
+
+		await templateTest(await initProject(opts), module, test);
 	},
 );
