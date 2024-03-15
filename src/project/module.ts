@@ -117,7 +117,7 @@ export async function loadModule(
 
 	// Verify error names
 	for (const errorName in config.errors) {
-		validateIdentifier(errorName, Casing.ScreamingSnake);
+		validateIdentifier(errorName, Casing.Snake);
 	}
 
 	// Load db config

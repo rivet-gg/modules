@@ -9,4 +9,4 @@ scripts:
   call_self:
     public: true
 errors:
-  DB_ERROR: {}
+  db_error: {}
