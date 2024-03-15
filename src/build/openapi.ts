@@ -47,7 +47,7 @@ export async function generateOpenApi(project: Project) {
 			schema.paths[`/modules/${mod.name}/scripts/${script.name}/call`] = {
 				post: {
 					description: `Call ${mod.name}.${script.name} script.`,
-					tags: ["OpenGB"],
+					tags: ["Backend"],
 					operationId: `call_${mod.name}_${script.name}`,
 					requestBody: {
 						content: {
@@ -91,6 +91,8 @@ function injectSchema(
 	prefix: string,
 	rootDefinition: string,
 ) {
+	schema = structuredClone(schema);
+
 	// Add the root definition to the OpenAPI schema
 	replaceRefs(
 		schema,
