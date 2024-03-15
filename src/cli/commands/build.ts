@@ -70,7 +70,6 @@ export const buildCommand = new Command<GlobalOpts>()
 	.option(
 		"--no-strict-schemas",
 		"Disable strict schema validation",
-		{ default: false },
 	)
 	.action(async (opts) => {
 		const project = await initProject(opts);

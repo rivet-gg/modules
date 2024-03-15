@@ -69,9 +69,7 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	const config = parse(configRaw) as ProjectConfig;
 
 	// Validate config
-	const projectConfigSchema = projectConfigAjv.getSchema(
-		"#/definitions/ProjectConfig",
-	);
+	const projectConfigSchema = projectConfigAjv.getSchema("#");
 	if (!projectConfigSchema) {
 		throw new InternalError("Failed to get project config schema");
 	}

@@ -61,9 +61,7 @@ export async function compileModuleConfigSchema(
 		schemas: [module.userConfigSchema],
 	});
 
-	const moduleConfigSchema = moduleConfigAjv.getSchema(
-		"#/definitions/Config",
-	);
+	const moduleConfigSchema = moduleConfigAjv.getSchema("#");
 	if (!moduleConfigSchema) {
 		throw new UserError("Type `Config` does not exist.", { path: resolve(module.path, "config.ts") });
 	}

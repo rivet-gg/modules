@@ -56,11 +56,10 @@ for (const { name, type } of CONFIGS) {
 	);
 
 	const schema = tjs.generateSchema(program, type, {
-		topRef: true,
+		esModuleInterop: true,
+		noExtraProps: true,
 		required: true,
 		strictNullChecks: true,
-		noExtraProps: true,
-		esModuleInterop: true,
 
 		// TODO: Is this needed?
 		include: schemaFiles,
