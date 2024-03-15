@@ -8,11 +8,15 @@ export enum SdkTarget {
 
 interface Generator {
 	generator: string;
+	options: Record<string, string>;
 }
 
 const GENERATORS: Record<SdkTarget, Generator> = {
 	[SdkTarget.TypeScript]: {
 		generator: "typescript",
+		options: {
+			npmName: "opengb-sdk",
+		},
 	},
 };
 
@@ -37,6 +41,7 @@ export async function generateSdk(
 			config.generator,
 			"-o",
 			`/local/_gen/sdk/`,
+			...Object.entries(config.options).map(([key, value]) => `--additional-properties=${key}=${value}`),
 		],
 	}).output();
 	if (!buildOutput.success) {
