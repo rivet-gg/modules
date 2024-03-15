@@ -3,7 +3,7 @@ on:
   - push
 
 env:
-  CURRENT_WORKING_ENGINE_COMMIT: 1971d6db5c5ffd065fec24764c122b4ab74e3172
+  CURRENT_WORKING_ENGINE_COMMIT: aa839aee9011ece7d6a133dee984727748bd3cbf
 
 jobs:
   build:
