@@ -58,7 +58,7 @@ export async function loadDefaultRegistry(projectRoot: string, signal?: AbortSig
 					ssh: "git@github.com:rivet-gg/opengb-registry.git",
 				},
 				// TODO: https://github.com/rivet-gg/opengb/issues/151
-				rev: "e613227f95e0d584f611947e1b8d8c0e3ca508c8",
+				rev: "f371115b506d2b6bf9f6e35bbd552b5dc5e4f7e6",
 				directory: "./modules",
 			},
 		},
