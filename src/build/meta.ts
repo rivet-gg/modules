@@ -2,7 +2,8 @@ import { ModuleConfig, ScriptConfig } from "../config/module.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { resolve, tjs } from "../deps.ts";
-import { Project } from "../project/mod.ts";
+import { hasUserConfigSchema, Project } from "../project/mod.ts";
+import { snakeify } from "../types/case_conversions.ts";
 
 export interface ProjectMeta {
 	config: ProjectConfig;
@@ -20,6 +21,7 @@ export interface RegistryMeta {
 export interface ModuleMeta {
 	path: string;
 	name: string;
+	nameCamel: string;
 	config: ModuleConfig;
 	registryName: string;
 	userConfig: unknown;
@@ -36,6 +38,7 @@ export interface ModuleDatabaseMeta {
 export interface ScriptMeta {
 	path: string;
 	name: string;
+	nameCamel: string;
 	config: ScriptConfig;
 	requestSchema: tjs.Definition;
 	responseSchema: tjs.Definition;
@@ -47,37 +50,44 @@ export interface ScriptMeta {
  * tools.
  */
 export async function generateMeta(project: Project) {
+	const registries: Record<string, RegistryMeta> = Object.fromEntries(
+		Array.from(project.registries.entries()).map(([name, registry]) => [name, {
+			path: registry.path,
+			name: name,
+			config: registry.config,
+			isExternal: registry.isExternal,
+		}]),
+	);
+
+	const modules: Record<string, ModuleMeta> = {};
+	for (const module of project.modules.values()) {
+		modules[module.name] = {
+			path: module.path,
+			name: module.name,
+			nameCamel: snakeify(module.name),
+			config: module.config,
+			registryName: module.registry.name,
+			userConfig: module.userConfig,
+			userConfigSchema: module.userConfigSchema,
+			scripts: Object.fromEntries(
+				Array.from(module.scripts.entries()).map(([name, script]) => [name, {
+					path: script.path,
+					name: name,
+					nameCamel: snakeify(name),
+					config: script.config,
+					requestSchema: script.requestSchema!,
+					responseSchema: script.responseSchema!,
+				}]),
+			),
+			db: module.db,
+			hasUserConfigSchema: await hasUserConfigSchema(module),
+		};
+	}
+
 	const meta: ProjectMeta = {
 		config: project.config,
-		registries: Object.fromEntries(
-			Array.from(project.registries.entries()).map(([name, registry]) => [name, {
-				path: registry.path,
-				name: name,
-				config: registry.config,
-				isExternal: registry.isExternal,
-			}]),
-		),
-		modules: Object.fromEntries(
-			Array.from(project.modules.entries()).map(([name, mod]) => [name, {
-				path: mod.path,
-				name: name,
-				config: mod.config,
-				registryName: mod.registry.name,
-				userConfig: mod.userConfig,
-				userConfigSchema: mod.userConfigSchema,
-				scripts: Object.fromEntries(
-					Array.from(mod.scripts.entries()).map(([name, script]) => [name, {
-						path: script.path,
-						name: name,
-						config: script.config,
-						requestSchema: script.requestSchema!,
-						responseSchema: script.responseSchema!,
-					}]),
-				),
-				db: mod.db,
-				hasUserConfigSchema: mod._hasUserConfigSchema!,
-			}]),
-		),
+		registries,
+		modules,
 	};
 
 	await Deno.writeTextFile(
