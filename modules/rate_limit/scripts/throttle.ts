@@ -1,5 +1,4 @@
-import { RuntimeError } from "../../auth/_gen/mod.ts";
-import { ScriptContext } from "../_gen/scripts/throttle.ts";
+import { RuntimeError, ScriptContext } from "../_gen/scripts/throttle.ts";
 
 export interface Request {
 	/**
