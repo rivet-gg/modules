@@ -25,6 +25,7 @@ export async function planProjectBuild(
 	for (const module of project.modules.values()) {
 		if (module.db) {
 			buildStep(buildState, {
+				id: `module.${module.name}.generate.prisma`,
 				name: "Generate",
 				description: `_gen/prisma/`,
 				module,
@@ -44,6 +45,7 @@ export async function planProjectBuild(
 
 	// TODO: Add way to compare runtime artifacts (or let this be handled by the cache version and never rerun?)
 	buildStep(buildState, {
+		id: `project.generate.runtime`,
 		name: "Generate",
 		description: "_gen/runtime/",
 		async build({ signal }) {
@@ -59,6 +61,7 @@ export async function planProjectBuild(
 	}
 
 	buildStep(buildState, {
+		id: `project.generate.registry`,
 		name: "Generate",
 		description: "_gen/registry.d.ts",
 		condition: {
@@ -70,6 +73,7 @@ export async function planProjectBuild(
 	});
 
 	buildStep(buildState, {
+		id: `project.generate.deno_config`,
 		name: "Generate",
 		description: "deno.json",
 		async build() {
@@ -81,6 +85,7 @@ export async function planProjectBuild(
 	await waitForBuildPromises(buildState);
 
 	buildStep(buildState, {
+		id: `project.generate.entrypoint`,
 		name: "Generate",
 		description: "_gen/entrypoint.ts",
 		async build() {
@@ -89,6 +94,7 @@ export async function planProjectBuild(
 	});
 
 	buildStep(buildState, {
+		id: `project.generate.openapi`,
 		name: "Generate",
 		description: "_gen/openapi.json",
 		async build() {
@@ -98,6 +104,7 @@ export async function planProjectBuild(
 
 	if (opts.format == Format.Bundled) {
 		buildStep(buildState, {
+			id: `project.bundle`,
 			name: "Bundle",
 			description: "_gen/output.js",
 			async build({ signal }) {
@@ -195,6 +202,7 @@ export async function planProjectBuild(
 	await waitForBuildPromises(buildState);
 
 	buildStep(buildState, {
+		id: `project.check.entrypoint`,
 		name: "Check",
 		description: "_gen/entrypoint.ts",
 		async build() {
@@ -218,6 +226,7 @@ export async function planProjectBuild(
 			if (module.db && (opts.migrate.forceDeploy || module.registry.isExternal)) {
 				const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
 				buildStep(buildState, {
+					id: `module.${module.name}.migrate.deploy`,
 					name: "Migrate Database",
 					module,
 					description: "deploy",
@@ -228,6 +237,34 @@ export async function planProjectBuild(
 						await migrateDeploy(project, [module], signal);
 					},
 				});
+			}
+		}
+
+		await waitForBuildPromises(buildState);
+
+		// Deploy dev migrations one at a time
+		for (const module of project.modules.values()) {
+			if (module.db && !opts.migrate.forceDeploy && !module.registry.isExternal) {
+				const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
+				buildStep(buildState, {
+					id: `module.${module.name}.migrate.dev`,
+					name: "Migrate Database",
+					module,
+					description: "develop",
+					condition: {
+						files: [resolve(module.path, "db", "schema.prisma"), ...migrations],
+					},
+					async build({ signal }) {
+						await migrateDev(project, [module], {
+							createOnly: false,
+							// HACK: Disable lock since running this command in watch does not clear the lock correctly
+							disableSchemaLock: true,
+							signal,
+						});
+					},
+				});
+
+				await waitForBuildPromises(buildState);
 			}
 		}
 	}
