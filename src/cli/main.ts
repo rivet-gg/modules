@@ -1,5 +1,6 @@
 import { Command, CompletionsCommand, HelpCommand, ValidationError } from "./deps.ts";
 import { devCommand } from "./commands/dev.ts";
+import { moduleCommand } from "./commands/module.ts";
 import { buildCommand } from "./commands/build.ts";
 import { dbCommand } from "./commands/db.ts";
 import { testCommand } from "./commands/test.ts";
@@ -19,6 +20,7 @@ command.action(() => command.showHelp())
 	.throwErrors()
 	.command("init", initCommand)
 	.command("dev", devCommand)
+	.command("module", moduleCommand)
 	.command("create", createCommand)
 	.command("test", testCommand)
 	.command("database, db", dbCommand)

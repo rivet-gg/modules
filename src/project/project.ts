@@ -147,7 +147,7 @@ interface FetchAndResolveModuleOutput {
 /**
  * Clones a registry to a local machine and resovles the path to the module.
  */
-async function fetchAndResolveModule(
+export async function fetchAndResolveModule(
 	projectRoot: string,
 	registries: Map<string, Registry>,
 	moduleName: string,

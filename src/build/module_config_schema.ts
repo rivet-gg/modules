@@ -33,12 +33,8 @@ export async function compileModuleConfigSchema(
 			// No schema
 			module.userConfigSchema = {
 				"$schema": "http://json-schema.org/draft-07/schema#",
-				"$ref": "#/definitions/Config",
-				"definitions": {
-					"Config": {
-						"type": "object",
-					},
-				},
+				"type": "object",
+				"additionalProperties": true,
 			};
 		}
 	} else {

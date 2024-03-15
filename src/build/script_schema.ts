@@ -29,21 +29,13 @@ export async function compileScriptSchema(
 		// No schema
 		script.requestSchema = {
 			"$schema": "http://json-schema.org/draft-07/schema#",
-			"$ref": "#/definitions/Request",
-			"definitions": {
-				"Request": {
-					"type": "object",
-				},
-			},
+			"type": "object",
+			"additionalProperties": true,
 		};
 		script.responseSchema = {
 			"$schema": "http://json-schema.org/draft-07/schema#",
-			"$ref": "#/definitions/Response",
-			"definitions": {
-				"Request": {
-					"type": "object",
-				},
-			},
+			"type": "object",
+			"additionalProperties": true,
 		};
 	}
 }
