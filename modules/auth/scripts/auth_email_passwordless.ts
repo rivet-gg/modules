@@ -22,7 +22,7 @@ export async function run(
 	// Fetch existing user if session token is provided
 	let userId: string | undefined;
 	if (req.userToken) {
-		const { userId } = await ctx.modules.users.validateUserToken({
+		const { userId } = await ctx.modules.users.authenticateUser({
 			userToken: req.userToken,
 		});
 

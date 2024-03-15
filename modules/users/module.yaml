@@ -17,7 +17,7 @@ scripts:
     public: true
   create_user:
     name: Create User
-  validate_user_token:
+  authenticate_user:
     name: Validate User Token
     description: Validate a user token. Throws an error if the token is invalid.
     public: true
