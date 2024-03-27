@@ -3,7 +3,7 @@ on:
   - push
 
 env:
-  CURRENT_WORKING_ENGINE_COMMIT: aa839aee9011ece7d6a133dee984727748bd3cbf
+  CURRENT_WORKING_ENGINE_COMMIT: 3aab9bc2abcb8105fc3af837900ce4f7a932ad17
 
 jobs:
   build:
@@ -13,20 +13,6 @@ jobs:
       # Checkout registry repo
       - name: Checkout registry Repo
         uses: actions/checkout@v4
-        with:
-          path: opengb-registry
-
-      # Get engine repo to test against
-      - name: Fetch engine repo
-        uses: actions/checkout@v4
-        with:
-          repository: rivet-gg/opengb
-          ssh-key: ${{ secrets.GH_DEPLOY_KEY }}
-          path: opengb
-
-      # Get a version of the engine that we know works
-      - name: Checkout to working commit
-        run: cd opengb/ && git checkout $CURRENT_WORKING_ENGINE_COMMIT
 
       # Install Deno to run OpenGB
       - name: Install Deno
@@ -36,8 +22,15 @@ jobs:
 
       # Install OpenGB
       - name: Install OpenGB
-        run: cd opengb/ && deno task cli:install
+        run: deno install --name opengb --force --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys https://raw.githubusercontent.com/rivet-gg/opengb/main/src/cli/main.ts
 
       # Run tests on all modules in the registry
       - name: Run Tests for all modules
-        run: cd ./opengb-registry/tests/basic && opengb test --strict-schemas --force-deploy-migrations
+        env:
+          VERBOSE: true
+        run: cd tests/basic/ && opengb test --strict-schemas --force-deploy-migrations || docker ps
+
+      # Inspect containers running after tests finish
+      - name: docker ps
+        if: always()
+        run: docker ps
