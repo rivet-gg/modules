@@ -1,0 +1,27 @@
+scripts:
+  init_board: {}
+  list_boards: {}
+  delete_board: {}
+
+  lock_board: {}
+  unlock_board: {}
+
+  set: {}
+  get_range: {}
+  get_entry: {}
+errors:
+  leaderboard_not_found:
+    name: Leaderboard Not Found
+    description: A leaderboard was not found with provided key
+  entry_not_found:
+    name: Entry Not Found
+    description: An entry with the specified owner ID was not found for the leaderboard with the provided key
+  leaderboard_locked:
+    name: Leaderboard Locked
+    description: Leaderboard and associated entries cannot be edited because it is already locked
+  leaderboard_unlocked:
+    name: Leaderboard Unocked
+    description: Leaderboard cannot be unlocked because it is already unlocked
+  leaderboard_already_exists:
+    name: Leaderboard Already Exists
+    description: A leaderboard with the provided key already exists and `overwrite` was not specified

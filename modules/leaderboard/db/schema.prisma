@@ -1,0 +1,30 @@
+// Do not modify this `datasource` block
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model Entry {
+	ownerId        String        @db.Uuid
+	score          Float
+	createdAt      DateTime      @default(now())
+	updatedAt	   DateTime      @updatedAt
+	removedAt      DateTime?
+
+	leaderboard    Leaderboard   @relation(fields: [leaderboardKey], references: [key])
+	leaderboardKey String
+
+    @@id([ownerId, leaderboardKey])
+}
+
+// An overarching leaderboard
+model Leaderboard {
+    key             String        @id
+	name            String
+    entries         Entry[]
+
+    createdAt       DateTime      @default(now())
+	updatedAt	    DateTime      @updatedAt
+    removedAt       DateTime?
+	locked		  	Boolean       @default(false)
+}

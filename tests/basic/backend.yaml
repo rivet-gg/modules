@@ -18,6 +18,8 @@ modules:
     config:
       email:
         fromEmail: hello@rivet.gg
+  leaderboard:
+    registry: local
   email:
     registry: local
     config:
