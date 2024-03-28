@@ -13,6 +13,8 @@ modules:
     registry: local
   users:
     registry: local
+  presence:
+    registry: local
   auth:
     registry: local
     config:

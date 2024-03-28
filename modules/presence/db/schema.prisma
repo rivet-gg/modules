@@ -1,0 +1,24 @@
+// Do not modify this `datasource` block
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+// Add your database schema here
+
+model Presence {
+	identityId   String    @db.Uuid
+	gameId       String    @db.Uuid
+
+	message      String?
+	publicMeta   Json
+	mutualMeta   Json
+
+	expires      DateTime?
+
+	createdAt    DateTime @default(now())
+	updatedAt    DateTime @updatedAt
+	removedAt    DateTime?
+
+	@@id([identityId, gameId])
+}

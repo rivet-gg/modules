@@ -1,0 +1,12 @@
+scripts:
+  set: {}
+  extend: {}
+
+  get: {}
+  get_by_game: {}
+  get_by_identity: {}
+
+  clear: {}
+  clear_all_game: {}
+  clear_all_identity: {}
+errors: {}
