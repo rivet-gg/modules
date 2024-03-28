@@ -23,6 +23,9 @@ scripts:
   validate:
     name: Validate Token
     description: Validate a token. Throws an error if the token is invalid.
+  extend:
+    name: Extend Token
+    description: Extend or remove the expiration date of a token. (Only works on valid tokens.)
 errors:
   token_not_found:
     name: Token Not Found
