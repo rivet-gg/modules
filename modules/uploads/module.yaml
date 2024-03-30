@@ -1,0 +1,40 @@
+scripts:
+  prepare:
+    name: Prepare Upload
+    description: Prepare an upload batch for data transfer
+  complete:
+    name: Complete Upload
+    description: Alert the module that the upload has been completed
+  get:
+    name: Get Upload Metadata
+    description: Get the metadata (including contained files) for specified upload IDs
+  get_file_links:
+    name: Get File Link
+    description: Get presigned download links for each of the specified files
+  list_for_user:
+    name: List Uploads for Users
+    description: Get a list of upload IDs associated with the specified user IDs
+  delete:
+    name: Delete Upload
+    description: Removes the upload and deletes the files from the bucket
+errors:
+  no_files:
+    name: No Files Provided
+    description: An upload must have at least 1 file
+  too_many_files:
+    name: Too Many Files Provided
+    description: There is a limit to how many files can be put into a single upload (see config)
+  duplicate_paths:
+    name: Duplicate Paths Provided
+    description: An upload cannot contain 2 files with the same paths (see `cause` for offending paths)
+  size_limit_exceeded:
+    name: Combined Size Limit Exceeded
+    description: There is a maximum total size per upload (see config)
+  upload_not_found:
+    name: Upload Not Found
+    description: The provided upload ID didn't match any known existing uploads
+  upload_already_completed:
+    name: Upload Already completed
+    description: \`complete\` was already called on this upload
+dependencies:
+  users: {}

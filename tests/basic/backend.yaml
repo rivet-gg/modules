@@ -13,6 +13,13 @@ modules:
     registry: local
   users:
     registry: local
+  uploads:
+    registry: local
+    config:
+      maxUploadSize: { gb: 10 }
+      maxFilesPerUpload: 16
+      s3:
+        # I'm not commiting API secrets again, I've learned
   auth:
     registry: local
     config:
