@@ -22,6 +22,14 @@
         "users": {
             "registry": "local"
         },
+        "uploads": {
+            "registry": "local",
+            "config": {
+                "maxFilesPerUpload": 16,
+                "maxUploadSize": "100mib",
+                "maxMultipartUploadSize": "10gib"
+            }
+        },
         "auth": {
             "registry": "local",
             "config": {

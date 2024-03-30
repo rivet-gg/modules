@@ -1,6 +1,5 @@
 import { ScriptContext } from "../module.gen.ts";
-import { TokenWithSecret } from "../utils/types.ts";
-import { tokenFromRow } from "../utils/types.ts";
+import { TokenWithSecret, tokenFromRow } from "../utils/types.ts";
 
 export interface Request {
     token: string;
