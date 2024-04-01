@@ -1,5 +1,7 @@
+import { Module } from "./module.gen.ts";
+
 export interface Config {
-    maxProfilePictureBytes: number;
+    maxProfilePictureSize: Module.uploads.UploadSize;
     allowedMimes?: string[];
 }
 

@@ -22,7 +22,7 @@
         "users": {
             "registry": "local",
             "config": {
-                "maxProfilePictureBytes": 1048576
+                "maxProfilePictureSize": "1mib"
             }
         },
         "uploads": {

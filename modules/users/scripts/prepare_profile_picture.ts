@@ -1,4 +1,4 @@
-import { ScriptContext, RuntimeError } from "../module.gen.ts";
+import { ScriptContext, RuntimeError, Module } from "../module.gen.ts";
 import { DEFAULT_MIME_TYPES } from "../config.ts";
 
 export interface Request {
@@ -30,7 +30,8 @@ export async function run(
 	}
 
 	// Ensure the file is within the maximum configured size for a PFP
-	if (BigInt(req.contentLength) > ctx.userConfig.maxProfilePictureBytes) { 
+	const maxBytes = Module.uploads.getBytes(ctx.userConfig.maxProfilePictureSize);
+	if (BigInt(req.contentLength) > maxBytes) { 
 		throw new RuntimeError(
 			"file_too_large",
 			{ cause: `File is too large (${req.contentLength} bytes)` },
