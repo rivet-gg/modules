@@ -3,7 +3,7 @@ import {
 	RuntimeError,
 	ScriptContext,
 } from "../_gen/scripts/verify_email_passwordless.ts";
-import { TokenWithSecret } from "../../tokens/types/common.ts";
+import { TokenWithSecret } from "../../tokens/utils/types.ts";
 
 export interface Request {
 	verificationId: string;

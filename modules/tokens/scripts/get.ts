@@ -1,6 +1,6 @@
 import { ScriptContext } from "../_gen/scripts/get.ts";
-import { Token } from "../types/common.ts";
-import { tokenFromRow } from "../types/common.ts";
+import { Token } from "../utils/types.ts";
+import { tokenFromRow } from "../utils/types.ts";
 
 export interface Request {
 	tokenIds: string[];
