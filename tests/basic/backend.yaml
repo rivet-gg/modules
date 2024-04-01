@@ -19,7 +19,11 @@ modules:
       maxUploadSize: { gb: 10 }
       maxFilesPerUpload: 16
       s3:
-        # I'm not commiting API secrets again, I've learned
+        bucket: { env: S3_BUCKET_NAME }
+        region: { env: S3_BUCKET_REGION }
+        endpoint: { env: S3_BUCKET_ENDPOINT }
+        accessKeyId: { env: AWS_ACCESS_KEY_ID }
+        secretAccessKey: { env: AWS_SECRET_ACCESS_KEY }
   auth:
     registry: local
     config:
