@@ -8,12 +8,14 @@
     ],
     "authors": [
         "rivet-gg",
-        "NathanFlurry"
+        "NathanFlurry",
+        "Blckbrry-Pi"
     ],
     "status": "stable",
     "dependencies": {
         "rate_limit": {},
-        "tokens": {}
+        "tokens": {},
+        "uploads": {}
     },
     "scripts": {
         "get_user": {
@@ -31,6 +33,16 @@
         "create_user_token": {
             "name": "Create User Token",
             "description": "Create a token for a user to authenticate future requests."
+        },
+        "set_profile_picture": {
+            "name": "Set Profile Picture",
+            "description": "Set the profile picture for a user.",
+            "public": true
+        },
+        "prepare_profile_picture": {
+            "name": "Start Profile Picture Upload",
+            "description": "Allow the user to begin uploading a profile picture.",
+            "public": true
         }
     },
     "errors": {
@@ -39,6 +51,14 @@
         },
         "unknown_identity_type": {
             "name": "Unknown Identity Type"
+        },
+        "invalid_mime_type": {
+            "name": "Invalid MIME Type",
+            "description": "The MIME type for the supposed PFP isn't an image"
+        },
+        "file_too_large": {
+            "name": "File Too Large",
+            "description": "The file is larger than the configured maximum size for a profile picture"
         }
     }
 }

@@ -6,7 +6,7 @@ export interface Request {
 }
 
 export interface Response {
-	user: User;
+	user: Omit<User, "profilePictureUrl">;
 }
 
 export async function run(
@@ -20,10 +20,16 @@ export async function run(
 		data: {
 			username: req.username ?? generateUsername(),
 		},
+		select: {
+			id: true,
+			username: true,
+			createdAt: true,
+			updatedAt: true,
+		},
 	});
 
 	return {
-		user,
+		user: user,
 	};
 }
 

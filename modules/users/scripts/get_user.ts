@@ -1,5 +1,6 @@
 import { ScriptContext } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
+import { withPfpUrls } from "../utils/pfp.ts";
 
 export interface Request {
 	userIds: string[];
@@ -20,5 +21,8 @@ export async function run(
 		orderBy: { username: "desc" },
 	});
 
-	return { users };
+
+	const usersWithPfps = await withPfpUrls(ctx, users);
+
+	return { users: usersWithPfps };
 }

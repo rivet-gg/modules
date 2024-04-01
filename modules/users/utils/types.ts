@@ -3,4 +3,5 @@ export interface User {
 	username: string;
 	createdAt: Date;
 	updatedAt: Date;
+	profilePictureUrl: string | null;
 }

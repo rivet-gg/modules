@@ -20,7 +20,10 @@
             "registry": "local"
         },
         "users": {
-            "registry": "local"
+            "registry": "local",
+            "config": {
+                "maxProfilePictureBytes": 1048576
+            }
         },
         "uploads": {
             "registry": "local",

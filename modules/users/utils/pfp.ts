@@ -4,23 +4,14 @@ import { User } from "./types.ts";
 const EXPIRY_SECS = 60 * 60 * 24; // 1 day
 
 type UserWithUploadidInfo = Omit<User, "profilePictureUrl"> & { avatarUploadId: string | null };
-type FileRef = { uploadId: string; path: string };
-
-function getFileRefs(users: UserWithUploadidInfo[]) {
-    const pairs: FileRef[] = [];
-    for (const { avatarUploadId: uploadId } of users) {
-        if (uploadId) {
-            pairs.push({ uploadId: uploadId, path: "profile-picture" });
-        }
-    }
-    return pairs;
-}
 
 export async function withPfpUrls<T extends ModuleContext>(
     ctx: T,
     users: UserWithUploadidInfo[],
 ): Promise<User[]> {
-    const fileRefs = getFileRefs(users);
+    const fileRefs = users
+        .filter(user => user.avatarUploadId)
+        .map(user => ({ uploadId: user.avatarUploadId!, path: "profile-picture" }));
 
     const { files } = await ctx.modules.uploads.getPublicFileUrls({
         files: fileRefs,
