@@ -18,7 +18,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		imports += `
 		// Import Prisma adapter for Postgres
 		import pg from "npm:pg@^8.11.3";
-		import { PrismaPg } from "npm:@prisma/adapter-pg@^5.9.1";
+		import { PrismaPg } from "npm:@prisma/adapter-pg@^5.12.0";
 		`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		imports += `
