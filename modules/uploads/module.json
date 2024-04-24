@@ -1,4 +1,17 @@
 {
+    "name": "Uploads",
+    "description": "Upload & store files in an object store.",
+    "icon": "file-arrow-up",
+    "tags": [
+        "core",
+        "utility"
+    ],
+    "authors": [
+        "rivet-gg",
+        "Blckbrry-Pi",
+        "NathanFlurry"
+    ],
+    "status": "stable",
     "scripts": {
         "prepare": {
             "name": "Prepare Upload",
