@@ -1,6 +1,7 @@
 import { genDependencyTypedefPath, Module, Project, typeGenPath } from "../../project/mod.ts";
 import { GeneratedCodeBuilder } from "./mod.ts";
 import { camelify } from "../../types/case_conversions.ts";
+import { compileModulePublicUtilsHelper } from "./module_public_utils.ts";
 
 export async function compileModuleTypeHelper(
 	project: Project,
@@ -50,4 +51,5 @@ export async function compileModuleTypeHelper(
 	);
 
 	await typeHelper.write();
+	await compileModulePublicUtilsHelper(project, module);
 }
