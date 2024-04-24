@@ -39,8 +39,9 @@ export async function loadCache(project: Project): Promise<Cache> {
 	let persist: CachePersist;
 	if (await exists(buildCachePath)) {
 		try {
-			// Try to parse the old cache
-			const oldCacheAny: any = JSON.parse(await Deno.readTextFile(buildCachePath));
+			const oldCacheAny: any = JSON.parse(
+				await Deno.readTextFile(buildCachePath),
+			);
 
 			// Validate version
 			if (oldCacheAny.version == CACHE_VERSION) {
