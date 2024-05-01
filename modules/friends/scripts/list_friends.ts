@@ -1,5 +1,5 @@
 import { ScriptContext } from "../_gen/scripts/list_friends.ts";
-import { Friend, friendFromRow } from "../types/common.ts";
+import { Friend, friendFromRow } from "../utils/types.ts";
 
 export interface Request {
 	userToken: string;

@@ -1,4 +1,4 @@
-import { TokenWithSecret } from "../../tokens/types/common.ts";
+import { TokenWithSecret } from "../../tokens/utils/types.ts";
 import { ScriptContext } from "../_gen/scripts/create_user_token.ts";
 
 export interface Request {

@@ -1,5 +1,5 @@
 import { ScriptContext } from "../_gen/scripts/list_incoming_friend_requests.ts";
-import { FriendRequest, friendRequestFromRow } from "../types/common.ts";
+import { FriendRequest, friendRequestFromRow } from "../utils/types.ts";
 
 export interface Request {
 	userToken: string;
