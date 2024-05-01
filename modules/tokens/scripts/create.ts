@@ -1,6 +1,5 @@
 import { ScriptContext } from "../module.gen.ts";
-import { TokenWithSecret } from "../utils/types.ts";
-import { tokenFromRow } from "../utils/types.ts";
+import { TokenWithSecret, tokenFromRowWithSecret, hash } from "../utils/types.ts";
 
 export interface Request {
 	type: string;
@@ -17,10 +16,9 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
 	const tokenStr = generateToken(req.type);
-
 	const token = await ctx.db.token.create({
 		data: {
-			token: tokenStr,
+			tokenHash: await hash(tokenStr),
 			type: req.type,
 			meta: req.meta,
 			trace: ctx.trace,
@@ -29,7 +27,7 @@ export async function run(
 	});
 
 	return {
-		token: tokenFromRow(token),
+		token: tokenFromRowWithSecret(token, tokenStr),
 	};
 }
 

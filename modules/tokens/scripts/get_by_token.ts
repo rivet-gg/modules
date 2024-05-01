@@ -1,5 +1,5 @@
 import { ScriptContext } from "../module.gen.ts";
-import { Token, tokenFromRow } from "../utils/types.ts";
+import { Token, tokenFromRowWithSecret, hash } from "../utils/types.ts";
 
 export interface Request {
 	tokens: string[];
@@ -13,10 +13,12 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
+	const hashed = await Promise.all(req.tokens.map(hash));
+	console.log(hashed);
 	const rows = await ctx.db.token.findMany({
 		where: {
-			token: {
-				in: req.tokens,
+			tokenHash: {
+				in: hashed,
 			},
 		},
 		orderBy: {
@@ -24,7 +26,9 @@ export async function run(
 		},
 	});
 
-	const tokens = rows.map(tokenFromRow);
+	// Map from the hashed secrets to the original secrets
+	const hashMap = Object.fromEntries(req.tokens.map((token, i) => [hashed[i], token]));
+	const tokens = rows.map(row => tokenFromRowWithSecret(row, hashMap[row.tokenHash]));
 
 	return { tokens };
 }

@@ -5,7 +5,7 @@ datasource db {
 
 model Token {
   id        String    @id @default(uuid()) @db.Uuid
-  token     String    @unique
+  tokenHash String    @unique
   type      String
   meta      Json
   trace     Json

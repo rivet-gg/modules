@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "Token" (
     "id" UUID NOT NULL,
-    "token" TEXT NOT NULL,
+    "tokenHash" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "meta" JSONB NOT NULL,
     "trace" JSONB NOT NULL,
@@ -13,4 +13,4 @@ CREATE TABLE "Token" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Token_token_key" ON "Token"("token");
+CREATE UNIQUE INDEX "Token_tokenHash_key" ON "Token"("tokenHash");

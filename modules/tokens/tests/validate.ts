@@ -23,7 +23,8 @@ test(
 			meta: { foo: "bar" },
 		});
 
-		await ctx.modules.tokens.revoke({ tokenIds: [token.id] });
+		const { updates } = await ctx.modules.tokens.revoke({ tokenIds: [token.id] });
+		assertEquals(updates[token.id], "REVOKED");
 
 		const error = await assertRejects(async () => {
 			await ctx.modules.tokens.validate({ token: token.token });
