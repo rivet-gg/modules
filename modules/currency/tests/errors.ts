@@ -31,7 +31,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.withdraw({ userId: user.id, amount: 150 });
 		}, RuntimeError);
-		assertEquals(error.code, "NOT_ENOUGH_FUNDS");
+		assertEquals(error.code, "not_enough_funds");
 	},
 );
 
@@ -45,7 +45,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.withdraw({ userId: user.id, amount: -100 });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -62,7 +62,7 @@ test(
 				amount: Infinity,
 			});
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -76,7 +76,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.withdraw({ userId: user.id, amount: NaN });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -90,7 +90,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.deposit({ userId: user.id, amount: Infinity });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -104,7 +104,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.deposit({ userId: user.id, amount: NaN });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -118,7 +118,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.deposit({ userId: user.id, amount: -100 });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -132,7 +132,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.setBalance({ userId: user.id, balance: -1 });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -146,7 +146,7 @@ test(
 		const error = await assertRejects(async () => {
 			await ctx.modules.currency.setBalance({ userId: user.id, balance: NaN });
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
 
@@ -164,6 +164,6 @@ test(
 				balance: Infinity,
 			});
 		}, RuntimeError);
-		assertEquals(error.code, "INVALID_AMOUNT");
+		assertEquals(error.code, "invalid_amount");
 	},
 );
