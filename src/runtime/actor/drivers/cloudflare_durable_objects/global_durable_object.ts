@@ -153,7 +153,9 @@ export function buildGlobalDurableObjectClass(
 			// Get actor config
 			if (!(meta.moduleName in config.modules)) throw new Error(`module not found: ${meta.moduleName}`);
 			const moduleConfig = config.modules[meta.moduleName]!;
-			if (!(meta.actorName in moduleConfig.actors)) throw new Error(`actor not found: ${meta.moduleName}.${meta.actorName}`);
+			if (!(meta.actorName in moduleConfig.actors)) {
+				throw new Error(`actor not found: ${meta.moduleName}.${meta.actorName}`);
+			}
 			const actorConfig = moduleConfig.actors[meta.actorName]!;
 
 			// TODO: cache actor instance in memory
@@ -216,11 +218,11 @@ export function buildGlobalDurableObjectClass(
 			return await this.ctx.storage.get(KEYS.META.MODULE) != undefined;
 		}
 
-    async destroy() {
-      await this.ctx.storage.deleteAll();
-      await this.ctx.storage.deleteAlarm()
-      await this.ctx.storage.sync();
-    }
+		async destroy() {
+			await this.ctx.storage.deleteAll();
+			await this.ctx.storage.deleteAlarm();
+			await this.ctx.storage.sync();
+		}
 
 		async getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<any> {
 			await this.init({

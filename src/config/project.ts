@@ -33,6 +33,18 @@ const RegistryConfigSchema = z.union([
 	RegistryGitConfigSchema,
 ]);
 
+const CorsConfigSchema = z.object({
+	origins: z.array(z.string()).describe("The origins that are allowed to make requests to the server."),
+});
+
+const RuntimeConfigSchema = z.object({
+	cors: CorsConfigSchema.optional(),
+});
+
+const ProjectRouteConfigSchema = z.object({
+	pathPrefix: z.string().optional().describe("The path prefix for all routes in this module."),
+});
+
 const ProjectModuleConfigSchema = z.object({
 	registry: z.string().optional().describe("The name of the registry to fetch the module from."),
 	module: z.string().optional().describe("Overrides the name of the module to fetch inside the registry."),
@@ -42,14 +54,9 @@ const ProjectModuleConfigSchema = z.object({
 	storageAlias: z.string().optional().describe(
 		"Used to store data in a consistent location in case the module name changes. This is used to construct the Postgres database schema and actor identifiers. Changing this will effectively unlink all data stored in this module. Changing it back to the old value will restore the data.",
 	),
-});
-
-const CorsConfigSchema = z.object({
-	origins: z.array(z.string()).describe("The origins that are allowed to make requests to the server."),
-});
-
-const RuntimeConfigSchema = z.object({
-	cors: CorsConfigSchema.optional(),
+	routes: ProjectRouteConfigSchema.optional().describe(
+		"Config options controlling how the routes are implemented and accessed.",
+	),
 });
 
 export const ProjectConfigSchema = z.object({
@@ -68,6 +75,8 @@ export type RegistryConfigGit = z.infer<typeof RegistryGitConfigSchema>["git"];
 export type RegistryConfigGitUrl = z.infer<typeof RegistryGitUrlConfigSchema>;
 
 export type ProjectModuleConfig = z.infer<typeof ProjectModuleConfigSchema>;
+
+export type ProjectRouteConfig = z.infer<typeof ProjectRouteConfigSchema>;
 
 export type RuntimeConfig = z.infer<typeof RuntimeConfigSchema>;
 

@@ -1,8 +1,10 @@
 import { fromValidationError, isValidationError } from "./deps.ts";
 import { RuntimeError } from "./error.ts";
 import { errorToLogEntries, LogEntry } from "./logger.ts";
-import { Context, ModuleContextParams } from "./mod.ts";
+import { Context, ContextParams, ModuleContextParams, Route, Script } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
+import { PathResolver } from "./path_resolver.ts";
+import { badBodyResponse, notFoundResponse, serverOrRuntimeError } from "./responses.ts";
 
 const MODULE_CALL = /^\/modules\/(?<module>\w+)\/scripts\/(?<script>\w+)\/call\/?$/;
 
@@ -10,10 +12,28 @@ interface RequestInfo {
 	remoteAddress: string;
 }
 
+export function serverHandler<Params extends ContextParams>(
+	runtime: Runtime<Params>,
+): Deno.ServeHandler {
+	const resolver = new PathResolver(runtime.routePaths());
+
+	return async (
+		req: Request,
+		reqMeta: Deno.ServeHandlerInfo,
+	): Promise<Response> =>
+		handleRequest(
+			runtime,
+			req,
+			{ remoteAddress: reqMeta.remoteAddr.hostname },
+			resolver,
+		);
+}
+
 export async function handleRequest<Params extends ModuleContextParams>(
 	runtime: Runtime<Params>,
 	req: Request,
 	info: RequestInfo,
+	resolver: PathResolver,
 ): Promise<Response> {
 	const url = new URL(req.url);
 
@@ -38,7 +58,7 @@ export async function handleRequest<Params extends ModuleContextParams>(
 	);
 
 	// Execute request
-	const res = await handleRequestInner(runtime, req, url, ctx);
+	const res = await handleRequestInner(runtime, req, url, ctx, resolver);
 
 	// Log response
 	//
@@ -60,7 +80,10 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 	req: Request,
 	url: URL,
 	ctx: Context<Params>,
+	resolver: PathResolver,
 ): Promise<Response> {
+	// MARK: Handle CORS
+
 	// Handle CORS preflight
 	if (req.method === "OPTIONS") {
 		return runtime.corsPreflight(req);
@@ -77,135 +100,103 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 		});
 	}
 
-	// Only allow POST requests
-	if (req.method !== "POST") {
-		return new Response(undefined, {
-			status: 405,
-			headers: {
-				"Allow": "POST",
-				...runtime.corsHeaders(req),
-			},
-		});
-	}
-
-	// Get module and script name
+	// MARK: Handle Scripts
 	const matches = MODULE_CALL.exec(url.pathname);
-	if (!matches?.groups) {
-		return new Response(
-			JSON.stringify({
-				"message": "Route not found. Make sure the URL and method are correct.",
-			}),
-			{
+	if (matches?.groups) {
+		// Only allow POST requests
+		if (req.method !== "POST") {
+			return new Response(undefined, {
+				status: 405,
 				headers: {
-					"Content-Type": "application/json",
+					"Allow": "POST",
 					...runtime.corsHeaders(req),
 				},
-				status: 404,
-			},
-		);
+			});
+		}
+
+		// Lookup script
+		const moduleName = matches.groups.module!;
+		const scriptName = matches.groups.script!;
+		const script = runtime.config.modules[moduleName]?.scripts[scriptName];
+		if (!script) return notFoundResponse(ctx, url.pathname);
+
+		return handleScriptCall(req, url, ctx, moduleName, scriptName, script);
 	}
 
-	// Lookup script
-	const moduleName = matches.groups["module"]!;
-	const scriptName = matches.groups["script"]!;
-	const script = runtime.config.modules[moduleName]?.scripts[scriptName];
+	// MARK: Handle Routes
+	// Route call
+	const resolved = resolver.resolve(url.pathname);
+	if (!resolved) return notFoundResponse(ctx, url.pathname);
 
-	// Confirm script exists and is public
-	if (!script || !script.public) {
-		return new Response(
-			JSON.stringify({
-				"message": "Route not found. Make sure the URL and method are correct.",
-			}),
-			{
-				headers: {
-					"Content-Type": "application/json",
-					...runtime.corsHeaders(req),
-				},
-				status: 404,
-			},
-		);
-	}
+	const { module, route } = resolved;
+
+	const routeObj = runtime.config.modules[module]?.routes?.[route];
+	if (!routeObj) return notFoundResponse(ctx, url.pathname);
+
+	return handleRouteCall(runtime, req, url, ctx, module, route, routeObj);
+}
+
+export async function handleScriptCall<Params extends ContextParams>(
+	req: Request,
+	url: URL,
+	ctx: Context<Params>,
+	moduleName: string,
+	scriptName: string,
+	script: Script,
+) {
+	// If a script is not public, return 404
+	if (!script.public) return notFoundResponse(ctx, url.pathname);
 
 	// Parse body
 	let body: any;
 	try {
 		body = await req.json();
 	} catch {
-		const output = {
-			message: "Request must have a valid JSON body.",
-		};
-		return new Response(JSON.stringify(output), {
-			status: 400,
-			headers: {
-				"Content-Type": "application/json",
-				...runtime.corsHeaders(req),
-			},
-		});
+		return badBodyResponse(ctx, "invalid JSON");
 	}
 
+	let output: any;
 	try {
 		// Call module
-		const output = await ctx.call(
+		output = await ctx.call(
 			moduleName as any,
 			scriptName as any,
 			body,
 		);
+	} catch (error) {
+		return serverOrRuntimeError(ctx, error);
+	}
 
-		if (output.__tempPleaseSeeOGBE3_NoData) {
-			return new Response(undefined, {
-				status: 204,
-				headers: {
-					...runtime.corsHeaders(req),
-				},
-			});
-		}
-
-		return new Response(JSON.stringify(output), {
+	return new Response(
+		JSON.stringify(output),
+		{
 			status: 200,
 			headers: {
 				"Content-Type": "application/json",
-				...runtime.corsHeaders(req),
+				"Access-Control-Allow-Origin": "*",
 			},
-		});
-	} catch (error) {
-		// Error response
-		let output;
-		let status = 500;
-		if (error instanceof RuntimeError) {
-			ctx.log.error(
-				"runtime error",
-				...errorToLogEntries("error", error),
-			);
-			output = {
-				message: error.message,
-				trace: error.trace,
-			};
-		} else if (isValidationError(error)) {
-			const validationError = fromValidationError(error);
-			ctx.log.error(
-				"validation error",
-				["error", validationError.toString()],
-				["input", JSON.stringify(body)],
-			);
-			status = 400;
-			output = {
-				message: "Validation error. See `trace` for more details.",
-				trace: validationError.details,
-			};
-		} else {
-			ctx.log.error("internal error", ["error", `${error}`]);
-			output = {
-				message: "Internal error. More details have been printed in the logs.",
-				trace: error instanceof RuntimeError && error.trace,
-			};
-		}
+		},
+	);
+}
 
-		return new Response(JSON.stringify(output), {
-			status,
-			headers: {
-				"Content-Type": "application/json",
-				...runtime.corsHeaders(req),
-			},
-		});
-	}
+export async function handleRouteCall<Params extends ContextParams>(
+	runtime: Runtime<Params>,
+	req: Request,
+	url: URL,
+	ctx: Context<Params>,
+	moduleName: string,
+	routeName: string,
+	route: Route,
+) {
+	if (!route.methods.has(req.method)) notFoundResponse(ctx, url.pathname);
+
+	const routeCtx = runtime.createRouteContext(ctx, moduleName, routeName);
+
+	// Call route
+	const res = await ctx.runBlock(async () => await route.run(routeCtx, req));
+	console.log(
+		`Route Response ${moduleName}.${routeName}:\n${JSON.stringify(res, null, 2)}`,
+	);
+
+	return res;
 }

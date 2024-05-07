@@ -49,6 +49,7 @@ Deno.test("error", async () => {
 				test_module: {
 					storageAlias: "test_module",
 					scripts: {},
+					routes: {},
 					actors: {},
 					errors: {
 						"TEST_ERROR": {},

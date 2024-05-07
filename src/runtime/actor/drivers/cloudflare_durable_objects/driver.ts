@@ -49,7 +49,7 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 	}
 
 	async actorExists(opts: ExistsOpts): Promise<boolean> {
-    // TODO: Mark the actor base as destroyed
+		// TODO: Mark the actor base as destroyed
 		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
 		return await stub.initialized();
 	}
