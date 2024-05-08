@@ -22,7 +22,7 @@ export async function run(
 	// Fetch existing user if session token is provided
 	let userId: string | undefined;
 	if (req.userToken) {
-		const { userId } = await ctx.modules.users.authenticateUser({
+		const authRes = await ctx.modules.users.authenticateUser({
 			userToken: req.userToken,
 		});
 
@@ -30,9 +30,12 @@ export async function run(
 		const existingIdentity = await ctx.db.emailPasswordless.findFirst({
 			where: { email: req.email },
 		});
-		if (existingIdentity && existingIdentity.userId !== userId) {
+
+		if (existingIdentity && existingIdentity.userId !== authRes.userId) {
 			throw new RuntimeError("email_already_used");
 		}
+
+		userId = authRes.userId;
 	}
 
 	// Create verification
