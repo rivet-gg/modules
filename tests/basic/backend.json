@@ -48,6 +48,22 @@
                     "test": {}
                 }
             }
+        },
+        "auth_oauth2": {
+            "registry": "local",
+            "config": {
+                "providers": {
+                    "google": "https://accounts.google.com/.well-known/openid-configuration",
+                    "microsoft": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+                    "github": {
+                        "authorization": "https://github.com/login/oauth/authorize",
+                        "token": "https://github.com/login/oauth/access_token",
+                        "userinfo": "https://api.github.com/user",
+                        "scope": ["read:user"],
+                        "userinfoKey": "id"
+                    }
+                }
+            }
         }
     }
 }

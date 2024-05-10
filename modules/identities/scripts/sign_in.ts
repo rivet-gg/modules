@@ -1,4 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 import { IdentityDataInput, IdentityProviderInfo } from "../utils/types.ts";
 
 export interface Request {
@@ -37,7 +37,7 @@ export async function run(
     // If the provider info/uniqueData combo is not associated with a user,
     // throw provider_not_found error.
     if (!identity) {
-        throw new Error("identity_not_found");
+        throw new RuntimeError("identity_provider_not_found", { statusCode: 404 });
     }
 
     // Generate a user token

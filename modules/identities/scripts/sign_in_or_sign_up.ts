@@ -24,7 +24,7 @@ export async function run(
         });
     } catch (e) {
         if (e instanceof RuntimeError) {
-            if (e.code === "identity_not_found") {
+            if (e.code === "identity_provider_not_found") {
                 return await ctx.modules.identities.signUp({
                     info: req.info,
                     uniqueData: req.uniqueData,
