@@ -1,0 +1,21 @@
+// Do not modify this `datasource` block
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model LoginAttempts {
+	id              String      @id @default(uuid())
+
+	providerId      String
+	state           String
+	codeVerifier    String
+
+	identifier      String?
+	tokenData       Json?
+
+	startedAt       DateTime    @default(now())
+	expiresAt       DateTime
+	completedAt     DateTime?
+	invalidatedAt   DateTime?
+}

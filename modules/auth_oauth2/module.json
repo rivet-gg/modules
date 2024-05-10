@@ -1,0 +1,74 @@
+{
+    "name": "OAuth2 Authentication Provider",
+    "description": "Authenticate users with OAuth 2.0.",
+    "icon": "key",
+    "tags": [
+        "core",
+        "user",
+        "auth"
+    ],
+    "authors": [
+        "rivet-gg",
+        "Skyler Calaman"
+    ],
+    "status": "beta",
+    "dependencies": {
+        "rate_limit": {},
+        "identities": {},
+        "users": {},
+        "tokens": {}
+    },
+    "routes": {
+        "login_callback": {
+            "name": "OAuth Redirect Callback",
+            "description": "Verify a user's OAuth login and create a session.",
+            "method": "GET",
+            "pathPrefix": "/callback/"
+        }
+    },
+    "scripts": {
+        "start_login": {
+            "name": "Start Login",
+            "description": "Start the OAuth login process. Returns a URL to redirect the user to and a flow token.",
+            "public": true
+        },
+        "get_login_status": {
+            "name": "Get Login Status",
+            "description": "Check the status of a OAuth login using the flow token. Returns the status of the login flow.",
+            "public": true
+        },
+        "complete_add_to_user": {
+            "name": "Complete Flow and Add OAuth Login to User",
+            "description": "Use a finished OAuth flow to add the OAuth login to an already-authenticated users.",
+            "public": true
+        },
+        "complete_login_to_user": {
+            "name": "Complete Flow and Login to or Create User with OAuth",
+            "description": "Use a finished OAuth flow to login to a user, creating a new one if it doesn't exist.",
+            "public": true
+        }
+    },
+    "errors": {
+        "already_friends": {
+            "name": "Already Friends"
+        },
+        "friend_request_not_found": {
+            "name": "Friend Request Not Found"
+        },
+        "friend_request_already_exists": {
+            "name": "Friend Request Already Exists"
+        },
+        "not_friend_request_recipient": {
+            "name": "Not Friend Request Recipient"
+        },
+        "friend_request_already_accepted": {
+            "name": "Friend Request Already Accepted"
+        },
+        "friend_request_already_declined": {
+            "name": "Friend Request Already Declined"
+        },
+        "cannot_send_to_self": {
+            "name": "Cannot Send to Self"
+        }
+    }
+}
