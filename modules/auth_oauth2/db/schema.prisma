@@ -1,0 +1,48 @@
+// Do not modify this `datasource` block
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model OAuthUsers {
+    userId          String      @db.Uuid
+
+    provider        String
+    sub             String
+    createdAt       DateTime    @default(now()) @db.Timestamp
+
+	@@id([provider, userId])
+}
+
+model OAuthLoginAttempt {
+	id              String      @id @default(uuid())
+
+	provider        String
+	state           String
+	codeVerifier    String
+	targetUrl       String
+
+	createdAt       DateTime    @default(now())
+	updatedAt       DateTime    @updatedAt
+	completedAt     DateTime?
+	invalidatedAt   DateTime?
+
+	creds           OAuthCreds?
+}
+
+model OAuthCreds {
+	id              String      @id @default(uuid())
+
+	provider        String
+	accessToken     String
+	refreshToken    String
+	expiresAt       DateTime
+	userToken       String
+
+	createdAt       DateTime    @default(now())
+	updatedAt       DateTime    @updatedAt
+
+	loginAttemptId  String            @unique
+	loginAttempt    OAuthLoginAttempt @relation(fields: [loginAttemptId], references: [id])
+}
+
