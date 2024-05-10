@@ -1,6 +1,6 @@
 import { ScriptContext } from "../_gen/scripts/extend.ts";
-import { TokenWithSecret } from "../types/common.ts";
-import { tokenFromRow } from "../types/common.ts";
+import { TokenWithSecret } from "../utils/types.ts";
+import { tokenFromRow } from "../utils/types.ts";
 
 export interface Request {
     token: string;
