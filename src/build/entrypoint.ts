@@ -1,10 +1,16 @@
-import { dirname, resolve } from "../deps.ts";
-import { Project } from "../project/mod.ts";
+import { dirname, fromFileUrl, resolve } from "../deps.ts";
+import { ACTOR_PATH, Project, genActorCaseConversionMapPath } from "../project/mod.ts";
 import { ENTRYPOINT_PATH, GITIGNORE_PATH, RUNTIME_CONFIG_PATH, RUNTIME_PATH, genDependencyCaseConversionMapPath, genPath, genPrismaOutputBundle, genRuntimeModPath } from "../project/project.ts";
 import { CommandError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
 import { dedent } from "./deps.ts";
+
+// Read source files as strings
+const ACTOR_SOURCE = await Deno.readTextFile(resolve(dirname(fromFileUrl(import.meta.url)), "../dynamic/actor.ts"));
+const ACTOR_CF_SOURCE = await Deno.readTextFile(
+	resolve(dirname(fromFileUrl(import.meta.url)), "../dynamic/actor_cf.ts"),
+);
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
@@ -23,12 +29,16 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		imports += `
 		// Import Prisma serverless adapter for Neon
-		import * as neon from "https://esm.sh/@neondatabase/serverless@^0.9.0";
-		import { PrismaNeonHTTP } from "https://esm.sh/@prisma/adapter-neon@^5.10.2";
+		import * as neon from "https://esm.sh/@neondatabase/serverless@^0.9.3";
+		import { PrismaNeonHTTP } from "https://esm.sh/@prisma/adapter-neon@^5.13.0";
 		`;
 	}
 
 	let compat = "";
+	let actorSource = `
+		import { Config } from "${runtimeModPath}";
+		import config from "./runtime_config.ts";
+	`;
 
 	if (opts.runtime == Runtime.Deno) {
 		compat += `
@@ -36,6 +46,10 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import { createRequire } from "node:module";
 			const require = createRequire(import.meta.url);
 			`;
+
+		actorSource += ACTOR_SOURCE;
+	} else {
+		actorSource += ACTOR_CF_SOURCE;
 	}
 
 	// Generate config.ts
@@ -60,11 +74,21 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
 			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
+			import { actorCaseConversionMap } from "${genActorCaseConversionMapPath(project)}";
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
+			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
+			import { ACTOR_DRIVER } from "./actor.ts";
 
 			async function main() {
-				const runtime = new Runtime<DependenciesSnake, DependenciesCamel>(config, dependencyCaseConversionMap);
+				const runtime = new Runtime<
+					DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel
+				>(
+					config,
+					ACTOR_DRIVER,
+					dependencyCaseConversionMap,
+					actorCaseConversionMap,
+				);
 				await runtime.serve();
 			}
 
@@ -81,11 +105,21 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import { Runtime } from "${runtimeModPath}";
 			import { RuntimeError } from "${errorTsPath}";
 			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
+			import { actorCaseConversionMap } from "${genActorCaseConversionMapPath(project)}";
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
+			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
 			import { handleRequest } from "${serverTsPath}";
+			import { ACTOR_DRIVER } from "./actor.ts";
 
-			const RUNTIME = new Runtime<DependenciesSnake, DependenciesCamel>(config, dependencyCaseConversionMap);
+			const RUNTIME = new Runtime<
+				DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel
+			>(
+				config,
+				ACTOR_DRIVER,
+				dependencyCaseConversionMap,
+				actorCaseConversionMap,
+			);
 
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
@@ -104,19 +138,27 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 					});
 				}
 			}
+
+			// Export durable object binding
+			export { __GlobalDurableObject } from "./actor.ts";
 			`;
 	}
 
 	// Write files
+	const distDir = resolve(project.path, "_gen");
 	const configPath = genPath(project, RUNTIME_CONFIG_PATH);
 	const entrypointPath = genPath(project, ENTRYPOINT_PATH);
-	await Deno.mkdir(dirname(configPath), { recursive: true });
+	const actorPath = genPath(project, ACTOR_PATH);
+
+	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
+	await Deno.writeTextFile(actorPath, actorSource);
 	await Deno.writeTextFile(
 		genPath(project, GITIGNORE_PATH),
 		".",
 	);
+	await Deno.writeTextFile(actorPath, actorSource);
 
 	// Format files
 	const fmtOutput = await new Deno.Command("deno", {
@@ -144,6 +186,20 @@ function generateModImports(project: Project, opts: BuildOpts) {
 			modConfig += `public: ${JSON.stringify(script.config.public ?? false)},`;
 			modConfig += `requestSchema: ${JSON.stringify(script.requestSchema)},`;
 			modConfig += `responseSchema: ${JSON.stringify(script.responseSchema)},`;
+			modConfig += `},`;
+		}
+		modConfig += "},";
+
+		// Generate actor configs
+		modConfig += "actors: {";
+		for (const actor of mod.actors.values()) {
+			const actorIdent = `modules$$${mod.name}$$${actor.name}$$Actor`;
+
+			modImports += `import { Actor as ${actorIdent} } from '${mod.path}/actors/${actor.name}.ts';\n`;
+
+			modConfig += `${JSON.stringify(actor.name)}: {`;
+			modConfig += `actor: ${actorIdent},`;
+			modConfig += `storageId: ${JSON.stringify(actor.config.storage_id)},`;
 			modConfig += `},`;
 		}
 		modConfig += "},";

@@ -6,8 +6,8 @@ interface RequestInfo {
 	remoteAddress: string;
 }
 
-export async function handleRequest<DependenciesSnakeT, DependenciesCamelT>(
-	runtime: Runtime<DependenciesSnakeT, DependenciesCamelT>,
+export async function handleRequest<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>(
+	runtime: Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>,
 	req: Request,
 	info: RequestInfo,
 ): Promise<Response> {
@@ -76,6 +76,7 @@ export async function handleRequest<DependenciesSnakeT, DependenciesCamelT>(
 				// Error response
 				const output = {
 					message: e.message,
+					stack: e.stack,
 				};
 
 				return new Response(JSON.stringify(output), {
