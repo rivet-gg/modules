@@ -91,10 +91,6 @@ export class Runtime<RegistryT, RegistryCamelT> {
 		Deno.test({
 			name: testName,
 
-			// TODO: https://github.com/rivet-gg/opengb-engine/issues/35
-			sanitizeOps: false,
-			sanitizeResources: false,
-
 			async fn() {
 				const runtime = new Runtime<RegistryT, RegistryCamelT>(config, map);
 
