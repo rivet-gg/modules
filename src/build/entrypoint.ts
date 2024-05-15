@@ -1,6 +1,6 @@
 import { resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { genRegistryMapPath, genRuntimeModPath, genRuntimePath } from "../project/project.ts";
+import { genDependencyCaseConversionMapPath, genRuntimeModPath, genRuntimePath } from "../project/project.ts";
 import { CommandError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
@@ -8,7 +8,6 @@ import { dedent } from "./deps.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
-	const registryMapPath = genRegistryMapPath(project);
 
 	// Generate module configs
 	const [modImports, modConfig] = generateModImports(project, opts);
@@ -60,12 +59,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
-			import { camelToSnake } from "${registryMapPath}";
-			import type { Registry, RegistryCamel } from "./registry.d.ts";
+			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)};
+			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import config from "./runtime_config.ts";
 
 			async function main() {
-				const runtime = new Runtime<Registry, RegistryCamel>(config, camelToSnake);
+				const runtime = new Runtime<DependenciesSnake, DependenciesCamel>(config, dependencyCaseConversionMap);
 				await runtime.serve();
 			}
 
@@ -81,12 +80,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import type { IncomingRequestCf } from 'https://raw.githubusercontent.com/skymethod/denoflare/v0.6.0/common/cloudflare_workers_types.d.ts';
 			import { Runtime } from "${runtimeModPath}";
 			import { RuntimeError } from "${errorTsPath}";
-			import { camelToSnake } from "${registryMapPath}";
-			import type { Registry, RegistryCamel } from "./registry.d.ts";
+			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
+			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import config from "./runtime_config.ts";
 			import { serverHandler } from "${serverTsPath}";
 
-			const RUNTIME = new Runtime<Registry, RegistryCamel>(config, camelToSnake);
+			const RUNTIME = new Runtime<DependenciesSnake, DependenciesCamel>(config, dependencyCaseConversionMap);
 			const SERVER_HANDLER = serverHandler(RUNTIME);
 
 			export default {

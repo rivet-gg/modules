@@ -4,7 +4,7 @@ import { Module, moduleGenPath, Project, Script, scriptGenPath, testGenPath, typ
 import { genRuntimeModPath } from "../project/project.ts";
 import { autoGenHeader } from "./misc.ts";
 import { camelify, pascalify } from "../types/case_conversions.ts";
-import { genRegistryMapPath } from "../project/project.ts";
+import { genDependencyCaseConversionMapPath } from "../project/project.ts";
 import { hasUserConfigSchema } from "../project/module.ts";
 
 export async function compileModuleHelper(
@@ -28,7 +28,10 @@ export async function compileModuleHelper(
 
 	const source = dedent`
 		import { ModuleContext as ModuleContextInner } from "${runtimePath}";
-		import type { Registry as RegistryTypeInner, RegistryCamel as RegistryCamelTypeInner } from "./registry.d.ts";
+		import type {
+			DependenciesSnake as DependenciesSnakeTypeInner,
+			DependenciesCamel as DependenciesCamelTypeInner,
+		} from "./dependencies.d.ts";
 		${dbImports}
 		${userConfigImport}
 		
@@ -42,8 +45,8 @@ export async function compileModuleHelper(
 		export type Empty = Record<string, never>;
 		export { RuntimeError } from "${runtimePath}";
 		export type ModuleContext = ModuleContextInner<
-			RegistryTypeInner,
-			RegistryCamelTypeInner,
+			DependenciesSnakeTypeInner,
+			DependenciesCamelTypeInner,
 			${userConfigType},
 			${module.db ? "prisma.PrismaClient" : "undefined"}
 		>;
@@ -60,7 +63,7 @@ export async function compileTestHelper(
 ) {
 	const helperPath = testGenPath(project, module);
 	const runtimePath = relative(dirname(helperPath), genRuntimeModPath(project));
-	const registryMapPath = relative(dirname(helperPath), genRegistryMapPath(project));
+	const dependencyCaseConversionMapPath = relative(dirname(helperPath), genDependencyCaseConversionMapPath(project));
 	const runtimeConfigPath = relative(dirname(helperPath), `${project.path}/_gen/runtime_config.ts`);
 
 	const { userConfigImport, userConfigType } = await getUserConfigImport(module, "..");
@@ -69,16 +72,19 @@ export async function compileTestHelper(
 		${autoGenHeader()}
 		import * as module from "./mod.ts";
 		import { Runtime, TestContext as TestContextInner } from "${runtimePath}";
-		import type { Registry as RegistryTypeInner, RegistryCamel as RegistryCamelTypeInner } from "./registry.d.ts";
-		import { camelToSnake } from "${registryMapPath}";
+		import type {
+			DependenciesSnake as DependenciesSnakeTypeInner,
+			DependenciesCamel as DependenciesCamelTypeInner,
+		} from "./dependencies.d.ts";
+		import { dependencyCaseConversionMap } from "${dependencyCaseConversionMapPath}";
 		import config from "${runtimeConfigPath}";
 		${userConfigImport}
 		
 		export * from "./mod.ts";
 		
 		export type TestContext = TestContextInner<
-			RegistryTypeInner,
-			RegistryCamelTypeInner,
+			DependenciesSnakeTypeInner,
+			DependenciesCamelTypeInner,
 			${userConfigType},
 			${module.db ? "module.prisma.PrismaClient" : "undefined"}
 		>;
@@ -86,7 +92,7 @@ export async function compileTestHelper(
 		export type TestFn = (ctx: TestContext) => Promise<void>;
 		
 		export function test(name: string, fn: TestFn) {
-			Runtime.test(config, "${module.name}", name, fn, camelToSnake);
+			Runtime.test(config, "${module.name}", name, fn, dependencyCaseConversionMap);
 		}
 	`;
 
@@ -109,14 +115,17 @@ export async function compileScriptHelper(
 		${autoGenHeader()}
 		import * as module from "../mod.ts";
 		import { ScriptContext as ScriptContextInner } from "${runtimePath}";
-		import type { Registry as RegistryTypeInner, RegistryCamel as RegistryCamelTypeInner } from "../registry.d.ts";
+		import type {
+			DependenciesSnake as DependenciesSnakeTypeInner,
+			DependenciesCamel as DependenciesCamelTypeInner,
+		} from "../dependencies.d.ts";
 		${userConfigImport}
 
 		export * from "../mod.ts";
 
 		export type ScriptContext = ScriptContextInner<
-			RegistryTypeInner,
-			RegistryCamelTypeInner,
+			DependenciesSnakeTypeInner,
+			DependenciesCamelTypeInner,
 			${userConfigType},
 			${module.db ? "module.prisma.PrismaClient" : "undefined"}
 		>;
@@ -131,27 +140,23 @@ export async function compileTypeHelpers(project: Project) {
 	const typedefPath = resolve(
 		project.path,
 		"_gen",
-		"registry.d.ts",
+		"dependencies.d.ts",
 	);
-	const typemapPath = resolve(
-		project.path,
-		"_gen",
-		"registryMap.ts",
-	);
+	const typemapPath = genDependencyCaseConversionMapPath(project);
 
-	let moduleTypesSource = "";
-	let moduleSnakeRegistrySource = "";
-	let moduleCamelRegistrySource = "";
-	let registryMapSource = "";
+	let allModulesTypesSource = "";
+	let moduleSnakeEntriesSource = "";
+	let moduleCamelEntriesSource = "";
+	let dependencyCaseConversionMapSource = "";
 	for (const module of project.modules.values()) {
 		const moduleNameSnake = module.name;
 		const moduleNameCamel = camelify(module.name);
 		const moduleNamePascal = pascalify(module.name);
 
 		let scriptImportsSource = "";
-		let scriptSnakeInterfaceSource = "";
-		let scriptCamelInterfaceSource = "";
-		let moduleRegistryMap = "";
+		let scriptSnakeEntriesSource = "";
+		let scriptCamelEntriesSource = "";
+		let singleModuleCaseConversionMapSource = "";
 		for (const script of module.scripts.values()) {
 			const scriptNameSnake = script.name;
 			const scriptNameCamel = camelify(script.name);
@@ -176,26 +181,26 @@ export async function compileTypeHelpers(project: Project) {
 				} from ${JSON.stringify(importPath)};
 			`;
 
-			scriptSnakeInterfaceSource += dedent`
+			scriptSnakeEntriesSource += dedent`
 				${scriptNameSnake}: {
 					request: ${requestTypeName};
 					response: ${responseTypeName};
 				};
 			`;
-			scriptCamelInterfaceSource += dedent`
+			scriptCamelEntriesSource += dedent`
 				${scriptNameCamel}: {
 					request: ${requestTypeName};
 					response: ${responseTypeName};
 				};
 			`;
 
-			moduleRegistryMap += `${scriptNameCamel}: ["${moduleNameSnake}", "${scriptNameSnake}"],\n`;
+			singleModuleCaseConversionMapSource += `${scriptNameCamel}: ["${moduleNameSnake}", "${scriptNameSnake}"],\n`;
 		}
 
 		const moduleInterfaceNameSnake = `${moduleNamePascal}_Module`;
 		const moduleInterfaceNameCamel = `${moduleNamePascal}_ModuleCamel`;
 
-		moduleTypesSource += dedent`
+		allModulesTypesSource += dedent`
 			//
 			// Types for ${module.name}
 			//
@@ -203,19 +208,19 @@ export async function compileTypeHelpers(project: Project) {
 			${scriptImportsSource}
 			
 			interface ${moduleInterfaceNameSnake} {
-				${scriptSnakeInterfaceSource}
+				${scriptSnakeEntriesSource}
 			}
 			interface ${moduleInterfaceNameCamel} {
-				${scriptCamelInterfaceSource}
+				${scriptCamelEntriesSource}
 			}
 		`;
 
-		moduleSnakeRegistrySource += `${moduleNameSnake}: ${moduleInterfaceNameSnake};`;
-		moduleCamelRegistrySource += `${moduleNameCamel}: ${moduleInterfaceNameCamel};`;
+		moduleSnakeEntriesSource += `${moduleNameSnake}: ${moduleInterfaceNameSnake};`;
+		moduleCamelEntriesSource += `${moduleNameCamel}: ${moduleInterfaceNameCamel};`;
 
-		registryMapSource += dedent`
+		dependencyCaseConversionMapSource += dedent`
 			${moduleNameCamel}: {
-				${moduleRegistryMap}
+				${singleModuleCaseConversionMapSource}
 			},
 		`;
 	}
@@ -226,29 +231,32 @@ export async function compileTypeHelpers(project: Project) {
 		export type RequestOf<T> = T extends { request: any } ? T["request"] : never;
 		export type ResponseOf<T> = T extends { response: any } ? T["response"] : never;
 
-		export type RegistryCallFn<ThisType> = <M extends keyof Registry & string, S extends keyof Registry[M] & string>(
+		export type DependencyCallFn<ThisType> = <
+			M extends keyof DependenciesSnake & string,
+			S extends keyof DependenciesSnake[M] & string,
+		>(
 			this: ThisType,
 			module: M,
 			script: S,
-			req: RequestOf<Registry[M][S]>,
-		) => Promise<ResponseOf<Registry[M][S]>>;
+			req: RequestOf<DependenciesSnake[M][S]>,
+		) => Promise<ResponseOf<DependenciesSnake[M][S]>>;
 
-		interface Registry {
-			${moduleSnakeRegistrySource}
+		interface DependenciesSnake {
+			${moduleSnakeEntriesSource}
 		}
 
-		interface RegistryCamel {
-			${moduleCamelRegistrySource}
+		interface DependenciesCamel {
+			${moduleCamelEntriesSource}
 		}
 
-		${moduleTypesSource}
+		${allModulesTypesSource}
 	`;
 
 	const camelLookupSource = dedent`
 		${autoGenHeader()}
 
-		export const camelToSnake = {
-			${registryMapSource}
+		export const dependencyCaseConversionMap = {
+			${dependencyCaseConversionMapSource}
 		} as const;
 	`;
 
@@ -267,7 +275,7 @@ export async function compileModuleTypeHelper(
 		resolve(
 			project.path,
 			"_gen",
-			"registry.d.ts",
+			"dependencies.d.ts",
 		),
 	);
 
@@ -275,23 +283,26 @@ export async function compileModuleTypeHelper(
 	const moduleNameCamel = camelify(module.name);
 
 	const moduleDependenciesSnake = Object.keys(module.config.dependencies || {})
-		.map((dependencyName) => `${dependencyName}: RegistryFull["${dependencyName}"]`)
+		.map((dependencyName) => `${dependencyName}: DependenciesSnakeFull["${dependencyName}"]`)
 		.join(";\n\t");
 	const moduleDependenciesCamel = Object.keys(module.config.dependencies || {})
 		.map((dependencyName) => camelify(dependencyName))
-		.map((dependencyName) => `${dependencyName}: RegistryFullCamel["${dependencyName}"]`)
+		.map((dependencyName) => `${dependencyName}: DependenciesCamelFull["${dependencyName}"]`)
 		.join(";\n\t");
 
 	const source = dedent`
 		${autoGenHeader()}
-		import type { Registry as RegistryFull, RegistryCamel as RegistryFullCamel } from "${typedefPath}";
-		export interface Registry {
-			${moduleNameSnake}: RegistryFull["${moduleNameSnake}"];
+		import type {
+			DependenciesSnake as DependenciesSnakeFull,
+			DependenciesCamel as DependenciesCamelFull,
+		} from "${typedefPath}";
+		export interface DependenciesSnake {
+			${moduleNameSnake}: DependenciesSnakeFull["${moduleNameSnake}"];
 			${moduleDependenciesSnake}
 		}
 
-		export interface RegistryCamel {
-			${moduleNameCamel}: RegistryFullCamel["${moduleNameCamel}"];
+		export interface DependenciesCamel {
+			${moduleNameCamel}: DependenciesCamelFull["${moduleNameCamel}"];
 			${moduleDependenciesCamel}
 		}
 	`;

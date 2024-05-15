@@ -166,7 +166,7 @@ export function typeGenPath(_project: Project, module: Module): string {
 	return resolve(
 		module.path,
 		"_gen",
-		"registry.d.ts",
+		"dependencies.d.ts",
 	);
 }
 

@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:@prisma/adapter-pg@^5.12.0": "npm:@prisma/adapter-pg@5.14.0_pg@8.11.3",
       "npm:@prisma/adapter-pg@^5.9.1": "npm:@prisma/adapter-pg@5.9.1_pg@8.11.3",
       "npm:@rivet-gg/esbuild-plugin-polyfill-node@^0.4.0": "npm:@rivet-gg/esbuild-plugin-polyfill-node@0.4.0_esbuild@0.20.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
@@ -146,12 +147,30 @@
         "integrity": "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==",
         "dependencies": {}
       },
+      "@prisma/adapter-pg@5.14.0_pg@8.11.3": {
+        "integrity": "sha512-AcV1DKY4ps3zvBIKolCzmBD+resdG4oH14I0iG3SntMjjnCbC/COefIInSV038c8g20RoHJO7fPyf1WPKicRgQ==",
+        "dependencies": {
+          "@prisma/driver-adapter-utils": "@prisma/driver-adapter-utils@5.14.0",
+          "pg": "pg@8.11.3",
+          "postgres-array": "postgres-array@3.0.2"
+        }
+      },
       "@prisma/adapter-pg@5.9.1_pg@8.11.3": {
         "integrity": "sha512-0RhnB1sqLmSzilbIQS75YE5qTNotlGvLWhTG7cp+F59VJdQ5sWWXZ1j2W4Tn+AMb116Yp4AuFe0vggW2f+ujiQ==",
         "dependencies": {
           "@prisma/driver-adapter-utils": "@prisma/driver-adapter-utils@5.9.1",
           "pg": "pg@8.11.3",
           "postgres-array": "postgres-array@3.0.2"
+        }
+      },
+      "@prisma/debug@5.14.0": {
+        "integrity": "sha512-iq56qBZuFfX3fCxoxT8gBX33lQzomBU0qIUaEj1RebsKVz1ob/BVH1XSBwwwvRVtZEV1b7Fxx2eVu34Ge/mg3w==",
+        "dependencies": {}
+      },
+      "@prisma/driver-adapter-utils@5.14.0": {
+        "integrity": "sha512-EyAfdKjk0M7CaA7BfiwDTPLs7udOwt+RUnyWIPSg7uBEFp2GS/l9Ig7CCgMZFcBFc62v0c6Z/R3WFuQ+bNxfnA==",
+        "dependencies": {
+          "@prisma/debug": "@prisma/debug@5.14.0"
         }
       },
       "@prisma/driver-adapter-utils@5.9.1": {
