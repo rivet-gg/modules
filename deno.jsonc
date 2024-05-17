@@ -8,7 +8,6 @@
 		"cli:run:build": "deno task cli:run build",
 		"cli:run:clean_build": "deno task artifacts:build:all && deno task cli:run:dirty clean && deno task cli:run build",
 
-
 		// Compiles the CLI to a binary
 		"cli:compile": "deno task artifacts:build:all && deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output _gen/cli src/cli/main.ts",
 
@@ -23,7 +22,7 @@
 		// Format
 		"format": "deno fmt src/",
 		"format:check": "deno fmt --check src/",
-		
+
 		// Check
 		"check": "deno task artifacts:build:all && deno check src/**/*.ts",
 

@@ -6,8 +6,7 @@ type ModuleRegistryPair = readonly [string, string];
 /**
  * This type is used denote a map the key/value pairs of one registry to
  * another.
- * 
- * 
+ *
  * Example:
  * ```ts
  * type TestReg1 = {
@@ -20,7 +19,7 @@ type ModuleRegistryPair = readonly [string, string];
  *     cor: { request: FilCorRequest, response: FilCorResponse },
  *   }
  * };
- * 
+ *
  * type TestReg2 = {
  *   canonicalFoo: {
  *     bar: { request: FooBarRequest, response: FooBarResponse },
@@ -31,7 +30,7 @@ type ModuleRegistryPair = readonly [string, string];
  *     cor: { request: FilCorRequest, response: FilCorResponse },
  *   },
  * };
- * 
+ *
  * const map: RegistryCallMap<TestReg1, TestReg2> = {
  *   foo: {
  *     bar: ["canonicalFoo", "bar"],
@@ -43,7 +42,7 @@ type ModuleRegistryPair = readonly [string, string];
  *   },
  * };
  * ```
- * 
+ *
  * This is used by the {@linkcode buildRegistryProxy} function to map the camel
  * case keys from `ctx.modules.<camelMod>.<camelScript>(data);` to an
  * equivalent call to `ctx.call(<snake_mod>, <snake_script>, data);`.
@@ -53,7 +52,7 @@ export type RegistryCallMap = Record<string, Record<string, ModuleRegistryPair>>
 /**
  * A callable registry is an object that describes the structure of
  * `ctx.modules`.
- * 
+ *
  * If we have a registry like this:
  * - module `foo`
  *   - script `bar`
@@ -69,7 +68,7 @@ export type RegistryCallMap = Record<string, Record<string, ModuleRegistryPair>>
  *   - script `cor`
  *     - request type `CorRequest`
  *     - response type `CorResponse`
- * 
+ *
  * The callable registry would look like this:
  * ```ts
  * type CallableRegistry_TestReg = {
@@ -83,9 +82,9 @@ export type RegistryCallMap = Record<string, Record<string, ModuleRegistryPair>>
  *   },
  * }
  * ```
- * 
+ *
  * This is the type returned by the {@linkcode buildRegistryProxy} function.
- * 
+ *
  * It is accessible to the user as `ctx.modules`.
  */
 export type CallableDependencies<DependenciesT> = {
@@ -97,7 +96,6 @@ export type CallableDependencies<DependenciesT> = {
 };
 
 /**
- * 
  * @param ctx The {@link Context} object to use to call the scripts in
  * accessible modules
  * @param map A {@link MapFrom} object that describes how to map

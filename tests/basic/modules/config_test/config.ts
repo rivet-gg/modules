@@ -1,4 +1,4 @@
 export interface Config {
-    foo: string;
-    bar: number;
+	foo: string;
+	bar: number;
 }
