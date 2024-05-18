@@ -60,7 +60,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
-			import { camelToSnake } from "${registryMapPath};
+			import { camelToSnake } from "${registryMapPath}";
 			import type { Registry, RegistryCamel } from "./registry.d.ts";
 			import config from "./runtime_config.ts";
 
