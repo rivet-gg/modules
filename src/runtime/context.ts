@@ -2,21 +2,21 @@ import { Runtime } from "./runtime.ts";
 import { Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
-import { buildRegistryProxy, MapFrom } from "./proxy.ts";
-import { RegistryCallFn } from "../types/registry.ts";
+import { buildRegistryProxy, RegistryCallMap } from "./proxy.ts";
+import { DependencyScriptCallFunction } from "../types/registry.ts";
 
-export class Context<RegistryT, RegistryCamelT> {
+export class Context<DependenciesSnakeT, DependenciesCamelT> {
 	public constructor(
-		protected readonly runtime: Runtime<RegistryT, RegistryCamelT>,
+		protected readonly runtime: Runtime<DependenciesSnakeT, DependenciesCamelT>,
 		public readonly trace: Trace,
-		private readonly camelMap: MapFrom<RegistryCamelT, RegistryT>,
+		private readonly dependencyCaseConversionMap: RegistryCallMap,
 	) {}
 
 	protected isAllowedModuleName(_moduleName: string): boolean {
 		return true;
 	}
 
-	public call: RegistryCallFn<this, RegistryT> = async function (
+	public call: DependencyScriptCallFunction<this, DependenciesSnakeT> = async function (
 		moduleName,
 		scriptName,
 		req,
@@ -51,7 +51,7 @@ export class Context<RegistryT, RegistryCamelT> {
 				moduleName,
 				this.runtime.postgres.getOrCreatePool(module)?.prisma,
 				scriptName,
-				this.camelMap,
+				this.dependencyCaseConversionMap,
 			);
 
 			// TODO: Replace with OGBE-15
@@ -91,9 +91,9 @@ export class Context<RegistryT, RegistryCamelT> {
 	};
 
 	public get modules() {
-		return buildRegistryProxy<RegistryT, RegistryCamelT>(
+		return buildRegistryProxy<DependenciesSnakeT, DependenciesCamelT>(
 			this,
-			this.camelMap,
+			this.dependencyCaseConversionMap,
 		);
 	}
 
@@ -156,16 +156,16 @@ export class Context<RegistryT, RegistryCamelT> {
 /**
  * Context for a module.
  */
-export class ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
-	extends Context<RegistryT, RegistryCamelT> {
+export class ModuleContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, DatabaseT>
+	extends Context<DependenciesSnakeT, DependenciesCamelT> {
 	public constructor(
-		runtime: Runtime<RegistryT, RegistryCamelT>,
+		runtime: Runtime<DependenciesSnakeT, DependenciesCamelT>,
 		trace: Trace,
 		public readonly moduleName: string,
 		public readonly db: DatabaseT,
-		camelMap: MapFrom<RegistryCamelT, RegistryT>,
+		dependencyCaseConversionMap: RegistryCallMap,
 	) {
-		super(runtime, trace, camelMap);
+		super(runtime, trace, dependencyCaseConversionMap);
 	}
 
 	protected isAllowedModuleName(targetModuleName: string): boolean {
@@ -183,22 +183,22 @@ export class ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
 /**
  * Context for a script.
  */
-export class ScriptContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
-	extends ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT> {
+export class ScriptContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, DatabaseT>
+	extends ModuleContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, DatabaseT> {
 	public constructor(
-		runtime: Runtime<RegistryT, RegistryCamelT>,
+		runtime: Runtime<DependenciesSnakeT, DependenciesCamelT>,
 		trace: Trace,
 		moduleName: string,
 		db: DatabaseT,
 		public readonly scriptName: string,
-		camelMap: MapFrom<RegistryCamelT, RegistryT>,
+		dependencyCaseConversionMap: RegistryCallMap,
 	) {
-		super(runtime, trace, moduleName, db, camelMap);
+		super(runtime, trace, moduleName, db, dependencyCaseConversionMap);
 	}
 }
 
 /**
  * Context for a test.
  */
-export class TestContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT>
-	extends ModuleContext<RegistryT, RegistryCamelT, UserConfigT, DatabaseT> {}
+export class TestContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, DatabaseT>
+	extends ModuleContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, DatabaseT> {}

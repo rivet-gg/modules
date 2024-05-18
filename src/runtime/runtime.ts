@@ -5,7 +5,7 @@ import { Postgres, PrismaClientDummy } from "./postgres.ts";
 import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
-import { MapFrom } from "./proxy.ts";
+import { RegistryCallMap } from "./proxy.ts";
 
 export interface Config {
 	modules: Record<string, Module>;
@@ -46,12 +46,12 @@ export interface ErrorConfig {
 	description?: string;
 }
 
-export class Runtime<RegistryT, RegistryCamelT> {
+export class Runtime<DependenciesSnakeT, DependenciesCamelT> {
 	public postgres: Postgres;
 
 	public ajv: Ajv.default;
 
-	public constructor(public config: Config, private camelMap: MapFrom<RegistryCamelT, RegistryT>) {
+	public constructor(public config: Config, private dependencyCaseConversionMap: RegistryCallMap) {
 		this.postgres = new Postgres();
 
 		this.ajv = new Ajv.default({
@@ -65,8 +65,8 @@ export class Runtime<RegistryT, RegistryCamelT> {
 		await this.postgres.shutdown();
 	}
 
-	public createRootContext(traceEntryType: TraceEntryType): Context<RegistryT, RegistryCamelT> {
-		return new Context(this, newTrace(traceEntryType), this.camelMap);
+	public createRootContext(traceEntryType: TraceEntryType): Context<DependenciesSnakeT, DependenciesCamelT> {
+		return new Context(this, newTrace(traceEntryType), this.dependencyCaseConversionMap);
 	}
 
 	/**
@@ -81,12 +81,12 @@ export class Runtime<RegistryT, RegistryCamelT> {
 	/**
 	 * Registers a module test with the Deno runtime.
 	 */
-	public static test<RegistryT, RegistryCamelT, UserConfigT>(
+	public static test<DependenciesSnakeT, DependenciesCamelT, UserConfigT>(
 		config: Config,
 		moduleName: string,
 		testName: string,
-		fn: (ctx: TestContext<RegistryT, RegistryCamelT, UserConfigT, any>) => Promise<void>,
-		map: MapFrom<RegistryCamelT, RegistryT>,
+		fn: (ctx: TestContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, any>) => Promise<void>,
+		dependencyCaseConversionMap: RegistryCallMap,
 	) {
 		Deno.test({
 			name: testName,
@@ -96,18 +96,18 @@ export class Runtime<RegistryT, RegistryCamelT> {
 			sanitizeResources: false,
 
 			async fn() {
-				const runtime = new Runtime<RegistryT, RegistryCamelT>(config, map);
+				const runtime = new Runtime<DependenciesSnakeT, DependenciesCamelT>(config, dependencyCaseConversionMap);
 
 				// Build context
 				const module = config.modules[moduleName];
-				const ctx = new TestContext<RegistryT, RegistryCamelT, UserConfigT, PrismaClientDummy | undefined>(
+				const ctx = new TestContext<DependenciesSnakeT, DependenciesCamelT, UserConfigT, PrismaClientDummy | undefined>(
 					runtime,
 					newTrace({
 						test: { module: moduleName, name: testName },
 					}),
 					moduleName,
 					runtime.postgres.getOrCreatePool(module)?.prisma,
-					map,
+					dependencyCaseConversionMap,
 				);
 
 				// Run test

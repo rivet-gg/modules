@@ -63,9 +63,9 @@ export async function planProjectBuild(
 	}
 
 	buildStep(buildState, {
-		id: `project.generate.registry`,
+		id: `project.generate.dependencies`,
 		name: "Generate",
-		description: "_gen/registry.d.ts",
+		description: "_gen/dependencies.d.ts",
 		condition: {
 			files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
 		},

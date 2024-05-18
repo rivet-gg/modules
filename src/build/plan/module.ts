@@ -46,9 +46,9 @@ export async function planModuleBuild(
 	});
 
 	buildStep(buildState, {
-		id: `module.${module.name}.generate.registry`,
+		id: `module.${module.name}.generate.dependencies`,
 		name: "Generate",
-		description: `_gen/registry.d.ts`,
+		description: `_gen/dependencies.d.ts`,
 		module,
 		condition: {
 			files: [resolve(module.path, "module.yaml"), configPath(module)],

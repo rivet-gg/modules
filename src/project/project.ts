@@ -241,8 +241,8 @@ export function genRuntimeModPath(project: Project): string {
 	return resolve(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
 }
 
-export function genRegistryMapPath(project: Project): string {
-	return resolve(project.path, "_gen", "registryMap.ts");
+export function genDependencyCaseConversionMapPath(project: Project): string {
+	return resolve(project.path, "_gen", "dependencyCaseConversion.ts");
 }
 
 export interface ListSourceFileOpts {
