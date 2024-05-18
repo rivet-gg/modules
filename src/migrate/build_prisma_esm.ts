@@ -29,7 +29,7 @@ export async function buildPrismaPackage(
 	// TODO: Use tsc to generate a single .d.ts file
 	// Prepend TypeScript reference
 	const content = await Deno.readTextFile(outFile);
-	const newContent = `/// <reference types="./wasm.d.ts" />\n${content}`;
+	const newContent = `/// <reference types="./index.d.ts" />\n${content}`;
 	await Deno.writeTextFile(outFile, newContent);
 }
 
