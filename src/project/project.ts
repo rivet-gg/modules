@@ -241,8 +241,23 @@ export function genRuntimeModPath(project: Project): string {
 	return resolve(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
 }
 
+export function genDependencyTypedefPath(project: Project): string {
+	return resolve(project.path, "_gen", "dependencies.d.ts");
+}
 export function genDependencyCaseConversionMapPath(project: Project): string {
 	return resolve(project.path, "_gen", "dependencyCaseConversion.ts");
+}
+
+export function genPublicUtilsFolder(project: Project): string {
+	return resolve(project.path, "_gen", "public");
+}
+
+export function genModulePublicUtils(project: Project, module: Module): string {
+	return resolve(genPublicUtilsFolder(project), `mod_${module.name}.ts`);
+}
+
+export function genAllPublicUtils(project: Project): string {
+	return resolve(genPublicUtilsFolder(project), `all.ts`);
 }
 
 export interface ListSourceFileOpts {

@@ -170,6 +170,18 @@ export function typeGenPath(_project: Project, module: Module): string {
 	);
 }
 
+export function publicGenPath(_project: Project, module: Module): string {
+	return resolve(
+		module.path,
+		"_gen",
+		"public.ts",
+	);
+}
+
+export function publicPath(module: Module): string {
+	return resolve(module.path, "public.ts");
+}
+
 export function configPath(module: Module): string {
 	return resolve(module.path, "config.ts");
 }

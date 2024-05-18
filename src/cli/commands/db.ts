@@ -4,7 +4,7 @@ import { migrateDev } from "../../migrate/dev.ts";
 import { migrateStatus } from "../../migrate/status.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateReset } from "../../migrate/reset.ts";
-import { CommandError, UserError } from "../../error/mod.ts";
+import { UserError } from "../../error/mod.ts";
 import { Project } from "../../project/mod.ts";
 import { verbose } from "../../term/status.ts";
 import { getDatabaseUrl } from "../../utils/db.ts";

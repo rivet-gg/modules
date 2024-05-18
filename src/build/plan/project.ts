@@ -5,7 +5,7 @@ import { BuildOpts, Format, Runtime } from "../mod.ts";
 import { generateClient } from "../../migrate/generate.ts";
 import { inflateRuntimeArchive } from "../inflate_runtime_archive.ts";
 import { planModuleBuild } from "./module.ts";
-import { compileTypeHelpers } from "../gen.ts";
+import { compileTypeHelpers } from "../gen/mod.ts";
 import { generateDenoConfig } from "../deno_config.ts";
 import { generateEntrypoint } from "../entrypoint.ts";
 import { generateOpenApi } from "../openapi.ts";

@@ -1,7 +1,7 @@
 import { BuildState, buildStep } from "../../build_state/mod.ts";
 import { assertExists, resolve } from "../../deps.ts";
 import { Module, Project, Script } from "../../project/mod.ts";
-import { compileScriptHelper } from "../gen.ts";
+import { compileScriptHelper } from "../gen/mod.ts";
 import { compileScriptSchema } from "../script_schema.ts";
 import { BuildOpts } from "../mod.ts";
 
