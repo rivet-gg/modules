@@ -8,6 +8,7 @@ import { Module, Project } from "../project/mod.ts";
 import { forEachDatabase } from "./mod.ts";
 import { runPrismaCommand } from "./prisma.ts";
 import { Runtime } from "../build/mod.ts";
+import { indexOfNeedle } from "https://deno.land/std@0.140.0/bytes/mod.ts";
 
 export async function generateClient(
 	project: Project,
@@ -31,31 +32,24 @@ export async function generateClient(
 			});
 			const clientDir = resolve(dbDir, "client");
 
-			// Specify the path to the library & binary types
-			for (
-				const filename of [
-					"index.d.ts",
-					"default.d.ts",
-					"wasm.d.ts",
-					"edge.d.ts",
-				]
-			) {
-				const filePath = resolve(clientDir, filename);
-				let content = await Deno.readTextFile(filePath);
-				const replaceLineA = `import * as runtime from './runtime/library.js'`;
-				const replaceLineB = `import * as runtime from './runtime/binary.js'`;
-				content = content
-					.replace(
-						replaceLineA,
-						`// @deno-types="./runtime/library.d.ts"\n${replaceLineA}`,
-					)
-					.replace(
-						replaceLineB,
-						`// @deno-types="./runtime/binary.d.ts"\n${replaceLineB}`,
-					)
-					.replace(/(import|export)\s+(.*)\s+from '.\/(default|index)'/g, `$1 type $2 from './$3.d.ts'`);
-				await Deno.writeTextFile(filePath, content);
-			}
+			// Specify the Deno types ofr the JS imports.
+			//
+			// index.d.ts is type file referenced in the compiled esm.js file.
+			const filePath = resolve(clientDir, "index.d.ts");
+			let content = await Deno.readTextFile(filePath);
+			const replaceLineA = `import * as runtime from './runtime/library.js'`;
+			const replaceLineB = `import * as runtime from './runtime/binary.js'`;
+			content = content
+				.replace(
+					replaceLineA,
+					`// @deno-types="./runtime/library.d.ts"\n${replaceLineA}`,
+				)
+				.replace(
+					replaceLineB,
+					`// @deno-types="./runtime/binary.d.ts"\n${replaceLineB}`,
+				)
+				.replace(/(import|export)\s+(.*)\s+from '.\/(default|index)'/g, `$1 type $2 from './$3.d.ts'`);
+			await Deno.writeTextFile(filePath, content);
 
 			// Compile the ESM library
 			await buildPrismaPackage(
