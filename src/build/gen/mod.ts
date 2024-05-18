@@ -7,6 +7,8 @@ export { compileTestHelper } from "./test.ts";
 export { compileScriptHelper } from "./script.ts";
 
 export { compileModuleTypeHelper } from "./module_type.ts";
+export { compileModulePublicUtilsHelper } from "./module_public_utils.ts";
+export { compilePublicUtilsHelpers } from "./public_utils.ts";
 export { compileTypeHelpers } from "./type.ts";
 
 export async function getUserConfigImport(module: Module, moduleRoot: string) {

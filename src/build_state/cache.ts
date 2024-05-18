@@ -5,7 +5,7 @@ import { verbose } from "../term/status.ts";
 import { crypto, encodeHex } from "./deps.ts";
 
 // TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
-export const CACHE_VERSION = 5;
+export const CACHE_VERSION = 6;
 
 export interface Cache {
 	persist: CachePersist;

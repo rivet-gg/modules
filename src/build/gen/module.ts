@@ -34,6 +34,7 @@ export async function compileModuleHelper(
 
 	// Export block
 	helper.chunk.withNewlinesPerChunk(2)
+		.append`export * as Module from "./public.ts";`
 		.append`
 			/**
 			 * Empty Request/Response type.
