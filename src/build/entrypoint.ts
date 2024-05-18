@@ -59,7 +59,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import { Runtime } from "${runtimeModPath}";
-			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)};
+			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import config from "./runtime_config.ts";
 
