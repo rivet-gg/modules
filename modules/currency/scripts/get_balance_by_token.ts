@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/get_balance_by_token.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	userToken: string;

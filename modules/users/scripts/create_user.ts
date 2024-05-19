@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/create_user.ts";
+import { ScriptContext } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
 
 export interface Request {

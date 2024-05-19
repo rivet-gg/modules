@@ -1,7 +1,7 @@
 import {
 	RuntimeError,
 	ScriptContext,
-} from "../_gen/scripts/decline_request.ts";
+} from "../module.gen.ts";
 
 export interface Request {
 	userToken: string;

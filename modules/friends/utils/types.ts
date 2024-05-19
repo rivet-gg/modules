@@ -1,4 +1,4 @@
-import { prisma } from "../_gen/mod.ts";
+import { prisma } from "../module.gen.ts";
 
 export interface Friend {
 	userIdA: string;

@@ -1,5 +1,5 @@
-import { RuntimeError } from "../_gen/scripts/set_balance.ts";
-import { ScriptContext } from "../_gen/scripts/set_balance.ts";
+import { RuntimeError } from "../module.gen.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 import { setBalance } from "../utils/set_balance.ts";
 

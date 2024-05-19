@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../_gen/scripts/withdraw.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 
 import { getBalance } from "../utils/get_balance.ts";
 import { setBalance } from "../utils/set_balance.ts";

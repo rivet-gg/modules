@@ -1,4 +1,4 @@
-import { RuntimeError, test, TestContext } from "../_gen/test.ts";
+import { RuntimeError, test, TestContext } from "../module.gen.ts";
 import {
 	assertEquals,
 	assertRejects,

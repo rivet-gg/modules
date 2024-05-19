@@ -1,4 +1,4 @@
-import { test, TestContext } from "../_gen/test.ts";
+import { test, TestContext } from "../module.gen.ts";
 import {
 	assertEquals,
 	assertExists,

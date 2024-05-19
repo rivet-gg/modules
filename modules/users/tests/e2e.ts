@@ -1,4 +1,4 @@
-import { test, TestContext } from "../_gen/test.ts";
+import { test, TestContext } from "../module.gen.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.217.0/assert/assert_equals.ts";
 import { assertExists } from "https://deno.land/std@0.217.0/assert/assert_exists.ts";

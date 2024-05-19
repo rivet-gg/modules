@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/get_balance.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 import { getBalance } from "../utils/get_balance.ts";
 

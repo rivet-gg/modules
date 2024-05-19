@@ -1,5 +1,5 @@
 import { TokenWithSecret } from "../../tokens/utils/types.ts";
-import { ScriptContext } from "../_gen/scripts/create_user_token.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	userId: string;

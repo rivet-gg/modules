@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../_gen/scripts/send_request.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 import { FriendRequest, friendRequestFromRow } from "../utils/types.ts";
 
 export interface Request {

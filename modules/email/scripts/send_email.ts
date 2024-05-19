@@ -1,5 +1,5 @@
 import { assertExists } from "https://deno.land/std@0.208.0/assert/assert_exists.ts";
-import { RuntimeError, ScriptContext } from "../_gen/scripts/send_email.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 import { ProviderSendGrid } from "../config.ts";
 import { Email } from "../utils/types.ts";
 
