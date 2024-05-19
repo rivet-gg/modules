@@ -1,4 +1,4 @@
-import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
+import { assert, copy, emptyDir, exists, move, resolve } from "../deps.ts";
 import { glob } from "./deps.ts";
 import { configPath as projectConfigPath, readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
@@ -197,22 +197,24 @@ export async function fetchAndResolveModule(
 			moduleName,
 		);
 
-		// HACK: Copy .opengb dir to temp dir to avoid overwriting it
-		const genPath = resolve(path, ".opengb");
+		// HACK: Copy gen file to temp dir to avoid overwriting it
+		const genPath = resolve(path, "module.gen.ts");
 		let tempGenDir: string | undefined;
-		if (await exists(genPath, { isDirectory: true })) {
+		let tempGenPath: string | undefined;
+		if (await exists(genPath, { isFile: true })) {
 			tempGenDir = await Deno.makeTempDir();
-			await copy(genPath, tempGenDir, { overwrite: true });
+			tempGenPath = resolve(tempGenDir, "module.gen.ts");
+			await copy(genPath, tempGenPath, { overwrite: true });
 		}
 
 		// TODO: Only copy when needed, this copies every time the CLI is ran
 		await emptyDir(path);
 		await copy(sourcePath, path, { overwrite: true });
 
-		// HACK: Restore .opengb dir
-		if (tempGenDir) {
-			await emptyDir(genPath);
-			await copy(tempGenDir, genPath, { overwrite: true });
+		// HACK: Restore gen file
+		if (tempGenDir && tempGenPath) {
+			await move(tempGenPath, genPath, { overwrite: true });
+			await Deno.remove(tempGenDir, { recursive: true });
 		}
 	} else {
 		// Use original path
