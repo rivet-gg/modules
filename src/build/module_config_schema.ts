@@ -64,9 +64,10 @@ export async function compileModuleConfigSchema(
 
 	if (!moduleConfigSchema(module.userConfig)) {
 		throw new UserError(
-			`Invalid module config.`,
+			`Invalid module config for ${module.name}.`,
 			{
-				details: `${JSON.stringify(moduleConfigSchema.errors, null, 2)}`,
+				details: `Config:\n\n${JSON.stringify(module.userConfig, null, 2)}\n\nErrors:\n\n${JSON.stringify(moduleConfigSchema.errors, null, 2)}`,
+				suggest: `Compare your config with the following schema:\n\n${JSON.stringify(module.userConfigSchema, null, 2)}`
 			},
 		);
 	}
