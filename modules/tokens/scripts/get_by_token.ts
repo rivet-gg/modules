@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/get_by_token.ts";
+import { ScriptContext } from "../module.gen.ts";
 import { Token, tokenFromRow } from "../utils/types.ts";
 
 export interface Request {

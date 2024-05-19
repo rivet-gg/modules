@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/get.ts";
+import { ScriptContext } from "../module.gen.ts";
 import { Token } from "../utils/types.ts";
 import { tokenFromRow } from "../utils/types.ts";
 

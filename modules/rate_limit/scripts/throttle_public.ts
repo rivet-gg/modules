@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/throttle_public.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	/**

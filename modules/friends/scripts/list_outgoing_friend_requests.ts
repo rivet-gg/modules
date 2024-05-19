@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/list_outgoing_friend_requests.ts";
+import { ScriptContext } from "../module.gen.ts";
 import { FriendRequest, friendRequestFromRow } from "../utils/types.ts";
 
 export interface Request {

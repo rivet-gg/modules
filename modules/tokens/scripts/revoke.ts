@@ -1,4 +1,4 @@
-import { Prisma, ScriptContext } from "../_gen/scripts/revoke.ts";
+import { Prisma, ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	tokenIds: string[];

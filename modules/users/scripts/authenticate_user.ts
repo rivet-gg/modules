@@ -1,5 +1,5 @@
-import { RuntimeError } from "../_gen/mod.ts";
-import { ScriptContext } from "../_gen/scripts/authenticate_user.ts";
+import { RuntimeError } from "../module.gen.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	userToken: string;

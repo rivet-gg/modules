@@ -1,5 +1,5 @@
-import { RuntimeError } from "../_gen/mod.ts";
-import { ScriptContext } from "../_gen/scripts/auth_email_passwordless.ts";
+import { RuntimeError } from "../module.gen.ts";
+import { ScriptContext } from "../module.gen.ts";
 import { Verification } from "../utils/types.ts";
 
 export interface Request {
