@@ -7,7 +7,14 @@ modules:
   friends: {}
   rate_limit: {}
   tokens: {}
-  users: {}
+  users:
+    config: {}
+  uploads:
+    config:
+      s3:
+        bucketName: opengb-test-bucket
+        region: us-east-1
+        endpoint: https://s3.us-east-1.amazonaws.com
   foo:
     registry: local
   config_test:
