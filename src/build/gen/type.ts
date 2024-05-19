@@ -1,7 +1,7 @@
 import { genDependencyCaseConversionMapPath, genDependencyTypedefPath, Project } from "../../project/mod.ts";
 import { GeneratedCodeBuilder } from "./mod.ts";
 import { camelify, pascalify } from "../../types/case_conversions.ts";
-import { compilePublicUtilsHelpers } from "./public_utils.ts";
+import { compilePublic } from "./public.ts";
 
 export async function compileTypeHelpers(project: Project) {
 	const typedefPath = genDependencyTypedefPath(project);
@@ -126,5 +126,5 @@ export async function compileTypeHelpers(project: Project) {
 	await dependencyTypedef.write();
 	await dependencyCaseConversionMap.write();
 
-	await compilePublicUtilsHelpers(project);
+	await compilePublic(project);
 }

@@ -10,5 +10,5 @@ Will be fixed with [#15](https://github.com/rivet-gg/opengb-engine/issues/15).
 
 ```
 error: Module not found "file:///path/to/src/runtime/mod.ts".
-  at file:///path/to/tests/basic/_gen/entrypoint.ts:3:25
+  at file:///path/to/tests/basic/.opengb/entrypoint.ts:3:25
 ```

@@ -1,6 +1,6 @@
-import { resolve } from "../deps.ts";
+import { dirname, resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { genDependencyCaseConversionMapPath, genRuntimeModPath, genRuntimePath } from "../project/project.ts";
+import { ENTRYPOINT_PATH, GITIGNORE_PATH, RUNTIME_CONFIG_PATH, RUNTIME_PATH, genDependencyCaseConversionMapPath, genPath, genPrismaOutputBundle, genRuntimeModPath } from "../project/project.ts";
 import { CommandError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
@@ -71,7 +71,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			main();
 			`;
 	} else if (opts.runtime == Runtime.Cloudflare) {
-		const runtimePath = genRuntimePath(project);
+		const runtimePath = genPath(project, RUNTIME_PATH);
 		const serverTsPath = resolve(runtimePath, "src", "runtime", "server.ts");
 		const errorTsPath = resolve(runtimePath, "src", "runtime", "error.ts");
 
@@ -113,14 +113,13 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	}
 
 	// Write files
-	const distDir = resolve(project.path, "_gen");
-	const configPath = resolve(distDir, "runtime_config.ts");
-	const entrypointPath = resolve(distDir, "entrypoint.ts");
-	await Deno.mkdir(distDir, { recursive: true });
+	const configPath = genPath(project, RUNTIME_CONFIG_PATH);
+	const entrypointPath = genPath(project, ENTRYPOINT_PATH);
+	await Deno.mkdir(dirname(configPath), { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
 	await Deno.writeTextFile(
-		resolve(distDir, ".gitignore"),
+		genPath(project, GITIGNORE_PATH),
 		".",
 	);
 
@@ -168,8 +167,8 @@ function generateModImports(project: Project, opts: BuildOpts) {
 		// Generate db config
 		if (mod.db) {
 			const prismaImportName = `prisma$$${mod.name}`;
-			const prismaImportPath = `${mod.path}/_gen/prisma/esm.js`;
-			modImports += `import ${prismaImportName} from "${prismaImportPath}";\n`;
+			const prismaImportPath = genPrismaOutputBundle(project, mod);
+			modImports += `import ${prismaImportName} from ${JSON.stringify(prismaImportPath)};\n`;
 
 			modConfig += `db: {`;
 			modConfig += `name: ${JSON.stringify(mod.db.name)},`;

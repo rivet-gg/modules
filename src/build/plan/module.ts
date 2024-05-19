@@ -1,7 +1,7 @@
 import { BuildState, buildStep } from "../../build_state/mod.ts";
 import { assertExists, resolve } from "../../deps.ts";
 import { configPath, Module, Project } from "../../project/mod.ts";
-import { compileModuleHelper, compileModuleTypeHelper, compileTestHelper } from "../gen/mod.ts";
+import { compileModuleHelper } from "../gen/mod.ts";
 import { compileModuleConfigSchema } from "../module_config_schema.ts";
 import { planScriptBuild } from "./script.ts";
 import { BuildOpts } from "../mod.ts";
@@ -46,22 +46,9 @@ export async function planModuleBuild(
 	});
 
 	buildStep(buildState, {
-		id: `module.${module.name}.generate.dependencies`,
+		id: `module.${module.name}.generate`,
 		name: "Generate",
-		description: `_gen/dependencies.d.ts`,
-		module,
-		condition: {
-			files: [resolve(module.path, "module.yaml"), configPath(module)],
-		},
-		async build() {
-			await compileModuleTypeHelper(project, module);
-		},
-	});
-
-	buildStep(buildState, {
-		id: `module.${module.name}.generate.mod`,
-		name: "Generate",
-		description: `_gen/mod.ts`,
+		description: `module.gen.ts`,
 		module,
 		condition: {
 			files: [resolve(module.path, "module.yaml"), configPath(module)],
@@ -71,22 +58,6 @@ export async function planModuleBuild(
 		},
 		async build() {
 			await compileModuleHelper(project, module);
-		},
-	});
-
-	buildStep(buildState, {
-		id: `module.${module.name}.generate.test`,
-		name: "Generate",
-		description: `_gen/test.ts`,
-		module,
-		condition: {
-			files: [resolve(module.path, "module.yaml"), configPath(module)],
-			expressions: {
-				db: !!module.db,
-			},
-		},
-		async build() {
-			await compileTestHelper(project, module);
 		},
 	});
 

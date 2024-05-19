@@ -1,6 +1,7 @@
 import { resolve } from "../deps.ts";
 import { tjs } from "./deps.ts";
 import { Project } from "../project/mod.ts";
+import { OPEN_API_PATH, genPath } from "../project/project.ts";
 
 // deno-lint-ignore no-explicit-any
 type OpenApiDefinition = any;
@@ -72,7 +73,7 @@ export async function generateOpenApi(project: Project) {
 	}
 
 	await Deno.writeTextFile(
-		resolve(project.path, "_gen", "openapi.json"),
+		genPath(project, OPEN_API_PATH),
 		JSON.stringify(schema, null, 4),
 	);
 }

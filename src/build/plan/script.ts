@@ -1,7 +1,6 @@
 import { BuildState, buildStep } from "../../build_state/mod.ts";
 import { assertExists, resolve } from "../../deps.ts";
 import { Module, Project, Script } from "../../project/mod.ts";
-import { compileScriptHelper } from "../gen/mod.ts";
 import { compileScriptSchema } from "../script_schema.ts";
 import { BuildOpts } from "../mod.ts";
 
@@ -54,24 +53,6 @@ export async function planScriptBuild(
 				request: script.requestSchema,
 				response: script.responseSchema,
 			};
-		},
-	});
-
-	buildStep(buildState, {
-		id: `module.${module.name}.script.${script.name}.generate`,
-		name: "Generate",
-		description: `_gen/scripts/${script.name}.ts`,
-		module,
-		script,
-		condition: {
-			// TODO: check specifically scripts section of module config
-			files: [resolve(module.path, "module.yaml"), script.path],
-			expressions: {
-				db: !!module.config.db,
-			},
-		},
-		async build() {
-			await compileScriptHelper(project, module, script);
 		},
 	});
 }

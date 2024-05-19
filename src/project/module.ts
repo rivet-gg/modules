@@ -12,7 +12,7 @@ import { UserError } from "../error/mod.ts";
 
 export interface Module {
 	/**
-	 * The path to the module in the project's _gen directory.
+	 * The path to the cloned module in the project's .opengb directory.
 	 *
 	 * This path can be modified and will be discarded on the next codegen.
 	 */
@@ -143,38 +143,13 @@ export async function loadModule(
 	};
 }
 
-export function moduleGenPath(
+export function moduleHelperGen(
 	_project: Project,
 	module: Module,
 ): string {
 	return resolve(
 		module.path,
-		"_gen",
-		"mod.ts",
-	);
-}
-
-export function testGenPath(_project: Project, module: Module): string {
-	return resolve(
-		module.path,
-		"_gen",
-		"test.ts",
-	);
-}
-
-export function typeGenPath(_project: Project, module: Module): string {
-	return resolve(
-		module.path,
-		"_gen",
-		"dependencies.d.ts",
-	);
-}
-
-export function publicGenPath(_project: Project, module: Module): string {
-	return resolve(
-		module.path,
-		"_gen",
-		"public.ts",
+		"module.gen.ts",
 	);
 }
 

@@ -1,4 +1,4 @@
-import { ScriptContext } from "../_gen/scripts/call_self.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 export interface Request extends Record<string, never> {}
 
