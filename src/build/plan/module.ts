@@ -5,6 +5,7 @@ import { compileModuleHelper } from "../gen/mod.ts";
 import { compileModuleConfigSchema } from "../module_config_schema.ts";
 import { planScriptBuild } from "./script.ts";
 import { BuildOpts } from "../mod.ts";
+import { publicPath } from "../../project/module.ts";
 
 export async function planModuleBuild(
 	buildState: BuildState,
@@ -51,7 +52,7 @@ export async function planModuleBuild(
 		description: `module.gen.ts`,
 		module,
 		condition: {
-			files: [resolve(module.path, "module.yaml"), configPath(module)],
+			files: [resolve(module.path, "module.yaml"), configPath(module), publicPath(module)],
 			expressions: {
 				db: !!module.db,
 			},
