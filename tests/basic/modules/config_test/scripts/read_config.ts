@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../_gen/scripts/read_config.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 }

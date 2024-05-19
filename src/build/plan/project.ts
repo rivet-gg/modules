@@ -15,6 +15,9 @@ import { glob } from "../../project/deps.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateDev } from "../../migrate/dev.ts";
 import { generateMeta } from "../meta.ts";
+import { BUNDLE_PATH, genPath, genPrismaOutputBundle, genPrismaOutputFolder } from "../../project/project.ts";
+import { ENTRYPOINT_PATH } from "../../project/project.ts";
+import { MANIFEST_PATH } from "../../project/project.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -29,7 +32,7 @@ export async function planProjectBuild(
 			buildStep(buildState, {
 				id: `module.${module.name}.generate.prisma`,
 				name: "Generate",
-				description: `_gen/prisma/`,
+				description: `prisma_output/`,
 				module,
 				condition: {
 					files: [resolve(module.path, "db", "schema.prisma")],
@@ -49,7 +52,7 @@ export async function planProjectBuild(
 	buildStep(buildState, {
 		id: `project.generate.runtime`,
 		name: "Generate",
-		description: "_gen/runtime/",
+		description: "runtime/",
 		async build({ signal }) {
 			await inflateRuntimeArchive(project, signal);
 		},
@@ -65,7 +68,7 @@ export async function planProjectBuild(
 	buildStep(buildState, {
 		id: `project.generate.dependencies`,
 		name: "Generate",
-		description: "_gen/dependencies.d.ts",
+		description: "dependencies.d.ts",
 		condition: {
 			files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
 		},
@@ -89,7 +92,7 @@ export async function planProjectBuild(
 	buildStep(buildState, {
 		id: `project.generate.entrypoint`,
 		name: "Generate",
-		description: "_gen/entrypoint.ts",
+		description: "entrypoint.ts",
 		async build() {
 			await generateEntrypoint(project, opts);
 		},
@@ -98,7 +101,7 @@ export async function planProjectBuild(
 	buildStep(buildState, {
 		id: `project.generate.openapi`,
 		name: "Generate",
-		description: "_gen/openapi.json",
+		description: "openapi.json",
 		async build() {
 			await generateOpenApi(project);
 		},
@@ -107,7 +110,7 @@ export async function planProjectBuild(
 	buildStep(buildState, {
 		id: `project.generate.meta`,
 		name: "Generate",
-		description: "_gen/meta.json",
+		description: "meta.json",
 		async build() {
 			await generateMeta(project);
 		},
@@ -117,13 +120,12 @@ export async function planProjectBuild(
 		buildStep(buildState, {
 			id: `project.bundle`,
 			name: "Bundle",
-			description: "_gen/output.js",
+			description: "output.js",
 			async build({ signal }) {
-				const gen = resolve(project.path, "_gen");
-				const bundledFile = resolve(gen, "output.js");
+				const bundledFile = genPath(project, BUNDLE_PATH);
 
 				await esbuild.build({
-					entryPoints: [resolve(gen, "entrypoint.ts")],
+					entryPoints: [genPath(project, ENTRYPOINT_PATH)],
 					outfile: bundledFile,
 					format: "esm",
 					platform: "neutral",
@@ -164,9 +166,7 @@ export async function planProjectBuild(
 					let wasmPath;
 					for (const module of project.modules.values()) {
 						const moduleWasmPath = resolve(
-							module.path,
-							"_gen",
-							"prisma",
+							genPrismaOutputFolder(project, module),
 							"query_engine_bg.wasm",
 						);
 
@@ -200,7 +200,7 @@ export async function planProjectBuild(
 					signal.throwIfAborted();
 
 					await Deno.writeTextFile(
-						resolve(gen, "manifest.json"),
+						genPath(project, MANIFEST_PATH),
 						JSON.stringify(manifest),
 					);
 				}
@@ -215,10 +215,10 @@ export async function planProjectBuild(
 	buildStep(buildState, {
 		id: `project.check.entrypoint`,
 		name: "Check",
-		description: "_gen/entrypoint.ts",
+		description: "entrypoint.ts",
 		async build() {
 			const checkOutput = await new Deno.Command("deno", {
-				args: ["check", "--quiet", resolve(project.path, "_gen", "entrypoint.ts")],
+				args: ["check", "--quiet", genPath(project, ENTRYPOINT_PATH)],
 				signal,
 			}).output();
 			if (!checkOutput.success) {

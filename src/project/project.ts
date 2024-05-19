@@ -129,7 +129,7 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 
 interface FetchAndResolveModuleOutput {
 	/**
-	 * Path the module was copied to in _gen.
+	 * Path the module was copied to in .opengb.
 	 */
 	path: string;
 
@@ -192,13 +192,13 @@ export async function fetchAndResolveModule(
 		// local registry, we don't want conflicting generated files.
 		path = resolve(
 			projectRoot,
-			"_gen",
+			".opengb",
 			"external_modules",
 			moduleName,
 		);
 
-		// HACK: Copy _gen dir to temp dir to avoid overwriting it
-		const genPath = resolve(path, "_gen");
+		// HACK: Copy .opengb dir to temp dir to avoid overwriting it
+		const genPath = resolve(path, ".opengb");
 		let tempGenDir: string | undefined;
 		if (await exists(genPath, { isDirectory: true })) {
 			tempGenDir = await Deno.makeTempDir();
@@ -209,7 +209,7 @@ export async function fetchAndResolveModule(
 		await emptyDir(path);
 		await copy(sourcePath, path, { overwrite: true });
 
-		// HACK: Restore _gen dir
+		// HACK: Restore .opengb dir
 		if (tempGenDir) {
 			await emptyDir(genPath);
 			await copy(tempGenDir, genPath, { overwrite: true });
@@ -233,31 +233,73 @@ function moduleNameInRegistry(
 	return module.module ?? moduleName;
 }
 
-export function genRuntimePath(project: Project): string {
-	return resolve(project.path, "_gen", "runtime");
+export const GITIGNORE_PATH = ".gitignore";
+export const RUNTIME_CONFIG_PATH = "runtime_config.ts";
+export const ENTRYPOINT_PATH = "entrypoint.ts";
+export const BUNDLE_PATH = "output.js";
+export const MANIFEST_PATH = "manifest.json";
+export const META_PATH = "meta.json";
+export const OPEN_API_PATH = "openapi.json";
+export const CACHE_PATH = "cache.json";
+export const RUNTIME_PATH = "runtime";
+export const PRISMA_WORKSPACE_PATH = "prisma_workspace";
+export const SDK_PATH = "sdk";
+
+export function genPath(project: Project, ...pathSegments: string[]): string {
+	return resolve(project.path, ".opengb", ...pathSegments);
 }
 
 export function genRuntimeModPath(project: Project): string {
-	return resolve(project.path, "_gen", "runtime", "src", "runtime", "mod.ts");
+	return genPath(project, "runtime", "src", "runtime", "mod.ts");
 }
 
 export function genDependencyTypedefPath(project: Project): string {
-	return resolve(project.path, "_gen", "dependencies.d.ts");
+	return genPath(project, "dependencies.d.ts");
 }
 export function genDependencyCaseConversionMapPath(project: Project): string {
-	return resolve(project.path, "_gen", "dependencyCaseConversion.ts");
+	return genPath(project, "dependencyCaseConversion.ts");
 }
 
-export function genPublicUtilsFolder(project: Project): string {
-	return resolve(project.path, "_gen", "public");
+function genPublicUtilsFolder(project: Project): string {
+	return genPath(project, "public");
 }
 
-export function genModulePublicUtils(project: Project, module: Module): string {
-	return resolve(genPublicUtilsFolder(project), `mod_${module.name}.ts`);
+/**
+ * Inner file used to nest any imports related to this module.
+ * 
+ * This will be re-imported in other `genModulePublicExternal`.
+ */
+export function genModulePublicInternal(project: Project, module: Module): string {
+	return resolve(genPublicUtilsFolder(project), `internal_${module.name}.ts`);
 }
 
-export function genAllPublicUtils(project: Project): string {
-	return resolve(genPublicUtilsFolder(project), `all.ts`);
+/**
+ * File that gets imported as `Module` in the module.gen.ts.
+ * 
+ * This exports the dependencies (the `genModulePublicInternal` files) with
+ * their given module names.
+ */
+export function genModulePublicExternal(project: Project, module: Module): string {
+	return resolve(genPublicUtilsFolder(project), `external_${module.name}.ts`);
+}
+
+function genDependenciesFolder(project: Project): string {
+	return genPath(project, "dependencies");
+}
+
+export function genModuleDependenciesPath(project: Project, module: Module): string {
+	return resolve(genDependenciesFolder(project), `dependencies_${module.name}.ts`);
+}
+
+export function genPrismaOutputFolder(project: Project, module: Module): string {
+	return genPath(project, "prisma_output", module.name);
+}
+
+/**
+ * Final processed JavaScript bundle that can be used to interact with the database.
+ */
+export function genPrismaOutputBundle(project: Project, module: Module): string {
+	return resolve(genPrismaOutputFolder(project, module), "esm.js");
 }
 
 export interface ListSourceFileOpts {
@@ -281,7 +323,7 @@ export async function listSourceFiles(
 		// Skip non-local files
 		if (opts.localOnly && module.registry.isExternal) continue;
 
-		const moduleFiles = (await glob.glob("**/*.ts", { cwd: module.path, ignore: "_gen/**" }))
+		const moduleFiles = (await glob.glob("**/*.ts", { cwd: module.path, ignore: ".opengb/**" }))
 			.map((x) => resolve(module.path, x));
 		files.push(...moduleFiles);
 	}
@@ -289,7 +331,7 @@ export async function listSourceFiles(
 }
 
 export async function cleanProject(project: Project) {
-	await Deno.remove(resolve(project.path, "_gen"), { recursive: true });
+	await Deno.remove(genPath(project), { recursive: true });
 }
 
 export function getDefaultRegistry(project: Project): Registry | undefined {

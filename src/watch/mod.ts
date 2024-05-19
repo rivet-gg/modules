@@ -126,7 +126,7 @@ function shouldPathTriggerRebuild(path: string) {
 	const pathSplit = path.split(SEP);
 
 	// Ignore generated files
-	if (pathSplit.includes("_gen")) return false;
+	if (pathSplit.includes(".opengb") || pathSplit.includes("module.gen.ts")) return false;
 
 	// Prisma touches the db/migrations automatically, so we don't want to rebuild as a side effect
 	const dbIdx = pathSplit.indexOf("db");

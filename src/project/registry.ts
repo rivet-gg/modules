@@ -12,7 +12,7 @@ export interface Registry {
 	/**
 	 * If the source code for this registry does not belong to this project.
 	 *
-	 * If true, modules will be copied to the _gen dir and will be read-only.
+	 * If true, modules will be copied to the .opengb dir and will be read-only.
 	 *
 	 * If this is true, the module should be treated as read-only and should not
 	 * be tested, formatted, linted, and generate Prisma migrations.
@@ -99,7 +99,7 @@ async function resolveRegistryGit(
 ): Promise<ResolveRegistryOutput> {
 	const projectConfigPath = resolve(projectRoot, "backend.yaml");
 
-	const repoPath = resolve(projectRoot, "_gen", "git_registries", name);
+	const repoPath = resolve(projectRoot, ".opengb", "git_registries", name);
 	const gitRef = resolveGitRef(config);
 
 	// Clone repo if needed

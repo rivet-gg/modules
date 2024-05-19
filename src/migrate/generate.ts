@@ -9,6 +9,7 @@ import { forEachDatabase } from "./mod.ts";
 import { runPrismaCommand } from "./prisma.ts";
 import { Runtime } from "../build/mod.ts";
 import { indexOfNeedle } from "https://deno.land/std@0.140.0/bytes/mod.ts";
+import { genPrismaOutputFolder } from "../project/project.ts";
 
 export async function generateClient(
 	project: Project,
@@ -59,7 +60,7 @@ export async function generateClient(
 			);
 
 			// Copy to module
-			const dstDir = resolve(module.path, "_gen", "prisma");
+			const dstDir = genPrismaOutputFolder(project, module);
 			await emptyDir(dstDir);
 			await copy(clientDir, dstDir, { overwrite: true });
 		},

@@ -1,6 +1,6 @@
 import { exists, resolve, tjs } from "../deps.ts";
 import { UnreachableError } from "../error/mod.ts";
-import { Project } from "../project/project.ts";
+import { CACHE_PATH, Project, genPath } from "../project/project.ts";
 import { verbose } from "../term/status.ts";
 import { crypto, encodeHex } from "./deps.ts";
 
@@ -33,7 +33,7 @@ export interface CacheScriptSchema {
 }
 
 export async function loadCache(project: Project): Promise<Cache> {
-	const buildCachePath = resolve(project.path, "_gen", "cache.json");
+	const buildCachePath = genPath(project, CACHE_PATH);
 
 	// Read hashes from file
 	let persist: CachePersist;
@@ -64,7 +64,7 @@ export async function loadCache(project: Project): Promise<Cache> {
 }
 
 export async function writeCache(project: Project, cache: Cache) {
-	const buildCachePath = resolve(project.path, "_gen", "cache.json");
+	const buildCachePath = genPath(project, CACHE_PATH);
 
 	// Write cache
 	await Deno.writeTextFile(

@@ -1,6 +1,7 @@
 import { move } from "../deps.ts";
 import { CommandError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
+import { SDK_PATH, genPath } from "../project/project.ts";
 
 export enum SdkTarget {
 	TypeScript,
@@ -36,11 +37,11 @@ export async function generateSdk(
 			"openapitools/openapi-generator-cli:v7.2.0",
 			"generate",
 			"-i",
-			"/local/_gen/openapi.json",
+			"/local/.opengb/openapi.json",
 			"-g",
 			config.generator,
 			"-o",
-			`/local/_gen/sdk/`,
+			`/local/.opengb/sdk/`,
 			...Object.entries(config.options).map(([key, value]) => `--additional-properties=${key}=${value}`),
 		],
 	}).output();
@@ -48,5 +49,5 @@ export async function generateSdk(
 		throw new CommandError("Failed to generate OpenAPI SDK.", { commandOutput: buildOutput });
 	}
 
-	await move(`${project.path}/_gen/sdk`, output, { overwrite: true });
+	await move(genPath(project, SDK_PATH), output, { overwrite: true });
 }

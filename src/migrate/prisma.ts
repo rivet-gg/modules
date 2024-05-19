@@ -5,6 +5,7 @@ import { CommandError, UserError } from "../error/mod.ts";
 import { addShutdownHandler } from "../utils/shutdown_handler.ts";
 import { verbose } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "../utils/once.ts";
+import { PRISMA_WORKSPACE_PATH, genPath } from "../project/project.ts";
 
 export const NODE_IMAGE = "node:21-alpine";
 // Unique container name for this runtime so we can run multiple instances in
@@ -13,7 +14,7 @@ export const NODE_CONTAINER_NAME = `opengb-node-${Deno.pid}`;
 export const PRISMA_VERSION = "5.9.1";
 
 function getPrismaDir(project: Project) {
-	return resolve(project.path, "_gen", "prisma_workspace");
+	return genPath(project, PRISMA_WORKSPACE_PATH);
 }
 
 const PRISMA_WORKSPACE_ONCE = createOnce<void>();

@@ -32,7 +32,7 @@ export async function templateTest(
 	}
 
 	// Write default test
-	const testTs = `import { test, TestContext } from "../_gen/test.ts";
+	const testTs = `import { test, TestContext } from "../module.gen.ts";
 import { assert, assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 
