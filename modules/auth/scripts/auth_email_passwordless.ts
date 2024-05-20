@@ -19,16 +19,17 @@ export async function run(
 
 	if (!ctx.userConfig.email) throw new RuntimeError("provider_disabled");
 
+	// Check if the email is already associated with an identity
+	const existingIdentity = await ctx.db.emailPasswordless.findFirst({
+		where: { email: req.email },
+	});
+
 	// Fetch existing user if session token is provided
-	let userId: string | undefined;
+	let userId: string | undefined = existingIdentity?.userId;
+
 	if (req.userToken) {
 		const authRes = await ctx.modules.users.authenticateUser({
 			userToken: req.userToken,
-		});
-
-		// Check if the email is already associated with an identity
-		const existingIdentity = await ctx.db.emailPasswordless.findFirst({
-			where: { email: req.email },
 		});
 
 		if (existingIdentity && existingIdentity.userId !== authRes.userId) {
