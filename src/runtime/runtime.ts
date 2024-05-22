@@ -11,6 +11,7 @@ import { ActorDriver } from "./actor.ts";
 export interface Config {
 	runtime: BuildRuntime;
 	modules: Record<string, Module>;
+	cors?: CorsConfig;
 }
 
 /**
@@ -31,6 +32,10 @@ export interface Module {
 	};
 	dependencies: Set<string>;
 	userConfig: unknown;
+}
+
+export interface CorsConfig {
+	origins: Set<string>;
 }
 
 interface CreatePrismaOutput {
@@ -174,5 +179,70 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 				}
 			},
 		});
+	}
+
+	/**
+	 * Only runs on a CORS preflight request— returns a response with the
+	 * appropriate CORS headers & status.
+	 *
+	 * @param req The preflight OPTIONS request
+	 * @returns The full response to the preflight request
+	 */
+	public corsPreflight(req: Request): Response {
+		const origin = req.headers.get("Origin");
+		if (origin) {
+			const normalizedOrigin = new URL(origin).origin;
+			if (this.config.cors) {
+				if (this.config.cors.origins.has(normalizedOrigin)) {
+					return new Response(undefined, {
+						status: 204,
+						headers: {
+							...this.corsHeaders(req),
+							"Vary": "Origin",
+						},
+					});
+				}
+			}
+		}
+
+		// Origin is not allowed/no origin header on preflight
+		return new Response(
+			JSON.stringify({
+				"message": "CORS origin not allowed. See https://opengb.dev/docs/cors",
+			}),
+			{
+				status: 403,
+				headers: {
+					"Vary": "Origin",
+				},
+			},
+		);
+	}
+
+	public corsHeaders(req: Request): Record<string, string> {
+		const origin = req.headers.get("Origin");
+
+		// Don't set CORS headers if there's no origin (e.g. a server-side
+		// request)
+		if (!origin) return {};
+
+		// If the origin is allowed, return the appropriate headers.
+		// Otherwise, return a non-matching cors header (empty object).
+		if (this.config.cors?.origins.has(origin)) {
+			return {
+				"Access-Control-Allow-Origin": new URL(origin).origin,
+				"Access-Control-Allow-Methods": "*",
+				"Access-Control-Allow-Headers": "*",
+			};
+		} else {
+			return {};
+		}
+	}
+
+	public corsAllowed(req: Request): boolean {
+		const origin = req.headers.get("Origin");
+
+		if (!origin) return true;
+		return this.config.cors?.origins.has(origin) ?? false;
 	}
 }

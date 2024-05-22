@@ -6,6 +6,7 @@ import { InternalError } from "../error/mod.ts";
 export interface ProjectConfig extends Record<string, unknown> {
 	registries: { [name: string]: RegistryConfig };
 	modules: { [name: string]: ProjectModuleConfig };
+	runtime?: RuntimeConfig;
 }
 
 export type RegistryConfig = { local: RegistryConfigLocal } | { git: RegistryConfigGit };
@@ -50,6 +51,20 @@ export interface ProjectModuleConfig extends Record<string, unknown> {
 	 * The config that configures how this module is ran at runtime.
 	 */
 	config?: any;
+}
+
+export interface RuntimeConfig {
+	/**
+	 * If this is null, only requests made from the same origin will be accepted
+	 */
+	cors?: CorsConfig;
+}
+
+export interface CorsConfig {
+	/**
+	 * The origins that are allowed to make requests to the server.
+	 */
+	origins: string[];
 }
 
 // export async function readConfig(path: string): Promise<ProjectConfig> {
