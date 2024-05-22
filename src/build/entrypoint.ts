@@ -1,6 +1,15 @@
 import { dirname, resolve } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { ENTRYPOINT_PATH, GITIGNORE_PATH, RUNTIME_CONFIG_PATH, RUNTIME_PATH, genDependencyCaseConversionMapPath, genPath, genPrismaOutputBundle, genRuntimeModPath } from "../project/project.ts";
+import {
+	ENTRYPOINT_PATH,
+	genDependencyCaseConversionMapPath,
+	genPath,
+	genPrismaOutputBundle,
+	genRuntimeModPath,
+	GITIGNORE_PATH,
+	RUNTIME_CONFIG_PATH,
+	RUNTIME_PATH,
+} from "../project/project.ts";
 import { CommandError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime } from "./mod.ts";

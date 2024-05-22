@@ -15,7 +15,7 @@ import { glob } from "../../project/deps.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateDev } from "../../migrate/dev.ts";
 import { generateMeta } from "../meta.ts";
-import { BUNDLE_PATH, genPath, genPrismaOutputBundle, genPrismaOutputFolder } from "../../project/project.ts";
+import { BUNDLE_PATH, genPath, genPrismaOutputFolder } from "../../project/project.ts";
 import { ENTRYPOINT_PATH } from "../../project/project.ts";
 import { MANIFEST_PATH } from "../../project/project.ts";
 

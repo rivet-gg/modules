@@ -1,9 +1,9 @@
 import { ModuleConfig, ScriptConfig } from "../config/module.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
-import { resolve, tjs } from "../deps.ts";
+import { tjs } from "../deps.ts";
 import { hasUserConfigSchema, Project } from "../project/mod.ts";
-import { META_PATH,  genPath } from "../project/project.ts";
+import { genPath, META_PATH } from "../project/project.ts";
 import { camelify, pascalify } from "../types/case_conversions.ts";
 
 export interface ProjectMeta {
