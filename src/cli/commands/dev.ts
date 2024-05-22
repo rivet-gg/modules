@@ -1,4 +1,3 @@
-import { resolve } from "../../deps.ts";
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";

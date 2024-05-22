@@ -238,6 +238,7 @@ function moduleNameInRegistry(
 export const GITIGNORE_PATH = ".gitignore";
 export const RUNTIME_CONFIG_PATH = "runtime_config.ts";
 export const ENTRYPOINT_PATH = "entrypoint.ts";
+export const ACTOR_PATH = "actor.ts";
 export const BUNDLE_PATH = "output.js";
 export const MANIFEST_PATH = "manifest.json";
 export const META_PATH = "meta.json";
@@ -262,13 +263,20 @@ export function genDependencyCaseConversionMapPath(project: Project): string {
 	return genPath(project, "dependencyCaseConversion.ts");
 }
 
+export function genActorTypedefPath(project: Project): string {
+	return genPath(project, "actors.d.ts");
+}
+export function genActorCaseConversionMapPath(project: Project): string {
+	return genPath(project, "actorCaseConversion.ts");
+}
+
 function genPublicUtilsFolder(project: Project): string {
 	return genPath(project, "public");
 }
 
 /**
  * Inner file used to nest any imports related to this module.
- * 
+ *
  * This will be re-imported in other `genModulePublicExternal`.
  */
 export function genModulePublicInternal(project: Project, module: Module): string {
@@ -277,7 +285,7 @@ export function genModulePublicInternal(project: Project, module: Module): strin
 
 /**
  * File that gets imported as `Module` in the module.gen.ts.
- * 
+ *
  * This exports the dependencies (the `genModulePublicInternal` files) with
  * their given module names.
  */
@@ -302,6 +310,10 @@ export function genPrismaOutputFolder(project: Project, module: Module): string 
  */
 export function genPrismaOutputBundle(project: Project, module: Module): string {
 	return resolve(genPrismaOutputFolder(project, module), "esm.js");
+}
+
+export function genActorPath(project: Project): string {
+	return genPath(project, "actor.ts");
 }
 
 export interface ListSourceFileOpts {
