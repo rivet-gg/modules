@@ -2,6 +2,13 @@ import { Runtime } from "./runtime.ts";
 
 const MODULE_CALL = /^\/modules\/(?<module>\w+)\/scripts\/(?<script>\w+)\/call\/?$/;
 
+// TODO: Maybe move this to the backend config
+const CORS_HEADERS = {
+	"Access-Control-Allow-Origin": "*",
+	"Access-Control-Allow-Methods": "*",
+	"Access-Control-Allow-Headers": "*",
+};
+
 export function serverHandler<DependenciesSnakeT, DependenciesCamelT>(
 	runtime: Runtime<DependenciesSnakeT, DependenciesCamelT>,
 ): Deno.ServeHandler {
@@ -41,7 +48,7 @@ export function serverHandler<DependenciesSnakeT, DependenciesCamelT>(
 						status: 400,
 						headers: {
 							"Content-Type": "application/json",
-							"Access-Control-Allow-Origin": "*",
+							...CORS_HEADERS,
 						},
 					});
 				}
@@ -58,7 +65,7 @@ export function serverHandler<DependenciesSnakeT, DependenciesCamelT>(
 						return new Response(undefined, {
 							status: 204,
 							headers: {
-								"Access-Control-Allow-Origin": "*",
+								...CORS_HEADERS,
 							},
 						});
 					}
@@ -67,7 +74,7 @@ export function serverHandler<DependenciesSnakeT, DependenciesCamelT>(
 						status: 200,
 						headers: {
 							"Content-Type": "application/json",
-							"Access-Control-Allow-Origin": "*",
+							...CORS_HEADERS,
 						},
 					});
 				} catch (e) {
@@ -80,11 +87,19 @@ export function serverHandler<DependenciesSnakeT, DependenciesCamelT>(
 						status: 500,
 						headers: {
 							"Content-Type": "application/json",
-							"Access-Control-Allow-Origin": "*",
+							...CORS_HEADERS,
 						},
 					});
 				}
 			}
+		} else if (req.method == "OPTIONS") {
+			// Preflight response
+			return new Response(undefined, {
+				status: 204,
+				headers: {
+					...CORS_HEADERS,
+				},
+			});
 		}
 
 		// Not found response
@@ -95,6 +110,7 @@ export function serverHandler<DependenciesSnakeT, DependenciesCamelT>(
 			{
 				headers: {
 					"Content-Type": "application/json",
+					...CORS_HEADERS,
 				},
 				status: 404,
 			},
