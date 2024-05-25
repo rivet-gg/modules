@@ -2,7 +2,7 @@ import { addFormats, Ajv } from "./deps.ts";
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
 import { Postgres, PrismaClientDummy } from "./postgres.ts";
-import { serverHandler } from "./server.ts";
+import { handleRequest } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
 import { RegistryCallMap } from "./proxy.ts";
@@ -75,7 +75,10 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT> {
 	public async serve() {
 		const port = parseInt(Deno.env.get("PORT") ?? "8080");
 		console.log(`Serving on port ${port}`);
-		await Deno.serve({ port }, serverHandler(this)).finished;
+		await Deno.serve(
+			{ port },
+			(req, info) => handleRequest(this, req, { remoteAddress: info.remoteAddr.hostname }),
+		).finished;
 	}
 
 	/**

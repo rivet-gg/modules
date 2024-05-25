@@ -83,29 +83,24 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import config from "./runtime_config.ts";
-			import { serverHandler } from "${serverTsPath}";
+			import { handleRequest } from "${serverTsPath}";
 
 			const RUNTIME = new Runtime<DependenciesSnake, DependenciesCamel>(config, dependencyCaseConversionMap);
-			const SERVER_HANDLER = serverHandler(RUNTIME);
 
 			export default {
-				async fetch(req: IncomingRequestCf, env: { [k: string]: unknown; }) {
+				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
 					${denoEnvPolyfill()}
 
-					const ip = req.headers.get("CF-Connecting-IP") ?? req.headers.get("X-Real-Ip");
-					if(!ip) {
+					const ip = req.headers.get("CF-Connecting-IP");
+					if (!ip) {
 						throw new RuntimeError(
 							"CANNOT_READ_IP",
 							{ cause: "Could not get IP of incoming request" },
 						);
 					}
 
-					return await SERVER_HANDLER(req, {
-						remoteAddr: {
-							transport: "" as any,
-							hostname: ip,
-							port: 0,
-						}
+					return await handleRequest(RUNTIME, req, {
+						remoteAddress: ip,
 					});
 				}
 			}
