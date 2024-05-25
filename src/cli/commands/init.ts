@@ -7,18 +7,12 @@ export const initCommand = new Command<GlobalOpts>()
 	.arguments("[dir]")
 	.action(
 		async (_opts, dir?: string) => {
-			// Create a new project in the specified directory
-			const createdFiles = await templateProject(dir || ".");
+			await templateProject(dir || ".");
 			
-			// If the project creation failed, log an error message
-			if (createdFiles === undefined) {
-				console.log("Project creation failed. Please try again.");
-				return;
-			}
-			
-			// Log the files that were created
-			console.log("Project created successfully!");
-			console.log("Created config file at backend.yaml");
-			console.log("Get started at https://opengb.dev/introduction");
+			console.log("Welcome to Open Game Backend");
+			console.log("");
+			console.log("Created backend.yaml & modules");
+			console.log("");
+			console.log("Get started at https://opengb.dev/concepts/quickstart");
 		},
 	);
