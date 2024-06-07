@@ -1,4 +1,5 @@
 // This file is only imported when the runtime is `Cloudflare`. See `actor.ts` in the same directory.
+// TODO: This is hardcoded in src/build/entrypoint.ts
 
 // This import comes directly from the workers runtime
 import { DurableObject } from "cloudflare:workers";
