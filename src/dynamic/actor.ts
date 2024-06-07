@@ -1,4 +1,5 @@
 // This file is only imported when the runtime is `Deno`. See `actor_cf.ts` in the same directory.
+// TODO: This is hardcoded in src/build/entrypoint.ts
 
 const ENCODER = new TextEncoder();
 const ACTOR_STORAGE: Map<string, {

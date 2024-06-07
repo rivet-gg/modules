@@ -7,10 +7,227 @@ import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
 import { dedent } from "./deps.ts";
 
 // Read source files as strings
-const ACTOR_SOURCE = await Deno.readTextFile(resolve(dirname(fromFileUrl(import.meta.url)), "../dynamic/actor.ts"));
-const ACTOR_CF_SOURCE = await Deno.readTextFile(
-	resolve(dirname(fromFileUrl(import.meta.url)), "../dynamic/actor_cf.ts"),
-);
+// const ACTOR_SOURCE = await Deno.readTextFile(resolve(dirname(fromFileUrl(import.meta.url)), "../dynamic/actor.ts"));
+// const ACTOR_CF_SOURCE = await Deno.readTextFile(
+// 	resolve(dirname(fromFileUrl(import.meta.url)), "../dynamic/actor_cf.ts"),
+// );
+
+// HACK(OGBE-138): Disable actor source until dynamic generation works
+const ACTOR_SOURCE = `
+// This file is only imported when the runtime is \`Deno\`. See \`actor_cf.ts\` in the same directory.
+
+const ENCODER = new TextEncoder();
+const ACTOR_STORAGE: Map<string, {
+	actor: ActorBase;
+	storage: Map<string, any>;
+}> = new Map();
+
+export const ACTOR_DRIVER = {
+	async getId(moduleName: string, actorName: string, label: string) {
+		const storageId = config.modules[moduleName].actors[actorName].storageId;
+		const name = \`%%\${storageId}%%\${label}\`;
+
+		return await hash(name);
+	},
+	async getActor(moduleName: string, actorName: string, label: string) {
+		const id = await ACTOR_DRIVER.getId(moduleName, actorName, label);
+		const entry = ACTOR_STORAGE.get(id);
+
+		if (entry == undefined) throw new Error("actor not initialized");
+
+		return entry.actor;
+	},
+	async createActor(moduleName: string, actorName: string, label: string, input: any) {
+		const id = await ACTOR_DRIVER.getId(moduleName, actorName, label);
+
+		// Create actor instance
+		const actorClass = config.modules[moduleName].actors[actorName].actor;
+		const actor = new actorClass(new StorageProxy(id), actorClass.buildState(input));
+
+		ACTOR_STORAGE.set(id, {
+			actor,
+			storage: new Map(),
+		});
+	},
+	async callActor(stub: ActorBase, fn: string, ...args: any[]) {
+		let res = (stub as any)[fn](...args);
+		if (res instanceof Promise) res = await res;
+
+		return res;
+	},
+	async actorExists(moduleName: string, actorName: string, label: string) {
+		const id = await ACTOR_DRIVER.getId(moduleName, actorName, label);
+
+		return ACTOR_STORAGE.has(id);
+	},
+};
+
+/**
+* Actor implementation that user-made actors will extend.
+* Not meant to be instantiated.
+*/
+export abstract class ActorBase {
+	static buildState(_input: unknown): any {
+		throw Error("unimplemented");
+	}
+
+	constructor(public storage: StorageProxy, public state: unknown) {}
+}
+
+// Emulates the storage from cloudflare durable objects
+export class StorageProxy {
+	constructor(private id: string) {}
+
+	async get(keys: string | string[]): Promise<Map<string, any> | any> {
+		if (keys instanceof Array) {
+			return new Map(keys.map((key) => [key, ACTOR_STORAGE.get(this.id)!.storage.get(key)]));
+		} else {
+			return ACTOR_STORAGE.get(this.id)!.storage.get(keys);
+		}
+	}
+
+	async put(key: string, value: any) {
+		ACTOR_STORAGE.get(this.id)!.storage.set(key, value);
+	}
+
+	async delete(keys: string | string[]) {
+		const handle = ACTOR_STORAGE.get(this.id)!.storage;
+
+		if (keys instanceof Array) {
+			return keys.map((key) => {
+				const exists = handle.has(key);
+
+				if (exists) handle.delete(key);
+
+				return exists;
+			}).reduce((s, a) => s + Number(a), 0);
+		} else {
+			const exists = handle.has(keys);
+
+			if (exists) handle.delete(keys);
+
+			return exists;
+		}
+	}
+}
+
+async function hash(input: string) {
+	const data = ENCODER.encode(input);
+	const hash = await crypto.subtle.digest("SHA-256", data);
+	const hashString = Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+	return hashString;
+}
+`
+const ACTOR_CF_SOURCE = `
+// This file is only imported when the runtime is \`Cloudflare\`. See \`actor.ts\` in the same directory.
+
+// This import comes directly from the workers runtime
+import { DurableObject } from "cloudflare:workers";
+
+export const ACTOR_DRIVER = {
+	async getId(moduleName: string, actorName: string, label: string) {
+		const storageId = config.modules[moduleName].actors[actorName].storageId;
+		const name = \`%%\${storageId}%%\${label}\`;
+		const doHandle = Deno.env.get("__GLOBAL_DURABLE_OBJECT") as any as DurableObjectHandle;
+
+		// throw new Error(\`\${name}\n\${doHandle.idFromName(name)}\`);
+
+		return doHandle.idFromName(name);
+	},
+	async getActor(moduleName: string, actorName: string, label: string) {
+		const id = await ACTOR_DRIVER.getId(moduleName, actorName, label);
+		const doHandle = Deno.env.get("__GLOBAL_DURABLE_OBJECT") as any as DurableObjectHandle;
+		const doStub = doHandle.get(id) as __GlobalDurableObject;
+
+		return doStub;
+	},
+	async createActor(moduleName: string, actorName: string, label: string, input: any) {
+		const stub = await ACTOR_DRIVER.getActor(moduleName, actorName, label);
+
+		await stub.__init(moduleName, actorName, input);
+
+		return stub;
+	},
+	async callActor(stub: __GlobalDurableObject, fn: string, ...args: any[]) {
+		return await stub.__call(fn, args);
+	},
+	async actorExists(moduleName: string, actorName: string, label: string) {
+		const stub = await ACTOR_DRIVER.getActor(moduleName, actorName, label);
+
+		return await stub.__initialized();
+	},
+};
+
+export class __GlobalDurableObject extends DurableObject {
+	async __init(moduleName: string, actorName: string, input: any) {
+		// Store module name and actor name
+		await this.ctx.storage.put("__path", [moduleName, actorName]);
+
+		// Build initial state
+		const state = config.modules[moduleName].actors[actorName].actor.buildState(input);
+		await this.ctx.storage.put("state", state);
+	}
+
+	async __initialized() {
+		return await this.ctx.storage.get("__path") != undefined;
+	}
+
+	async __call(fn: string, args: any[]): Promise<any> {
+		const storageRes = await this.ctx.storage.get(["state", "__path"]);
+		const state = storageRes.get("state");
+		if (state == undefined) throw Error("actor not initiated");
+
+		// Create actor instance
+		const [moduleName, actorName] = storageRes.get("__path");
+
+		const actorClass = config.modules[moduleName].actors[actorName].actor;
+		const actor = new actorClass(this.ctx.storage, state);
+
+		// Run actor function
+		let res = (actor as any)[fn](...args);
+		if (res instanceof Promise) res = await res;
+
+		// Update state
+		await this.ctx.storage.put("state", actor!.state);
+
+		return res;
+	}
+}
+
+/**
+* Actor implementation that user-made actors will extend.
+* Not meant to be instantiated.
+*/
+export abstract class ActorBase {
+	static buildState(_input: unknown): any {
+		throw Error("buildState unimplemented");
+	}
+
+	private constructor(public storage: DurableObjectStorage, public state: unknown) {}
+}
+
+// TODO: Replace with imported types, maybe from denoflare
+declare type DurableObjectCtx = {
+	storage: DurableObjectStorage;
+};
+declare class DurableObjectStorage {
+	get(keys: string | string[]): Promise<Map<string, any> | any>;
+	put(key: string, value: any): Promise<void>;
+	delete(keys: string | string[]): Promise<number | boolean>;
+}
+declare class DurableObjectHandle {
+	idFromName(name: string): DurableObjectId;
+	get(id: DurableObjectId): DurableObject;
+}
+declare type DurableObjectId = any;
+declare type DurableObjectEnv = any;
+
+declare class DurableObject {
+	protected ctx: DurableObjectCtx;
+	protected env: DurableObjectEnv;
+}
+`;
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
