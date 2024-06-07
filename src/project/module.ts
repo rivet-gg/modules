@@ -21,12 +21,12 @@ export interface Module {
 	name: string;
 
 	/**
-	 * Config from the project.yaml file.
+	 * Config from the backend.json file.
 	 */
 	projectModuleConfig: ProjectModuleConfig;
 
 	/**
-	 * Config from the module.yaml file.
+	 * Config from the module.json file.
 	 */
 	config: ModuleConfig;
 
@@ -36,7 +36,7 @@ export interface Module {
 	registry: Registry;
 
 	/**
-	 * The config passed to this module in the project.yaml file.
+	 * The config passed to this module in the backend.json file.
 	 */
 	userConfig: unknown;
 
@@ -91,7 +91,7 @@ export async function loadModule(
 			throw new UserError(
 				`Script not found at ${relative(Deno.cwd(), scriptPath)}.`,
 				{
-					suggest: "Check the scripts in the module.yaml are configured correctly.",
+					suggest: "Check the scripts in the module.json are configured correctly.",
 					path: moduleConfigPath(modulePath),
 				},
 			);
@@ -112,8 +112,8 @@ export async function loadModule(
 	if (expectedScripts.size > 0) {
 		const scriptList = Array.from(expectedScripts).map((x) => `- ${resolve(scriptsPath, x)}\n`);
 		throw new UserError(
-			`Found extra scripts not registered in module.yaml.`,
-			{ details: scriptList.join(""), suggest: "Add these scripts to the module.yaml file.", path: scriptsPath },
+			`Found extra scripts not registered in module.json.`,
+			{ details: scriptList.join(""), suggest: "Add these scripts to the module.json file.", path: scriptsPath },
 		);
 	}
 
@@ -137,7 +137,7 @@ export async function loadModule(
 			throw new UserError(
 				`actor not found at ${relative(Deno.cwd(), actorPath)}.`,
 				{
-					suggest: "Check the actors in the module.yaml are configured correctly.",
+					suggest: "Check the actors in the module.json are configured correctly.",
 					path: moduleConfigPath(modulePath),
 				},
 			);
@@ -158,8 +158,8 @@ export async function loadModule(
 	if (expectedActors.size > 0) {
 		const actorList = Array.from(expectedActors).map((x) => `- ${resolve(actorsPath, x)}\n`);
 		throw new UserError(
-			`Found extra actors not registered in module.yaml.`,
-			{ details: actorList.join(""), suggest: "Add these actors to the module.yaml file.", path: actorsPath },
+			`Found extra actors not registered in module.json.`,
+			{ details: actorList.join(""), suggest: "Add these actors to the module.json file.", path: actorsPath },
 		);
 	}
 

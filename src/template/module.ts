@@ -1,12 +1,12 @@
 import { UserError } from "../error/mod.ts";
 import { ModuleConfig } from "../config/module.ts";
-import { resolve, stringify } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { getLocalRegistry, Project } from "../project/mod.ts";
 import { dedent } from "./deps.ts";
 
 export async function templateModule(project: Project, moduleName: string) {
 	const localRegistry = getLocalRegistry(project);
-	if (!localRegistry) throw new UserError("No \`local\` registry found in backend.yaml.");
+	if (!localRegistry) throw new UserError("No \`local\` registry found in backend.json.");
 	const localModulesPath = localRegistry.path;
 
 	if (project.modules.has(moduleName)) {
@@ -26,8 +26,8 @@ export async function templateModule(project: Project, moduleName: string) {
 		errors: {},
 	};
 	await Deno.writeTextFile(
-		resolve(modulePath, "module.yaml"),
-		stringify(defaultModule),
+		resolve(modulePath, "module.json"),
+		JSON.stringify(defaultModule, null, '\t'),
 	);
 
 	// Write default migration
@@ -45,13 +45,13 @@ export async function templateModule(project: Project, moduleName: string) {
 		defaultSchema,
 	);
 
-	// Add to backend.yaml
+	// Add to backend.json
 	const newConfig = structuredClone(project.config);
 	newConfig.modules[moduleName] = {
 		registry: "local",
 	};
 	await Deno.writeTextFile(
-		resolve(project.path, "backend.yaml"),
-		stringify(newConfig),
+		resolve(project.path, "backend.json"),
+		JSON.stringify(newConfig, null, '\t'),
 	);
 }

@@ -27,17 +27,22 @@ You can install the module from the CLI by running the following command:
 opengb module add my_module
 ```
 
-This will update your `backend.yaml` file accordingly.
+This will update your `backend.json` file accordingly.
 
-### `backend.yaml`
+### `backend.json`
 
-You can also manually add the module to your `backend.yaml` file manually, like this:
+You can also manually add the module to your `backend.json` file manually, like this:
 
-```yaml
-modules:
-  my_module:
-    config:
-      # Your config here
+```json
+{
+	"modules": {
+		"my_module": {
+			"config": {
+        // Your config here
+      }
+		}
+	}
+}
 ```
 
 ## Registries

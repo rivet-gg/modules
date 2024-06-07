@@ -11,7 +11,7 @@ export const initCommand = new Command<GlobalOpts>()
 			
 			console.log("Welcome to Open Game Backend");
 			console.log("");
-			console.log("Created backend.yaml & modules");
+			console.log("Created backend.json & modules");
 			console.log("");
 			console.log("Get started at https://opengb.dev/concepts/quickstart");
 		},

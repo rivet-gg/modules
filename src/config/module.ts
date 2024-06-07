@@ -1,4 +1,4 @@
-import { parse, resolve } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/module_schema.json" with { type: "json" };
 import { InternalError, UserError } from "../error/mod.ts";
@@ -94,9 +94,9 @@ const moduleConfigAjv = new Ajv.default({
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	// Read config
 	const configRaw = await Deno.readTextFile(
-		resolve(modulePath, "module.yaml"),
+		resolve(modulePath, "module.json"),
 	);
-	const config = parse(configRaw) as ModuleConfig;
+	const config = JSON.parse(configRaw) as ModuleConfig;
 
 	// Validate config
 	const moduleConfigSchema = moduleConfigAjv.getSchema("#");
@@ -127,5 +127,5 @@ export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 }
 
 export function configPath(modulePath: string): string {
-	return resolve(modulePath, "module.yaml");
+	return resolve(modulePath, "module.json");
 }

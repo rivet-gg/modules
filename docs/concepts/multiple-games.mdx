@@ -10,16 +10,21 @@ It's common for studios to have multiple games and want to share backend data ac
 
 If we have a `leaderboard` module and we want to run multiple instances of it for the games `foo` and `bar`, we can use module aliases to create multiple instances of the module.
 
-```yaml
-modules:
-  # Users module is shared across all games
-  users: {}
-  # Leaderboard for game `foo`
-  foo_leaderboard:
-    module: leaderboard
-  # Leaderboard for game `bar`
-  bar_leaderboard:
-    module: leaderboard
+```json
+{
+	"modules": {
+    // Users module is shared across all games
+		"users": {},
+    // Leaderboard for game `food`
+		"foo_leaderboard": {
+			"module": "leaderboard"
+		},
+    // Leaderboard for game `bar`
+		"bar_leaderboard": {
+			"module": "leaderboard"
+		}
+	}
+}
 ```
 
 This will create an isolated database for each game's leaderboard.

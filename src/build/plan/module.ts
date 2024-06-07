@@ -52,7 +52,7 @@ export async function planModuleBuild(
 		description: `module.gen.ts`,
 		module,
 		condition: {
-			files: [resolve(module.path, "module.yaml"), configPath(module), publicPath(module)],
+			files: [resolve(module.path, "module.json"), configPath(module), publicPath(module)],
 			expressions: {
 				db: !!module.db,
 			},

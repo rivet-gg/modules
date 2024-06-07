@@ -110,7 +110,7 @@ async function wrapWatchFn(
 
 function getWatchPaths(project: Project) {
 	const paths: string[] = [
-		resolve(project.path, "backend.yaml"),
+		resolve(project.path, "backend.json"),
 	];
 	for (const module of project.modules.values()) {
 		if (

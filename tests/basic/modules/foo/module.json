@@ -1,0 +1,28 @@
+{
+	"status": "preview",
+	"authors": [
+		"NathanFlurry"
+	],
+	"scripts": {
+		"ping": {
+			"public": true
+		},
+		"create_entry": {
+			"public": true
+		},
+		"call_self": {
+			"public": true
+		},
+		"actor": {
+			"public": true
+		}
+	},
+	"actors": {
+		"ponger": {
+			"storage_id": "foobar"
+		}
+	},
+	"errors": {
+		"db_error": {}
+	}
+}

@@ -12,13 +12,11 @@ sidebarTitle: Overview
 
 - [rivet-gg](https://github.com/rivet-gg)
 - [NathanFlurry](https://github.com/NathanFlurry)
-- [Blckbrry-Pi](https://github.com/Blckbrry-Pi)
 
 **Dependencies**
 
 - [Rate Limit](/modules/rate_limit/overview)
 - [Tokens](/modules/tokens/overview)
-- [Uploads](/modules/uploads/overview)
 
 ## Installation
 
@@ -32,39 +30,27 @@ opengb module add users
 
 </Tab>
 
-<Tab title="backend.yaml">
+<Tab title="backend.json">
 
-Add the following to your `backend.yaml`:
+Add the following to your `backend.json`:
 
-```yaml backend.yaml
-modules:
-  users:
-    config:
-      # Your config here. See below for more details.
+```json backend.json
+"modules": {
+	"users": {}
+}
 
 ```
 </Tab>
 
 </Tabs>
 
-## Config
-
-		
-```typescript
-export interface Config {
-  maxProfilePictureSize: string;
-  allowedMimes?: string[];
-}
-```
 
 
 ## Scripts
 
-<CardGroup><Card title="Create User" href="/modules/users/scripts/create_user"></Card><Card title="Create User Token" href="/modules/users/scripts/create_user_token">Create a token for a user to authenticate future requests.</Card><Card title="Get User" href="/modules/users/scripts/get_user"></Card><Card title="Set Profile Picture" href="/modules/users/scripts/set_profile_picture">Set the profile picture for a user.</Card><Card title="Start Profile Picture Upload" href="/modules/users/scripts/prepare_profile_picture_upload">Allow the user to begin uploading a profile picture.</Card><Card title="Validate User Token" href="/modules/users/scripts/authenticate_user">Validate a user token. Throws an error if the token is invalid.</Card></CardGroup>
+<CardGroup><Card title="Create User" href="/modules/users/scripts/create_user"></Card><Card title="Create User Token" href="/modules/users/scripts/create_user_token">Create a token for a user to authenticate future requests.</Card><Card title="Get User" href="/modules/users/scripts/get_user"></Card><Card title="Validate User Token" href="/modules/users/scripts/authenticate_user">Validate a user token. Throws an error if the token is invalid.</Card></CardGroup>
 
 ## Errors
 
-- **File Too Large** (`file_too_large`) The file is larger than the configured maximum size for a profile picture
-- **Invalid MIME Type** (`invalid_mime_type`) The MIME type for the supposed PFP isn't an image
 - **Token Not User Token** (`token_not_user_token`) 
 - **Unknown Identity Type** (`unknown_identity_type`) 

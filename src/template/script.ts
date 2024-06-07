@@ -1,5 +1,5 @@
 import { UserError } from "../error/mod.ts";
-import { resolve, stringify } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { getLocalRegistry, Project } from "../project/mod.ts";
 
 export async function templateScript(
@@ -7,7 +7,7 @@ export async function templateScript(
 	moduleName: string,
 	scriptName: string,
 ) {
-	if (!getLocalRegistry(project)) throw new UserError("No \`local\` registry found in backend.yaml.");
+	if (!getLocalRegistry(project)) throw new UserError("No \`local\` registry found in backend.json.");
 
 	const mod = project.modules.get(moduleName);
 	if (!mod) throw new UserError(`Module \`${moduleName}\` does not exist.`);
@@ -34,9 +34,9 @@ export async function templateScript(
 	// Add script to config
 	const newConfig = structuredClone(mod.config);
 	newConfig.scripts[scriptName] = {};
-	const newConfigRaw = stringify(newConfig);
+	const newConfigRaw = JSON.stringify(newConfig, null, '\t');
 	await Deno.writeTextFile(
-		resolve(mod.path, "module.yaml"),
+		resolve(mod.path, "module.json"),
 		newConfigRaw,
 	);
 

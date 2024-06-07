@@ -71,7 +71,7 @@ export async function planProjectBuild(
 		name: "Generate",
 		description: "dependencies.d.ts",
 		condition: {
-			files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
+			files: [...project.modules.values()].map((m) => resolve(m.path, "module.json")),
 		},
 		async build() {
 			await compileTypeHelpers(project);
@@ -83,7 +83,7 @@ export async function planProjectBuild(
 		name: "Generate",
 		description: "actors.d.ts",
 		condition: {
-			files: [...project.modules.values()].map((m) => resolve(m.path, "module.yaml")),
+			files: [...project.modules.values()].map((m) => resolve(m.path, "module.json")),
 		},
 		async build() {
 			await compileActorTypeHelpers(project);

@@ -13,15 +13,22 @@ description: Send emails using SendGrid.
     </Step>
     <Step title="Configure API key">
 
-        ```yaml backend.yaml
-        # ...
-        modules:
-          email:
-            config:
-              provider:
-                sendgrid:
-                  apiKeyVariable: SENDGRID_API_KEY
-          # ...
+        ```json backend.json
+        {
+          "modules": {
+            "email": {
+              "config": {
+                "provider": {
+                  "sendgrid": {
+                    "apiKeyVariable": "SENDGRID_API_KEY"
+                  }
+                }
+              }
+            }
+            // ...
+          }
+          // ...
+        }
         ```
 
     </Step>

@@ -29,9 +29,9 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  user: OmitUserProfilePictureUrl;
+  user: User;
 }
-export interface OmitUserProfilePictureUrl {
+export interface User {
   id: string;
   username: string;
   createdAt: string;

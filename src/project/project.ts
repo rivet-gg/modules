@@ -168,7 +168,7 @@ export async function fetchAndResolveModule(
 	// Resolve module path
 	const pathModuleName = moduleNameInRegistry(moduleName, module);
 	const sourcePath = resolve(registry.path, pathModuleName);
-	if (!await exists(resolve(sourcePath, "module.yaml"))) {
+	if (!await exists(resolve(sourcePath, "module.json"))) {
 		if (pathModuleName != moduleName) {
 			// Has alias
 			throw new UserError(

@@ -1,6 +1,6 @@
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import { resolve, stringify } from "../../deps.ts";
+import { resolve } from "../../deps.ts";
 import { fetchAndResolveModule } from "../../project/mod.ts";
 import { ProjectModuleConfig } from "../../config/project.ts";
 import { UserError } from "../../error/mod.ts";
@@ -28,12 +28,12 @@ moduleCommand
 			if (opts.registry) moduleConfig.registry = opts.registry;
 			await fetchAndResolveModule(project.path, project.registries, moduleName, moduleConfig);
 
-			// Add to backend.yaml
+			// Add to backend.json
 			const newConfig = structuredClone(project.config);
 			newConfig.modules[moduleName] = moduleConfig;
 			await Deno.writeTextFile(
-				resolve(project.path, "backend.yaml"),
-				stringify(newConfig),
+				resolve(project.path, "backend.json"),
+				JSON.stringify(newConfig, null, '\t'),
 			);
 		},
 	);
