@@ -1,0 +1,112 @@
+---
+title: "Quickstart"
+---
+
+Before getting started, [read about how OpenGB works](/introduction#how-opengb-works).
+
+<Steps>
+    <Step title="Install Open Game Backend">
+        <Tabs>
+            {/* <Tab title="With Rivet CLI">
+                **Install Prerequisites**
+
+                - [Rivet CLI](https://github.com/rivet-gg/cli?tab=readme-ov-file#installation)
+                - [Docker](https://docs.docker.com/get-docker/)
+            </Tab>
+            <Tab title="With Docker">
+                
+            </Tab> */}
+            <Tab title="Install From GitHub (recommended)">
+                **Install Prerequisites**
+
+                - [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+                - [Docker](https://docs.docker.com/get-docker/)
+                - Git
+
+                **Install Open Game Backend**
+
+                ```
+                deno install --global --name opengb --force --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys https://raw.githubusercontent.com/rivet-gg/opengb/main/src/cli/main.ts
+                ```
+            </Tab>
+            <Tab title="Build From Source">
+                **Install Prerequisites**
+
+                - [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+                - [Docker](https://docs.docker.com/get-docker/)
+                - Git
+
+                **Clone & Build Open Game Backend**
+
+                ```
+                git clone https://github.com/rivet-gg/opengb.git
+                cd opengb
+                deno task cli:install
+                ```
+            </Tab>
+        </Tabs>
+    </Step>
+    <Step title="Create project">
+        Create a new project by running the following command:
+
+        ```sh
+        opengb init
+        ```
+
+        <Info>
+            This creates a `backend.yaml` config file. See the project configuration [here](/concepts/project-config).
+        </Info>
+    </Step>
+    <Step title="Add modules">
+        The default project comes with a set of modules preinstalled. For example, install the `friends` module by running the following command:
+
+        ```sh
+        opengb module add friends
+        ```
+
+        This adds the `friends` module to the `backend.yaml` file. You can also install modules manually by adding them to this config.
+
+        <Info>
+            See a list of available modules [here](/modules).
+        </Info>
+    </Step>
+    <Step title="Run development server">
+        The development server is great for testing your scripts locally. This will build & run your backend locally & hot reload when you make changes to the configuration.
+
+        ```sh
+        opengb dev
+        ```
+    </Step>
+    <Step title="Generate SDK (optional)">
+        Open Game Backend will generate an SDK with type-safe methods to call your scripts.
+        
+        Replace `<output>` with the path where you want to generate the SDK. Replace `<target>` with the target language.
+
+        ```sh
+        opengb sdk generate --output <output> <target>
+        ```
+
+        See the [SDK docs](/concepts/sdk) for instructions on how to use the generated SDK.
+
+        <Info>
+            Godot, Unity, Unreal, and Rust SDKs coming soon.
+        </Info>
+    </Step>
+    <Step title="Open in Postman/Insomnia/Firecamp/etc (optional)">
+        The [OpenAPI](https://www.openapis.org/) specification is generated at `.opengb/openapi.json`. You can import this file into your favorite API client to start making requests to your server.
+    </Step>
+    <Step title="Deploy server (optional)">
+        <Info>
+            Documentation coming soon.
+        </Info>
+    </Step>
+    <Step title="Next steps">
+        <CardGroup>
+            <Card title="See available modules ->" href="/modules/overview" />
+            <Card title="Learn about registries ->" href="/concepts/registries" />
+            <Card title="Learn about the CLI ->" href="/concepts/cli" />
+            <Card title="Write your own module ->" href="/build/crash-course" />
+        </CardGroup>
+    </Step>
+
+</Steps>

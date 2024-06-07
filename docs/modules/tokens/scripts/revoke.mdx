@@ -1,0 +1,38 @@
+---
+title: "Revoke Token"
+description: "Revoke a token, preventing it from being used again."
+sidebarTitle: "Revoke Token"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/tokens/scripts/revoke.ts) | `revoke` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.revoke({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  tokenIds: string[];
+}
+```
+
+## Response
+
+```typescript
+export type TokenUpdate = "REVOKED" | "ALREADY_REVOKED" | "NOT_FOUND";
+
+export interface Response {
+  updates: {
+    [k: string]: TokenUpdate;
+  };
+}
+```

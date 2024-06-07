@@ -1,0 +1,129 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Open Game Backend",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#ff760a",
+    "light": "#ffbd6d",
+    "dark": "#ff760a",
+    "anchors": {
+      "from": "#ff760a",
+      "to": "#ffbd6d"
+    }
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/rivet-gg/opengb"
+  },
+  "anchors": [
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://rivet.gg/discord"
+    },
+    {
+      "name": "Issues",
+      "icon": "github",
+      "url": "https://github.com/rivet-gg/opengb/issues"
+    },
+    {
+      "name": "Deploy to Rivet",
+      "icon": "cloud-arrow-up",
+      "url": "https://b8v8449klvp.typeform.com/to/RsL6LgBW"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "concepts/quickstart",
+        {
+          "group": "Concepts",
+          "pages": [
+            "concepts/project-config",
+            "concepts/modules",
+            "concepts/sdk",
+            "concepts/enterprise-support",
+            {
+              "group": "Advanced",
+              "pages": [
+                "concepts/registries",
+                "concepts/self-hosting",
+                "concepts/multiple-games"
+              ]
+            },
+            {
+              "group": "Engine Internals",
+              "pages": [
+                "engine/introduction",
+                {
+                  "group": "Design Decisions",
+                  "pages": [
+                    "engine/design/typescript",
+                    "engine/design/deno",
+                    "engine/design/postgres",
+                    "engine/design/prisma"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Comparison",
+          "pages": [
+            "comparison/playfab",
+            "comparison/nakama",
+            "comparison/supabase"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Building Modules",
+      "pages": [
+        "build/overview",
+        "build/crash-course",
+        {
+          "group": "Concepts",
+          "pages": [
+            "build/ide",
+            "build/module-config",
+            "build/scripts",
+            "build/database",
+            "build/user-config",
+            "build/errors",
+            "build/public",
+            "build/conventions"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/overview",
+        {
+          "group": "Integrations",
+          "pages": ["integrations/sendgrid", "integrations/infisical"]
+        }
+      ]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/rivet_gg",
+    "github": "https://github.com/rivet-gg",
+    "discord": "https://rivet.gg/discord"
+  },
+  "analytics": {
+    "posthog": {
+      "apiHost": "https://ph.rivet.gg/",
+      "apiKey": "phc_SQI0wHagPhev5KK7wHJnIf2JNF8fuYBdzzOgNEGylKW"
+    }
+  }
+}

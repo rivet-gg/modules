@@ -1,0 +1,43 @@
+---
+title: "Create User Token"
+description: "Create a token for a user to authenticate future requests."
+sidebarTitle: "Create User Token"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/users/scripts/create_user_token.ts) | `create_user_token` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.users.createUserToken({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  userId: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  token: TokenWithSecret;
+}
+export interface TokenWithSecret {
+  token: string;
+  id: string;
+  type: string;
+  meta: any;
+  createdAt: string;
+  expireAt: null | string;
+  revokedAt: null | string;
+}
+```

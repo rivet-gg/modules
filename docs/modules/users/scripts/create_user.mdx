@@ -1,0 +1,40 @@
+---
+title: "Create User"
+description: ""
+sidebarTitle: "Create User"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/users/scripts/create_user.ts) | `create_user` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.users.createUser({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  username?: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  user: OmitUserProfilePictureUrl;
+}
+export interface OmitUserProfilePictureUrl {
+  id: string;
+  username: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```

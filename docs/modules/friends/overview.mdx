@@ -1,0 +1,60 @@
+---
+title: "Friends"
+description: "Allow users to send and accept friend requests."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/friends) | `friends` | beta | Yes |
+
+**Authors**
+
+- [rivet-gg](https://github.com/rivet-gg)
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+- [Rate Limit](/modules/rate_limit/overview)
+- [Users](/modules/users/overview)
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add friends
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+modules:
+  friends: {}
+
+```
+</Tab>
+
+</Tabs>
+
+
+
+## Scripts
+
+<CardGroup><Card title="Accept Request" href="/modules/friends/scripts/accept_request">Accept a friend request from another user.</Card><Card title="Decline Request" href="/modules/friends/scripts/decline_request">Decline a friend request from another user.</Card><Card title="List Friends" href="/modules/friends/scripts/list_friends">List all friends of a user.</Card><Card title="List Incoming Friend Requests" href="/modules/friends/scripts/list_incoming_friend_requests">List all friend requests received by a user.</Card><Card title="List Outgoing Friend Requests" href="/modules/friends/scripts/list_outgoing_friend_requests">List all friend requests sent by a user.</Card><Card title="Remove Friend" href="/modules/friends/scripts/remove_friend">Remove a friend from your friends list.</Card><Card title="Send Request" href="/modules/friends/scripts/send_request">Send a friend request to another user.</Card></CardGroup>
+
+## Errors
+
+- **Already Friends** (`already_friends`) 
+- **Cannot Send to Self** (`cannot_send_to_self`) 
+- **Friend Request Already Accepted** (`friend_request_already_accepted`) 
+- **Friend Request Already Declined** (`friend_request_already_declined`) 
+- **Friend Request Already Exists** (`friend_request_already_exists`) 
+- **Friend Request Not Found** (`friend_request_not_found`) 
+- **Not Friend Request Recipient** (`not_friend_request_recipient`) 

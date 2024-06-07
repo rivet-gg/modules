@@ -1,0 +1,79 @@
+---
+title: "Config (backend.yaml)"
+---
+
+<Note>This documentation page is a work in progress.</Note>
+
+```typescript
+export type RegistryConfig =
+  | {
+      local: RegistryConfigLocal;
+    }
+  | {
+      git: RegistryConfigGit;
+    };
+export type RegistryConfigGit =
+  | {
+      url: RegistryConfigGitUrl;
+      directory?: string;
+      branch: string;
+    }
+  | {
+      url: RegistryConfigGitUrl;
+      directory?: string;
+      tag: string;
+    }
+  | {
+      url: RegistryConfigGitUrl;
+      directory?: string;
+      rev: string;
+    };
+/**
+ * The URL to the git repository.
+ *
+ * If both HTTPS and SSH URL are provided, they will both be tried and use the
+ * one that works.
+ */
+export type RegistryConfigGitUrl =
+  | {
+      https?: string;
+      ssh?: string;
+    }
+  | string;
+
+export interface Config {
+  registries: {
+    [k: string]: RegistryConfig;
+  };
+  modules: {
+    [k: string]: ProjectModuleConfig;
+  };
+}
+export interface RegistryConfigLocal {
+  directory: string;
+  /**
+   * If true, this will be treated like an external registry. This is
+   * important if multiple projects are using the same registry locally.
+   *
+   *  Modules from this directory will not be tested, formatted, linted, and
+   *  generate Prisma migrations.
+   */
+  isExternal?: boolean;
+}
+export interface ProjectModuleConfig {
+  /**
+   * The name of the registry to fetch the module from.
+   */
+  registry?: string;
+  /**
+   * Overrides the name of the module to fetch inside the registry.
+   */
+  module?: string;
+  /**
+   * The config that configures how this module is ran at runtime.
+   */
+  config?: {
+    [k: string]: any;
+  };
+}
+```

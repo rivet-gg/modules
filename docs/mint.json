@@ -1,0 +1,269 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Open Game Backend",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#ff760a",
+    "light": "#ffbd6d",
+    "dark": "#ff760a",
+    "anchors": {
+      "from": "#ff760a",
+      "to": "#ffbd6d"
+    }
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/rivet-gg/opengb"
+  },
+  "anchors": [
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://rivet.gg/discord"
+    },
+    {
+      "name": "Issues",
+      "icon": "github",
+      "url": "https://github.com/rivet-gg/opengb/issues"
+    },
+    {
+      "name": "Deploy to Rivet",
+      "icon": "cloud-arrow-up",
+      "url": "https://b8v8449klvp.typeform.com/to/RsL6LgBW"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "concepts/quickstart",
+        {
+          "group": "Concepts",
+          "pages": [
+            "concepts/project-config",
+            "concepts/modules",
+            "concepts/sdk",
+            "concepts/enterprise-support",
+            {
+              "group": "Advanced",
+              "pages": [
+                "concepts/registries",
+                "concepts/self-hosting",
+                "concepts/multiple-games"
+              ]
+            },
+            {
+              "group": "Engine Internals",
+              "pages": [
+                "engine/introduction",
+                {
+                  "group": "Design Decisions",
+                  "pages": [
+                    "engine/design/typescript",
+                    "engine/design/deno",
+                    "engine/design/postgres",
+                    "engine/design/prisma"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Comparison",
+          "pages": [
+            "comparison/playfab",
+            "comparison/nakama",
+            "comparison/supabase"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Building Modules",
+      "pages": [
+        "build/overview",
+        "build/crash-course",
+        {
+          "group": "Concepts",
+          "pages": [
+            "build/ide",
+            "build/module-config",
+            "build/scripts",
+            "build/database",
+            "build/user-config",
+            "build/errors",
+            "build/public",
+            "build/conventions"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/overview",
+        {
+          "group": "Integrations",
+          "pages": [
+            "integrations/sendgrid",
+            "integrations/infisical"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Modules",
+      "pages": [
+        "modules/overview",
+        {
+          "icon": "key",
+          "group": "Authentication",
+          "pages": [
+            "modules/auth/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/auth/scripts/auth_email_passwordless",
+                "modules/auth/scripts/verify_email_passwordless"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "coin",
+          "group": "Currency",
+          "pages": [
+            "modules/currency/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/currency/scripts/deposit",
+                "modules/currency/scripts/get_balance",
+                "modules/currency/scripts/get_balance_by_token",
+                "modules/currency/scripts/set_balance",
+                "modules/currency/scripts/withdraw"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "envelope",
+          "group": "Email",
+          "pages": [
+            "modules/email/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/email/scripts/send_email"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "user-group",
+          "group": "Friends",
+          "pages": [
+            "modules/friends/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/friends/scripts/accept_request",
+                "modules/friends/scripts/decline_request",
+                "modules/friends/scripts/list_friends",
+                "modules/friends/scripts/list_incoming_friend_requests",
+                "modules/friends/scripts/list_outgoing_friend_requests",
+                "modules/friends/scripts/remove_friend",
+                "modules/friends/scripts/send_request"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "gauge-circle-minus",
+          "group": "Rate Limit",
+          "pages": [
+            "modules/rate_limit/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/rate_limit/scripts/throttle",
+                "modules/rate_limit/scripts/throttle_public"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "lock",
+          "group": "Tokens",
+          "pages": [
+            "modules/tokens/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/tokens/scripts/create",
+                "modules/tokens/scripts/extend",
+                "modules/tokens/scripts/get",
+                "modules/tokens/scripts/get_by_token",
+                "modules/tokens/scripts/revoke",
+                "modules/tokens/scripts/validate"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "file-arrow-up",
+          "group": "Uploads",
+          "pages": [
+            "modules/uploads/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/uploads/scripts/complete",
+                "modules/uploads/scripts/delete",
+                "modules/uploads/scripts/get_public_file_urls",
+                "modules/uploads/scripts/get",
+                "modules/uploads/scripts/list_for_user",
+                "modules/uploads/scripts/prepare"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "user",
+          "group": "Users",
+          "pages": [
+            "modules/users/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/users/scripts/create_user",
+                "modules/users/scripts/create_user_token",
+                "modules/users/scripts/get_user",
+                "modules/users/scripts/set_profile_picture",
+                "modules/users/scripts/prepare_profile_picture_upload",
+                "modules/users/scripts/authenticate_user"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/rivet_gg",
+    "github": "https://github.com/rivet-gg",
+    "discord": "https://rivet.gg/discord"
+  },
+  "analytics": {
+    "posthog": {
+      "apiHost": "https://ph.rivet.gg/",
+      "apiKey": "phc_SQI0wHagPhev5KK7wHJnIf2JNF8fuYBdzzOgNEGylKW"
+    }
+  }
+}

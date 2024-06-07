@@ -1,0 +1,33 @@
+---
+title: "Set Balance"
+description: ""
+sidebarTitle: "Set Balance"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/currency/scripts/set_balance.ts) | `set_balance` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.currency.setBalance({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  userId: string;
+  balance: number;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {}
+```

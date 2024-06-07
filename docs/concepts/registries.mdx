@@ -1,0 +1,96 @@
+---
+title: Registries
+---
+
+Registries are used to manage collections of modules & share modules across backends.  All modules belong to a registry.
+
+## Common practices
+
+Most mature game studios have registries configured like this inside of their game's repo:
+
+```yaml backend.yaml
+registries:
+  # Modules shared across multiple games
+  shared:
+    git:
+      url: https://github.com/my-studio/my-registry.git
+      directory: ./modules
+  # Modules specific to this game
+  local:
+    local:
+      directory: ./modules
+modules:
+  module_a: {}  # Pulls from the default registry
+  module_b:
+    registry: shared
+  module_c:
+    registry: local
+```
+
+## Special registries
+
+### `default`
+
+The registry named `default` is special. Any modules without a specified registry will be fetched from the default registry.
+
+The default config for the `default` registry is:
+
+```yaml backend.yaml
+registries:
+  default:
+    git:
+      url:
+        https: https://github.com/rivet-gg/opengb-registry.git
+        ssh: git@github.com:rivet-gg/opengb-registry.git
+      directory: ./modules
+      rev: foobar
+```
+
+You can override this in your `backend.yaml` file.
+
+### `local`
+
+The registry named `local` is special. All commands with `opengb create` will create a module in the `local` registry.
+
+Most projects specify a default registry like:
+
+```yaml backend.yaml
+registries:
+  local:
+    local:
+      directory: ./modules
+```
+
+## Types of registries
+
+### `local`
+
+Local registires represent a directory on your local filesystem holding modules. This is useful for custom modules that won't be shared with other backends or for testing.
+
+If a module is stored locally but shared across multiple backends, set `isExternal` to true.
+
+`local` modules are included by default in tests & generate migrations, unless `isExternal` is specified.
+
+Example:
+
+```yaml backend.yaml
+registries:
+  local:
+    local:
+      directory: ./modules
+      isExternal: true  # Optional
+```
+
+### `git`
+
+Git registries represent a git repository holding modules. This is useful for sharing modules across multiple backends.
+
+This uses the native Git CLI to fetch modules, so you can use private Git registries that your computer has access to.
+
+```yaml backend.yaml
+registries:
+  shared:
+    git:
+      url: https://github.com/my-studio/my-registry.git
+      directory: ./modules
+```

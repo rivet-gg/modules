@@ -1,0 +1,42 @@
+---
+title: "Get Token by Token"
+description: "Get a token by its secret token."
+sidebarTitle: "Get Token by Token"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/tokens/scripts/get_by_token.ts) | `get_by_token` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.getByToken({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  tokens: string[];
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  tokens: Token[];
+}
+export interface Token {
+  id: string;
+  type: string;
+  meta: any;
+  createdAt: string;
+  expireAt: null | string;
+  revokedAt: null | string;
+}
+```

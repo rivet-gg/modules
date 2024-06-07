@@ -1,0 +1,7 @@
+export const Tags = ({ tags }) => (
+  <div style={{ gap: '0.5rem' }} className="flex flex-row mt-1">
+    {tags.map(tag => (
+      <div key={tag} className="px-1.5 py-0.5 rounded-md font-semibold text-sm focus:outline-primary dark:focus:outline-primary-light bg-primary/10 text-primary dark:text-primary-light dark:bg-primary-light/10">{tag}</div>
+    ))}
+  </div>
+);

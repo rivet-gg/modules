@@ -1,0 +1,55 @@
+---
+title: "Currency"
+description: "Track user balances and allow them to deposit and withdraw."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/currency) | `currency` | preview | Yes |
+
+**Authors**
+
+- [ABCxFF](https://github.com/ABCxFF)
+
+**Dependencies**
+
+- [Rate Limit](/modules/rate_limit/overview)
+- [Users](/modules/users/overview)
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add currency
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+modules:
+  currency: {}
+
+```
+</Tab>
+
+</Tabs>
+
+
+
+## Scripts
+
+<CardGroup><Card title="Deposit" href="/modules/currency/scripts/deposit"></Card><Card title="Get Balance" href="/modules/currency/scripts/get_balance"></Card><Card title="Get Balance by Token" href="/modules/currency/scripts/get_balance_by_token"></Card><Card title="Set Balance" href="/modules/currency/scripts/set_balance"></Card><Card title="Withdraw" href="/modules/currency/scripts/withdraw"></Card></CardGroup>
+
+## Errors
+
+- **Invalid Amount** (`invalid_amount`) 
+- **Invalid User** (`invalid_user`) 
+- **Not Enough Funds** (`not_enough_funds`) 

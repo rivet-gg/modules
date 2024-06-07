@@ -1,0 +1,55 @@
+---
+title: "Tokens"
+description: "Create & verify tokens for authorization purposes."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/tokens) | `tokens` | stable | Yes |
+
+**Authors**
+
+- [rivet-gg](https://github.com/rivet-gg)
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+_No dependencies_
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add tokens
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+modules:
+  tokens: {}
+
+```
+</Tab>
+
+</Tabs>
+
+
+
+## Scripts
+
+<CardGroup><Card title="Create Token" href="/modules/tokens/scripts/create"></Card><Card title="Extend Token" href="/modules/tokens/scripts/extend">Extend or remove the expiration date of a token. (Only works on valid tokens.)</Card><Card title="Get Token" href="/modules/tokens/scripts/get">Get a token by its ID.</Card><Card title="Get Token by Token" href="/modules/tokens/scripts/get_by_token">Get a token by its secret token.</Card><Card title="Revoke Token" href="/modules/tokens/scripts/revoke">Revoke a token, preventing it from being used again.</Card><Card title="Validate Token" href="/modules/tokens/scripts/validate">Validate a token. Throws an error if the token is invalid.</Card></CardGroup>
+
+## Errors
+
+- **Token Expired** (`token_expired`) 
+- **Token Not Found** (`token_not_found`) 
+- **Token Revoked** (`token_revoked`) 

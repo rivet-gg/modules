@@ -1,0 +1,28 @@
+---
+title: AccelByte
+---
+
+<Note>
+  Please read Open Game Backend's [known limitations](/concepts/known-limitations)
+  before reading this comparison.
+</Note>
+
+[Pragma](https://pragma.gg/) was founded in 202. Both platforms have similar limitations, so we'll compare them in the same document.
+
+## What Pragma does well
+
+- Source-disclosed engine
+
+## How Pragma and Open Game Backend compare
+
+### Source-discord vs open-source
+
+### Prefab backend vs modular backend
+
+Pragma provides a predefined set of features out of the box. While you can modify Pragma to extend it with your own features, you must have a license to the engine 
+
+Nakama encourages developers to [use scripting](https://heroiclabs.com/docs/nakama/server-framework/introduction/index.html) to extend the server. While the scripting is extensive, it's not intended for all use cases.
+
+This means Nakama has first-class services written in Go and asks you to write second-class code written in a scripting language without access to a mature database.
+
+Open Game Backend is designed from the ground up to be modular at its core. It provides a set of official modules to get you started quickly, but the primary use case is to extend the server with your own modules. All modules are first-class citizens have access to a mature database.
