@@ -1,0 +1,4 @@
+*
+!src/
+!deno.jsonc
+!deno.lock
