@@ -16,7 +16,7 @@ const TEST_PROJECT_PATH = resolve(
 	PROJECT_ROOT,
 	"..",
 	"..",
-	"opengb-registry",
+	"opengb-modules",
 	"tests",
 	"basic",
 );

@@ -55,7 +55,7 @@ deno task cli:install
 
 ## Looking for the module registry?
 
-See [rivet-gg/opengb-registry](https://github.com/rivet-gg/opengb-registry.git).
+See [rivet-gg/opengb-modules](https://github.com/rivet-gg/opengb-modules.git).
 
 ## Support
 
