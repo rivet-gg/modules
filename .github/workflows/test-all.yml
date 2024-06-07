@@ -14,7 +14,7 @@ jobs:
       - name: Checkout registry Repo
         uses: actions/checkout@v4
         with:
-          path: opengb-registry
+          path: opengb-modules
 
       # Get engine repo to test against
       - name: Fetch engine repo
@@ -40,4 +40,4 @@ jobs:
 
       # Run tests on all modules in the registry
       - name: Run Tests for all modules
-        run: cd ./opengb-registry/tests/basic && opengb test --strict-schemas --force-deploy-migrations
+        run: cd ./opengb-modules/tests/basic && opengb test --strict-schemas --force-deploy-migrations
