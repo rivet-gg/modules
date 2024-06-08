@@ -4,7 +4,7 @@ import { Module, Project } from "../project/mod.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { verbose } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "../utils/once.ts";
-import { genPath, PRISMA_WORKSPACE_PATH, RUNTIME_PATH } from "../project/project.ts";
+import { genPath, PRISMA_WORKSPACE_PATH} from "../project/project.ts";
 import prismaArchive from "../../artifacts/prisma_archive.json" with { type: "json" };
 import { inflateArchive } from "../build/util.ts";
 

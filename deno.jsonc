@@ -30,6 +30,7 @@
 
 		// Lint
 		"lint": "deno task artifacts:build:all && deno lint src/",
+		"lint:fix": "deno task artifacts:build:all && deno lint --fix src/",
 
 		// Runs tests
 		"test:core": "deno task artifacts:build:all && deno test -A src/",

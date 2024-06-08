@@ -34,7 +34,7 @@ export async function templateScript(
 	// Add script to config
 	const newConfig = structuredClone(mod.config);
 	newConfig.scripts[scriptName] = {};
-	const newConfigRaw = JSON.stringify(newConfig, null, '\t');
+	const newConfigRaw = JSON.stringify(newConfig, null, "\t");
 	await Deno.writeTextFile(
 		resolve(mod.path, "module.json"),
 		newConfigRaw,

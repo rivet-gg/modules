@@ -27,7 +27,7 @@ export async function templateModule(project: Project, moduleName: string) {
 	};
 	await Deno.writeTextFile(
 		resolve(modulePath, "module.json"),
-		JSON.stringify(defaultModule, null, '\t'),
+		JSON.stringify(defaultModule, null, "\t"),
 	);
 
 	// Write default migration
@@ -52,6 +52,6 @@ export async function templateModule(project: Project, moduleName: string) {
 	};
 	await Deno.writeTextFile(
 		resolve(project.path, "backend.json"),
-		JSON.stringify(newConfig, null, '\t'),
+		JSON.stringify(newConfig, null, "\t"),
 	);
 }

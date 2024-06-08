@@ -21,7 +21,7 @@ export async function templateProject(rootPath: string) {
 	};
 	await Deno.writeTextFile(
 		resolve(rootPath, "backend.json"),
-		JSON.stringify(defaultBackend, null, '\t'),
+		JSON.stringify(defaultBackend, null, "\t"),
 	);
 
 	// Create modules directory

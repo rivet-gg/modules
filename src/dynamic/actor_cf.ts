@@ -74,9 +74,9 @@ export class __GlobalDurableObject extends DurableObject {
 }
 
 /**
-* Actor implementation that user-made actors will extend.
-* Not meant to be instantiated.
-*/
+ * Actor implementation that user-made actors will extend.
+ * Not meant to be instantiated.
+ */
 export abstract class ActorBase {
 	static buildState(_input: unknown): any {
 		throw Error("buildState unimplemented");

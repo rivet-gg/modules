@@ -56,12 +56,15 @@ export class RuntimeError extends Error {
 			ActorsSnakeT,
 			ActorsCamelT
 		>,
-	>(runtime: Runtime<
-		DependenciesSnakeT,
-		DependenciesCamelT,
-		ActorsSnakeT,
-		ActorsCamelT
-	>, context: Ctx) {
+	>(
+		runtime: Runtime<
+			DependenciesSnakeT,
+			DependenciesCamelT,
+			ActorsSnakeT,
+			ActorsCamelT
+		>,
+		context: Ctx,
+	) {
 		// Add context to error
 		if (context instanceof ModuleContext) {
 			this.moduleName = context.moduleName;
