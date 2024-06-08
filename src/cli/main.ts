@@ -14,6 +14,16 @@ import { cleanCommand } from "./commands/clean.ts";
 import { printError } from "../error/mod.ts";
 import { runShutdown } from "../utils/shutdown_handler.ts";
 
+if (Deno.env.has("DATABASE_URL")) {
+	Deno.env.set(
+		"DATABASE_URL",
+		Deno.env.get("DATABASE_URL")!
+			.replace("localhost", "host.docker.internal")
+			.replace("127.0.0.1", "host.docker.internal")
+			.replace("0.0.0.0", "host.docker.internal"),
+	);
+}
+
 // Run command
 const command = new Command();
 command.action(() => command.showHelp())

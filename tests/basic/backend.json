@@ -1,5 +1,15 @@
 {
 	"registries": {
+		"default": {
+			"git": {
+				"url": {
+					"https": "https://github.com/rivet-gg/opengb-registry.git",
+					"ssh": "git@github.com:rivet-gg/opengb-registry.git"
+				},
+				"rev": "3c40379899162d848cea88afc58b4dc6ab4cc546",
+				"directory": "./modules"
+			}
+		},
 		"local": {
 			"local": {
 				"directory": "./modules"
@@ -12,7 +22,7 @@
 		"rate_limit": {},
 		"tokens": {},
 		"users": {
-			"config": {}
+			"config": null
 		},
 		"uploads": {
 			"config": {

@@ -1,4 +1,5 @@
 *
-!src/
 !deno.jsonc
 !deno.lock
+!src/
+!vendor/prisma
