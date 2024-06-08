@@ -2,16 +2,13 @@ import { copy, resolve } from "../deps.ts";
 import { dedent } from "./deps.ts";
 import { Module, Project } from "../project/mod.ts";
 import { CommandError, UserError } from "../error/mod.ts";
-import { addShutdownHandler } from "../utils/shutdown_handler.ts";
 import { verbose } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "../utils/once.ts";
-import { PRISMA_WORKSPACE_PATH, genPath } from "../project/project.ts";
+import { genPath, PRISMA_WORKSPACE_PATH, RUNTIME_PATH } from "../project/project.ts";
+import prismaArchive from "../../artifacts/prisma_archive.json" with { type: "json" };
+import { inflateArchive } from "../build/util.ts";
 
-export const NODE_IMAGE = "node:21-alpine";
-// Unique container name for this runtime so we can run multiple instances in
-// parallel
-export const NODE_CONTAINER_NAME = `opengb-node-${Deno.pid}`;
-export const PRISMA_VERSION = "5.9.1";
+export const PRISMA_VERSION = "5.15.0";
 
 function getPrismaDir(project: Project) {
 	return genPath(project, PRISMA_WORKSPACE_PATH);
@@ -22,9 +19,6 @@ const PRISMA_WORKSPACE_ONCE = createOnce<void>();
 /**
  * Installs a copy of Prisma in to a directory that can be reused for any
  * Prisma-related commands.
- *
- * All commands are ran inside a Node Docker container in order to ensure we
- * don't need Node installed on the host.
  */
 async function ensurePrismaWorkspace(project: Project): Promise<void> {
 	return await getOrInitOnce(PRISMA_WORKSPACE_ONCE, async () => {
@@ -38,101 +32,7 @@ async function ensurePrismaWorkspaceInner(project: Project): Promise<void> {
 
 	await Deno.mkdir(prismaDir, { recursive: true });
 
-	// Remove the existing container if exists. This forces the new
-	// configuration for a new container.
-	verbose("Removing old container", NODE_CONTAINER_NAME);
-	const rmOutput = await new Deno.Command("docker", {
-		args: ["rm", "-f", NODE_CONTAINER_NAME],
-	}).output();
-	if (!rmOutput.success) {
-		throw new CommandError("Failed to remove the existing container.", { commandOutput: rmOutput });
-	}
-
-	// Start the container
-	verbose("Starting container", `${NODE_CONTAINER_NAME} (${NODE_IMAGE})`);
-	const runOutput = await new Deno.Command("docker", {
-		args: [
-			"run",
-			"-d",
-			"--rm",
-			`--name=${NODE_CONTAINER_NAME}`,
-			"--add-host=host.docker.internal:host-gateway",
-			`--volume=${prismaDir}:/prisma`,
-			"--entrypoint=sleep",
-			NODE_IMAGE,
-			// ===
-			"infinity",
-		],
-	}).output();
-	if (!runOutput.success) {
-		throw new CommandError("Failed to start the container.", { commandOutput: runOutput });
-	}
-
-	// Shutdown the container when the process exits
-	addShutdownHandler(shutdownNodeContainer);
-
-	// Write package.json
-	const packageJson = JSON.stringify({
-		"devDependencies": {
-			"prisma": `^${PRISMA_VERSION}`,
-		},
-		"dependencies": {
-			"@prisma/client": `^${PRISMA_VERSION}`,
-		},
-	});
-	await Deno.writeTextFile(resolve(prismaDir, "package.json"), packageJson);
-
-	// Fix permissions on the repo
-	const chownOutput = await new Deno.Command("docker", {
-		args: [
-			"exec",
-			NODE_CONTAINER_NAME,
-			// ===
-			"chown",
-			"-R",
-			"node:node",
-			"/prisma",
-		],
-	}).output();
-	if (!chownOutput.success) throw new CommandError("Failed to fix permissions.", { commandOutput: chownOutput });
-
-	// Install dependencies
-	verbose("Installing dependencies", NODE_CONTAINER_NAME);
-	const installOutput = await new Deno.Command("docker", {
-		args: [
-			"exec",
-			"--workdir=/prisma",
-			`--user=node:node`,
-			NODE_CONTAINER_NAME,
-			// ===
-			"npm",
-			"install",
-			"--prefer-offline",
-			"--no-audit",
-			"--no-fund",
-			"--progress=false",
-		],
-	}).output();
-	if (!installOutput.success) {
-		throw new CommandError("Failed to install prisma dependencies.", { commandOutput: installOutput });
-	}
-
 	verbose("Prisma workspace init complete", prismaDir);
-}
-/**
- * Shutdown the Node helper container.
- *
- * This is sync so it can run in `unload`.
- */
-
-async function shutdownNodeContainer() {
-	verbose("Shutting down Node container", NODE_CONTAINER_NAME);
-	const shutdownOutput = await new Deno.Command("docker", {
-		args: ["rm", "-f", NODE_CONTAINER_NAME],
-	}).output();
-	if (!shutdownOutput.success) {
-		throw new CommandError("Failed to stop the container.", { commandOutput: shutdownOutput });
-	}
 }
 
 export interface RunPrismaCommandOpts {
@@ -143,8 +43,8 @@ export interface RunPrismaCommandOpts {
 	signal?: AbortSignal;
 }
 /**
- * Run a Prisma command in the Prisma workspace inside the Docker container. The
- * CWD is set to the `db` directory.
+ * Run a Prisma command in the Prisma workspace. The CWD is set to the `db`
+ * directory.
  *
  * We don't use `deno run npm:prisma` because:
  *
@@ -173,67 +73,55 @@ export async function runPrismaCommand(
 	// workspace where Prisma is already installed.
 	const prismaDir = getPrismaDir(project);
 	const workspaceId = crypto.randomUUID();
-	const dbDirHost = resolve(prismaDir, "db", workspaceId);
-	await Deno.mkdir(dbDirHost, { recursive: true });
-	verbose("Setting up Prisma command dir", dbDirHost);
+	const dbDir = resolve(prismaDir, "db", workspaceId);
+	await Deno.mkdir(dbDir, { recursive: true });
+	verbose("Setting up Prisma command dir", dbDir);
 
-	// Force POSIX paths since this is in a Docker container.
-	const dbDirContainer = `/prisma/db/${workspaceId}`;
+	// Writes a copy of the OpenGB runtime bundled with the CLI to the project.
+	const inflatePrismaPath = resolve(dbDir, "node_modules");
+	await Deno.mkdir(inflatePrismaPath);
+	await inflateArchive(prismaArchive, inflatePrismaPath, signal);
 
 	// Copy database
-	await copy(resolve(module.path, "db"), dbDirHost, { overwrite: true });
+	await copy(resolve(module.path, "db"), dbDir, { overwrite: true });
 
 	// Append generator config
-	const schemaPath = resolve(dbDirHost, "schema.prisma");
+	const schemaPath = resolve(dbDir, "schema.prisma");
 	let schema = await Deno.readTextFile(schemaPath);
 	schema += dedent`
 		// Generated by Open Game Backend
 		generator client {
 			provider = "prisma-client-js"
-			output = "${dbDirContainer}/client"
+			output = "${dbDir}/client"
 			previewFeatures = ["driverAdapters"]
 		}
 	`;
 	await Deno.writeTextFile(schemaPath, schema);
 
-	// HACK: Replace the host with the Docker gateway. This isn't a failsafe solution.
-	if (opts.env.DATABASE_URL) {
-		opts.env.DATABASE_URL = opts.env.DATABASE_URL
-			.replace("localhost", "host.docker.internal")
-			.replace("127.0.0.1", "host.docker.internal")
-			.replace("0.0.0.0", "host.docker.internal");
-	}
+	if (Deno.env.get("VERBOSE")) opts.env.DEBUG = "*";
 
-	const envFlags = Object.entries(opts.env).map(([key, value]) => `--env=${key}=${value}`);
+	// Disable Prisma features
+	opts.env.PRISMA_HIDE_UPDATE_MESSAGE = "binary";
 
-	// Make the directory usable by the Node container
-	const chownOutput = await new Deno.Command("docker", {
-		args: [
-			"exec",
-			NODE_CONTAINER_NAME,
-			// ===
-			"chown",
-			"-R",
-			"node:node",
-			dbDirContainer,
-		],
-		signal,
-	}).output();
-	if (!chownOutput.success) throw new CommandError("Failed to fix permissions.", { commandOutput: chownOutput });
+	// Disable dependency on NodeJS
+	//
+	// We archive the node modules and inflate them manually. See `build_prisma_archive.ts`.
+	opts.env.PRISMA_GENERATE_SKIP_AUTOINSTALL = "true";
+	opts.env.PRISMA_SKIP_POSTINSTALL_GENERATE = "true";
+
+	// Force binary since running Prisma in Deno doesn't work with Node dylibs
+	opts.env.PRISMA_CLI_QUERY_ENGINE_TYPE = "binary";
 
 	// Run the command
-	verbose("Running Prisma command", `${dbDirHost}: prisma ${opts.args.join(" ")}`);
-	const prismaOutput = await new Deno.Command("docker", {
+	verbose("Running Prisma command", `${dbDir}: prisma ${opts.args.join(" ")}`);
+	const prismaOutput = await new Deno.Command("deno", {
 		args: [
-			"exec",
-			...(opts.interactive ? ["-it"] : []),
-			`--workdir=${dbDirContainer}`,
-			`--user=node:node`,
-			...envFlags,
-			NODE_CONTAINER_NAME,
-			"/prisma/node_modules/.bin/prisma",
+			"run",
+			"-A",
+			`npm:prisma@${PRISMA_VERSION}`,
 			...opts.args,
 		],
+		cwd: dbDir,
 		stdin: opts.interactive ? "inherit" : undefined,
 		stdout: opts.output ? "inherit" : undefined,
 		stderr: opts.output ? "inherit" : undefined,
@@ -244,21 +132,6 @@ export async function runPrismaCommand(
 		throw new CommandError(`Failed to run: prisma ${opts.args.join(" ")}`, { commandOutput: prismaOutput });
 	}
 
-	// Fix permissions to be readable by the host
-	const chownOutput2 = await new Deno.Command("docker", {
-		args: [
-			"exec",
-			NODE_CONTAINER_NAME,
-			// ===
-			"chown",
-			"-R",
-			`${Deno.uid()}:${Deno.gid()}`,
-			dbDirContainer,
-		],
-		signal,
-	}).output();
-	if (!chownOutput2.success) throw new CommandError("Failed to fix permissions.", { commandOutput: chownOutput2 });
-
 	// TODO: Clean up the workspace?
-	return dbDirHost;
+	return dbDir;
 }

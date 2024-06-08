@@ -15,9 +15,10 @@
 		"cli:install": "deno task artifacts:build:all && deno install --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force src/cli/main.ts",
 
 		// Generates schema
-		"artifacts:build:all": "deno task artifacts:build:schema && deno task artifacts:build:runtime_archive",
+		"artifacts:build:all": "deno task artifacts:build:schema && deno task artifacts:build:runtime_archive && deno task artifacts:build:prisma_archive",
 		"artifacts:build:schema": "deno run --allow-env --allow-read --allow-write src/artifacts/build_schema.ts",
 		"artifacts:build:runtime_archive": "deno run --allow-env --allow-read --allow-write src/artifacts/build_runtime_archive.ts",
+		"artifacts:build:prisma_archive": "deno run --allow-env --allow-read --allow-write --allow-run src/artifacts/build_prisma_archive.ts",
 
 		// Format
 		"format": "deno fmt src/",

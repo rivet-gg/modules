@@ -91,11 +91,11 @@ async function ensurePostgresRunningInner(_project: Project) {
 		await new Promise((r) => setTimeout(r, 50));
 	}
 
+	await new Promise(resolve => setTimeout(resolve, 2000));
+
 	// HACK: https://github.com/rivet-gg/opengb/issues/200
-	// CI needs a bit more time to be able to connect to the server
-	if (Deno.env.get("CI") === "true") {
-		await new Promise((r) => setTimeout(r, 1000));
-	}
+	// Needs more time to be able to connect to the server since pg_isready isn't always accurate for some reason
+	await new Promise((r) => setTimeout(r, 1000));
 
 	verbose("Ready");
 }

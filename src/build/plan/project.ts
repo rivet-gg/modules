@@ -3,7 +3,6 @@ import { denoPlugins, esbuild, exists, resolve } from "../../deps.ts";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, Runtime } from "../mod.ts";
 import { generateClient } from "../../migrate/generate.ts";
-import { inflateRuntimeArchive } from "../inflate_runtime_archive.ts";
 import { planModuleBuild } from "./module.ts";
 import { compileTypeHelpers } from "../gen/mod.ts";
 import { generateDenoConfig } from "../deno_config.ts";
@@ -15,10 +14,17 @@ import { glob } from "../../project/deps.ts";
 import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateDev } from "../../migrate/dev.ts";
 import { generateMeta } from "../meta.ts";
-import { BUNDLE_PATH, genPath, genPrismaOutputBundle, genPrismaOutputFolder } from "../../project/project.ts";
-import { ENTRYPOINT_PATH } from "../../project/project.ts";
-import { MANIFEST_PATH } from "../../project/project.ts";
+import {
+	BUNDLE_PATH,
+	ENTRYPOINT_PATH,
+	genPath,
+	genPrismaOutputFolder,
+	MANIFEST_PATH,
+	RUNTIME_PATH,
+} from "../../project/project.ts";
 import { compileActorTypeHelpers } from "../gen/mod.ts";
+import { inflateArchive } from "../util.ts";
+import runtimeArchive from "../../../artifacts/runtime_archive.json" with { type: "json" };
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -55,7 +61,9 @@ export async function planProjectBuild(
 		name: "Generate",
 		description: "runtime/",
 		async build({ signal }) {
-			await inflateRuntimeArchive(project, signal);
+			// Writes a copy of the OpenGB runtime bundled with the CLI to the project.
+			const inflateRuntimePath = genPath(project, RUNTIME_PATH);
+			await inflateArchive(runtimeArchive, inflateRuntimePath, signal);
 		},
 	});
 

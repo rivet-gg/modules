@@ -214,7 +214,9 @@ export async function fetchAndResolveModule(
 
 		// HACK: Restore gen file
 		if (tempGenDir && tempGenPath) {
-			await move(tempGenPath, genPath, { overwrite: true });
+			// Cannot `move` from a temp dir because /tmp might be in a
+			// different file system
+			await copy(tempGenPath, genPath, { overwrite: true });
 			await Deno.remove(tempGenDir, { recursive: true });
 		}
 	} else {
