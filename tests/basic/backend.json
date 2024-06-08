@@ -1,0 +1,42 @@
+{
+    "registries": {
+        "local": {
+            "local": {
+                "directory": "../../modules"
+            }
+        }
+    },
+    "modules": {
+        "currency": {
+            "registry": "local"
+        },
+        "friends": {
+            "registry": "local"
+        },
+        "rate_limit": {
+            "registry": "local"
+        },
+        "tokens": {
+            "registry": "local"
+        },
+        "users": {
+            "registry": "local"
+        },
+        "auth": {
+            "registry": "local",
+            "config": {
+                "email": {
+                    "fromEmail": "hello@rivet.gg"
+                }
+            }
+        },
+        "email": {
+            "registry": "local",
+            "config": {
+                "provider": {
+                    "test": {}
+                }
+            }
+        }
+    }
+}

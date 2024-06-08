@@ -1,0 +1,44 @@
+{
+    "name": "Users",
+    "description": "Identify and manage users.",
+    "icon": "user",
+    "tags": [
+        "core",
+        "social"
+    ],
+    "authors": [
+        "rivet-gg",
+        "NathanFlurry"
+    ],
+    "status": "stable",
+    "dependencies": {
+        "rate_limit": {},
+        "tokens": {}
+    },
+    "scripts": {
+        "get_user": {
+            "name": "Get User",
+            "public": true
+        },
+        "create_user": {
+            "name": "Create User"
+        },
+        "authenticate_user": {
+            "name": "Validate User Token",
+            "description": "Validate a user token. Throws an error if the token is invalid.",
+            "public": true
+        },
+        "create_user_token": {
+            "name": "Create User Token",
+            "description": "Create a token for a user to authenticate future requests."
+        }
+    },
+    "errors": {
+        "token_not_user_token": {
+            "name": "Token Not User Token"
+        },
+        "unknown_identity_type": {
+            "name": "Unknown Identity Type"
+        }
+    }
+}
