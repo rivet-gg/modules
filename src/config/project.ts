@@ -1,4 +1,4 @@
-import { parse, resolve } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/project_schema.json" with { type: "json" };
 import { InternalError } from "../error/mod.ts";
@@ -66,7 +66,7 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	const configRaw = await Deno.readTextFile(
 		configPath(projectPath),
 	);
-	const config = parse(configRaw) as ProjectConfig;
+	const config = JSON.parse(configRaw) as ProjectConfig;
 
 	// Validate config
 	const projectConfigSchema = projectConfigAjv.getSchema("#");
@@ -83,5 +83,5 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 }
 
 export function configPath(root: string): string {
-	return resolve(root, "backend.yaml");
+	return resolve(root, "backend.json");
 }

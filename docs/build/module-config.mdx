@@ -1,5 +1,5 @@
 ---
-title: "Config (module.yaml)"
+title: "Config (module.json)"
 ---
 
 <Note>This documentation page is a work in progress.</Note>
@@ -30,6 +30,9 @@ export interface Config {
   scripts: {
     [k: string]: ScriptConfig;
   };
+  actors?: {
+    [k: string]: ActorConfig;
+  };
   errors: {
     [k: string]: ErrorConfig;
   };
@@ -53,6 +56,15 @@ export interface ScriptConfig {
    * this endpoints. See the `user` and `rate_limit` modules.
    */
   public?: boolean;
+}
+export interface ActorConfig {
+  /**
+   * A globally unique string for storing data for this actor.
+   *
+   * **IMPORTANT** Changing this will effectively unlink all data stored in this actor. Changing it back to
+   * the old value will restore the data.
+   */
+  storage_id: string;
 }
 export interface ErrorConfig {
   /**

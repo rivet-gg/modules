@@ -217,24 +217,6 @@
           ]
         },
         {
-          "icon": "file-arrow-up",
-          "group": "Uploads",
-          "pages": [
-            "modules/uploads/overview",
-            {
-              "group": "Scripts",
-              "pages": [
-                "modules/uploads/scripts/complete",
-                "modules/uploads/scripts/delete",
-                "modules/uploads/scripts/get_public_file_urls",
-                "modules/uploads/scripts/get",
-                "modules/uploads/scripts/list_for_user",
-                "modules/uploads/scripts/prepare"
-              ]
-            }
-          ]
-        },
-        {
           "icon": "user",
           "group": "Users",
           "pages": [
@@ -245,8 +227,6 @@
                 "modules/users/scripts/create_user",
                 "modules/users/scripts/create_user_token",
                 "modules/users/scripts/get_user",
-                "modules/users/scripts/set_profile_picture",
-                "modules/users/scripts/prepare_profile_picture_upload",
                 "modules/users/scripts/authenticate_user"
               ]
             }

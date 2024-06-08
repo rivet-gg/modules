@@ -35,7 +35,7 @@ opengb init
 ```
 
 <Accordion title="What did this do?">
-  This will create a `backend.yaml` file in your directory with some default
+  This will create a `backend.json` file in your directory with some default
   settings.
 </Accordion>
 
@@ -50,12 +50,12 @@ opengb create module my_leaderboard
 ```
 
 <Tip>
-	See documentation on the `module.yaml` config [here](/build/module-config).
+  See documentation on the `module.json` config [here](/build/module-config).
 </Tip>
 
 <Accordion title="What did this do?">
   This will create a directory `modules/my_leaderboard` and updated
-  `backend.yaml` to include the module. The important files we'll look at are
+  `backend.json` to include the module. The important files we'll look at are
   `modules/my_leaderboard/db/schema.prisma`, `modules/my_leaderboard/scripts/`,
   and `modules/my_leaderboard/tests/`.
 </Accordion>
@@ -152,12 +152,15 @@ We're going to create a `submit_score` script that will:
     			}
     			```
 
-    			This command also udpated `modules/my_leaderboard/module.yaml` to include the new script:
+    			This command also udpated `modules/my_leaderboard/module.json` to include the new script:
 
-    			```yaml
-    			scripts:
-    			 submit_score: {}
-    			errors: {}
+    			```json
+    			{
+    				"scripts": {
+    					"submit_score": {}
+    				},
+    				"errors": {}
+    			}
     			```
 
     		</Accordion>
@@ -176,16 +179,20 @@ We're going to create a `submit_score` script that will:
     	</AccordionGroup>
     </Step>
     <Step title="Add dependencies & make public">
-    	Update the `modules/my_leaderboard/module.yaml` file to look like this:
+    	Update the `modules/my_leaderboard/module.json` file to look like this:
 
-    	```yaml modules/my_leaderboard/module.yaml
-    	dependencies:
-    	  users: {}
-    	  rate_limit: {}
-    	scripts:
-    	  submit_score:
-    		public: true
-    	errors: {}
+    	```json modules/my_leaderboard/module.json
+		{
+			"dependencies": {
+				"users": {},
+				"rate_limit": {}
+			},
+			"scripts": {
+				"submit_score": null
+			},
+			"public": true,
+			"errors": {}
+		}
     	```
 
     	<Accordion title="What did this do?">
@@ -276,7 +283,7 @@ We're going to create a `submit_score` script that will:
     				score: { gt: req.score },
     			},
     		});
-    		
+
     		return {
     			rank: rank + 1,
     		};
@@ -353,12 +360,15 @@ We're going to create a `submit_score` script that will:
     	```
     </Step>
     <Step title="Make public">
-    	Open `modules/my_leaderboard/module.yaml` and update the `get_top_scores` script to be public:
+    	Open `modules/my_leaderboard/module.json` and update the `get_top_scores` script to be public:
 
-    	```yaml modules/my_leaderboard/module.yaml
-    	scripts:
-    	  get_top_scores:
-    		public: true
+    	```json modules/my_leaderboard/module.json
+		{
+			"scripts": {
+				"get_top_scores": null
+			},
+			"public": true
+		}
     	```
     </Step>
     <Step title="Update request & response">
@@ -429,7 +439,7 @@ We're going to create a `submit_score` script that will:
     				score: row.score,
     			});
     		}
-    		
+
     		return { scores };
     	}
     	```
@@ -498,29 +508,30 @@ We're going to create a `submit_score` script that will:
 <Steps>
 	<Step title="Start development server">
 
-		In the same terminal, run:
+    	In the same terminal, run:
 
-		```sh
-		opengb dev
-		```
+    	```sh
+    	opengb dev
+    	```
 
-	</Step>
-	<Step title="Migrate database">
+    </Step>
+    <Step title="Migrate database">
 
-		You will be prompted to apply your schema changes to the database. Name the migration _init_ (this name doesn't matter):
+    	You will be prompted to apply your schema changes to the database. Name the migration _init_ (this name doesn't matter):
 
-		```
-		Migrate Database develop (my_leaderboard)
-		Prisma schema loaded from schema.prisma
-		Datasource "db": PostgreSQL database "my_leaderboard", schema "public" at "host.docker.internal:5432"
+    	```
+    	Migrate Database develop (my_leaderboard)
+    	Prisma schema loaded from schema.prisma
+    	Datasource "db": PostgreSQL database "my_leaderboard", schema "public" at "host.docker.internal:5432"
 
     	? Enter a name for the new migration: › init
     	```
 
     </Step>
-	<Step title="Success">
-		You've now written a full module from scratch. You can now [generate an SDK to use in your game](/concepts/sdk) or [publish it to a registry](/build/registry).
-	</Step>
+    <Step title="Success">
+    	You've now written a full module from scratch. You can now [generate an SDK to use in your game](/concepts/sdk) or [publish it to a registry](/build/registry).
+    </Step>
+
 </Steps>
 
 ---
@@ -543,58 +554,59 @@ Tests are helpful for validating your module works as expected before running in
     </Step>
     <Step title="Write test">
 
-		Update `modules/my_leaderboard/tests/e2e.ts` to look like this:
+    	Update `modules/my_leaderboard/tests/e2e.ts` to look like this:
 
-		```typescript modules/my_leaderboard/tests/e2e.ts
-		import { test, TestContext } from "../module.gen.ts";
-		import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
-		import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
+    	```typescript modules/my_leaderboard/tests/e2e.ts
+    	import { test, TestContext } from "../module.gen.ts";
+    	import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
+    	import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 
-		test("e2e", async (ctx: TestContext) => {
-			// Create user & token to authenticate with
-			const { user } = await ctx.modules.users.createUser({});
-			const { token } = await ctx.modules.users.createUserToken({
-				userId: user.id,
-			});
+    	test("e2e", async (ctx: TestContext) => {
+    		// Create user & token to authenticate with
+    		const { user } = await ctx.modules.users.createUser({});
+    		const { token } = await ctx.modules.users.createUserToken({
+    			userId: user.id,
+    		});
 
-			// Create some scores
-			const scores = [];
-			for (let i = 0; i < 10; i++) {
-				const score = faker.random.number({ min: 0, max: 100 });
-				await ctx.modules.myLeaderboard.submitScore({
-					userToken: token.token,
-					score: score,
-				});
-				scores.push(score);
-			}
+    		// Create some scores
+    		const scores = [];
+    		for (let i = 0; i < 10; i++) {
+    			const score = faker.random.number({ min: 0, max: 100 });
+    			await ctx.modules.myLeaderboard.submitScore({
+    				userToken: token.token,
+    				score: score,
+    			});
+    			scores.push(score);
+    		}
 
-			// Get top scores
-			scores.sort((a, b) => b - a);
-			const topScores = await ctx.modules.myLeaderboard.getTopScores({ count: 5 });
-			assertEquals(topScores.scores.length, 5);
-			for (let i = 0; i < 5; i++) {
-				assertEquals(topScores.scores[i].score, scores[i]);
-			}
-		});
-		```
+    		// Get top scores
+    		scores.sort((a, b) => b - a);
+    		const topScores = await ctx.modules.myLeaderboard.getTopScores({ count: 5 });
+    		assertEquals(topScores.scores.length, 5);
+    		for (let i = 0; i < 5; i++) {
+    			assertEquals(topScores.scores[i].score, scores[i]);
+    		}
+    	});
+    	```
     </Step>
     <Step title="Run test">
 
-		In the same terminal, run:
+    	In the same terminal, run:
 
-		```sh
-		opengb test
-		```
+    	```sh
+    	opengb test
+    	```
 
-		You should see this output once complete:
+    	You should see this output once complete:
 
-		```
-		...test logs...
-		----- output end -----
-		e2e ... ok (269ms)
+    	```
+    	...test logs...
+    	----- output end -----
+    	e2e ... ok (269ms)
 
-		ok | 1 passed | 0 failed (280ms)
-		```
+    	ok | 1 passed | 0 failed (280ms)
+    	```
 
-	</Step>
+    </Step>
+
 </Steps>

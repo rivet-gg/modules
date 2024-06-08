@@ -8,23 +8,33 @@ Registries are used to manage collections of modules & share modules across back
 
 Most mature game studios have registries configured like this inside of their game's repo:
 
-```yaml backend.yaml
-registries:
-  # Modules shared across multiple games
-  shared:
-    git:
-      url: https://github.com/my-studio/my-registry.git
-      directory: ./modules
-  # Modules specific to this game
-  local:
-    local:
-      directory: ./modules
-modules:
-  module_a: {}  # Pulls from the default registry
-  module_b:
-    registry: shared
-  module_c:
-    registry: local
+```json backend.json
+{
+	"registries": {
+    // Modules shared across multiple games
+		"shared": {
+			"git": {
+				"url": "https://github.com/my-studio/my-registry.git",
+				"directory": "./modules"
+			}
+		},
+    // Modules specific to this game
+		"local": {
+			"local": {
+				"directory": "./modules"
+			}
+		}
+	},
+	"modules": {
+		"module_a": {},  // Pulls from the registry named `default`
+		"module_b": {
+			"registry": "shared"
+		},
+		"module_c": {
+			"registry": "local"
+		}
+	}
+}
 ```
 
 ## Special registries
@@ -35,18 +45,24 @@ The registry named `default` is special. Any modules without a specified registr
 
 The default config for the `default` registry is:
 
-```yaml backend.yaml
-registries:
-  default:
-    git:
-      url:
-        https: https://github.com/rivet-gg/opengb-registry.git
-        ssh: git@github.com:rivet-gg/opengb-registry.git
-      directory: ./modules
-      rev: foobar
+```json backend.json
+{
+	"registries": {
+		"default": {
+			"git": {
+				"url": {
+					"https": "https://github.com/rivet-gg/opengb-registry.git",
+					"ssh": "git@github.com:rivet-gg/opengb-registry.git"
+				},
+				"directory": "./modules",
+				"rev": "foobar"
+			}
+		}
+	}
+}
 ```
 
-You can override this in your `backend.yaml` file.
+You can override this in your `backend.json` file.
 
 ### `local`
 
@@ -54,11 +70,16 @@ The registry named `local` is special. All commands with `opengb create` will cr
 
 Most projects specify a default registry like:
 
-```yaml backend.yaml
-registries:
-  local:
-    local:
-      directory: ./modules
+```json backend.json
+{
+	"registries": {
+		"local": {
+			"local": {
+				"directory": "./modules"
+			}
+		}
+	}
+}
 ```
 
 ## Types of registries
@@ -73,12 +94,18 @@ If a module is stored locally but shared across multiple backends, set `isExtern
 
 Example:
 
-```yaml backend.yaml
-registries:
-  local:
-    local:
-      directory: ./modules
-      isExternal: true  # Optional
+```json backend.json
+{
+	"registries": {
+		"local": {
+			"local": {
+				"directory": "./modules",
+        // Optional
+				"isExternal": true
+			}
+		}
+	}
+}
 ```
 
 ### `git`
@@ -87,10 +114,15 @@ Git registries represent a git repository holding modules. This is useful for sh
 
 This uses the native Git CLI to fetch modules, so you can use private Git registries that your computer has access to.
 
-```yaml backend.yaml
-registries:
-  shared:
-    git:
-      url: https://github.com/my-studio/my-registry.git
-      directory: ./modules
+```json backend.json
+{
+	"registries": {
+		"shared": {
+			"git": {
+				"url": "https://github.com/my-studio/my-registry.git",
+				"directory": "./modules"
+			}
+		}
+	}
+}
 ```

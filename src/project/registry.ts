@@ -76,7 +76,7 @@ async function resolveRegistryLocal(
 	name: string,
 	config: RegistryConfigLocal,
 ): Promise<ResolveRegistryOutput> {
-	const projectConfigPath = resolve(projectRoot, "backend.yaml");
+	const projectConfigPath = resolve(projectRoot, "backend.json");
 
 	const isExternal = config.isExternal ?? false;
 
@@ -97,7 +97,7 @@ async function resolveRegistryGit(
 	config: RegistryConfigGit,
 	signal?: AbortSignal,
 ): Promise<ResolveRegistryOutput> {
-	const projectConfigPath = resolve(projectRoot, "backend.yaml");
+	const projectConfigPath = resolve(projectRoot, "backend.json");
 
 	const repoPath = resolve(projectRoot, ".opengb", "git_registries", name);
 	const gitRef = resolveGitRef(config);

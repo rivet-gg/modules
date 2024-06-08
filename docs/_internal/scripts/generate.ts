@@ -2,7 +2,7 @@
 
 import { resolve } from "https://deno.land/std@0.214.0/path/mod.ts";
 // import { ProjectMeta } from "../vendor/opengb/src/build/meta.ts";
-import { ModuleMeta, ProjectMeta } from "../../../opengb/src/build/meta.ts";
+import { ModuleMeta, ProjectMeta } from "../../../src/build/meta.ts";
 import { emptyDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { compile } from "npm:json-schema-to-typescript@^13.1.2";
@@ -11,10 +11,10 @@ const PROJECT_ROOT = resolve(import.meta.dirname!, "..", "..");
 const OPENGB_PATH = resolve(
 	PROJECT_ROOT,
 	"..",
-	"opengb",
 );
 const TEST_PROJECT_PATH = resolve(
 	PROJECT_ROOT,
+	"..",
 	"..",
 	"opengb-registry",
 	"tests",
@@ -150,7 +150,7 @@ async function generateProjectConfig() {
 	await Deno.writeTextFile(
 		resolve(PROJECT_ROOT, "concepts", "project-config.mdx"),
 		`---
-title: "Config (backend.yaml)"
+title: "Config (backend.json)"
 ---
 
 <Note>This documentation page is a work in progress.</Note>
@@ -168,7 +168,7 @@ async function generateModuleConfig() {
 	await Deno.writeTextFile(
 		resolve(PROJECT_ROOT, "build", "module-config.mdx"),
 		`---
-title: "Config (module.yaml)"
+title: "Config (module.json)"
 ---
 
 <Note>This documentation page is a work in progress.</Note>
@@ -245,14 +245,18 @@ async function generateModule(moduleName: string, module: ModuleMeta) {
 
 	let install: string;
 	if (module.hasUserConfigSchema) {
-		install = `modules:
-  ${moduleName}:
-    config:
-      # Your config here. See below for more details.
+		install = `"modules": {
+	"${moduleName}": {
+		"config": {
+			// Your config here. See below for more details.
+		}
+	}
+}
 `;
 	} else {
-		install = `modules:
-  ${moduleName}: {}
+		install = `"modules": {
+	"${moduleName}": {}
+}
 `;
 	}
 

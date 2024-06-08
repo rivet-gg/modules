@@ -2,13 +2,16 @@
 
 ## Usage
 
-All errors that are thrown from modules should be defined in the `module.yaml`,
+All errors that are thrown from modules should be defined in the `module.json`,
 like this:
 
-```yaml
-errors:
-  FOO: {}
-  BAR: {}
+```json
+{
+	"errors": {
+		"FOO": {},
+		"BAR": {}
+	}
+}
 ```
 
 The errors can then be thrown from within scripts like:

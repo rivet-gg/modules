@@ -7,7 +7,7 @@ export async function templateTest(
 	moduleName: string,
 	testName: string,
 ) {
-	if (!getLocalRegistry(project)) throw new UserError("No \`local\` registry found in backend.yaml.");
+	if (!getLocalRegistry(project)) throw new UserError("No \`local\` registry found in backend.json.");
 
 	const mod = project.modules.get(moduleName);
 	if (!mod) throw new UserError(`Module \`${moduleName}\` does not exist.`);

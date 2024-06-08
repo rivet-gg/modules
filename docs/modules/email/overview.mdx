@@ -29,15 +29,18 @@ opengb module add email
 
 </Tab>
 
-<Tab title="backend.yaml">
+<Tab title="backend.json">
 
-Add the following to your `backend.yaml`:
+Add the following to your `backend.json`:
 
-```yaml backend.yaml
-modules:
-  email:
-    config:
-      # Your config here. See below for more details.
+```json backend.json
+"modules": {
+	"email": {
+		"config": {
+			// Your config here. See below for more details.
+		}
+	}
+}
 
 ```
 </Tab>

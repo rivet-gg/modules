@@ -5,7 +5,7 @@
 - type safe middlewares
 - not import module directly
 - future proofing
-- integrate in module.yaml
+- integrate in module.json
 - allow running middleware on remote functions without them knowing?
 
 ## Option A: integrate with request response
