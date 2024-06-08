@@ -3,6 +3,7 @@ import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createBuildState, waitForBuildPromises } from "../build_state/mod.ts";
 import { success } from "../term/status.ts";
 import { planProjectBuild } from "./plan/project.ts";
+import { UnreachableError } from "../error/mod.ts";
 
 /**
  * Which format to use for building.
@@ -61,4 +62,11 @@ export async function build(project: Project, opts: BuildOpts) {
 	await waitForBuildPromises(buildState);
 
 	success("Success");
+}
+
+export function runtimeToString(runtime: Runtime) {
+	if (runtime == Runtime.Deno) return "Deno";
+	if (runtime == Runtime.Cloudflare) return "Cloudflare";
+
+	throw new UnreachableError(runtime);
 }

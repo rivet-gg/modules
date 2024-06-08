@@ -1,9 +1,18 @@
 import { dirname, fromFileUrl, resolve } from "../deps.ts";
-import { ACTOR_PATH, Project, genActorCaseConversionMapPath } from "../project/mod.ts";
-import { ENTRYPOINT_PATH, GITIGNORE_PATH, RUNTIME_CONFIG_PATH, RUNTIME_PATH, genDependencyCaseConversionMapPath, genPath, genPrismaOutputBundle, genRuntimeModPath } from "../project/project.ts";
+import { ACTOR_PATH, genActorCaseConversionMapPath, Project } from "../project/mod.ts";
+import {
+	ENTRYPOINT_PATH,
+	genDependencyCaseConversionMapPath,
+	genPath,
+	genPrismaOutputBundle,
+	genRuntimeModPath,
+	GITIGNORE_PATH,
+	RUNTIME_CONFIG_PATH,
+	RUNTIME_PATH,
+} from "../project/project.ts";
 import { CommandError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
-import { BuildOpts, DbDriver, Runtime } from "./mod.ts";
+import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
 import { dedent } from "./deps.ts";
 
 // Read source files as strings
@@ -272,13 +281,14 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	// Generate config.ts
 	const configSource = `
 		${autoGenHeader()}
-		import { Config } from "${runtimeModPath}";
+		import { Config, BuildRuntime } from "${runtimeModPath}";
 
 		${compat}
 		${imports}
 		${modImports}
 
 		export default {
+			runtime: BuildRuntime.${runtimeToString(opts.runtime)},
 			modules: ${modConfig},
 		} as Config;
 		`;

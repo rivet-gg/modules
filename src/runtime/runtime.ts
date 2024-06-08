@@ -9,7 +9,16 @@ import { RegistryCallMap } from "./proxy.ts";
 import { ActorDriver } from "./actor.ts";
 
 export interface Config {
+	runtime: BuildRuntime;
 	modules: Record<string, Module>;
+}
+
+/**
+ * Which runtime to target when building.
+ */
+export enum BuildRuntime {
+	Deno,
+	Cloudflare,
 }
 
 export interface Module {
@@ -78,9 +87,14 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 	}
 
 	public createRootContext(
-		traceEntryType: TraceEntryType
+		traceEntryType: TraceEntryType,
 	): Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT> {
-		return new Context(this, newTrace(traceEntryType), this.dependencyCaseConversionMap, this.actorDependencyCaseConversionMap);
+		return new Context(
+			this,
+			newTrace(traceEntryType, this.config.runtime),
+			this.dependencyCaseConversionMap,
+			this.actorDependencyCaseConversionMap,
+		);
 	}
 
 	/**

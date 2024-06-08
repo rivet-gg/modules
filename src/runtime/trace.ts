@@ -1,4 +1,5 @@
 import { JsonObject } from "../types/json.ts";
+import { BuildRuntime } from "./runtime.ts";
 
 /**
  * Provides context about where this script call came from.
@@ -48,15 +49,24 @@ export interface TraceEntryTypeTest extends JsonObject {
 export interface TraceEntryTypeInternalTest extends JsonObject {
 }
 
-export function newTrace(entryType: TraceEntryType): Trace {
+export function newTrace(entryType: TraceEntryType, runtime: BuildRuntime = BuildRuntime.Deno): Trace {
 	const entry: TraceEntry = {
 		requestId: crypto.randomUUID(),
 		startedAt: new Date().toISOString(),
 		type: entryType,
 	};
 
+	// Read managed opengb ray id from request header (set by cloudflare)
+	let rayId: string;
+	if (runtime == BuildRuntime.Cloudflare && "httpRequest" in entry) {
+		rayId = (entry.httpRequest as TraceEntryTypeHttpRequest).headers["x-opengb-ray-id"];
+	}
+
+	// Generate random ray ID
+	if (!rayId) rayId = crypto.randomUUID();
+
 	return {
-		rayId: crypto.randomUUID(),
+		rayId,
 		entries: [entry],
 	};
 }
