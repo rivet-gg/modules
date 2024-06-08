@@ -15,17 +15,20 @@ const npmInstallOutput = await new Deno.Command("npm", {
 if (!npmInstallOutput.success) throw "Failed to install Prisma dependencies";
 
 // Archive Prisma modules
-await buildArtifacts(
-	resolve(rootSrcPath(), "vendor", "prisma", "node_modules"),
-	[
+await buildArtifacts({
+	rootPath: resolve(rootSrcPath(), "vendor", "prisma", "node_modules"),
+	patterns: [
 		// Source files
-		"**/*.{js,json,d.ts}",
+		"**/*",
+		"**/*.{js,json,d.ts,wasm}",
 		// Only include WASM files we depend on
+		"prisma/build/prisma_schema_build_bg.wasm",
 		"@prisma/client/runtime/query_engine_bg.postgresql.wasm",
 	],
-	resolve(rootSrcPath(), "artifacts", "prisma_archive.json"),
-	{
+	outputPath: resolve(rootSrcPath(), "artifacts", "prisma_archive.json"),
+	globOpts: {
 		// Exclude large files we don't use
-		ignore: ["prisma/build/index.js"],
+		// ignore: ["prisma/build/index.js"],
 	},
-);
+	encode: "base64",
+});

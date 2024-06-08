@@ -1,10 +1,10 @@
-import { copy, resolve } from "../deps.ts";
+import { copy, exists, resolve } from "../deps.ts";
 import { dedent } from "./deps.ts";
 import { Module, Project } from "../project/mod.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { verbose } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "../utils/once.ts";
-import { genPath, PRISMA_WORKSPACE_PATH} from "../project/project.ts";
+import { genPath, PRISMA_WORKSPACE_PATH } from "../project/project.ts";
 import prismaArchive from "../../artifacts/prisma_archive.json" with { type: "json" };
 import { inflateArchive } from "../build/util.ts";
 
@@ -79,8 +79,10 @@ export async function runPrismaCommand(
 
 	// Writes a copy of the OpenGB runtime bundled with the CLI to the project.
 	const inflatePrismaPath = resolve(dbDir, "node_modules");
-	await Deno.mkdir(inflatePrismaPath);
-	await inflateArchive(prismaArchive, inflatePrismaPath, signal);
+  if (await exists(inflatePrismaPath, { isDirectory: true })) {
+    await Deno.remove(inflatePrismaPath, { recursive: true })
+  }
+	await inflateArchive(prismaArchive, inflatePrismaPath, "base64", signal);
 
 	// Copy database
 	await copy(resolve(module.path, "db"), dbDir, { overwrite: true });
