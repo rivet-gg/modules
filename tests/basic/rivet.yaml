@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://rivet.gg/rivet.schema.json
+
+#           ┌───────────────────────────────────────────────────────┐
+#           │                                                       │
+#           │           This configuration file is empty.           │
+#           │                                                       │
+#           │      Get started: https://rivet.gg/learn/custom       │
+#           │    Reference: https://rivet.gg/docs/general/config    │
+#           │                                                       │
+#           └───────────────────────────────────────────────────────┘
+
+engine:
+  custom: {}
+
