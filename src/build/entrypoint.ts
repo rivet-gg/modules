@@ -1,4 +1,4 @@
-import { dirname, fromFileUrl, resolve } from "../deps.ts";
+import { resolve } from "../deps.ts";
 import { ACTOR_PATH, genActorCaseConversionMapPath, Project } from "../project/mod.ts";
 import {
 	ENTRYPOINT_PATH,

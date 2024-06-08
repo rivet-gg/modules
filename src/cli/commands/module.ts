@@ -33,7 +33,7 @@ moduleCommand
 			newConfig.modules[moduleName] = moduleConfig;
 			await Deno.writeTextFile(
 				resolve(project.path, "backend.json"),
-				JSON.stringify(newConfig, null, '\t'),
+				JSON.stringify(newConfig, null, "\t"),
 			);
 		},
 	);

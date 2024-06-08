@@ -1,4 +1,4 @@
-import { assert, copy, emptyDir, exists, move, resolve } from "../deps.ts";
+import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
 import { glob } from "./deps.ts";
 import { configPath as projectConfigPath, readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
@@ -9,7 +9,6 @@ import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
 import { loadDefaultRegistry } from "./registry.ts";
 import { UserError } from "../error/mod.ts";
-import { BuildOpts, Runtime } from "../build/mod.ts";
 
 export interface Project {
 	path: string;
@@ -279,7 +278,7 @@ function genPublicUtilsFolder(project: Project): string {
 
 /**
  * Inner file used to nest any imports related to this module.
- * 
+ *
  * This will be re-imported in other `genModulePublicExternal`.
  */
 export function genModulePublicInternal(project: Project, module: Module): string {
@@ -288,7 +287,7 @@ export function genModulePublicInternal(project: Project, module: Module): strin
 
 /**
  * File that gets imported as `Module` in the module.gen.ts.
- * 
+ *
  * This exports the dependencies (the `genModulePublicInternal` files) with
  * their given module names.
  */

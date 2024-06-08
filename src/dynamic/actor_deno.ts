@@ -47,9 +47,9 @@ export const ACTOR_DRIVER = {
 };
 
 /**
-* Actor implementation that user-made actors will extend.
-* Not meant to be instantiated.
-*/
+ * Actor implementation that user-made actors will extend.
+ * Not meant to be instantiated.
+ */
 export abstract class ActorBase {
 	static buildState(_input: unknown): any {
 		throw Error("unimplemented");

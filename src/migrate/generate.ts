@@ -8,7 +8,6 @@ import { Module, Project } from "../project/mod.ts";
 import { forEachDatabase } from "./mod.ts";
 import { runPrismaCommand } from "./prisma.ts";
 import { Runtime } from "../build/mod.ts";
-import { indexOfNeedle } from "https://deno.land/std@0.140.0/bytes/mod.ts";
 import { genPrismaOutputFolder } from "../project/project.ts";
 
 export async function generateClient(

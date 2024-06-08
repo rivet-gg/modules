@@ -1,8 +1,8 @@
 import {
-	genDependencyCaseConversionMapPath,
-	genDependencyTypedefPath,
 	genActorCaseConversionMapPath,
 	genActorTypedefPath,
+	genDependencyCaseConversionMapPath,
+	genDependencyTypedefPath,
 	Project,
 } from "../../project/mod.ts";
 import { GeneratedCodeBuilder } from "./mod.ts";

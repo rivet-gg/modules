@@ -1,13 +1,20 @@
-import { genActorCaseConversionMapPath, genActorTypedefPath, hasUserConfigSchema, Module, moduleHelperGen, Project } from "../../project/mod.ts";
+import {
+	genActorCaseConversionMapPath,
+	genActorTypedefPath,
+	hasUserConfigSchema,
+	Module,
+	moduleHelperGen,
+	Project,
+} from "../../project/mod.ts";
 import { GeneratedCodeBuilder } from "./mod.ts";
 import {
+	genActorPath,
 	genDependencyCaseConversionMapPath,
 	genDependencyTypedefPath,
 	genModulePublicExternal,
 	genPath,
 	genPrismaOutputBundle,
 	genRuntimeModPath,
-	genActorPath,
 	RUNTIME_CONFIG_PATH,
 } from "../../project/project.ts";
 import { camelify } from "../../types/case_conversions.ts";
