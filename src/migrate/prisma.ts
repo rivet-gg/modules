@@ -38,6 +38,16 @@ async function ensurePrismaWorkspaceInner(project: Project): Promise<void> {
 
 	await Deno.mkdir(prismaDir, { recursive: true });
 
+	// Make the directory usable by the Node container
+	const hostChownOutput = await new Deno.Command("chmod", {
+		args: [
+			"-R",
+			"a+rwx",
+			prismaDir,
+		],
+	}).output();
+	if (!hostChownOutput.success) throw new CommandError("Failed to fix permissions.", { commandOutput: hostChownOutput });
+
 	// Remove the existing container if exists. This forces the new
 	// configuration for a new container.
 	verbose("Removing old container", NODE_CONTAINER_NAME);
@@ -88,9 +98,9 @@ async function ensurePrismaWorkspaceInner(project: Project): Promise<void> {
 			"exec",
 			NODE_CONTAINER_NAME,
 			// ===
-			"chown",
+			"chmod",
 			"-R",
-			"node:node",
+			"a+rwx",
 			"/prisma",
 		],
 	}).output();
@@ -116,6 +126,20 @@ async function ensurePrismaWorkspaceInner(project: Project): Promise<void> {
 	if (!installOutput.success) {
 		throw new CommandError("Failed to install prisma dependencies.", { commandOutput: installOutput });
 	}
+
+	// Make the directory usable by the Node container
+	const chownOutput2 = await new Deno.Command("docker", {
+		args: [
+			"exec",
+			NODE_CONTAINER_NAME,
+			// ===
+			"chmod",
+			"-R",
+			"a+rwx",
+			"/prisma"
+		],
+	}).output();
+	if (!chownOutput2.success) throw new CommandError("Failed to fix permissions.", { commandOutput: chownOutput2 });
 
 	verbose("Prisma workspace init complete", prismaDir);
 }
@@ -207,14 +231,25 @@ export async function runPrismaCommand(
 	const envFlags = Object.entries(opts.env).map(([key, value]) => `--env=${key}=${value}`);
 
 	// Make the directory usable by the Node container
+	const hostChownOutput = await new Deno.Command("chmod", {
+		args: [
+			"-R",
+			"a+rwx",
+			dbDirHost,
+		],
+		signal,
+	}).output();
+	if (!hostChownOutput.success) throw new CommandError("Failed to fix permissions.", { commandOutput: hostChownOutput });
+
+	// Make the directory usable by the Node container
 	const chownOutput = await new Deno.Command("docker", {
 		args: [
 			"exec",
 			NODE_CONTAINER_NAME,
 			// ===
-			"chown",
+			"chmod",
 			"-R",
-			"node:node",
+			"a+rwx",
 			dbDirContainer,
 		],
 		signal,
@@ -250,9 +285,9 @@ export async function runPrismaCommand(
 			"exec",
 			NODE_CONTAINER_NAME,
 			// ===
-			"chown",
+			"chmod",
 			"-R",
-			`${Deno.uid()}:${Deno.gid()}`,
+			"a+rwx",
 			dbDirContainer,
 		],
 		signal,
