@@ -1,0 +1,61 @@
+---
+title: Nakama
+---
+
+<Note>
+  Please read Open Game Backend's [known limitations](/concepts/known-limitations)
+  before reading this comparison.
+</Note>
+
+[Nakama](https://heroiclabs.com/nakama/) was founded in 2014 and is still an independent company.
+
+## What Nakama does well
+
+- Open source (Apache 2.0)
+- LiveOps features provided by Satori (closed-source)
+- Written in Go
+- Focus on real-time multiplayer games
+- Provides scripting in TypeScript, Go, and Lua
+
+## How Supabase and Open Game Backend are similar
+
+- Open-source (Apache 2.0)
+
+## How Nakama and Open Game Backend differ
+
+### Prefab backend vs modular backend
+
+Nakama provides a predefined set of features out of the box. While you can fork Nakama to extend it with your own features, it's not very common.
+
+Nakama encourages developers to [use scripting](https://heroiclabs.com/docs/nakama/server-framework/introduction/index.html) to extend the server. While the scripting is extensive, it's not intended for all use cases.
+
+This means Nakama has first-class services written in Go and asks you to write second-class code written in a scripting language without access to a mature database.
+
+Open Game Backend is designed from the ground up to be modular at its core. It provides a set of official modules to get you started quickly, but the primary use case is to extend the server with your own modules. All modules are first-class citizens have access to a mature database.
+
+### Scripting persistence
+
+Nakama provides persistence through its [storage engine](https://heroiclabs.com/docs/nakama/concepts/storage/) built on top of CockroachDB. The storage engine is a document store similar that stores JSON objects along with access controls. It also provides a well-designed mechanism for indexing data that prevents slow queries. The engine supports atomic & conditional writes, but does not support full transactions.
+
+Open Game Backend modules are provided the full flexibility of PostgreSQL, including transactions, complex queries, and indexing. Unlike the Nakama storage engine, PostgreSQL enforces a strict schema on your data which makes it easier to assert the correctness of your data. PostgreSQL provides a [large collection of extensions](https://neon.tech/docs/extensions/pg-extensions) for managing many complex data types. PostgreSQL also integrates natively with many existing tools, such as SQL clients, BI tools, and data warehousing tools which are important when your game grows.
+
+### Go vs TypeScript
+
+Nakama is written in Go, while Open Game Backend is written in TypeScript. Both projects have different goals which lead to this choice.
+
+Go is a mature language for building high-performance servers. Nakama has a focus on running multiplayer servers within the server, so Go's performance is important. However, it's not as easy to learn as TypeScript.
+
+TypeScript was chosen intentionally for Open Game Backend to make it dead simple to write & modify modules. TypeScript is not as fast as Go, but it's fast enough for most use cases. None of Open Game Backend's features require the performance of Go.
+
+<Note>
+  Open Game Backend was written by a bunch of Rust nerds. Trust me, we would've
+  written Open Game Backend in Rust if it made sense. 🦀
+</Note>
+
+### Managed cloud & self-hosting
+
+Nakama provides a managed cloud [starting at $600 per month](https://heroiclabs.com/pricing/). You should not run a server without high availability, which starts at $1,000 per month.
+
+Both Nakama and Open Game Backend can be self-hosted on any cloud provider.
+
+Open Game Backend can be hosted on serverless JS platforms (Cloudflare Workers, Deno Deploy) which can cost penies per month and blitz scale to meet demand as needed. This is not possible with Nakama.

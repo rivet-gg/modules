@@ -1,0 +1,50 @@
+---
+title: "%%DISPLAY_NAME%%"
+description: "%%DESCRIPTION%%"
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/%%NAME%%) | `%%NAME%%` | %%STATUS%% | %%DATABASE%% |
+
+**Authors**
+
+%%AUTHORS%%
+
+**Dependencies**
+
+%%DEPENDENCIES%%
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add %%NAME%%
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+%%INSTALL_CONFIG%%
+```
+</Tab>
+
+</Tabs>
+
+%%CONFIG_SCHEMA%%
+
+## Scripts
+
+<CardGroup>%%SCRIPTS%%</CardGroup>
+
+## Errors
+
+%%ERRORS%%

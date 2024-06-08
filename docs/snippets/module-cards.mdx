@@ -1,0 +1,50 @@
+export const ModuleCards = () => (
+<>
+	<p>These modules are thoroughly reviewed, tested, and documented to help you get your game backend up and running as quickly as possible. Learn more about <a href="/build">creating your own module</a> and <a href="/concepts/registries">using your own registries</a>.</p>
+
+	<CardGroup cols={2}>
+		<Card title="Build your own" icon="plus" href="/build" />
+		
+        <Card title="Authentication" icon="key" href="/modules/auth/overview">
+          <div>Authenticate users with multiple authentication methods.</div>
+          <Tags tags={["stable","core","auth","user"]} />
+        </Card>
+      
+        <Card title="Currency" icon="coin" href="/modules/currency/overview">
+          <div>Track user balances and allow them to deposit and withdraw.</div>
+          <Tags tags={["preview","economy"]} />
+        </Card>
+      
+        <Card title="Email" icon="envelope" href="/modules/email/overview">
+          <div>Send emails using multiple providers.</div>
+          <Tags tags={["stable","email"]} />
+        </Card>
+      
+        <Card title="Friends" icon="user-group" href="/modules/friends/overview">
+          <div>Allow users to send and accept friend requests.</div>
+          <Tags tags={["beta","social"]} />
+        </Card>
+      
+        <Card title="Rate Limit" icon="gauge-circle-minus" href="/modules/rate_limit/overview">
+          <div>Prevent abuse by limiting request rate.</div>
+          <Tags tags={["stable","core","utility"]} />
+        </Card>
+      
+        <Card title="Tokens" icon="lock" href="/modules/tokens/overview">
+          <div>Create & verify tokens for authorization purposes.</div>
+          <Tags tags={["stable","core","utility"]} />
+        </Card>
+      
+        <Card title="Uploads" icon="file-arrow-up" href="/modules/uploads/overview">
+          <div>Upload & store files in an object store.</div>
+          <Tags tags={["stable","core","utility"]} />
+        </Card>
+      
+        <Card title="Users" icon="user" href="/modules/users/overview">
+          <div>Identify and manage users.</div>
+          <Tags tags={["stable","core","social"]} />
+        </Card>
+      
+	</CardGroup>
+</>
+);

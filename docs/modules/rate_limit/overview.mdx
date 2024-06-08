@@ -1,0 +1,53 @@
+---
+title: "Rate Limit"
+description: "Prevent abuse by limiting request rate."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/rate_limit) | `rate_limit` | stable | Yes |
+
+**Authors**
+
+- [rivet-gg](https://github.com/rivet-gg)
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+_No dependencies_
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add rate_limit
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+modules:
+  rate_limit: {}
+
+```
+</Tab>
+
+</Tabs>
+
+
+
+## Scripts
+
+<CardGroup><Card title="Throttle" href="/modules/rate_limit/scripts/throttle">Limit the amount of times an request can be made by a given key.</Card><Card title="Throttle Public" href="/modules/rate_limit/scripts/throttle_public">Limit the amount of times a public request can be made by a given key. This will rate limit based off the user's IP address.</Card></CardGroup>
+
+## Errors
+
+- **Rate Limit Exceeded** (`rate_limit_exceeded`) 

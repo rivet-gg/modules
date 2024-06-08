@@ -1,0 +1,76 @@
+---
+title: "Email"
+description: "Send emails using multiple providers."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/email) | `email` | stable | No |
+
+**Authors**
+
+- [rivet-gg](https://github.com/rivet-gg)
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+_No dependencies_
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add email
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+modules:
+  email:
+    config:
+      # Your config here. See below for more details.
+
+```
+</Tab>
+
+</Tabs>
+
+## Config
+
+		
+```typescript
+export type Provider =
+  | {
+      test: ProviderTest;
+    }
+  | {
+      sendGrid: ProviderSendGrid;
+    };
+
+export interface Config {
+  provider: Provider;
+}
+export interface ProviderTest {}
+export interface ProviderSendGrid {
+  apiKeyVariable?: string;
+}
+```
+
+
+## Scripts
+
+<CardGroup><Card title="Send Email" href="/modules/email/scripts/send_email"></Card></CardGroup>
+
+## Errors
+
+- **Email Missing Content** (`email_missing_content`) Email must have `html` and/or `text`
+- **SendGrid Error** (`sendgrid_error`) 

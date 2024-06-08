@@ -1,0 +1,53 @@
+direction: right
+
+client: {
+  label: Game
+
+  grid-columns: 2
+  grid-gap: 15
+
+  sdk: {label: OpenGB SDK}
+}
+
+backend: {
+  label: Open Game Backend
+  grid-columns: 3
+  grid-gap: 20
+
+  a: {
+    label: Module
+    grid-rows: 2
+    grid-gap: 15
+
+    a: {label: "Script"}
+    b: {label: "Script"}
+    c: {label: "Script"}
+
+    "Database".width: 200
+  }
+  b: {
+    label: Module
+    grid-rows: 2
+    grid-gap: 15
+
+    a: {label: "Script"}
+    b: {label: "Script"}
+    c: {label: "Script"}
+
+    "Database".width: 200
+  }
+
+  c: {
+    label: Module
+    grid-rows: 2
+    grid-gap: 15
+
+    a: {label: "Script"}
+    b: {label: "Script"}
+    c: {label: "Script"}
+
+    "Database".width: 200
+  }
+}
+
+client.sdk -> backend

@@ -1,0 +1,59 @@
+direction: down
+
+grid-columns: 2
+grid-gap: 300
+
+local: {
+  label: Running on your local computer
+  grid-columns: 1
+  style: {
+    stroke-dash: 3
+    stroke: gray
+    fill: transparent
+    font-size: 16
+    italic: true
+  }
+
+  client: {
+    label: Your Game
+
+    grid-columns: 2
+    grid-gap: 15
+
+    sdk: {label: OpenGB SDK}
+  }
+}
+
+cloud: {
+  label: Running in Rivet Cloud or self-hosted
+  grid-columns: 1
+  style: {
+    stroke-dash: 3
+    stroke: gray
+    fill: transparent
+    font-size: 16
+    italic: true
+  }
+
+  backend: {
+    label: Open Game Backend
+    grid-columns: 3
+    grid-gap: 20
+
+    a: {
+      label: Module
+    }
+
+    b: {
+      label: Module
+    }
+
+    c: {
+      label: Module
+    }
+  }
+}
+
+local.client.sdk -> cloud.backend: backend.callMyScript() {
+  style.font: mono
+}

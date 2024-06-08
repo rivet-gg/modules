@@ -1,0 +1,47 @@
+---
+title: "Create Token"
+description: ""
+sidebarTitle: "Create Token"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/tokens/scripts/create.ts) | `create` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.create({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  type: string;
+  meta: {
+    [k: string]: any;
+  };
+  expireAt?: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  token: TokenWithSecret;
+}
+export interface TokenWithSecret {
+  token: string;
+  id: string;
+  type: string;
+  meta: any;
+  createdAt: string;
+  expireAt: null | string;
+  revokedAt: null | string;
+}
+```

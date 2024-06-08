@@ -1,0 +1,52 @@
+---
+title: "Send Email"
+description: ""
+sidebarTitle: "Send Email"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/email/scripts/send_email.ts) | `send_email` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.email.sendEmail({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  from: Email;
+  to: Email[];
+  cc?: Email[];
+  bcc?: Email[];
+  replyTo?: Email[];
+  subject: string;
+  html?: string;
+  text?: string;
+}
+/**
+ * Identifies an email address and optionally a name.
+ */
+export interface Email {
+  /**
+   * Target email.
+   */
+  email: string;
+  /**
+   * Optional display name for the email.
+   */
+  name?: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {}
+```

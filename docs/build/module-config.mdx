@@ -1,0 +1,68 @@
+---
+title: "Config (module.yaml)"
+---
+
+<Note>This documentation page is a work in progress.</Note>
+
+```typescript
+export interface Config {
+  status?: "beta" | "end_of_life" | "maintenance" | "preview" | "stable";
+  /**
+   * The human readable name of the module.
+   */
+  name?: string;
+  /**
+   * A short description of the module.
+   */
+  description?: string;
+  /**
+   * The [Font Awesome](https://fontawesome.com/icons) icon name of the module.
+   */
+  icon?: string;
+  /**
+   * The tags associated with this module.
+   */
+  tags?: string[];
+  /**
+   * The GitHub handle of the authors of the module.
+   */
+  authors?: string[];
+  scripts: {
+    [k: string]: ScriptConfig;
+  };
+  errors: {
+    [k: string]: ErrorConfig;
+  };
+  dependencies?: {
+    [k: string]: DependencyConfig;
+  };
+}
+export interface ScriptConfig {
+  /**
+   * The human readable name of the script.
+   */
+  name?: string;
+  /**
+   * A short description of the script.
+   */
+  description?: string;
+  /**
+   * If the script can be called from the public HTTP interface.
+   *
+   * If enabled, ensure that authentication & rate limits are configured for
+   * this endpoints. See the `user` and `rate_limit` modules.
+   */
+  public?: boolean;
+}
+export interface ErrorConfig {
+  /**
+   * The human readable name of the error.
+   */
+  name?: string;
+  /**
+   * A short description of the error.
+   */
+  description?: string;
+}
+export interface DependencyConfig {}
+```

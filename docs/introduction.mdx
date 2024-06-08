@@ -1,0 +1,297 @@
+---
+title: Overview
+description: "Open-source modular backend for all games and tools. Supports Godot, Unreal, HTML5, Unity, and custom engines."
+---
+
+import { ModuleCards } from "/snippets/module-cards.mdx";
+import { Tags } from "/snippets/tags.mdx";
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="Hero Dark"
+/>
+
+## Features
+
+<CardGroup>
+  <Card icon="puzzle" title="Modular">
+    Mix, match, & modify modules as needed to fit your game's unique requirements.
+  </Card>
+  <Card icon="function" title="Script like a game engine">
+    Easily extend & adapt on top of the [OpenGB Engine](/engine/introduction) using TypeScript. Designed to be scripted by game developers.
+  </Card>
+  <Card icon="battery-full" title="Batteries included">
+    Provides thoroughly reviewed, tested, and documented modules to get you started quickly & allow you to customize to fit your needs.
+  </Card>
+  <Card icon="house-turret" title="Secure, load-tested, & resilient">
+    Built to withstand the chaos that games need to grow & stay online. Load testing, rate limits, captchas, strict schemas, <Tooltip tip="...documentation, secrets management, auto-scaling, and backups">and more</Tooltip> are all enforced by default.
+  </Card>
+  <Card icon="door-open" title="Open-source & permissively licensed">
+    Apache 2.0 license allows you to adapt, modify, & redistribute freely. _[Trust no one, own your backend.](https://delistedgames.com/gamesparks-service-to-end-in-september-potential-threat-to-thousands-of-titles/)_
+  </Card>
+  <Card
+    icon="arrow-right"
+    title="Get Started"
+    href="/concepts/quickstart"
+  ></Card>
+</CardGroup>
+
+## The Only Backend Your Game Needs
+
+<CardGroup>
+  <Card title="Launch quickly, scale painlessly">
+    Building backends should not take time away from launching your game.
+  </Card>
+  <Card title="Customizable">
+    There is no one size fits all for backends. Modify & create modules effortlessly.
+  </Card>
+  <Card title="All-in-one">
+    Single developer platform for your whole team to build single & multiplayer games.
+  </Card>
+  <Card title="No vendor locking">
+    You shouldn't have to build your backend around someone else's closed-source framework.
+  </Card>
+</CardGroup>
+
+<Info>
+  See how Open Game Backend compares to [PlayFab](/comparison/playfab), [Supabase](/comparison/supabase), and [Nakama](/comparison/nakama).
+</Info>
+
+---
+
+## How OpenGB Works
+
+<Frame caption="OpenGB Architecture">
+  <div style={{width:"100%"}}>
+    <img src="/images/overview.svg" style={{width: "100%"}} />
+  </div>
+</Frame>
+
+<Steps>
+  <Step title="Setup Project">
+    Start by installing the [`users` module](/modules/users), generating an SDK, and starting the server.
+
+    ```sh
+    # Create project
+    opengb init
+    # Install module
+    opengb module add friends
+    # Generate SDK to communicate with OpenGB for your game engine
+    opengb sdk generate --output path/to/sdk typescript
+    # Start dev server & database
+    opengb dev
+    ```
+
+    <Info>
+      See all available modules [here](/modules/overview).
+    </Info>
+  </Step>
+  <Step title="Call Backend Scripts">
+    Use the SDK you just generated to call backend scripts. You can see the documentation for `users.get` [here](/modules/users/scripts/get_user).
+
+    <CodeGroup>
+      ```javascript JavaScript (HTML5)
+      const backend = new BackendApi({ endpoint: "http://localhost:8080" });
+      const data = await backend.callUsersGet({ userIds });
+      console.log("Users", data.users);
+      ```
+
+      ```gdscript Godot
+      # IMPORTANT: Auto-generated SDK coming soon
+
+      var json = { "userIds": user_ids }
+      var url = "http://localhost:8080/modules/users/scripts/get/call"
+      var request = $HTTPRequest.request(url, ["Content-Type: application/json"], HTTPClient.METHOD_POST, JSON.stringify(json))
+      var response = await http.request_completed
+
+      var data = JSON.parse_string(body.get_string_from_utf8())
+      print("User", data["users"])
+      ```
+
+      ```csharp Unity
+      // IMPORTANT: Auto-generated SDK coming soon
+
+      var json = JsonConvert.SerializeObject(new { userIds });
+      var www = new UnityWebRequest("https://localhost:8080/modules/users/scripts/get/call", "POST")
+      {
+        uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(json)),
+        downloadHandler = new DownloadHandlerBuffer(),
+      };
+      www.SetRequestHeader("Content-Type", "application/json");
+      yield return www.SendWebRequest();
+
+      var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(www.downloadHandler.text);
+      Debug.Log("Users " + data["users"]);
+      ```
+
+      ```cpp Unreal Engine
+      // IMPORTANT: Auto-generated SDK coming soon
+
+      TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+      JsonObject->SetArrayField(TEXT("userIds"), UserIds);
+
+      FString OutputString;
+      TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
+      FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+
+      TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+      Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
+      Request->SetURL(TEXT("http://localhost:8080/modules/users/scripts/get/call"));
+      Request->SetVerb(TEXT("POST"));
+      Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+      Request->SetContentAsString(OutputString);
+      Request->ProcessRequest();
+      ```
+
+      ```rust Rust
+      // IMPORTANT: Auto-generated SDK coming soon
+
+      let data = reqwest::Client::new()
+          .post("http://localhost:8080/modules/users/scripts/get/call")
+          .json(&json!({ "userIds": user_ids }))
+          .send()
+          .await?
+          .error_for_status()?
+          .json::<serde_json::Value>()
+          .await?;
+      ```
+
+      ```sh curl
+      curl -X POST "http://localhost:8080/modules/users/scripts/get/call" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "userIds": ["00000000-0000-0000-0000-000000000000"]
+        }'
+
+      ```
+    </CodeGroup>
+  </Step>
+  <Step title="Deploy to Production (optional)">
+    Deploy a production-grade scalable backend to [Rivet Cloud](https://b8v8449klvp.typeform.com/to/RsL6LgBW) or [self-host](http://localhost:3000/concepts/self-hosting) on your own servers.
+
+    ```sh
+    rivet backend deploy prod
+    ```
+
+    <Info>
+      Requires installing the [Rivet CLI](https://github.com/rivet-gg/cli).
+    </Info>
+  </Step>
+  <Step title="Write Your Own Module (optional)">
+    Open Game Backend is designed to scale & adapt to the needs of your game. Easily extend & modify modules using TypeScript, no backend experience required.
+
+    <CodeGroup>
+      ```sh Setup
+      # Create new module
+      opengb create module my_leaderboard
+      # Add new script
+      opengb create script my_leaderboard submit_score
+      ```
+
+      ```typescript scripts/submit_score.ts
+      import { ScriptContext } from "../module.gen.ts";
+
+      // User-provided requests are automatically validated with this schema by OpenGB for security
+      export interface Request {
+        userToken: string;
+        score: number;
+      }
+
+      export interface Response {
+        rank: number;
+      }
+
+      export async function run(
+        ctx: ScriptContext,
+        req: Request,
+      ): Promise<Response> {
+        // Rate limit & auth
+        await ctx.modules.rateLimit.throttlePublic({ requests: 1, period: 15 });
+        const validate = await ctx.modules.users.authenticateUser({
+          userToken: req.userToken,
+        });
+
+        // Write to database. This is type-safe & includes intellisense.
+        await ctx.db.scores.create({
+          data: {
+            userId: validate.userId,
+            score: req.score,
+          },
+        });
+
+        // Query database. This is type-safe & includes intellisense.
+        const rank = await ctx.db.scores.count({
+          where: {
+            score: { gt: req.score },
+          },
+        });
+
+        return {
+          rank: rank + 1,
+        };
+      }
+
+      ```
+
+      ```prisma db/schema.prisma
+      datasource db {
+          provider = "postgresql"
+          url      = env("DATABASE_URL")
+      }
+
+      model Scores {
+          id        String   @id @default(uuid()) @db.Uuid
+          createdAt DateTime @default(now()) @db.Timestamp
+          userId    String   @db.Uuid
+          score     Int
+
+          @@index([score])
+      }
+      ```
+
+      ```typescript tests/e2e.ts
+      // This code is optional. Writing tests is good practice to catch common mistakes & save time in the long run.
+
+      import { test, TestContext } from "../module.gen.ts";
+      import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
+
+      test("e2e", async (ctx: TestContext) => {
+        // Create user & token to authenticate with
+        const { user } = await ctx.modules.users.createUser({});
+        const { token } = await ctx.modules.users.createUserToken({
+          userId: user.id,
+        });
+
+        // Create some testing scores
+        for (let score = 1; score <= 10; score++) {
+          await ctx.modules.myLeaderboard.submitScore({
+            userToken: token.token,
+            score: score,
+          });
+        }
+
+        // Get top scores
+        const topScores = await ctx.modules.myLeaderboard.getTopScores({ count: 5 });
+        assertEquals(topScores.scores.length, 5);
+        assertEquals(topScores.scores[0].score, 10);
+      });
+      ```
+    </CodeGroup>
+
+    <Info>
+      Read more about how to build your own modules [here](/build/overview).
+    </Info>
+  </Step>
+</Steps>
+
+---
+
+## Modules
+
+<ModuleCards />

@@ -1,0 +1,74 @@
+---
+title: "Authentication"
+description: "Authenticate users with multiple authentication methods."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/auth) | `auth` | stable | Yes |
+
+**Authors**
+
+- [rivet-gg](https://github.com/rivet-gg)
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+- [Email](/modules/email/overview)
+- [Rate Limit](/modules/rate_limit/overview)
+- [Users](/modules/users/overview)
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add auth
+```
+
+</Tab>
+
+<Tab title="backend.yaml">
+
+Add the following to your `backend.yaml`:
+
+```yaml backend.yaml
+modules:
+  auth:
+    config:
+      # Your config here. See below for more details.
+
+```
+</Tab>
+
+</Tabs>
+
+## Config
+
+		
+```typescript
+export interface Config {
+  email?: EmailConfig;
+}
+export interface EmailConfig {
+  fromEmail: string;
+  fromName?: string;
+}
+```
+
+
+## Scripts
+
+<CardGroup><Card title="Authenticate Email Passwordless" href="/modules/auth/scripts/auth_email_passwordless">Send a one-time verification code to a user's email address to authenticate them.</Card><Card title="Verify Email Passwordless" href="/modules/auth/scripts/verify_email_passwordless">Verify a user's email address with a one-time verification code.</Card></CardGroup>
+
+## Errors
+
+- **Email Already Used** (`email_already_used`) 
+- **Provider Disabled** (`provider_disabled`) 
+- **Verification Code Already Used** (`verification_code_already_used`) 
+- **Verification Code Attempt Limit** (`verification_code_attempt_limit`) 
+- **Verification Code Expired** (`verification_code_expired`) 
+- **Verification Code Invalid** (`verification_code_invalid`) 

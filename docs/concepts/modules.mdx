@@ -1,0 +1,45 @@
+---
+title: Modules
+---
+
+## What are modules?
+
+Modules are pieces of backend functionality that can be combined together to build & customize your game's backend.
+
+Modules include:
+
+- **Scripts** that implement the logic.
+- **Database** schemas to store persistent data.
+- **User configuration** to let you configure settings on the module.
+- **Explicit errors** to make it easy to understand & recover from errors returned from the module.
+
+You can think of modules like an NPM package/Unity package/Unreal plugin/Maven artifact/Rust crate but with a persistence layer and a standard + well-documented way of using it.
+
+## How do I install modules?
+
+To install a module from the default registry, you have two options.
+
+### CLI
+
+You can install the module from the CLI by running the following command:
+
+```sh
+opengb module add my_module
+```
+
+This will update your `backend.yaml` file accordingly.
+
+### `backend.yaml`
+
+You can also manually add the module to your `backend.yaml` file manually, like this:
+
+```yaml
+modules:
+  my_module:
+    config:
+      # Your config here
+```
+
+## Registries
+
+Modules come from registries. OpenGB provides a default registry with all of the modules available on this website. You can specify or host your own registries easily. Read more [here](/concepts/registries).

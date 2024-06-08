@@ -1,0 +1,35 @@
+---
+title: "Deposit"
+description: ""
+sidebarTitle: "Deposit"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/currency/scripts/deposit.ts) | `deposit` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.currency.deposit({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  userId: string;
+  amount: number;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  updatedBalance: number;
+}
+```

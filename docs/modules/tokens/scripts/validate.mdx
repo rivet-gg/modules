@@ -1,0 +1,42 @@
+---
+title: "Validate Token"
+description: "Validate a token. Throws an error if the token is invalid."
+sidebarTitle: "Validate Token"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-registry/tree/main/modules/tokens/scripts/validate.ts) | `validate` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.validate({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  token: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  token: Token;
+}
+export interface Token {
+  id: string;
+  type: string;
+  meta: any;
+  createdAt: string;
+  expireAt: null | string;
+  revokedAt: null | string;
+}
+```
