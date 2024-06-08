@@ -60,10 +60,10 @@ export function newTrace(entryType: TraceEntryType, runtime: BuildRuntime = Buil
 	let rayId: string;
 	if (runtime == BuildRuntime.Cloudflare && "httpRequest" in entry) {
 		rayId = (entry.httpRequest as TraceEntryTypeHttpRequest).headers["x-opengb-ray-id"];
+	} else {
+		// Generate random ray ID
+		rayId = crypto.randomUUID();
 	}
-
-	// Generate random ray ID
-	if (!rayId) rayId = crypto.randomUUID();
 
 	return {
 		rayId,
