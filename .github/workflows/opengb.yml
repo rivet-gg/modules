@@ -36,33 +36,34 @@ jobs:
           VERBOSE: true
         run: deno task test:project
 
-  # test-modules:
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Checkout rivet-gg/opengb
-  #       uses: actions/checkout@v2
-  #       with:
-  #         path: opengb
-  #
-  #     - name: Read ref from JSON
-  #       id: read-ref
-  #       run: echo "REF=$(jq -r '.ref' opengb/path/to/file.json)" >> $GITHUB_ENV
-  #
-  #     - name: Checkout rivet-gg/opengb-modules
-  #       uses: actions/checkout@v2
-  #       with:
-  #         ref: ${{ env.REF }}
-  #         repository: rivet-gg/opengb-modules
-  #         path: opengb-modules
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #
-  #     - name: Install Deno
-  #       uses: denoland/setup-deno@v1
-  #       with:
-  #         deno-version: "1.44.1"
-  #
-  #     - name: Test Modules
-  #       env:
-  #         VERBOSE: true
-  #       run: cd opengb && deno task test:registry
-  #
+  test-modules:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout rivet-gg/opengb
+        uses: actions/checkout@v2
+        with:
+          path: opengb
+
+      # Ensure we check out the same modules that we use it he default registry
+      - name: Read registry ref from JSON
+        id: read-ref
+        run: echo "OPENGB_MODULES_REF=$(jq -r '.' opengb/src/project/registry_default_rev.json)" >> $GITHUB_ENV
+
+      - name: Checkout rivet-gg/opengb-modules
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.OPENGB_MODULES_REF }}
+          repository: rivet-gg/opengb-modules
+          path: opengb-modules
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.44.1"
+
+      - name: Test Modules
+        env:
+          VERBOSE: true
+        run: cd opengb && deno task test:registry
+

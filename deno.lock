@@ -5,6 +5,7 @@
       "npm:@aws-sdk/client-s3": "npm:@aws-sdk/client-s3@3.556.0_@aws-sdk+credential-provider-node@3.556.0",
       "npm:@aws-sdk/s3-request-presigner": "npm:@aws-sdk/s3-request-presigner@3.556.0",
       "npm:@prisma/adapter-pg@^5.12.0": "npm:@prisma/adapter-pg@5.15.0_pg@8.12.0",
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:pg@^8.11.3": "npm:pg@8.12.0",
       "npm:typescript-json-schema@0.62.0": "npm:typescript-json-schema@0.62.0_typescript@5.1.6"
     },

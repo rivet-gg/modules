@@ -3,6 +3,7 @@ import { RegistryConfig, RegistryConfigGit, RegistryConfigLocal } from "../confi
 import { progress, warn } from "../term/status.ts";
 import { UnreachableError, UserError } from "../error/mod.ts";
 import { CommandError } from "../error/mod.ts";
+import registryDefaultReg from "./registry_default_rev.json" with { type: "json" };
 
 export interface Registry {
 	path: string;
@@ -57,8 +58,7 @@ export async function loadDefaultRegistry(projectRoot: string, signal?: AbortSig
 					https: "https://github.com/rivet-gg/opengb-modules.git",
 					ssh: "git@github.com:rivet-gg/opengb-modules.git",
 				},
-				// TODO: https://github.com/rivet-gg/opengb/issues/151
-				rev: "de982be345b2834095f04485b1817131c10dd3ae",
+				rev: registryDefaultReg,
 				directory: "./modules",
 			},
 		},

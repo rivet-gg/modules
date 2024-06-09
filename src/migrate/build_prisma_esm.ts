@@ -71,12 +71,6 @@ function wasmPlugin(): Plugin {
 					import wasm from ${JSON.stringify(args.path)}
 					const module = new WebAssembly.Module(wasm);
 					export default module;
-					// export default wasm;
-					// const result = await WebAssembly.instantiate(wasm);
-					// export default result.instance.exports;
-					// export default (imports) =>
-					//   WebAssembly.instantiate(wasm, imports).then(
-					//     result => result.instance.exports)
 				`,
 			}));
 

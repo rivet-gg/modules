@@ -16,3 +16,12 @@ COPY --from=build /app/dist/cli /usr/bin/opengb
 RUN VERBOSE=1 opengb _internal prewarm-prisma
 ENTRYPOINT ["/usr/bin/opengb"]
 
+# FROM denoland/deno:debian-1.44.1
+# # Required for installing Prisma dependencies
+# RUN apt-get update \
+#     && apt-get install -y nodejs npm unzip git
+# WORKDIR /app
+# COPY . .
+# RUN deno task cli:install
+# ENTRYPOINT ["opengb"]
+#

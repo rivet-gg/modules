@@ -11,6 +11,22 @@ import { inflateArchive } from "../build/util.ts";
 export const PRISMA_VERSION = "5.15.0";
 const PRISMA_BIN_NAME = `opengb_prisma_${PRISMA_VERSION.replace(/\./g, "_")}`;
 
+const PRISMA_DEFAULT_ENV = {
+	DEBUG: Deno.env.get("VERBOSE") ? "*" : "",
+
+	// Disable Prisma features
+	PRISMA_HIDE_UPDATE_MESSAGE: "true",
+
+	// Disable dependency on NodeJS
+	//
+	// We archive the node modules and inflate them manually. See `build_prisma_archive.ts`.
+	PRISMA_GENERATE_SKIP_AUTOINSTALL: "true",
+	PRISMA_SKIP_POSTINSTALL_GENERATE: "true",
+
+	// Force binary since running Prisma in Deno doesn't work with Node dylibs
+	PRISMA_CLI_QUERY_ENGINE_TYPE: "binary",
+};
+
 function getPrismaDir(project: Project) {
 	return genPath(project, PRISMA_WORKSPACE_PATH);
 }
@@ -27,10 +43,18 @@ export async function ensurePrismaInstalled(signal?: AbortSignal): Promise<void>
 }
 
 async function ensurePrismaInstalledInner(signal?: AbortSignal): Promise<void> {
+	const prismaEnv = {
+		// This db url is intentionally invalid in order to not accidentally try
+		// and connect to a real database.
+		DATABASE_URL: "postgresql://postgres:postgres@192.0.2.1.host:5432/postgres",
+		...PRISMA_DEFAULT_ENV,
+	};
+
 	// Check if already installed
 	try {
 		const versionCommand = await new Deno.Command(PRISMA_BIN_NAME, {
 			args: ["--version"],
+			env: prismaEnv,
 		}).output();
 		if (versionCommand.success) {
 			verbose(`Prisma ${PRISMA_VERSION} already installed`);
@@ -60,6 +84,7 @@ async function ensurePrismaInstalledInner(signal?: AbortSignal): Promise<void> {
 		],
 		stdout: isVerbose ? "inherit" : undefined,
 		stderr: isVerbose ? "inherit" : undefined,
+		env: prismaEnv,
 		signal,
 	}).output();
 	if (!prismaOutput.success) {
@@ -70,23 +95,33 @@ async function ensurePrismaInstalledInner(signal?: AbortSignal): Promise<void> {
 	// instances of Prisma trying to install the engines at the same time.
 	verbose("Predownloading engines");
 	const tempDir = await Deno.makeTempDir();
-	const prismaVersion = await new Deno.Command(PRISMA_BIN_NAME, {
+
+	const prismaInit = await new Deno.Command(PRISMA_BIN_NAME, {
 		args: ["init"],
 		stdout: isVerbose ? "inherit" : undefined,
 		stderr: isVerbose ? "inherit" : undefined,
-		env: {
-			DEBUG: "*",
-			PRISMA_HIDE_UPDATE_MESSAGE: "true",
-			PRISMA_GENERATE_SKIP_AUTOINSTALL: "true",
-			PRISMA_SKIP_POSTINSTALL_GENERATE: "true",
-			PRISMA_CLI_QUERY_ENGINE_TYPE: "binary",
-		},
+		env: prismaEnv,
 		cwd: tempDir,
 		signal,
 	}).output();
-	if (!prismaVersion.success) {
-		throw new CommandError(`Failed to run: prisma version`, { commandOutput: prismaVersion });
+	if (!prismaInit.success) {
+		throw new CommandError(`Failed to run: prisma version`, { commandOutput: prismaInit });
 	}
+
+	// Run db command to pull query engine.
+	//
+	// Ignore the status of _prismaStatus, since this will intentionally fail.
+	// It's meant to download the query engines so the next time we run a query,
+	// it's fast.
+	const _prismaStatus = await new Deno.Command(PRISMA_BIN_NAME, {
+		args: ["migrate", "status"],
+		stdout: isVerbose ? "inherit" : undefined,
+		stderr: isVerbose ? "inherit" : undefined,
+		env: prismaEnv,
+		cwd: tempDir,
+		signal,
+	}).output();
+
 	await Deno.remove(tempDir, { recursive: true });
 
 	verbose(`Prisma ${PRISMA_VERSION} installed`);
@@ -157,19 +192,7 @@ export async function runPrismaCommand(
 	`;
 	await Deno.writeTextFile(schemaPath, schema);
 
-	if (Deno.env.get("VERBOSE")) opts.env.DEBUG = "*";
-
-	// Disable Prisma features
-	opts.env.PRISMA_HIDE_UPDATE_MESSAGE = "true";
-
-	// Disable dependency on NodeJS
-	//
-	// We archive the node modules and inflate them manually. See `build_prisma_archive.ts`.
-	opts.env.PRISMA_GENERATE_SKIP_AUTOINSTALL = "true";
-	opts.env.PRISMA_SKIP_POSTINSTALL_GENERATE = "true";
-
-	// Force binary since running Prisma in Deno doesn't work with Node dylibs
-	opts.env.PRISMA_CLI_QUERY_ENGINE_TYPE = "binary";
+	Object.assign(opts.env, PRISMA_DEFAULT_ENV);
 
 	// Run the command
 	//

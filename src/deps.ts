@@ -19,5 +19,8 @@ export { Ajv };
 import addFormats from "https://esm.sh/ajv-formats@^2.1.1";
 export { addFormats };
 
+// Must match version in `esbuild_deno_loader`
+//
+// See also Prisma esbuild in `src/migrate/deps.ts`
 export * as esbuild from "https://deno.land/x/esbuild@v0.20.1/mod.js";
 export { denoPlugins } from "https://deno.land/x/esbuild_deno_loader@0.8.5/mod.ts";
