@@ -41,7 +41,7 @@ export async function templateScript(
 	);
 
 	// Write default config
-	const scriptTs = `import { ScriptContext } from "../module.d.ts";
+	const scriptTs = `import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
     
