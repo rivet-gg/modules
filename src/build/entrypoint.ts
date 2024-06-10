@@ -27,6 +27,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	if (opts.dbDriver == DbDriver.NodePostgres) {
 		imports += `
 		// Import Prisma adapter for Postgres
+    //
+    // We can't use esm.sh for these because they rely on special Node
+    // functionality & don't need to be portable
+    //
+    // https://github.com/esm-dev/esm.sh/issues/684
 		import pg from "npm:pg@^8.11.3";
 		import { PrismaPg } from "npm:@prisma/adapter-pg@^5.12.0";
 		`;
@@ -38,19 +43,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		`;
 	}
 
-	let compat = "";
 	let actorSource = `
 		import { Config } from "${runtimeModPath}";
 		import config from "./runtime_config.ts";
 	`;
 
 	if (opts.runtime == Runtime.Deno) {
-		compat += `
-			// Create module for Prisma compatibility
-			import { createRequire } from "node:module";
-			const require = createRequire(import.meta.url);
-			`;
-
 		actorSource += dynamicArchive["actor_deno.ts"];
 	} else if (opts.runtime == Runtime.Cloudflare) {
 		actorSource += dynamicArchive["actor_cf.ts"];
@@ -63,7 +61,6 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		${autoGenHeader()}
 		import { Config, BuildRuntime } from "${runtimeModPath}";
 
-		${compat}
 		${imports}
 		${modImports}
 

@@ -87,7 +87,7 @@ export interface ErrorConfig {
 export interface DependencyConfig {
 }
 
-const moduleConfigAjv = new Ajv.default({
+const moduleConfigAjv = new Ajv({
 	schemas: [schema],
 });
 

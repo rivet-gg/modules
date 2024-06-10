@@ -53,7 +53,7 @@ export async function compileModuleConfigSchema(
 	}
 
 	// Validate config
-	const moduleConfigAjv = new Ajv.default({
+	const moduleConfigAjv = new Ajv({
 		schemas: [module.userConfigSchema],
 	});
 

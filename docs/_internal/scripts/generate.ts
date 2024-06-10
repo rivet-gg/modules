@@ -5,7 +5,7 @@ import { resolve } from "https://deno.land/std@0.214.0/path/mod.ts";
 import { ModuleMeta, ProjectMeta } from "../../../src/build/meta.ts";
 import { emptyDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { compile } from "npm:json-schema-to-typescript@^13.1.2";
+import { compile } from "https://esm.sh/json-schema-to-typescript@^13.1.2";
 
 const PROJECT_ROOT = resolve(import.meta.dirname!, "..", "..");
 const OPENGB_PATH = resolve(
