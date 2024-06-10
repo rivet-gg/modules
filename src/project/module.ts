@@ -38,7 +38,7 @@ export interface Module {
 	/**
 	 * The config passed to this module in the backend.json file.
 	 */
-	userConfig: unknown;
+	userConfig?: unknown;
 
 	/**
 	 * The schema for the module's config file.
@@ -177,7 +177,7 @@ export async function loadModule(
 	}
 
 	// Derive config
-	const userConfig = projectModuleConfig.config ?? null;
+	const userConfig = projectModuleConfig.config ?? {};
 
 	return {
 		path: modulePath,
