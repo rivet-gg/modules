@@ -63,7 +63,7 @@ export async function planProjectBuild(
 		async build({ signal }) {
 			// Writes a copy of the OpenGB runtime bundled with the CLI to the project.
 			const inflateRuntimePath = genPath(project, RUNTIME_PATH);
-			await inflateArchive(runtimeArchive, inflateRuntimePath, signal);
+			await inflateArchive(runtimeArchive, inflateRuntimePath, "string", signal);
 		},
 	});
 
