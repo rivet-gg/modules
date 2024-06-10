@@ -9,30 +9,87 @@ import prismaArchive from "../../artifacts/prisma_archive.json" with { type: "js
 import { inflateArchive } from "../build/util.ts";
 
 export const PRISMA_VERSION = "5.15.0";
+const PRISMA_BIN_NAME = `opengb_prisma_${PRISMA_VERSION.replace(/\./g, "_")}`;
 
 function getPrismaDir(project: Project) {
 	return genPath(project, PRISMA_WORKSPACE_PATH);
 }
 
-const PRISMA_WORKSPACE_ONCE = createOnce<void>();
+const PRISMA_INSTALLED_ONCE = createOnce<void>();
 
 /**
- * Installs a copy of Prisma in to a directory that can be reused for any
- * Prisma-related commands.
+ * Compiles a copy of the Prisma CLI for future use.
  */
-async function ensurePrismaWorkspace(project: Project): Promise<void> {
-	return await getOrInitOnce(PRISMA_WORKSPACE_ONCE, async () => {
-		return await ensurePrismaWorkspaceInner(project);
+export async function ensurePrismaInstalled(signal?: AbortSignal): Promise<void> {
+	return await getOrInitOnce(PRISMA_INSTALLED_ONCE, async () => {
+		return await ensurePrismaInstalledInner(signal);
 	});
 }
 
-async function ensurePrismaWorkspaceInner(project: Project): Promise<void> {
-	const prismaDir = getPrismaDir(project);
-	verbose("Setting up Prisma workspace", prismaDir);
+async function ensurePrismaInstalledInner(signal?: AbortSignal): Promise<void> {
+	// Check if already installed
+	try {
+		const versionCommand = await new Deno.Command(PRISMA_BIN_NAME, {
+			args: ["--version"],
+		}).output();
+		if (versionCommand.success) {
+			verbose(`Prisma ${PRISMA_VERSION} already installed`);
+			return;
+		} else {
+			verbose("Prisma command failed", versionCommand.code.toString());
+		}
+	} catch (err) {
+		verbose("Prisma not installed", err);
+	}
 
-	await Deno.mkdir(prismaDir, { recursive: true });
+	// HACK: --no-lock fixes a weird bug that causes `Argument list too lock` as of Deno 1.44.1.
+	//
+	// HACK: `deno compile` causes a bug that makes Prisma freeze, so we need to
+	// install it as a global binary
+	verbose(`Installing Prisma ${PRISMA_VERSION} as ${PRISMA_BIN_NAME}`);
+	const isVerbose = Deno.env.has("VERBOSE");
+	const prismaOutput = await new Deno.Command("deno", {
+		args: [
+			"install",
+			"--global",
+			"--no-lock",
+			"--name",
+			PRISMA_BIN_NAME,
+			"-A",
+			`npm:prisma@${PRISMA_VERSION}`,
+		],
+		stdout: isVerbose ? "inherit" : undefined,
+		stderr: isVerbose ? "inherit" : undefined,
+		signal,
+	}).output();
+	if (!prismaOutput.success) {
+		throw new CommandError(`Failed to install Prisma`, { commandOutput: prismaOutput });
+	}
 
-	verbose("Prisma workspace init complete", prismaDir);
+	// Pre-downlaod engines in order to prevent race condition with multiple
+	// instances of Prisma trying to install the engines at the same time.
+	verbose("Predownloading engines");
+	const tempDir = await Deno.makeTempDir();
+	const prismaVersion = await new Deno.Command(PRISMA_BIN_NAME, {
+		args: ["init"],
+		stdout: isVerbose ? "inherit" : undefined,
+		stderr: isVerbose ? "inherit" : undefined,
+		env: {
+			DEBUG: "*",
+			PRISMA_HIDE_UPDATE_MESSAGE: "true",
+			PRISMA_GENERATE_SKIP_AUTOINSTALL: "true",
+			PRISMA_SKIP_POSTINSTALL_GENERATE: "true",
+			PRISMA_CLI_QUERY_ENGINE_TYPE: "binary",
+		},
+		cwd: tempDir,
+		signal,
+	}).output();
+	if (!prismaVersion.success) {
+		throw new CommandError(`Failed to run: prisma version`, { commandOutput: prismaVersion });
+	}
+	await Deno.remove(tempDir, { recursive: true });
+
+	verbose(`Prisma ${PRISMA_VERSION} installed`);
 }
 
 export interface RunPrismaCommandOpts {
@@ -57,7 +114,7 @@ export async function runPrismaCommand(
 	module: Module,
 	opts: RunPrismaCommandOpts,
 ): Promise<string> {
-	await ensurePrismaWorkspace(project);
+	await ensurePrismaInstalled(opts.signal);
 
 	// Validate terminal
 	if (opts.interactive && !Deno.stdin.isTerminal()) {
@@ -79,9 +136,9 @@ export async function runPrismaCommand(
 
 	// Writes a copy of the OpenGB runtime bundled with the CLI to the project.
 	const inflatePrismaPath = resolve(dbDir, "node_modules");
-  if (await exists(inflatePrismaPath, { isDirectory: true })) {
-    await Deno.remove(inflatePrismaPath, { recursive: true })
-  }
+	if (await exists(inflatePrismaPath, { isDirectory: true })) {
+		await Deno.remove(inflatePrismaPath, { recursive: true });
+	}
 	await inflateArchive(prismaArchive, inflatePrismaPath, "base64", signal);
 
 	// Copy database
@@ -103,7 +160,7 @@ export async function runPrismaCommand(
 	if (Deno.env.get("VERBOSE")) opts.env.DEBUG = "*";
 
 	// Disable Prisma features
-	opts.env.PRISMA_HIDE_UPDATE_MESSAGE = "binary";
+	opts.env.PRISMA_HIDE_UPDATE_MESSAGE = "true";
 
 	// Disable dependency on NodeJS
 	//
@@ -115,14 +172,11 @@ export async function runPrismaCommand(
 	opts.env.PRISMA_CLI_QUERY_ENGINE_TYPE = "binary";
 
 	// Run the command
-	verbose("Running Prisma command", `${dbDir}: prisma ${opts.args.join(" ")}`);
-	const prismaOutput = await new Deno.Command("deno", {
-		args: [
-			"run",
-			"-A",
-			`npm:prisma@${PRISMA_VERSION}`,
-			...opts.args,
-		],
+	//
+	// HACK: --no-lock fixes a weird bug that causes `Argument list too lock` as of Deno 1.44.1.
+	verbose("Running Prisma command", `${dbDir}: ${PRISMA_BIN_NAME} ${opts.args.join(" ")}`);
+	const prismaOutput = await new Deno.Command(PRISMA_BIN_NAME, {
+		args: opts.args,
 		cwd: dbDir,
 		stdin: opts.interactive ? "inherit" : undefined,
 		stdout: opts.output ? "inherit" : undefined,
