@@ -43,6 +43,12 @@ export const devCommand = new Command<GlobalOpts>()
 						"--allow-env",
 						"--allow-net",
 						"--allow-read",
+
+            // Disable NPM in favor of strict ESM support
+            //
+            // TODO(OGBE-149): Disable Node compat after https://github.com/denoland/deno/issues/20432
+            "--no-npm",
+            "--node-modules-dir=false",
 					];
 					if (opts.check) args.push("--check");
 
