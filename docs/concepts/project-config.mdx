@@ -48,6 +48,7 @@ export interface Config {
   modules: {
     [k: string]: ProjectModuleConfig;
   };
+  runtime?: RuntimeConfig;
 }
 export interface RegistryConfigLocal {
   directory: string;
@@ -75,5 +76,17 @@ export interface ProjectModuleConfig {
   config?: {
     [k: string]: any;
   };
+}
+export interface RuntimeConfig {
+  cors?: CorsConfig;
+}
+/**
+ * If this is null, only requests made from the same origin will be accepted
+ */
+export interface CorsConfig {
+  /**
+   * The origins that are allowed to make requests to the server.
+   */
+  origins: string[];
 }
 ```

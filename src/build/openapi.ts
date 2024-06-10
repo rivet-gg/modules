@@ -15,7 +15,7 @@ export async function generateOpenApi(project: Project) {
 		servers: [
 			{
 				"description": "Local",
-				"url": "http://localhost:8080",
+				"url": "http://localhost:6420",
 			},
 		],
 		tags: [

@@ -1,0 +1,53 @@
+---
+title: "Get File Link"
+description: "Get presigned download links for each of the specified files"
+sidebarTitle: "Get File Link"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/uploads/scripts/get_public_file_urls.ts) | `get_public_file_urls` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.uploads.getPublicFileUrls({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  files: FileIdentifier[];
+  expirySeconds?: number;
+}
+export interface FileIdentifier {
+  uploadId: string;
+  path: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  files: DownloadableFile[];
+}
+export interface DownloadableFile {
+  uploadId: string;
+  url: string;
+  path: string;
+  mime: null | string;
+  /**
+   * The size of the file in bytes.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+}
+```
