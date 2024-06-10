@@ -217,6 +217,23 @@
           ]
         },
         {
+          "icon": "file-arrow-up",
+          "group": "Uploads",
+          "pages": [
+            "modules/uploads/overview",
+            {
+              "group": "Scripts",
+              "pages": [
+                "modules/uploads/scripts/complete",
+                "modules/uploads/scripts/delete",
+                "modules/uploads/scripts/get_public_file_urls",
+                "modules/uploads/scripts/get",
+                "modules/uploads/scripts/prepare"
+              ]
+            }
+          ]
+        },
+        {
           "icon": "user",
           "group": "Users",
           "pages": [

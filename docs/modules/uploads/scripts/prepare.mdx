@@ -1,0 +1,104 @@
+---
+title: "Prepare Upload"
+description: "Prepare an upload batch for data transfer"
+sidebarTitle: "Prepare Upload"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/uploads/scripts/prepare.ts) | `prepare` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.uploads.prepare({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  metadata?: any;
+  files: MultipartUploadFile[];
+}
+export interface MultipartUploadFile {
+  multipart: boolean;
+  path: string;
+  mime: null | string;
+  /**
+   * The size of the file in bytes.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  upload: PresignedUpload;
+}
+export interface PresignedUpload {
+  files: PresignedUploadFile[];
+  metadata?: any;
+  id: string;
+  bucket: string;
+  /**
+   * The total size of all files in the upload in bytes.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: null | string;
+}
+export interface PresignedUploadFile {
+  presignedChunks: PresignedChunk[];
+  path: string;
+  mime: null | string;
+  /**
+   * The size of the file in bytes.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+}
+export interface PresignedChunk {
+  url: string;
+  partNumber: number;
+  /**
+   * The size of this SPECIFIC chunk in bytes.
+   * This is ***not*** the total size of the file.
+   * This is also ***not*** guaranteed to be the same as the `contentLength`
+   * of all other chunks.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+  /**
+   * The offset of this chunk in the file.
+   *
+   * Essentially, this chunk expects to represent the data from byte `offset`
+   * to byte `offset + contentLength - 1` inclusive.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  offset: string;
+}
+```

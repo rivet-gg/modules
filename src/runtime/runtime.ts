@@ -106,7 +106,7 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 	 * Serves the runtime as an HTTP server.
 	 */
 	public async serve() {
-		const port = parseInt(Deno.env.get("PORT") ?? "8080");
+		const port = parseInt(Deno.env.get("PORT") ?? "6420");
 		console.log(`Serving on port ${port}`);
 		await Deno.serve(
 			{ port },

@@ -97,7 +97,7 @@ import { Tags } from "/snippets/tags.mdx";
 
     <CodeGroup>
       ```javascript JavaScript (HTML5)
-      const backend = new BackendApi({ endpoint: "http://localhost:8080" });
+      const backend = new BackendApi({ endpoint: "http://localhost:6420" });
       const data = await backend.callUsersGet({ userIds });
       console.log("Users", data.users);
       ```
@@ -106,7 +106,7 @@ import { Tags } from "/snippets/tags.mdx";
       # IMPORTANT: Auto-generated SDK coming soon
 
       var json = { "userIds": user_ids }
-      var url = "http://localhost:8080/modules/users/scripts/get/call"
+      var url = "http://localhost:6420/modules/users/scripts/get/call"
       var request = $HTTPRequest.request(url, ["Content-Type: application/json"], HTTPClient.METHOD_POST, JSON.stringify(json))
       var response = await http.request_completed
 
@@ -118,7 +118,7 @@ import { Tags } from "/snippets/tags.mdx";
       // IMPORTANT: Auto-generated SDK coming soon
 
       var json = JsonConvert.SerializeObject(new { userIds });
-      var www = new UnityWebRequest("https://localhost:8080/modules/users/scripts/get/call", "POST")
+      var www = new UnityWebRequest("https://localhost:6420/modules/users/scripts/get/call", "POST")
       {
         uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(json)),
         downloadHandler = new DownloadHandlerBuffer(),
@@ -142,7 +142,7 @@ import { Tags } from "/snippets/tags.mdx";
 
       TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
       Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
-      Request->SetURL(TEXT("http://localhost:8080/modules/users/scripts/get/call"));
+      Request->SetURL(TEXT("http://localhost:6420/modules/users/scripts/get/call"));
       Request->SetVerb(TEXT("POST"));
       Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
       Request->SetContentAsString(OutputString);

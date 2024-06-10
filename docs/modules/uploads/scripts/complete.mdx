@@ -1,0 +1,63 @@
+---
+title: "Complete Upload"
+description: "Alert the module that the upload has been completed"
+sidebarTitle: "Complete Upload"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/uploads/scripts/complete.ts) | `complete` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.uploads.complete({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  uploadId: string;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  upload: Upload;
+}
+export interface Upload {
+  id: string;
+  metadata?: any;
+  bucket: string;
+  /**
+   * The total size of all files in the upload in bytes.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+  files: UploadFile[];
+  createdAt: string;
+  updatedAt: string;
+  completedAt: null | string;
+}
+export interface UploadFile {
+  path: string;
+  mime: null | string;
+  /**
+   * The size of the file in bytes.
+   *
+   * *(This is a string instead of a bigint because JSON doesn't support
+   * serializing/deserializing bigints, and we want to be able to represent
+   * very large file sizes.)*
+   */
+  contentLength: string;
+}
+```

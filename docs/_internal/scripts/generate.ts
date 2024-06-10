@@ -1,11 +1,10 @@
 #!/usr/bin/env deno run -A
 
 import { resolve } from "https://deno.land/std@0.214.0/path/mod.ts";
-// import { ProjectMeta } from "../vendor/opengb/src/build/meta.ts";
 import { ModuleMeta, ProjectMeta } from "../../../src/build/meta.ts";
 import { emptyDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { compile } from "https://esm.sh/json-schema-to-typescript@^13.1.2";
+import { compile } from "npm:json-schema-to-typescript@^13.1.2";
 
 const PROJECT_ROOT = resolve(import.meta.dirname!, "..", "..");
 const OPENGB_PATH = resolve(
@@ -21,15 +20,17 @@ const TEST_PROJECT_PATH = resolve(
 	"basic",
 );
 
-if (!Deno.env.get("SKIP_BUILD")) {
-	console.log("Build OpenGB CLI");
-	const installOutput = await new Deno.Command("deno", {
-		args: ["task", "artifacts:build:all"],
-		cwd: OPENGB_PATH,
-		stdout: "inherit",
-		stderr: "inherit",
-	}).output();
-	assert(installOutput.success);
+if (!Deno.env.get("SKIP_BUILD_MODULES")) {
+  if (!Deno.env.get("SKIP_BUILD_OPENGB")) {
+    console.log("Build OpenGB CLI");
+    const installOutput = await new Deno.Command("deno", {
+      args: ["task", "artifacts:build:all"],
+      cwd: OPENGB_PATH,
+      stdout: "inherit",
+      stderr: "inherit",
+    }).output();
+    assert(installOutput.success);
+  }
 
 	console.log("Building project");
 	const buildOutput = await new Deno.Command("deno", {
@@ -78,6 +79,11 @@ const TEMPLATES = {
 };
 
 // Sort modules
+for (let key in meta.modules) {
+  if (!meta.modules[key].config.name) {
+    throw new Error(`Module missing name: ${key}`)
+  }
+}
 const modulesSorted = Object.entries(meta.modules)
 	.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!));
 
@@ -197,6 +203,11 @@ async function generateModule(moduleName: string, module: ModuleMeta) {
 	);
 
 	// Validate scripts
+for (let key in module.scripts) {
+  if (!module.scripts[key].config.name) {
+    throw new Error(`Script missing name: ${moduleName}.${key}`)
+  }
+}
 	const scriptsSorted = Object.entries(module.scripts)
 		.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!));
 	for (const [scriptName, script] of scriptsSorted) {
