@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/rivet-gg/opengb-modules/compare/v0.1.0...v0.1.1) (2024-06-10)
+
+
+### Chores
+
+* add metadata for uploads module ([#108](https://github.com/rivet-gg/opengb-modules/issues/108)) ([4ef61d5](https://github.com/rivet-gg/opengb-modules/commit/4ef61d5999b6c33fbf5101c523d66995435a03f8))
+
 ## 0.1.0 (2024-06-10)
 
 
