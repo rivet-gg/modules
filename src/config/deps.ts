@@ -1,2 +1,2 @@
-import Ajv from "npm:ajv@^8.12.0";
+import Ajv from "https://esm.sh/ajv@^8.12.0";
 export { Ajv };
