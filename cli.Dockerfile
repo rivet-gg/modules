@@ -13,4 +13,6 @@ RUN apt-get update \
     && apt-get install -y git \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/dist/cli /usr/bin/opengb
+RUN VERBOSE=1 opengb _internal prewarm-prisma
 ENTRYPOINT ["/usr/bin/opengb"]
+

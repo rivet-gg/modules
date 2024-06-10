@@ -39,9 +39,9 @@ export async function buildArtifacts(
 	const archiveFiles: Record<string, string> = {};
 	for (const file of files) {
 		if (encode == "base64") {
-      const data = await Deno.readFile(resolve(rootPath, file));
-      const base64String = btoa(new Uint8Array(data).reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
-      archiveFiles[file] = base64String;
+			const data = await Deno.readFile(resolve(rootPath, file));
+			const base64String = btoa(new Uint8Array(data).reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
+			archiveFiles[file] = base64String;
 		} else if (encode == "string") {
 			archiveFiles[file] = await Deno.readTextFile(resolve(rootPath, file));
 		} else {

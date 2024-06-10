@@ -13,6 +13,7 @@ import { initCommand } from "./commands/init.ts";
 import { cleanCommand } from "./commands/clean.ts";
 import { printError } from "../error/mod.ts";
 import { runShutdown } from "../utils/shutdown_handler.ts";
+import { internalCommand } from "./commands/internal.ts";
 
 if (Deno.env.has("DATABASE_URL")) {
 	Deno.env.set(
@@ -40,6 +41,7 @@ command.action(() => command.showHelp())
 	.command("lint", lintCommand)
 	.command("build", buildCommand)
 	.command("clean", cleanCommand)
+	.command("_internal", internalCommand)
 	.command("help", new HelpCommand().global())
 	.command("completions", new CompletionsCommand());
 
