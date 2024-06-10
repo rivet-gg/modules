@@ -46,7 +46,8 @@ export async function compileModuleConfigSchema(
 			"$ref": "#/definitions/Config",
 			"definitions": {
 				"Config": {
-					"type": "null",
+					"type": "object",
+					"additionalProperties": false,
 				},
 			},
 		};
