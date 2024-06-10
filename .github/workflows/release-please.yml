@@ -13,7 +13,32 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v4
+      - id: release
+        uses: google-github-actions/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
+
+  # We need to include this action here instead of in another workflow since
+  # workflows aren't triggered by other workflows.
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    name: Build and Push Docker Image
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker Build Push
+        uses: ./.github/actions/docker-build-push
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: .
+          file: cli.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build_tags: |
+            ghcr.io/rivet-gg/opengb:${{ github.sha }}
+            ghcr.io/rivet-gg/opengb:${{ needs.release-please.outputs.tag_name }}
+
