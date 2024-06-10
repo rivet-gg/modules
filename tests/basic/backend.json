@@ -14,15 +14,7 @@
 		"users": {
 			"config": null
 		},
-		"uploads": {
-			"config": {
-				"s3": {
-					"bucketName": "opengb-test-bucket",
-					"region": "us-east-1",
-					"endpoint": "https://s3.us-east-1.amazonaws.com"
-				}
-			}
-		},
+		"uploads": {},
 		"foo": {
 			"registry": "local"
 		},
