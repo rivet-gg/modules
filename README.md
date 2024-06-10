@@ -24,8 +24,8 @@ _Open-source modular backend for all games and tools._
 
 **From GitHub (recommended)**
 
-```
-deno install --name opengb --force --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys https://raw.githubusercontent.com/rivet-gg/opengb/main/src/cli/main.ts
+```sh
+deno install -n opengb -fgA https://raw.githubusercontent.com/rivet-gg/opengb/v0.1.1/src/cli/main.ts
 ```
 
 **From source**
