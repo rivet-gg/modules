@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/rivet-gg/opengb/compare/v0.1.1...v0.1.2) (2024-06-10)
+
+
+### Continuous Integration
+
+* build push cli.Dockerfile ([#362](https://github.com/rivet-gg/opengb/issues/362)) ([a66f030](https://github.com/rivet-gg/opengb/commit/a66f030420a005c48ea9d43f1e3f99cb5e35921f))
+
 ## [0.1.1](https://github.com/rivet-gg/opengb/compare/v0.1.0...v0.1.1) (2024-06-10)
 
 
