@@ -1,35 +1,75 @@
+import { unimplemented } from "https://deno.land/std@0.208.0/assert/unimplemented.ts";
 import { assertEquals, assertExists } from "../deps.ts";
+import { ActorDriver } from "./actor.ts";
 import { ModuleContext } from "./context.ts";
 import { RuntimeError } from "./error.ts";
-import { newTrace } from "./mod.ts";
+import { BuildRuntime, newTrace } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
 
-type ErrReg = { test_module: Record<string, never> };
-type ErrRegCamel = { testModule: Record<string, never> };
+type DependenciesSnake = { test_module: Record<string, never> };
+type DependenciesCamel = { testModule: Record<string, never> };
+interface ActorsSnake {}
+interface ActorsCamel {}
+
+export const DUMMY_ACTOR_DRIVER: ActorDriver = {
+	getId(_moduleName: string, _actorName: string, _label: string): Promise<string> {
+		unimplemented();
+	},
+	getActor(_moduleName: string, _actorName: string, _label: string): Promise<any> {
+		unimplemented();
+	},
+	createActor(_moduleName: string, _actorName: string, _label: string, _input: any): Promise<void> {
+		unimplemented();
+	},
+	callActor(_stub: any, _fn: string, ..._args: any[]): Promise<any> {
+		unimplemented();
+	},
+	actorExists(_moduleName: string, _actorName: string, _label: string): Promise<boolean> {
+		unimplemented();
+	},
+};
 
 Deno.test("error", async () => {
-	const camelMap = {
+	const dependencyCaseConversionMap = {
 		testModule: {},
 	} as const;
+	const actorCaseConversionMap = {} as const;
+
 	// Setup
-	const runtime = new Runtime<ErrReg, ErrRegCamel>({
-		modules: {
-			test_module: {
-				scripts: {},
-				errors: {
-					"TEST_ERROR": {},
+	const runtime = new Runtime<DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel>(
+		{
+			runtime: BuildRuntime.Deno,
+			modules: {
+				test_module: {
+					scripts: {},
+					actors: {},
+					errors: {
+						"TEST_ERROR": {},
+					},
+					dependencies: new Set(["test_module"]),
+					userConfig: null,
 				},
-				dependencies: new Set(["test_module"]),
-				userConfig: null,
 			},
 		},
-	}, camelMap);
-	const moduleContext = new ModuleContext<ErrReg, ErrRegCamel, null, undefined>(
+		DUMMY_ACTOR_DRIVER,
+		dependencyCaseConversionMap,
+		actorCaseConversionMap,
+	);
+
+	const moduleContext = new ModuleContext<
+		DependenciesSnake,
+		DependenciesCamel,
+		ActorsSnake,
+		ActorsCamel,
+		null,
+		undefined
+	>(
 		runtime,
 		newTrace({ internalTest: {} }),
 		"test_module",
 		undefined,
-		camelMap,
+		dependencyCaseConversionMap,
+		actorCaseConversionMap,
 	);
 
 	// Create error

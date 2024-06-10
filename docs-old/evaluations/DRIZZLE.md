@@ -1,5 +1,11 @@
 # Drizzle
 
+**License**
+
+Drizzle Kit is responsible for generating schemas for Drizzle, which is a core part of its functionality.
+
+Drizzle Kit is not open source, which prohibits OpenGB from using Drizzle entirely.
+
 **Querying**
 https://github.com/rivet-gg/opengb-engine/blob/823becd385ee3a1c6bd05172577a19441716eaa4/modules/users/scripts/get.ts#L18
 
@@ -43,3 +49,4 @@ TypeScript native, but not if you're not well versed with backends.
 If I were writing something in TypeScript that didn't need external
 contributors, I'd probably go with Drizzle. It's really neat. But I don't think
 it's right for this project.
+

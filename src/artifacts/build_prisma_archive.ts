@@ -19,8 +19,7 @@ await buildArtifacts({
 	rootPath: resolve(rootSrcPath(), "vendor", "prisma", "node_modules"),
 	patterns: [
 		// Source files
-		"**/*",
-		"**/*.{js,json,d.ts,wasm}",
+		"**/*.{js,json,d.ts}",
 		// Only include WASM files we depend on
 		"prisma/build/prisma_schema_build_bg.wasm",
 		"@prisma/client/runtime/query_engine_bg.postgresql.wasm",
@@ -28,7 +27,7 @@ await buildArtifacts({
 	outputPath: resolve(rootSrcPath(), "artifacts", "prisma_archive.json"),
 	globOpts: {
 		// Exclude large files we don't use
-		// ignore: ["prisma/build/index.js"],
+		ignore: ["prisma/build/index.js"],
 	},
 	encode: "base64",
 });
