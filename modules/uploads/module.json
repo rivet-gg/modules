@@ -1,4 +1,16 @@
 {
+    "name": "Uploads",
+    "description": "Upload & store blobs of data.",
+    "icon": "file-arrow-up",
+    "tags": [
+      "core", "utility"
+    ],
+    "authors": [
+        "rivet-gg",
+        "Blckbrry-Pi",
+        "NathanFlurry"
+    ],
+    "status": "stable",
     "scripts": {
         "prepare": {
             "name": "Prepare Upload",
