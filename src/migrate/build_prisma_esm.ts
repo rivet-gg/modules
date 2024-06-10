@@ -1,6 +1,6 @@
 import { isAbsolute, resolve } from "../deps.ts";
 import { Runtime } from "../build/mod.ts";
-import { esbuild, polyfillNodeForDeno } from "./deps.ts";
+import { esbuild } from "./deps.ts";
 type Plugin = esbuild.Plugin;
 
 /** Builds a single ESM file for a given Prisma package. */
@@ -15,9 +15,6 @@ export async function buildPrismaPackage(
 		bundle: true,
 		outfile: outFile,
 		plugins: [
-			polyfillNodeForDeno({
-				globals: true,
-			}),
 			// Cloudflare does not support inlined WASM
 			...(runtime == Runtime.Cloudflare ? [] : [wasmPlugin()]),
 		],

@@ -57,7 +57,7 @@ export interface ProjectModuleConfig extends Record<string, unknown> {
 // 	return parse(configRaw) as ProjectConfig;
 // }
 
-const projectConfigAjv = new Ajv.default({
+const projectConfigAjv = new Ajv({
 	schemas: [schema],
 });
 
