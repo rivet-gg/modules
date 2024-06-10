@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1](https://github.com/rivet-gg/opengb/compare/v0.1.0...v0.1.1) (2024-06-10)
+
+
+### Bug Fixes
+
+* undefined user config now defaults to empty object ([#358](https://github.com/rivet-gg/opengb/issues/358)) ([ec5c576](https://github.com/rivet-gg/opengb/commit/ec5c57656b562020d2bd077a06dd36d736fb454a))
+
+
+### Chores
+
+* bump registry ([#357](https://github.com/rivet-gg/opengb/issues/357)) ([c8af1a8](https://github.com/rivet-gg/opengb/commit/c8af1a84292c354a7683a22d29667c68c30242b7))
+* update default port ([#360](https://github.com/rivet-gg/opengb/issues/360)) ([35fd6d8](https://github.com/rivet-gg/opengb/commit/35fd6d8df62f44279b79b07fd6c0f8666aa1b9fd))
+
 ## [0.1.0](https://github.com/rivet-gg/opengb/compare/v1.0.0...v0.1.0) (2024-06-10)
 
 
