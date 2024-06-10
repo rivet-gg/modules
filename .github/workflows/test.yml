@@ -1,0 +1,34 @@
+name: Test Modules
+on:
+  - push
+
+env:
+  CURRENT_WORKING_ENGINE_REF: main
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout opengb-modules
+        uses: actions/checkout@v4
+        with:
+          path: opengb-modules
+
+      - name: Checkout opengb
+        uses: actions/checkout@v4
+        with:
+          repository: rivet-gg/opengb
+          path: opengb
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.44.1"
+
+      - name: Install OpenGB
+        run: cd opengb/ && deno task cli:install
+
+      - name: Test Modules
+        run: cd opengb-modules/tests/basic && opengb test --strict-schemas --force-deploy-migrations
+
