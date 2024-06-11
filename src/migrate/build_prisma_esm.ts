@@ -16,9 +16,9 @@ export async function buildPrismaPackage(
 		outfile: outFile,
 		plugins: [
 			// Cloudflare does not support inlined WASM
-			...(runtime == Runtime.Cloudflare ? [] : [wasmPlugin()]),
+			...(runtime == Runtime.CloudflareWorkers ? [] : [wasmPlugin()]),
 		],
-		external: runtime == Runtime.Cloudflare ? ["*.wasm", "*.wasm?module"] : [],
+		external: runtime == Runtime.CloudflareWorkers ? ["*.wasm", "*.wasm?module"] : [],
 		format: "esm",
 		platform: "neutral",
 	});

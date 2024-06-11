@@ -50,7 +50,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 	if (opts.runtime == Runtime.Deno) {
 		actorSource += dynamicArchive["actor_deno.ts"];
-	} else if (opts.runtime == Runtime.Cloudflare) {
+	} else if (opts.runtime == Runtime.CloudflareWorkers) {
 		actorSource += dynamicArchive["actor_cf.ts"];
 	} else {
 		throw new UnreachableError(opts.runtime);
@@ -108,7 +108,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 			main();
 			`;
-	} else if (opts.runtime == Runtime.Cloudflare) {
+	} else if (opts.runtime == Runtime.CloudflareWorkers) {
 		const runtimePath = genPath(project, RUNTIME_PATH);
 		const serverTsPath = resolve(runtimePath, "src", "runtime", "server.ts");
 		const errorTsPath = resolve(runtimePath, "src", "runtime", "error.ts");

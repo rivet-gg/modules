@@ -18,7 +18,7 @@ export enum Format {
  */
 export enum Runtime {
 	Deno,
-	Cloudflare,
+	CloudflareWorkers,
 }
 
 /**
@@ -66,7 +66,7 @@ export async function build(project: Project, opts: BuildOpts) {
 
 export function runtimeToString(runtime: Runtime) {
 	if (runtime == Runtime.Deno) return "Deno";
-	if (runtime == Runtime.Cloudflare) return "Cloudflare";
+	if (runtime == Runtime.CloudflareWorkers) return "Cloudflare";
 
 	throw new UnreachableError(runtime);
 }
