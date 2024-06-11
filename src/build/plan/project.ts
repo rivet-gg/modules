@@ -1,5 +1,5 @@
 import { BuildState, buildStep, waitForBuildPromises } from "../../build_state/mod.ts";
-import { denoPlugins, esbuild, exists, resolve } from "../../deps.ts";
+import { denoPlugins, esbuild, exists, relative, resolve } from "../../deps.ts";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, Runtime } from "../mod.ts";
 import { generateClient } from "../../migrate/generate.ts";
@@ -150,7 +150,10 @@ export async function planProjectBuild(
 					outfile: bundledFile,
 					format: "esm",
 					platform: "neutral",
-					plugins: [...denoPlugins()],
+					plugins: [...denoPlugins({
+						// Portable loader in order to work outside of Deno-specific contexts
+						loader: "portable",
+					})],
 					external: [
 						// Don't include deno's crypto, its a standard js API
 						"*crypto/crypto.ts",
@@ -215,9 +218,12 @@ export async function planProjectBuild(
 					await Deno.writeTextFile(bundledFile, bundleStr);
 
 					// Write manifest of file paths for easier upload from Rivet CLI
+          //
+          // These modules are relative to the project root in case this was
+          // generated from a Docker container.
 					const manifest = {
-						bundle: bundledFile,
-						wasm: wasmPath,
+						bundle: relative(project.path, bundledFile),
+						wasm: wasmPath ? relative(project.path, wasmPath) : undefined,
 					};
 
 					signal.throwIfAborted();
