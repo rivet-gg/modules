@@ -1,10 +1,11 @@
+# Use Debian instead of Alpine because of issues with Prisma & gcc
+
 FROM denoland/deno:debian-1.44.1 AS build
 # Required for installing Prisma dependencies
 RUN apt-get update \
-    && apt-get install -y nodejs npm
+    && apt-get install -y nodejs npm unzip
 WORKDIR /app
 COPY . .
-RUN apt-get install -y unzip
 RUN deno task cli:compile
 
 FROM denoland/deno:debian-1.44.1
