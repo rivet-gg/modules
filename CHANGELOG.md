@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/rivet-gg/opengb/compare/v0.1.4...v0.1.5) (2024-06-11)
+
+
+### Continuous Integration
+
+* update default permissions for release-please ([#378](https://github.com/rivet-gg/opengb/issues/378)) ([564cdfe](https://github.com/rivet-gg/opengb/commit/564cdfed7a9508a2716529f4621366b6a432839e))
+
 ## [0.1.4](https://github.com/rivet-gg/opengb/compare/v0.1.3...v0.1.4) (2024-06-11)
 
 
