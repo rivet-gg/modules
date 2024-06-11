@@ -14,6 +14,9 @@
 		// Installs the CLI on the local machine
 		"cli:install": "deno task artifacts:build:all && deno install --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force src/cli/main.ts",
 
+    // Build Dockerfile
+		"docker:build": "docker build -t opengb -f cli.Dockerfile .",
+
 		// Generates schema
 		"artifacts:build:all": "deno task format && deno task artifacts:build:schema && deno task artifacts:build:runtime_archive && deno task artifacts:build:prisma_archive && deno task artifacts:build:dynamic_archive",
 		"artifacts:build:schema": "deno run --allow-env --allow-read --allow-write src/artifacts/build_schema.ts",
