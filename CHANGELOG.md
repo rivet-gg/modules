@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/rivet-gg/opengb/compare/v0.1.3...v0.1.4) (2024-06-11)
+
+
+### Continuous Integration
+
+* fix outputs fro release-please ([#376](https://github.com/rivet-gg/opengb/issues/376)) ([780c6b6](https://github.com/rivet-gg/opengb/commit/780c6b6c03a8be8e3cbae9a9feb105128ca57eb7))
+
 ## [0.1.3](https://github.com/rivet-gg/opengb/compare/v0.1.2...v0.1.3) (2024-06-11)
 
 
