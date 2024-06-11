@@ -21,11 +21,11 @@ async function ensurePostgresRunningInner(_project: Project) {
 	// Don't start Postgres if points to existing database
 	if (Deno.env.has("DATABASE_URL") || Deno.env.has("OPENGB_DONT_START_POSTGRES")) return;
 
-  // Warn if tyring to run inside of Docker
-  if (Deno.env.has("RUNNING_IN_DOCKER")) {
-    warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
-    return;
-  }
+	// Warn if tyring to run inside of Docker
+	if (Deno.env.has("RUNNING_IN_DOCKER")) {
+		warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+		return;
+	}
 
 	verbose("Starting Postgres server...");
 

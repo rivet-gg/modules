@@ -85,11 +85,11 @@ dbCommand
 			});
 		}
 
-  // Warn if tyring to run inside of Docker
-  if (Deno.env.has("RUNNING_IN_DOCKER")) {
-    warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
-    return;
-  }
+		// Warn if tyring to run inside of Docker
+		if (Deno.env.has("RUNNING_IN_DOCKER")) {
+			warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+			return;
+		}
 
 		const project = await initProject(opts);
 		const module = resolveModules(project, [moduleName])[0];

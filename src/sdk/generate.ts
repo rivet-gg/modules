@@ -27,11 +27,11 @@ export async function generateSdk(
 	target: SdkTarget,
 	output: string,
 ) {
-  // Warn if tyring to run inside of Docker
-  if (Deno.env.has("RUNNING_IN_DOCKER")) {
-    warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
-    return;
-  }
+	// Warn if tyring to run inside of Docker
+	if (Deno.env.has("RUNNING_IN_DOCKER")) {
+		warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+		return;
+	}
 
 	const config = GENERATORS[target]!;
 
