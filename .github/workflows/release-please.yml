@@ -12,6 +12,10 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      release_sha: ${{ steps.release.outputs.sha }}
     steps:
       - id: release
         uses: google-github-actions/release-please-action@v4
@@ -39,6 +43,6 @@ jobs:
           file: cli.Dockerfile
           platforms: linux/amd64,linux/arm64
           build_tags: |
-            ghcr.io/rivet-gg/opengb:${{ github.sha }}
+            ghcr.io/rivet-gg/opengb:${{ needs.release-please.outputs.release_sha }}
             ghcr.io/rivet-gg/opengb:${{ needs.release-please.outputs.tag_name }}
 
