@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.1.3](https://github.com/rivet-gg/opengb/compare/v0.1.2...v0.1.3) (2024-06-11)
+
+
+### Bug Fixes
+
+* abort when trying to run docker commands inside of docker ([#372](https://github.com/rivet-gg/opengb/issues/372)) ([8a66aee](https://github.com/rivet-gg/opengb/commit/8a66aee355e075a8666a1f5c1df039f86ebb326f))
+* don't run docker commands when already inside docker ([#368](https://github.com/rivet-gg/opengb/issues/368)) ([738dc2b](https://github.com/rivet-gg/opengb/commit/738dc2b38e141eee1c73657805b24a05afb48a59))
+* explicitly handle SIGINT ([#371](https://github.com/rivet-gg/opengb/issues/371)) ([b4c6039](https://github.com/rivet-gg/opengb/commit/b4c6039acbb73e5feefae739ccbf0926f9386b1c))
+* run esbuild deno plugin as portable ([#373](https://github.com/rivet-gg/opengb/issues/373)) ([7de9fce](https://github.com/rivet-gg/opengb/commit/7de9fceb335bd9836febf983652bde52188d5b52))
+
+
+### Documentation
+
+* regs & deps ([#369](https://github.com/rivet-gg/opengb/issues/369)) ([b18f666](https://github.com/rivet-gg/opengb/commit/b18f6667d4519402b67202e6494193d0c50eae0c))
+
+
+### Continuous Integration
+
+* docker build push inline in release please workflow ([#364](https://github.com/rivet-gg/opengb/issues/364)) ([1e2e21c](https://github.com/rivet-gg/opengb/commit/1e2e21cef078bed9a509b289232759136cd0d6f2))
+
+
+### Chores
+
+* rename build format cf -&gt; cloudflare-workers ([#370](https://github.com/rivet-gg/opengb/issues/370)) ([80a2ebb](https://github.com/rivet-gg/opengb/commit/80a2ebb7988923d75b2486a2d301040fb37de41d))
+
 ## [0.1.2](https://github.com/rivet-gg/opengb/compare/v0.1.1...v0.1.2) (2024-06-10)
 
 
