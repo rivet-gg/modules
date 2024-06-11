@@ -1,6 +1,6 @@
 import { CommandError, UserError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
-import { verbose } from "../term/status.ts";
+import { verbose, warn } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "./once.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
@@ -20,6 +20,12 @@ export async function ensurePostgresRunning(project: Project) {
 async function ensurePostgresRunningInner(_project: Project) {
 	// Don't start Postgres if points to existing database
 	if (Deno.env.has("DATABASE_URL") || Deno.env.has("OPENGB_DONT_START_POSTGRES")) return;
+
+  // Warn if tyring to run inside of Docker
+  if (Deno.env.has("RUNNING_IN_DOCKER")) {
+    warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+    return;
+  }
 
 	verbose("Starting Postgres server...");
 

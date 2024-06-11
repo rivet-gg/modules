@@ -2,6 +2,7 @@ import { move } from "../deps.ts";
 import { CommandError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
 import { genPath, SDK_PATH } from "../project/project.ts";
+import { warn } from "../term/status.ts";
 
 export enum SdkTarget {
 	TypeScript,
@@ -26,6 +27,12 @@ export async function generateSdk(
 	target: SdkTarget,
 	output: string,
 ) {
+  // Warn if tyring to run inside of Docker
+  if (Deno.env.has("RUNNING_IN_DOCKER")) {
+    warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+    return;
+  }
+
 	const config = GENERATORS[target]!;
 
 	const buildOutput = await new Deno.Command("docker", {

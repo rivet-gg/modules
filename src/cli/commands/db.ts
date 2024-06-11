@@ -6,7 +6,7 @@ import { migrateDeploy } from "../../migrate/deploy.ts";
 import { migrateReset } from "../../migrate/reset.ts";
 import { UserError } from "../../error/mod.ts";
 import { Project } from "../../project/mod.ts";
-import { verbose } from "../../term/status.ts";
+import { verbose, warn } from "../../term/status.ts";
 import { getDatabaseUrl } from "../../utils/db.ts";
 
 export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
@@ -84,6 +84,12 @@ dbCommand
 					"This is likely because you're running from a non-interactive shell, such as a CI environment. Run this command in a terminal that supports TTY.",
 			});
 		}
+
+  // Warn if tyring to run inside of Docker
+  if (Deno.env.has("RUNNING_IN_DOCKER")) {
+    warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+    return;
+  }
 
 		const project = await initProject(opts);
 		const module = resolveModules(project, [moduleName])[0];
