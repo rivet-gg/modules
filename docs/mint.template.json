@@ -67,7 +67,8 @@
                     "engine/design/typescript",
                     "engine/design/deno",
                     "engine/design/postgres",
-                    "engine/design/prisma"
+                    "engine/design/prisma",
+                    "engine/design/registries-dependencies"
                   ]
                 }
               ]
