@@ -218,9 +218,9 @@ export async function planProjectBuild(
 					await Deno.writeTextFile(bundledFile, bundleStr);
 
 					// Write manifest of file paths for easier upload from Rivet CLI
-          //
-          // These modules are relative to the project root in case this was
-          // generated from a Docker container.
+					//
+					// These modules are relative to the project root in case this was
+					// generated from a Docker container.
 					const manifest = {
 						bundle: relative(project.path, bundledFile),
 						wasm: wasmPath ? relative(project.path, wasmPath) : undefined,
