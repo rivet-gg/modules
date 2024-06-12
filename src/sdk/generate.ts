@@ -4,10 +4,13 @@ import { Project } from "../project/mod.ts";
 import { genPath, SDK_PATH } from "../project/project.ts";
 import { progress, success } from "../term/status.ts";
 import { warn } from "../term/status.ts";
+
 import { generateTypescriptAddons } from "./typescript/mod.ts";
+import { generateUnityAddons } from "./unity/mod.ts";
 
 export enum SdkTarget {
 	TypeScript,
+	Unity,
 }
 
 interface Generator {
@@ -25,6 +28,14 @@ const GENERATORS: Record<SdkTarget, Generator> = {
 			fileContentDataType: "Blob",
 			platform: "browser",
 			supportsES6: "true",
+		},
+	},
+	[SdkTarget.Unity]: {
+		generator: "csharp",
+		options: {
+			apiName: "Backend",
+			library: "unityWebRequest",
+			// targetFramework: "netstandard2.1",
 		},
 	},
 };
@@ -78,6 +89,8 @@ export async function generateSdk(
 
 	if (target == SdkTarget.TypeScript) {
 		await generateTypescriptAddons(project, sdkGenPath);
+	} else if (target == SdkTarget.Unity) {
+		await generateUnityAddons(project, sdkGenPath);
 	}
 
 	await move(sdkGenPath, output, { overwrite: true });
@@ -87,5 +100,6 @@ export async function generateSdk(
 
 function targetToString(target: SdkTarget) {
 	if (target == SdkTarget.TypeScript) return "typescript";
+	if (target == SdkTarget.Unity) return "unity";
 	throw new UnreachableError(target);
 }
