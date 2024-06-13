@@ -18,7 +18,7 @@ import { info } from "../term/status.ts";
 
 // Add exlicit shutodwn handler in order to:
 // - Safely run `runShutdown`
-// - Exit correctly when running inside of DOcker (Deno doesn't handle the signal correctly)
+// - Exit correctly when running inside of Docker (Deno doesn't handle the signal correctly)
 Deno.addSignalListener("SIGINT", async () => {
 	info("Shutting down...");
 	await runShutdown();
