@@ -126,5 +126,11 @@
       "apiHost": "https://ph.rivet.gg/",
       "apiKey": "phc_SQI0wHagPhev5KK7wHJnIf2JNF8fuYBdzzOgNEGylKW"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/concepts/known-limitations",
+      "destination": "/concepts/roadmap"
+    }
+  ]
 }
