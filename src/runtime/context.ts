@@ -147,6 +147,7 @@ export class Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 				cause.enrich(this.runtime, this);
 				throw cause;
 			} else {
+				console.error("Caught internal error:", cause);
 				const error = new RuntimeError("INTERNAL_ERROR", { cause });
 				error.enrich(this.runtime, this);
 				throw error;
