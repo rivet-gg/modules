@@ -28,7 +28,7 @@ sdkCommand
 				break;
 			default:
 				throw new UserError(`Unknown target: ${target}`, {
-					suggest: "Supported targets: typescript, untiy, godot",
+					suggest: "Supported targets: typescript, unity, godot",
 				});
 		}
 

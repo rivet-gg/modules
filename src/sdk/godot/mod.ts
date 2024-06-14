@@ -123,8 +123,8 @@ export async function generateApiClient(project: Project, sdkGenPath: string) {
 }
 
 function escapeReservedWords(wordsList: string[]) {
-	let escaped = [];
-	let usedNames = new Set();
+	const escaped = [];
+	const usedNames = new Set();
 
 	for (let i = 0; i < wordsList.length; i++) {
 		let word = wordsList[i];
