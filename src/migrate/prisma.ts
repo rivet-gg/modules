@@ -80,6 +80,9 @@ async function ensurePrismaInstalledInner(signal?: AbortSignal): Promise<void> {
 			"--name",
 			PRISMA_BIN_NAME,
 			"-A",
+			// Overwrite installation in case something went wrong in detecting the
+			// current installation
+			"--force",
 			`npm:prisma@${PRISMA_VERSION}`,
 		],
 		stdout: isVerbose ? "inherit" : undefined,
