@@ -5,6 +5,8 @@ const backend = new Backend({ endpoint: "http://localhost:6420" });
 
 console.log('backend', backend);
 
+const API_ENDPOINT = "http://localhost:6420";
+
 window.findOrCreateLobby = async function() {
   const { lobby, players } = await backend.lobbies.findOrCreate({
     version: "TODO",

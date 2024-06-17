@@ -14,6 +14,12 @@
 		}
 	},
 	"modules": {
+		"currency": {
+			"registry": "local"
+		},
+		"friends": {
+			"registry": "local"
+		},
 		"rate_limit": {
 			"registry": "local"
 		},
@@ -49,6 +55,44 @@
 					"autoDestroyAfter": 4147200000
 				}
 			}
+		},
+		"users": {
+			"registry": "local"
+		},
+		"uploads": {
+			"registry": "local",
+			"config": {
+				"maxFilesPerUpload": 16,
+				"maxUploadSize": "100mib",
+				"maxMultipartUploadSize": "10gib"
+			}
+		},
+		"auth": {
+			"registry": "local",
+			"config": {
+				"email": {
+					"fromEmail": "hello@rivet.gg"
+				}
+			}
+		},
+		"email": {
+			"registry": "local",
+			"config": {
+				"provider": {
+					"test": {}
+				}
+			}
+		},
+		"lobbies": {
+			"registry": "local",
+      "config": {
+        "lobbies": {
+          "regions": ["test"],
+          "backend": {
+            "test": {}
+          }
+        }
+      }
 		},
 		"rivet": {
 			"registry": "local"
