@@ -10,5 +10,17 @@
 #           └───────────────────────────────────────────────────────┘
 
 engine:
-  custom: {}
+  html5: {}
+
+matchmaker:
+  max_players: 128
+  tier: basic-1d8
+  game_modes:
+    default: {}
+  docker:
+    dockerfile: server.Dockerfile
+    ports:
+      default:
+        port: 8080
+        protocol: https
 

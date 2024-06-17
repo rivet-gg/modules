@@ -1,0 +1,29 @@
+{
+	"name": "Rivet API",
+	"description": "Helper for calling the Rivet API.",
+	"icon": "r",
+	"tags": [
+		"core",
+		"api"
+	],
+	"authors": [
+		"NathanFlurry"
+	],
+	"status": "stable",
+	"scripts": {
+		"call": {
+			"name": "Call",
+			"description": "Call a Rivet REST endpoint."
+		}
+	},
+	"errors": {
+		"rivet_error": {
+			"name": "Rivet Error",
+			"description": "An error from the Rivet API."
+		}
+	},
+	"defaultConfig": {
+		"apiEndpoint": "https://api.rivet.gg",
+		"serviceTokenVariable": "RIVET_SERVICE_TOKEN"
+	}
+}
