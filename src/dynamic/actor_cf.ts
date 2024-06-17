@@ -27,7 +27,7 @@ export const ACTOR_DRIVER = {
 
 		return stub;
 	},
-	async callActor(stub: __GlobalDurableObject, fn: string, ...args: any[]) {
+	async callActor(stub: __GlobalDurableObject, fn: string, args: any[]) {
 		return await stub.__call(fn, args);
 	},
 	async actorExists(moduleName: string, actorName: string, label: string) {
