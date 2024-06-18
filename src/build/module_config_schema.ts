@@ -4,7 +4,7 @@ import { runJob } from "../utils/worker_pool.ts";
 import { WorkerRequest, WorkerResponse } from "./module_config_schema.worker.ts";
 import { createWorkerPool } from "../utils/worker_pool.ts";
 import { hasUserConfigSchema } from "../project/module.ts";
-import { UserError } from "../error/mod.ts";
+import { InternalError, UserError } from "../error/mod.ts";
 import { resolve } from "../deps.ts";
 
 const WORKER_POOL = createWorkerPool<WorkerRequest, WorkerResponse>({
@@ -43,13 +43,8 @@ export async function compileModuleConfigSchema(
 		// No config
 		module.userConfigSchema = {
 			"$schema": "http://json-schema.org/draft-07/schema#",
-			"$ref": "#/definitions/Config",
-			"definitions": {
-				"Config": {
-					"type": "object",
-					"additionalProperties": false,
-				},
-			},
+			"type": "object",
+			"additionalProperties": false,
 		};
 	}
 
@@ -60,7 +55,9 @@ export async function compileModuleConfigSchema(
 
 	const moduleConfigSchema = moduleConfigAjv.getSchema("#");
 	if (!moduleConfigSchema) {
-		throw new UserError("Type `Config` does not exist.", { path: resolve(module.path, "config.ts") });
+		throw new InternalError("Failed to get root type from user config schema.", {
+			path: resolve(module.path, "config.ts"),
+		});
 	}
 
 	if (!moduleConfigSchema(module.userConfig)) {

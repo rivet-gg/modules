@@ -36,6 +36,13 @@ export interface ModuleConfig extends Record<string, unknown> {
 	errors: { [name: string]: ErrorConfig };
 
 	dependencies?: { [canonicalName: string]: DependencyConfig };
+
+	/**
+	 * Default user config.
+	 *
+	 * The user-provided config will be deep merged with this config.
+	 */
+	defaultConfig?: any;
 }
 
 export type ModuleStatus = "preview" | "beta" | "stable" | "deprecated";
