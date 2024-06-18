@@ -1,6 +1,6 @@
 import { QueryClient, Transaction } from "./deps.ts";
 import { Module } from "./runtime.ts";
-import { getDefaultDatabaseUrl } from "../utils/db.ts";
+import { getDatabaseUrl } from "../utils/db.ts";
 
 type PostgresRunScope<T> = (conn: QueryClient) => Promise<T>;
 type PostgresTransactionScope<T> = (conn: Transaction) => Promise<T>;
@@ -35,7 +35,7 @@ export class Postgres {
 		if (this.pools.has(module.db.name)) {
 			return this.pools.get(module.db.name)!;
 		} else {
-			const url = getDefaultDatabaseUrl();
+			const url = getDatabaseUrl(module.db.name).toString();
 
 			// Create & insert pool
 			const output = module.db.createPrisma(url);

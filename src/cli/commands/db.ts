@@ -7,7 +7,7 @@ import { migrateReset } from "../../migrate/reset.ts";
 import { UserError } from "../../error/mod.ts";
 import { Project } from "../../project/mod.ts";
 import { verbose, warn } from "../../term/status.ts";
-import { getDefaultDatabaseUrl } from "../../utils/db.ts";
+import { getDatabaseUrl } from "../../utils/db.ts";
 
 export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
 // Unique container name for this runtime so we can run multiple instances in
@@ -96,7 +96,7 @@ dbCommand
 
 		if (!module.db) throw new UserError(`Module does not have a database configured: ${name}`);
 
-		const dbUrl = getDefaultDatabaseUrl();
+		const dbUrl = getDatabaseUrl(module.db.name).toString();
 
 		// Start the container
 		verbose("Starting container", `${POSTGRES_CONTAINER_NAME} (${POSTGRES_IMAGE})`);
@@ -127,7 +127,7 @@ dbCommand
 
 		if (!module.db) throw new UserError(`Module does not have a database configured: ${name}`);
 
-		const dbUrl = getDefaultDatabaseUrl();
+		const dbUrl = getDatabaseUrl(module.db.name).toString();
 
 		await Deno.stdout.write(new TextEncoder().encode(dbUrl));
 		console.error("");
