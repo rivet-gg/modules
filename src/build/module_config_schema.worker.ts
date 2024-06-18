@@ -4,7 +4,7 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 
-import { tjs } from "./deps.ts";
+import { dedent, tjs } from "./deps.ts";
 import { configPath, Module } from "../project/module.ts";
 import { InternalError } from "../error/mod.ts";
 
@@ -19,6 +19,17 @@ export interface WorkerResponse {
 self.onmessage = async (ev) => {
 	const { module } = ev.data as WorkerRequest;
 	const moduleConfigPath = configPath(module);
+
+	// Generate temporary file to modify the types
+	const tempConfigImporter = await Deno.makeTempFile({ suffix: ".ts" });
+	await Deno.writeTextFile(
+		tempConfigImporter,
+		dedent`
+    import { Config } from ${JSON.stringify(moduleConfigPath)};
+
+    export type PartialConfig = Config;
+    `,
+	);
 
 	// TODO: Dupe of project.ts
 	// https://docs.deno.com/runtime/manual/advanced/typescript/configuration#what-an-implied-tsconfigjson-looks-like
@@ -46,22 +57,22 @@ self.onmessage = async (ev) => {
 		strictNullChecks: true,
 
 		// TODO: Is this needed?
-		include: [moduleConfigPath],
+		include: [tempConfigImporter],
 
 		// TODO: Figure out how to work without this? Maybe we manually validate the request type exists?
 		ignoreErrors: true,
 	};
 
 	const program = tjs.getProgramFromFiles(
-		[moduleConfigPath],
+		[tempConfigImporter],
 		DEFAULT_COMPILER_OPTIONS,
 	);
 
 	const moduleConfigSchema = tjs.generateSchema(
 		program,
-		"Config",
+		"PartialConfig",
 		validateConfig,
-		[moduleConfigPath],
+		[tempConfigImporter],
 	);
 	if (moduleConfigSchema === null) {
 		throw new InternalError("Failed to generate config schema.", { path: moduleConfigPath });

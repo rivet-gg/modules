@@ -1,5 +1,5 @@
 ---
-title: User Config (config.ts)
+title: User-Provided Config (config.ts)
 ---
 
 <Note>

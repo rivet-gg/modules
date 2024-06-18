@@ -179,7 +179,7 @@ export class ModuleContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT,
 			.has(targetModuleName);
 	}
 
-	public get userConfig(): UserConfigT {
+	public get config(): UserConfigT {
 		return this.runtime.config.modules[this.moduleName].userConfig as UserConfigT;
 	}
 
