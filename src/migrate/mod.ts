@@ -6,7 +6,7 @@ import { verbose } from "../term/status.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createOnce, Once } from "../utils/once.ts";
 import { getOrInitOnce } from "../utils/once.ts";
-import { getDefaultDatabaseUrl } from "../utils/db.ts";
+import { getDatabaseUrl, getDefaultDatabaseUrl } from "../utils/db.ts";
 
 export type ForEachDatabaseCallback = (
 	opts: { databaseUrl: string; module: Module; db: ModuleDatabase },
@@ -23,12 +23,12 @@ export type ForEachPrismaSchemaCallback = (
 
 interface DbState {
 	defaultClientOnce: Once<PostgresClient>;
-	createdDatabases: Set<string>;
+	createdSchemas: Set<string>;
 }
 
 async function getDefaultClient(_project: Project) {
 	return await getOrInitOnce(DB_STATE.defaultClientOnce, async () => {
-		const client = new PostgresClient(getDefaultDatabaseUrl());
+		const client = new PostgresClient(getDefaultDatabaseUrl().toString());
 		await client.connect();
 
 		addShutdownHandler(async () => {
@@ -45,7 +45,7 @@ async function getDefaultClient(_project: Project) {
  */
 const DB_STATE: DbState = {
 	defaultClientOnce: createOnce(),
-	createdDatabases: new Set(),
+	createdSchemas: new Set(),
 };
 
 /** Prepares all databases and calls a callback once prepared. */
@@ -67,28 +67,30 @@ export async function forEachDatabase(
 		signal?.throwIfAborted();
 
 		// Create database
-		await createDatabase(defaultClient, mod.db);
+		await createSchema(defaultClient, mod.db);
+
+		const databaseUrl = getDatabaseUrl(mod.db.name).toString();
 
 		// Callback
-		await callback({ databaseUrl: getDefaultDatabaseUrl(), module: mod, db: mod.db });
+		await callback({ databaseUrl, module: mod, db: mod.db });
 	}
 }
 
 /**
- * Create databases for a module.
+ * Create schema for a module.
  */
-async function createDatabase(client: PostgresClient, db: ModuleDatabase) {
+async function createSchema(client: PostgresClient, db: ModuleDatabase) {
 	// Check if already created
-	if (DB_STATE.createdDatabases.has(db.name)) return;
+	if (DB_STATE.createdSchemas.has(db.name)) return;
 
 	// Create database
 	const existsQuery = await client.queryObject<
 		{ exists: boolean }
-	>`SELECT EXISTS (SELECT FROM pg_database WHERE datname = ${db.name})`;
+	>`SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ${db.name})`;
 	if (!existsQuery.rows[0].exists) {
-		await client.queryObject(`CREATE DATABASE ${assertValidString(db.name)}`);
+		await client.queryObject(`CREATE SCHEMA ${assertValidString(db.name)}`);
 	}
 
 	// Save as created
-	DB_STATE.createdDatabases.add(db.name);
+	DB_STATE.createdSchemas.add(db.name);
 }

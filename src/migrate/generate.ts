@@ -9,7 +9,7 @@ import { forEachDatabase } from "./mod.ts";
 import { runPrismaCommand } from "./prisma.ts";
 import { Runtime } from "../build/mod.ts";
 import { genPrismaOutputFolder } from "../project/project.ts";
-import { getDefaultDatabaseUrl } from "../utils/db.ts";
+import { getDatabaseUrl } from "../utils/db.ts";
 
 export async function generateClient(
 	project: Project,
@@ -24,7 +24,7 @@ export async function generateClient(
 			const dbDir = await runPrismaCommand(project, module, {
 				args: ["generate"],
 				env: {
-					DATABASE_URL: getDefaultDatabaseUrl(),
+					DATABASE_URL: getDatabaseUrl(module.db!.name).toString(),
 					PRISMA_CLIENT_FORCE_WASM: "true",
 				},
 				interactive: false,
