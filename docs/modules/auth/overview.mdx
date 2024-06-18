@@ -51,6 +51,7 @@ Add the following to your `backend.json`:
 
 ## Config
 
+### Schema
 		
 ```typescript
 export interface Config {
@@ -62,10 +63,23 @@ export interface EmailConfig {
 }
 ```
 
+### Default
+
+```json
+{}
+```
+
+
 
 ## Scripts
 
+### Public
+
 <CardGroup><Card title="Authenticate Email Passwordless" href="/modules/auth/scripts/auth_email_passwordless">Send a one-time verification code to a user's email address to authenticate them.</Card><Card title="Verify Email Passwordless" href="/modules/auth/scripts/verify_email_passwordless">Verify a user's email address with a one-time verification code.</Card></CardGroup>
+
+### Internal
+
+<CardGroup>_No internal scripts._</CardGroup>
 
 ## Errors
 

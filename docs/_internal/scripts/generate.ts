@@ -221,19 +221,35 @@ for (let key in module.scripts) {
 		}
 	}
 
+  // Sort scripts
+  const publicScripts = Object.entries(meta.modules[moduleName].scripts)
+    .filter(([_,x]) => x.config.public);
+  const internalScripts = Object.entries(meta.modules[moduleName].scripts)
+    .filter(([_,x]) => !x.config.public);
+
 	// Add nav
+  let pages: any[] = [`modules/${moduleName}/overview`];
+  if (publicScripts.length > 0) {
+    pages.push({
+      "group": "Scripts (Public)",
+      "pages": 
+        publicScripts
+        .sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
+        .map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
+    });
+  }
+  if (internalScripts.length > 0) {
+    pages.push({
+      "group": "Scripts (Internal)",
+      "pages": internalScripts
+        .sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
+        .map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
+    });
+  }
 	modulesNav.pages.push({
 		"icon": module.config.icon,
 		"group": module.config.name,
-		"pages": [
-			`modules/${moduleName}/overview`,
-			{
-				"group": "Scripts",
-				"pages": Object.entries(meta.modules[moduleName].scripts)
-					.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
-					.map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
-			},
-		],
+		"pages": pages,
 	});
 
 	const modulePath = resolve(DOCS_MODULES_PATH, moduleName);
@@ -280,7 +296,13 @@ for (let key in module.scripts) {
 		authors = "_No authors_";
 	}
 
-	const scriptCards = scriptsSorted
+	const publicScriptCards = publicScripts
+		.map(([scriptName, script]) =>
+			`<Card title="${script.config.name}" href="/modules/${moduleName}/scripts/${scriptName}">${
+				script.config.description ?? ""
+			}</Card>`
+		);
+	const internalScriptCards = internalScripts
 		.map(([scriptName, script]) =>
 			`<Card title="${script.config.name}" href="/modules/${moduleName}/scripts/${scriptName}">${
 				script.config.description ?? ""
@@ -302,10 +324,18 @@ for (let key in module.scripts) {
 		const schema = await schemaToTypeScript(module.userConfigSchema, "Config");
 		configSchema = `## Config
 
+### Schema
 		
 \`\`\`typescript
 ${schema}
 \`\`\`
+
+### Default
+
+\`\`\`json
+${JSON.stringify(module.config.defaultConfig ?? {}, null, 4)}
+\`\`\`
+
 `;
 	}
 
@@ -320,7 +350,8 @@ ${schema}
 		.replace(/%%DESCRIPTION%%/g, module.config.description!)
 		.replace(/%%INSTALL_CONFIG%%/g, install)
 		.replace(/%%CONFIG_SCHEMA%%/g, configSchema)
-		.replace(/%%SCRIPTS%%/g, scriptCards.join(""))
+		.replace(/%%SCRIPTS_PUBLIC%%/g, publicScripts.length > 0 ? publicScriptCards.join("") : "_No public scripts._")
+		.replace(/%%SCRIPTS_INTERNAL%%/g, internalScripts.length > 0 ? internalScriptCards.join("") : "_No internal scripts._")
 		.replace(/%%ERRORS%%/g, errors);
 	await Deno.writeTextFile(resolve(modulePath, "overview.mdx"), overview);
 

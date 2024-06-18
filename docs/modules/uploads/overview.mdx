@@ -50,6 +50,7 @@ Add the following to your `backend.json`:
 
 ## Config
 
+### Schema
 		
 ```typescript
 export interface Config {
@@ -60,8 +61,21 @@ export interface Config {
 }
 ```
 
+### Default
+
+```json
+{}
+```
+
+
 
 ## Scripts
+
+### Public
+
+<CardGroup>_No public scripts._</CardGroup>
+
+### Internal
 
 <CardGroup><Card title="Complete Upload" href="/modules/uploads/scripts/complete">Alert the module that the upload has been completed</Card><Card title="Delete Upload" href="/modules/uploads/scripts/delete">Removes the upload and deletes the files from the bucket</Card><Card title="Get File Link" href="/modules/uploads/scripts/get_public_file_urls">Get presigned download links for each of the specified files</Card><Card title="Get Upload Metadata" href="/modules/uploads/scripts/get">Get the metadata (including contained files) for specified upload IDs</Card><Card title="Prepare Upload" href="/modules/uploads/scripts/prepare">Prepare an upload batch for data transfer</Card></CardGroup>
 
