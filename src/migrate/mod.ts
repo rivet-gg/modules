@@ -6,7 +6,7 @@ import { verbose } from "../term/status.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createOnce, Once } from "../utils/once.ts";
 import { getOrInitOnce } from "../utils/once.ts";
-import { getDatabaseUrl, getDefaultDatabaseUrl } from "../utils/db.ts";
+import { getDefaultDatabaseUrl } from "../utils/db.ts";
 
 export type ForEachDatabaseCallback = (
 	opts: { databaseUrl: string; module: Module; db: ModuleDatabase },
@@ -69,10 +69,8 @@ export async function forEachDatabase(
 		// Create database
 		await createDatabase(defaultClient, mod.db);
 
-		const databaseUrl = getDatabaseUrl(mod.db.name).toString();
-
 		// Callback
-		await callback({ databaseUrl, module: mod, db: mod.db });
+		await callback({ databaseUrl: getDefaultDatabaseUrl(), module: mod, db: mod.db });
 	}
 }
 
