@@ -40,6 +40,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		// Import Prisma serverless adapter for Neon
 		import * as neon from "https://esm.sh/@neondatabase/serverless@^0.9.3";
 		import { PrismaNeon } from "https://esm.sh/@prisma/adapter-neon@^5.15.0";
+    // neon.neonConfig.coalesceWrites = false;
 		`;
 	}
 
@@ -126,18 +127,19 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import { handleRequest } from "${serverTsPath}";
 			import { ACTOR_DRIVER } from "./actor.ts";
 
-			const RUNTIME = new Runtime<
-				DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel
-			>(
-				config,
-				ACTOR_DRIVER,
-				dependencyCaseConversionMap,
-				actorCaseConversionMap,
-			);
-
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
-					${denoEnvPolyfill()}
+          ${denoEnvPolyfill()}
+
+          // TODO(OGBE-159): Move this back to global scope after dbs are correctly isolated
+          const runtime = new Runtime<
+            DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel
+          >(
+            config,
+            ACTOR_DRIVER,
+            dependencyCaseConversionMap,
+            actorCaseConversionMap,
+          );
 
 					const ip = req.headers.get("CF-Connecting-IP");
 					if (!ip) {
@@ -147,7 +149,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 						);
 					}
 
-					return await handleRequest(RUNTIME, req, {
+					return await handleRequest(runtime, req, {
 						remoteAddress: ip,
 					});
 				}
