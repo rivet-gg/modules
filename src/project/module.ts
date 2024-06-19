@@ -1,5 +1,5 @@
 import { exists, relative, resolve } from "../deps.ts";
-import { glob, tjs } from "./deps.ts";
+import { deepMerge, glob, tjs } from "./deps.ts";
 import { configPath as moduleConfigPath, readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
@@ -176,8 +176,16 @@ export async function loadModule(
 		};
 	}
 
-	// Derive config
-	const userConfig = projectModuleConfig.config ?? {};
+	// Merge user config with default config
+	const userConfig = deepMerge(
+		config.defaultConfig ?? {},
+		projectModuleConfig.config ?? {},
+		{
+			arrays: "replace",
+			maps: "merge",
+			sets: "replace",
+		},
+	);
 
 	return {
 		path: modulePath,
