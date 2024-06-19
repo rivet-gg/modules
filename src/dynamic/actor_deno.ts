@@ -33,7 +33,7 @@ export const ACTOR_DRIVER = {
 			storage: new Map(),
 		});
 	},
-	async callActor(stub: ActorBase, fn: string, ...args: any[]) {
+	async callActor(stub: ActorBase, fn: string, args: any[]) {
 		let res = (stub as any)[fn](...args);
 		if (res instanceof Promise) res = await res;
 
