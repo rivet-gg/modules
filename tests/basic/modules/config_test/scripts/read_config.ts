@@ -15,6 +15,6 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
 	return {
-		config: ctx.userConfig,
+		config: ctx.config,
 	};
 }

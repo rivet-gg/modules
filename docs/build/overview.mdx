@@ -12,7 +12,7 @@ Modules have access to the following core components:
 
 - [**Scripts**](/build/scripts) Scripts are used to write TypeScript & [Deno](https://deno.com/) code that runs on the backend. Request & response types are automatically validated.
 - [**Database**](/build/database) Modules can write database schemas, query data from scripts with type safety, and automatically create + migrate databases.
-- [**User Config**](/build/user-config) Modules can allow projects to pass configuration options to the module.
+- [**User-Provided Config**](/build/config) Modules can allow projects to pass configuration options to the module.
 - [**Errors**](/build/errors) Modules specify the types of errors that can occur in their scripts.
 
 ## File structure
@@ -25,5 +25,5 @@ Modules have access to the following core components:
 - `db/` _(optional)_ Database-related files. [Documentation](/build/database)
     - `schema.prisma` Database schema.
     - `migrations/` Database migrations auto-generated from `schema.prisma`. This directory should not be manually modified unless you know what you are doing.
-- `config.ts` _(optional)_ Defines user-provided config schema. [Documentation](/build/user-config)
+- `config.ts` _(optional)_ Defines user-provided config schema. [Documentation](/build/config)
 - `public.ts` _(optional)_ Exports shared functions & types across modules. [Documentation](/build/public)

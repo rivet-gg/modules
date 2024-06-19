@@ -97,7 +97,7 @@
             "build/module-config",
             "build/scripts",
             "build/database",
-            "build/user-config",
+            "build/config",
             "build/errors",
             "build/public",
             "build/conventions"
