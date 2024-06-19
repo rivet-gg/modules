@@ -25,10 +25,10 @@ export async function run(
 		throw new RuntimeError("email_missing_content");
 	}
 
-	if ("test" in ctx.userConfig.provider) {
+	if ("test" in ctx.config.provider) {
 		// Do nothing
-	} else if ("sendGrid" in ctx.userConfig.provider) {
-		await useSendGrid(ctx.userConfig.provider.sendGrid, req);
+	} else if ("sendGrid" in ctx.config.provider) {
+		await useSendGrid(ctx.config.provider.sendGrid, req);
 	} else {
 		throw new RuntimeError("unreachable");
 	}

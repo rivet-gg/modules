@@ -17,7 +17,7 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	if (!ctx.userConfig.email) throw new RuntimeError("provider_disabled");
+	if (!ctx.config.email) throw new RuntimeError("provider_disabled");
 
 	// Check if the email is already associated with an identity
 	const existingIdentity = await ctx.db.emailPasswordless.findFirst({
@@ -57,8 +57,8 @@ export async function run(
 	// Send email
 	await ctx.modules.email.sendEmail({
 		from: {
-			email: ctx.userConfig.email.fromEmail ?? "hello@test.com",
-			name: ctx.userConfig.email.fromName ?? "Authentication Code",
+			email: ctx.config.email.fromEmail ?? "hello@test.com",
+			name: ctx.config.email.fromName ?? "Authentication Code",
 		},
 		to: [{ email: req.email }],
 		subject: "Your verification code",

@@ -15,7 +15,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const config = getConfig(ctx.userConfig);
+	const config = getConfig(ctx.config);
 
 	const bytesDeleted = await ctx.db.$transaction(async (db) => {
 		const upload = await db.upload.findFirst({

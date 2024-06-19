@@ -19,7 +19,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const config = getConfig(ctx.userConfig);
+	const config = getConfig(ctx.config);
 
 	const newUpload = await ctx.db.$transaction(async (db) => {
 		// Find the upload by ID
