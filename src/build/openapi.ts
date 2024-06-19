@@ -32,6 +32,8 @@ export async function generateOpenApi(project: Project) {
 
 	for (const mod of project.modules.values()) {
 		for (const script of mod.scripts.values()) {
+			if (!script.config.public) continue;
+
 			const requestBodyRef = injectSchema(
 				schema,
 				script.requestSchema!,
