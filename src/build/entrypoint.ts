@@ -39,7 +39,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		imports += `
 		// Import Prisma serverless adapter for Neon
 		import * as neon from "https://esm.sh/@neondatabase/serverless@^0.9.3";
-		import { PrismaNeonHTTP } from "https://esm.sh/@prisma/adapter-neon@^5.13.0";
+		import { PrismaNeon } from "https://esm.sh/@prisma/adapter-neon@^5.15.0";
 		`;
 	}
 
@@ -268,8 +268,8 @@ function generateDbDriver(opts: BuildOpts, prismaImportName: string) {
 		dbDriver += `},`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		dbDriver += `(url: string) => {
-			const client = neon.neon(url);
-			const adapter = new PrismaNeonHTTP(client);
+      const pool = new neon.Pool({ connectionString: url })
+			const adapter = new PrismaNeon(pool);
 			const prisma = new ${prismaImportName}.PrismaClient({
 				adapter,
 				log: ['query', 'info', 'warn', 'error'],
