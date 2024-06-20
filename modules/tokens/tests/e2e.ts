@@ -12,15 +12,15 @@ test("e2e", async (ctx: TestContext) => {
 		expireAt: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString(),
 	});
 
-	const getRes = await ctx.modules.tokens.get({
+	const getRes = await ctx.modules.tokens.fetch({
 		tokenIds: [token.id],
 	});
 	assertExists(getRes.tokens[0]);
 
-	const getByTokenRes = await ctx.modules.tokens.getByToken({
+	const fetchByTokenRes = await ctx.modules.tokens.fetchByToken({
 		tokens: [token.token],
 	});
-	assertExists(getByTokenRes.tokens[0]);
+	assertExists(fetchByTokenRes.tokens[0]);
 
 	const validateRes = await ctx.modules.tokens.validate({
 		token: token.token,
@@ -32,7 +32,7 @@ test("e2e", async (ctx: TestContext) => {
 	});
 	assertEquals(revokeRes.updates[token.id], TokenUpdate.Revoked);
 
-	const getAfterRevoke = await ctx.modules.tokens.get({
+	const getAfterRevoke = await ctx.modules.tokens.fetch({
 		tokenIds: [token.id],
 	});
 	assertExists(getAfterRevoke.tokens[0].revokedAt);

@@ -1,12 +1,15 @@
 import { RuntimeError } from "../module.gen.ts";
 import { ScriptContext } from "../module.gen.ts";
+import { User } from "../utils/types.ts";
 
 export interface Request {
 	userToken: string;
+  fetchUser?: boolean;
 }
 
 export interface Response {
-	userId: string;
+  userId: string;
+  user?: User;
 }
 
 export async function run(
@@ -21,5 +24,13 @@ export async function run(
 	if (token.type !== "user") throw new RuntimeError("token_not_user_token");
 	const userId = token.meta.userId;
 
-	return { userId };
+  let user;
+  if (req.fetchUser) {
+    user = await ctx.db.user.findFirstOrThrow({
+      where: { id: userId },
+    });
+
+  }
+
+	return { userId, user };
 }

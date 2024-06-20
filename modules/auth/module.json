@@ -18,13 +18,13 @@
         "rate_limit": {}
     },
     "scripts": {
-        "auth_email_passwordless": {
-            "name": "Authenticate Email Passwordless",
+        "send_email_verification": {
+            "name": "Send Email Verification",
             "description": "Send a one-time verification code to a user's email address to authenticate them.",
             "public": true
         },
-        "verify_email_passwordless": {
-            "name": "Verify Email Passwordless",
+        "complete_email_verification": {
+            "name": "Complete Email Verification",
             "description": "Verify a user's email address with a one-time verification code.",
             "public": true
         }

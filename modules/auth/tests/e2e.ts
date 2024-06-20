@@ -4,11 +4,11 @@ import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 
 test("e2e", async (ctx: TestContext) => {
 	// First we create a new user, and "register" into the auth
-	// using an authEmailPasswordless({ email, userToken })
+	// using an sendEmailVerification({ email, userToken })
 	// call
-	const { user } = await ctx.modules.users.createUser({});
+	const { user } = await ctx.modules.users.create({});
 
-	const { token: session } = await ctx.modules.users.createUserToken({
+	const { token: session } = await ctx.modules.users.createToken({
 		userId: user.id
 	});
 
@@ -16,7 +16,7 @@ test("e2e", async (ctx: TestContext) => {
 
 	// Now we test that post-signin, we get the same user
 	{
-		const authRes = await ctx.modules.auth.authEmailPasswordless({
+		const authRes = await ctx.modules.auth.sendEmailVerification({
 			email: fakeEmail,
 			userToken: session.token
 		});
@@ -30,7 +30,7 @@ test("e2e", async (ctx: TestContext) => {
 
 		// Now by verifying the email, we register, and can also use
 		// this to verify the token
-		const verifyRes = await ctx.modules.auth.verifyEmailPasswordless({
+		const verifyRes = await ctx.modules.auth.completeEmailVerification({
 			verificationId: authRes.verification.id,
 			code: code,
 		});
@@ -39,7 +39,7 @@ test("e2e", async (ctx: TestContext) => {
 
 
 		// Make sure we end up with the same user we started with
-		const verifyRes2 = await ctx.modules.users.authenticateUser({
+		const verifyRes2 = await ctx.modules.users.authenticateToken({
 			userToken: verifyRes.token.token
 		});
 
@@ -49,7 +49,7 @@ test("e2e", async (ctx: TestContext) => {
 	// Now we try logging back in with the same email,
 	// but without a token, expecting the same user
 	{
-		const authRes = await ctx.modules.auth.authEmailPasswordless({
+		const authRes = await ctx.modules.auth.sendEmailVerification({
 			email: fakeEmail
 		});
 
@@ -60,12 +60,12 @@ test("e2e", async (ctx: TestContext) => {
 			},
 		});
 
-		const verifyRes = await ctx.modules.auth.verifyEmailPasswordless({
+		const verifyRes = await ctx.modules.auth.completeEmailVerification({
 			verificationId: authRes.verification.id,
 			code: code,
 		});
 
-		const verifyRes2 = await ctx.modules.users.authenticateUser({
+		const verifyRes2 = await ctx.modules.users.authenticateToken({
 			userToken: verifyRes.token.token
 		});
 

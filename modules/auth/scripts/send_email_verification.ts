@@ -28,7 +28,7 @@ export async function run(
 	let userId: string | undefined = existingIdentity?.userId;
 
 	if (req.userToken) {
-		const authRes = await ctx.modules.users.authenticateUser({
+		const authRes = await ctx.modules.users.authenticateToken({
 			userToken: req.userToken,
 		});
 

@@ -16,19 +16,19 @@
         "tokens": {}
     },
     "scripts": {
-        "get_user": {
-            "name": "Get User",
+        "fetch": {
+            "name": "Fetch User",
             "public": true
         },
-        "create_user": {
+        "create": {
             "name": "Create User"
         },
-        "authenticate_user": {
-            "name": "Validate User Token",
+        "authenticate_token": {
+            "name": "Authenticate User Token",
             "description": "Validate a user token. Throws an error if the token is invalid.",
             "public": true
         },
-        "create_user_token": {
+        "create_token": {
             "name": "Create User Token",
             "description": "Create a token for a user to authenticate future requests."
         }
