@@ -1,16 +1,16 @@
 ---
-title: "Create User"
-description: ""
-sidebarTitle: "Create User"
+title: "Fetch Token"
+description: "Get a token by its ID."
+sidebarTitle: "Fetch Token"
 ---
 
 | Source                                                                                                      | Name       | Public     |
 | ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/users/scripts/create_user.ts) | `create_user` | No |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/tokens/scripts/fetch.ts) | `fetch` | No |
 
 <RequestExample>
 ```typescript OpenGB Script
-const data = await ctx.modules.users.createUser({
+const data = await ctx.modules.tokens.fetch({
   // Request body
 });
 ```
@@ -21,7 +21,7 @@ const data = await ctx.modules.users.createUser({
 
 ```typescript
 export interface Request {
-  username?: string;
+  tokenIds: string[];
 }
 ```
 
@@ -29,12 +29,14 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  user: User;
+  tokens: Token[];
 }
-export interface User {
+export interface Token {
   id: string;
-  username: string;
+  type: string;
+  meta: any;
   createdAt: string;
-  updatedAt: string;
+  expireAt: null | string;
+  revokedAt: null | string;
 }
 ```

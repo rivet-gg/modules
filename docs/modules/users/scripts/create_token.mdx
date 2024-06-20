@@ -1,16 +1,16 @@
 ---
-title: "Get Token"
-description: "Get a token by its ID."
-sidebarTitle: "Get Token"
+title: "Create User Token"
+description: "Create a token for a user to authenticate future requests."
+sidebarTitle: "Create User Token"
 ---
 
 | Source                                                                                                      | Name       | Public     |
 | ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/tokens/scripts/get.ts) | `get` | No |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/users/scripts/create_token.ts) | `create_token` | No |
 
 <RequestExample>
 ```typescript OpenGB Script
-const data = await ctx.modules.tokens.get({
+const data = await ctx.modules.users.createToken({
   // Request body
 });
 ```
@@ -21,7 +21,7 @@ const data = await ctx.modules.tokens.get({
 
 ```typescript
 export interface Request {
-  tokenIds: string[];
+  userId: string;
 }
 ```
 
@@ -29,9 +29,10 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  tokens: Token[];
+  token: TokenWithSecret;
 }
-export interface Token {
+export interface TokenWithSecret {
+  token: string;
   id: string;
   type: string;
   meta: any;
