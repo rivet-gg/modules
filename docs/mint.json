@@ -130,8 +130,8 @@
             {
               "group": "Scripts (Public)",
               "pages": [
-                "modules/auth/scripts/auth_email_passwordless",
-                "modules/auth/scripts/verify_email_passwordless"
+                "modules/auth/scripts/complete_email_verification",
+                "modules/auth/scripts/send_email_verification"
               ]
             }
           ]
@@ -214,8 +214,8 @@
               "pages": [
                 "modules/tokens/scripts/create",
                 "modules/tokens/scripts/extend",
-                "modules/tokens/scripts/get",
-                "modules/tokens/scripts/get_by_token",
+                "modules/tokens/scripts/fetch_by_token",
+                "modules/tokens/scripts/fetch",
                 "modules/tokens/scripts/revoke",
                 "modules/tokens/scripts/validate"
               ]
@@ -247,15 +247,15 @@
             {
               "group": "Scripts (Public)",
               "pages": [
-                "modules/users/scripts/get_user",
-                "modules/users/scripts/authenticate_user"
+                "modules/users/scripts/authenticate_token",
+                "modules/users/scripts/fetch"
               ]
             },
             {
               "group": "Scripts (Internal)",
               "pages": [
-                "modules/users/scripts/create_user",
-                "modules/users/scripts/create_user_token"
+                "modules/users/scripts/create",
+                "modules/users/scripts/create_token"
               ]
             }
           ]

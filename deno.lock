@@ -451,7 +451,7 @@
     "https://deno.land/x/denoflate@1.2.1/pkg/denoflate_bg.wasm.js": "d581956245407a2115a3d7e8d85a9641c032940a8e810acbd59ca86afd34d44d",
     "https://deno.land/x/esbuild@v0.20.2/mod.js": "67c608ee283233f5d0faa322b887356857c547a8e6a00981f798b2cd38e02436",
     "https://esm.sh/ajv-formats@2.1.1": "575b3830618970ddc3aba96310bf4df7358bb37fcea101f58b36897ff3ac2ea7",
-    "https://esm.sh/ajv@8.12.0": "cc1a73af661466c7f4e6a94d93ece78542d700f2165bdb16a531e9db8856c5aa",
+    "https://esm.sh/ajv@8.12.0": "965ce16eff0cefef99e67478c5ee760928bd8931d40c3b958325cdd6ab6149f2",
     "https://esm.sh/glob@10.4.1": "9b6904cc5d5586913e09c1f904282348f7f410d4a4cb89e8648f863dcafd304f",
     "https://esm.sh/v135/ajv-formats@2.1.1/denonext/ajv-formats.mjs": "06092e00b42202633ae6dab4b53287c133af882ddb14c6707277cdb237634967",
     "https://esm.sh/v135/ajv@8.12.0/denonext/ajv.mjs": "4645df9093d0f8be0e964070a4a7aea8adea06e8883660340931f7a3f979fc65",
