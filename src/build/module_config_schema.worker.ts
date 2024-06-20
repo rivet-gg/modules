@@ -4,7 +4,7 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 
-import { dedent, tjs } from "./deps.ts";
+import { tjs } from "./deps.ts";
 import { configPath, Module } from "../project/module.ts";
 import { InternalError } from "../error/mod.ts";
 
