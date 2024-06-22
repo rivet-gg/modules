@@ -50,7 +50,8 @@ export class Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 					script: { module: moduleName, script: scriptName },
 				}),
 				moduleName,
-				this.runtime.postgres.getOrCreatePool(module)?.prisma,
+				this.runtime.postgres.getOrCreatePrismaClient(this.runtime.config, module),
+				module.db?.schema,
 				scriptName,
 				this.dependencyCaseConversionMap,
 				this.actorCaseConversionMap,
@@ -159,13 +160,21 @@ export class Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 /**
  * Context for a module.
  */
-export class ModuleContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, DatabaseT>
-	extends Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT> {
+export class ModuleContext<
+	DependenciesSnakeT,
+	DependenciesCamelT,
+	ActorsSnakeT,
+	ActorsCamelT,
+	UserConfigT,
+	DatabaseT,
+	DatabaseSchemaT,
+> extends Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT> {
 	public constructor(
 		runtime: Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>,
 		trace: Trace,
 		public readonly moduleName: string,
 		public readonly db: DatabaseT,
+		public readonly dbSchema: DatabaseSchemaT,
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorCaseConversionMap: RegistryCallMap,
 	) {
@@ -194,23 +203,54 @@ export class ModuleContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT,
 /**
  * Context for a script.
  */
-export class ScriptContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, DatabaseT>
-	extends ModuleContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, DatabaseT> {
+export class ScriptContext<
+	DependenciesSnakeT,
+	DependenciesCamelT,
+	ActorsSnakeT,
+	ActorsCamelT,
+	UserConfigT,
+	DatabaseT,
+	DatabaseSchemaT,
+> extends ModuleContext<
+	DependenciesSnakeT,
+	DependenciesCamelT,
+	ActorsSnakeT,
+	ActorsCamelT,
+	UserConfigT,
+	DatabaseT,
+	DatabaseSchemaT
+> {
 	public constructor(
 		runtime: Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>,
 		trace: Trace,
 		moduleName: string,
 		db: DatabaseT,
+		dbSchema: DatabaseSchemaT,
 		public readonly scriptName: string,
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorCaseConversionMap: RegistryCallMap,
 	) {
-		super(runtime, trace, moduleName, db, dependencyCaseConversionMap, actorCaseConversionMap);
+		super(runtime, trace, moduleName, db, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
 	}
 }
 
 /**
  * Context for a test.
  */
-export class TestContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, DatabaseT>
-	extends ModuleContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, DatabaseT> {}
+export class TestContext<
+	DependenciesSnakeT,
+	DependenciesCamelT,
+	ActorsSnakeT,
+	ActorsCamelT,
+	UserConfigT,
+	DatabaseT,
+	DatabaseSchemaT,
+> extends ModuleContext<
+	DependenciesSnakeT,
+	DependenciesCamelT,
+	ActorsSnakeT,
+	ActorsCamelT,
+	UserConfigT,
+	DatabaseT,
+	DatabaseSchemaT
+> {}

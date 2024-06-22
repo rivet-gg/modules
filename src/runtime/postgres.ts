@@ -1,50 +1,65 @@
-import { QueryClient, Transaction } from "./deps.ts";
 import { Module } from "./runtime.ts";
+import { Config } from "./mod.ts";
 import { getDatabaseUrl } from "../utils/db.ts";
 
-type PostgresRunScope<T> = (conn: QueryClient) => Promise<T>;
-type PostgresTransactionScope<T> = (conn: Transaction) => Promise<T>;
-
-export interface PrismaClientDummy {
-	$disconnect(): Promise<void>;
+/**
+ * Unknown driver type.
+ */
+export interface PgPoolDummy {
+	end?: () => Promise<void>;
 }
 
-export interface Pool {
-	prisma: PrismaClientDummy;
-	pgPool?: any;
+/**
+ * We don't have access to the generated Prisma type, so we create an interface with only what we need to interact with.
+ *
+ * This will be converted to the full Prisma type when passed to the context.
+ */
+export interface PrismaClientDummy {
+	$disconnect(): Promise<void>;
 }
 
 /** Manages Postgres connections. */
 export class Postgres {
 	private isShutDown = false;
 
-	public pools = new Map<string, Pool>();
+	private pgPool?: PgPoolDummy;
+	public prismaClients = new Map<string, PrismaClientDummy>();
 
 	public async shutdown() {
 		this.isShutDown = true;
-		for (const pool of this.pools.values()) {
-			await pool.prisma.$disconnect();
-			if (pool.pgPool) await pool.pgPool.end();
+		for (const client of this.prismaClients.values()) {
+			await client.$disconnect();
+		}
+		if (this.pgPool?.end) await this.pgPool.end();
+	}
+
+	public getOrCreatePgPool(config: Config): PgPoolDummy {
+		if (this.isShutDown) throw new Error("Postgres is shutting down");
+
+		if (this.pgPool) {
+			return this.pgPool;
+		} else {
+			const url = getDatabaseUrl();
+
+			// Create & insert pool
+			const output = config.db.createPgPool(url);
+			this.pgPool = output;
+			return output;
 		}
 	}
 
-	public getOrCreatePool(module: Module): Pool | undefined {
+	public getOrCreatePrismaClient(config: Config, module: Module): PrismaClientDummy | undefined {
 		if (!module.db) return undefined;
 		if (this.isShutDown) throw new Error("Postgres is shutting down");
 
-		if (this.pools.has(module.db.name)) {
-			return this.pools.get(module.db.name)!;
+		if (this.prismaClients.has(module.db.schema)) {
+			return this.prismaClients.get(module.db.schema)!;
 		} else {
-			const url = getDatabaseUrl(module.db.name);
-
 			// Create & insert pool
-			const output = module.db.createPrisma(url, module.db.name);
-			const pool = {
-				prisma: output.prisma,
-				pgPool: output.pgPool,
-			} as Pool;
-			this.pools.set(module.db.name, pool);
-			return pool;
+			const pool = this.getOrCreatePgPool(config);
+			const client = module.db.createPrismaClient(pool, module.db.schema);
+			this.prismaClients.set(module.db.schema, client);
+			return client;
 		}
 	}
 }

@@ -40,7 +40,18 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		// Import Prisma serverless adapter for Neon
 		import * as neon from "https://esm.sh/@neondatabase/serverless@^0.9.3";
 		import { PrismaNeon } from "https://esm.sh/@prisma/adapter-neon@^5.15.0";
-    // neon.neonConfig.coalesceWrites = false;
+		`;
+	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
+		imports += `
+		// Import Prisma adapter for Postgres
+    //
+    // We can't use esm.sh for these because they rely on special Node
+    // functionality & don't need to be portable
+    //
+    // https://github.com/esm-dev/esm.sh/issues/684
+    // import 'npm:pg-cloudflare';
+		import pg from "npm:pg@8.12.0";
+		import { PrismaPg } from "npm:@prisma/adapter-pg@5.12.0";
 		`;
 	}
 
@@ -51,7 +62,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 	if (opts.runtime == Runtime.Deno) {
 		actorSource += dynamicArchive["actor_deno.ts"];
-	} else if (opts.runtime == Runtime.CloudflareWorkers) {
+	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 		actorSource += dynamicArchive["actor_cf.ts"];
 	} else {
 		throw new UnreachableError(opts.runtime);
@@ -78,6 +89,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			runtime: BuildRuntime.${runtimeToString(opts.runtime)},
 			modules: ${modConfig},
 			${corsSource}
+      db: {
+        createPgPool: ${generateCreatePgPool(opts)},
+      },
 		} as Config;
 		`;
 
@@ -109,7 +123,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 			main();
 			`;
-	} else if (opts.runtime == Runtime.CloudflareWorkers) {
+	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 		const runtimePath = genPath(project, RUNTIME_PATH);
 		const serverTsPath = resolve(runtimePath, "src", "runtime", "server.ts");
 		const errorTsPath = resolve(runtimePath, "src", "runtime", "error.ts");
@@ -129,6 +143,8 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
+          ${hyperdriveAdapter(opts)}
+
           ${denoEnvPolyfill()}
 
           // TODO(OGBE-159): Move this back to global scope after dbs are correctly isolated
@@ -238,8 +254,9 @@ function generateModImports(project: Project, opts: BuildOpts) {
 			modImports += `import ${prismaImportName} from ${JSON.stringify(prismaImportPath)};\n`;
 
 			modConfig += `db: {`;
-			modConfig += `name: ${JSON.stringify(mod.db.name)},`;
-			modConfig += `createPrisma: ${generateDbDriver(opts, prismaImportName)}`;
+			modConfig += `schema: ${JSON.stringify(mod.db.schema)},`;
+			modConfig += `createPrismaClient: ${generateCreatePrismaClient(opts, prismaImportName)},`;
+			modConfig += `},`;
 		} else {
 			modConfig += `db: undefined,`;
 		}
@@ -254,46 +271,77 @@ function generateModImports(project: Project, opts: BuildOpts) {
 	return [modImports, modConfig];
 }
 
-function generateDbDriver(opts: BuildOpts, prismaImportName: string) {
-	let dbDriver = "";
-
-	// We need to manually set `search_path` in `Pool` because it does not
-	// respect the `schema` query parameter.
-	//
-	// The schema in `PrismaPg` is required or else Prisma will explicitly use
-	// the `public` schema.
-	// TODO(OGBE-160): Conditinally remove search_path if users is correctly scoped
+function generateCreatePgPool(opts: BuildOpts) {
 	if (opts.dbDriver == DbDriver.NodePostgres) {
-		dbDriver += `(url: URL, schema: string) => {
-			const pgPool = new pg.Pool({ connectionString: url.toString() });
-      pgPool.on('connect', (client: pg.Client) => {
-        client.query(\`SET search_path = "\${schema}"\`)
-      });
-			const adapter = new PrismaPg(pgPool, { schema });
-			const prisma = new ${prismaImportName}.PrismaClient({
-				adapter,
-				log: ['query', 'info', 'warn', 'error'],
-			});
-			return { prisma, pgPool };
-		},`;
-		dbDriver += `},`;
+		return dedent`
+      (url: URL) => {
+        return new pg.Pool({
+          connectionString: url.toString(),
+        });
+      }
+    `;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
-		dbDriver += `(url: URL, schema: string) => {
-      const pool = new neon.Pool({ connectionString: url.toString() })
-      pool.on('connect', (client: pg.Client) => {
-        client.query(\`SET search_path = "\${schema}"\`)
-      });
-			const adapter = new PrismaNeon(pool, { schema });
-			const prisma = new ${prismaImportName}.PrismaClient({
-				adapter,
-				log: ['query', 'info', 'warn', 'error'],
-			});
-			return { prisma, pgPool: undefined };
-		},`;
-		dbDriver += `},`;
+		return dedent`
+      (url: URL) => {
+        return new neon.Pool({
+          connectionString: url.toString(),
+        });
+      }
+    `;
+	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
+		return dedent`
+      (url: URL) => {
+        return new pg.Pool({
+          connectionString: url.toString(),
+          // Limit connection pool size since Hyperdrive already maintains a pool
+          //
+          // https://github.com/prisma/prisma/issues/23367#issuecomment-1981340554
+          max: 2,
+        });
+      }
+    `;
+	} else {
+		throw new UnreachableError(opts.dbDriver);
 	}
+}
 
-	return dbDriver;
+function generateCreatePrismaClient(opts: BuildOpts, prismaImportName: string) {
+	if (opts.dbDriver == DbDriver.NodePostgres || opts.dbDriver == DbDriver.CloudflareHyperdrive) {
+		return dedent`
+      (pgPool: pg.Pool, schema: string) => {
+        const adapter = new PrismaPg(pgPool, { schema });
+        const prisma = new ${prismaImportName}.PrismaClient({
+          adapter,
+          log: ['query', 'info', 'warn', 'error'],
+        });
+        return prisma;
+      }
+    `;
+	} else if (opts.dbDriver == DbDriver.NeonServerless) {
+		return dedent`
+      (pgPool: neon.Pool, schema: string) => {
+        const adapter = new PrismaNeon(pgPool, { schema });
+        const prisma = new ${prismaImportName}.PrismaClient({
+          adapter,
+          log: ['query', 'info', 'warn', 'error'],
+        });
+        return prisma;
+      }
+    `;
+	} else {
+		throw new UnreachableError(opts.dbDriver);
+	}
+}
+
+function hyperdriveAdapter(opts: BuildOpts): string {
+	if (opts.dbDriver != DbDriver.CloudflareHyperdrive) return "";
+	return dedent`
+    interface Hyperdrive {
+      connectionString: string;
+    }
+
+    env.DATABASE_URL = (env.__HYPERDRIVE as Hyperdrive).connectionString;
+  `;
 }
 
 function denoEnvPolyfill() {
