@@ -30,12 +30,12 @@ export async function run(
 	const row = await ctx.db.$transaction(async (tx) => {
 		// Validate that the users are not already friends
 		// TODO: Remove this `any` and replace with a proper type
-		const existingFriendRows = await tx.$queryRaw<any[]>`
+		const existingFriendRows = await tx.$queryRawUnsafe<any[]>(`
 			SELECT 1
 			FROM "Friend"
 			WHERE "userIdA" = ${userIdA} OR "userIdB" = ${userIdA}
 			FOR UPDATE
-		`;
+		`);
 		if (existingFriendRows.length > 0) {
 			throw new RuntimeError("ALREADY_FRIENDS", { meta: { userIdA, userIdB } });
 		}
