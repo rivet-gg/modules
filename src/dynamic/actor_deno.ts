@@ -1,5 +1,7 @@
 // This file is only imported when the runtime is `Deno`. See `actor_cf.ts` in the same directory.
 
+import { ActorDriver } from "./runtime/src/runtime/actor.ts";
+
 const ENCODER = new TextEncoder();
 const ACTOR_STORAGE: Map<string, {
 	actor: ActorBase;
