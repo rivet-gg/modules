@@ -35,10 +35,10 @@ export class Postgres {
 		if (this.pools.has(module.db.name)) {
 			return this.pools.get(module.db.name)!;
 		} else {
-			const url = getDatabaseUrl(module.db.name).toString();
+			const url = getDatabaseUrl(module.db.name);
 
 			// Create & insert pool
-			const output = module.db.createPrisma(url);
+			const output = module.db.createPrisma(url, module.db.name);
 			const pool = {
 				prisma: output.prisma,
 				pgPool: output.pgPool,

@@ -28,7 +28,7 @@ export interface Module {
 	errors: Record<string, ErrorConfig>;
 	db?: {
 		name: string;
-		createPrisma: (databaseUrl: string) => CreatePrismaOutput;
+		createPrisma: (databaseUrl: URL, schema: string) => CreatePrismaOutput;
 	};
 	dependencies: Set<string>;
 	userConfig: unknown;

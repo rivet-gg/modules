@@ -257,10 +257,19 @@ function generateModImports(project: Project, opts: BuildOpts) {
 function generateDbDriver(opts: BuildOpts, prismaImportName: string) {
 	let dbDriver = "";
 
+	// We need to manually set `search_path` in `Pool` because it does not
+	// respect the `schema` query parameter.
+	//
+	// The schema in `PrismaPg` is required or else Prisma will explicitly use
+	// the `public` schema.
+	// TODO(OGBE-160): Conditinally remove search_path if users is correctly scoped
 	if (opts.dbDriver == DbDriver.NodePostgres) {
-		dbDriver += `(url: string) => {
-			const pgPool = new pg.Pool({ connectionString: url });
-			const adapter = new PrismaPg(pgPool);
+		dbDriver += `(url: URL, schema: string) => {
+			const pgPool = new pg.Pool({ connectionString: url.toString() });
+      pgPool.on('connect', (client: pg.Client) => {
+        client.query(\`SET search_path = "\${schema}"\`)
+      });
+			const adapter = new PrismaPg(pgPool, { schema });
 			const prisma = new ${prismaImportName}.PrismaClient({
 				adapter,
 				log: ['query', 'info', 'warn', 'error'],
@@ -269,9 +278,12 @@ function generateDbDriver(opts: BuildOpts, prismaImportName: string) {
 		},`;
 		dbDriver += `},`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
-		dbDriver += `(url: string) => {
-      const pool = new neon.Pool({ connectionString: url })
-			const adapter = new PrismaNeon(pool);
+		dbDriver += `(url: URL, schema: string) => {
+      const pool = new neon.Pool({ connectionString: url.toString() })
+      pool.on('connect', (client: pg.Client) => {
+        client.query(\`SET search_path = "\${schema}"\`)
+      });
+			const adapter = new PrismaNeon(pool, { schema });
 			const prisma = new ${prismaImportName}.PrismaClient({
 				adapter,
 				log: ['query', 'info', 'warn', 'error'],
