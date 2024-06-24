@@ -15,12 +15,12 @@
         "create": {
             "name": "Create Token"
         },
-        "get": {
-            "name": "Get Token",
+        "fetch": {
+            "name": "Fetch Token",
             "description": "Get a token by its ID."
         },
-        "get_by_token": {
-            "name": "Get Token by Token",
+        "fetch_by_token": {
+            "name": "Fetch by Token",
             "description": "Get a token by its secret token."
         },
         "revoke": {

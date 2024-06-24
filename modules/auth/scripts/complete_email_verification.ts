@@ -80,7 +80,7 @@ export async function run(
 		if (verification.userId) {
 			userId = verification.userId;
 		} else {
-			const { user } = await ctx.modules.users.createUser({});
+			const { user } = await ctx.modules.users.create({});
 			userId = user.id;
 		}
 
@@ -100,7 +100,7 @@ export async function run(
 	assertExists(userId);
 
 	// Create token
-	const { token } = await ctx.modules.users.createUserToken({ userId });
+	const { token } = await ctx.modules.users.createToken({ userId });
 
 	return { token };
 }

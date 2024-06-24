@@ -13,7 +13,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const { tokens } = await ctx.modules.tokens.getByToken({
+	const { tokens } = await ctx.modules.tokens.fetchByToken({
 		tokens: [req.token],
 	});
 	const token = tokens[0];

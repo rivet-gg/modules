@@ -19,7 +19,7 @@ test(
 test(
 	"withdraw more than balance",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -38,7 +38,7 @@ test(
 test(
 	"withdraw negative amount",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -52,7 +52,7 @@ test(
 test(
 	"withdraw Infinity",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -69,7 +69,7 @@ test(
 test(
 	"withdraw NaN",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -83,7 +83,7 @@ test(
 test(
 	"deposit Infinity",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -97,7 +97,7 @@ test(
 test(
 	"deposit NaN",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -111,7 +111,7 @@ test(
 test(
 	"deposit negative amount",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -125,7 +125,7 @@ test(
 test(
 	"set balance to negative",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -139,7 +139,7 @@ test(
 test(
 	"set balance to NaN",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
@@ -154,7 +154,7 @@ test(
 test(
 	"set balance to infinity",
 	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.createUser({
+		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
