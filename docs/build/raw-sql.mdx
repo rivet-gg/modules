@@ -1,0 +1,177 @@
+---
+title: Raw SQL Queries
+---
+
+<Warning>
+    This is an advanced topic.
+
+    It's easier, safer, and less error prone to use the provided database query functionality wherever possible. See [here](/build/database) for more information.
+</Warning>
+
+Occasionally you need to use [raw SQL queries](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries). This is helpful for use cases where you need to:
+
+- build advanced queries for filtering & manipulating data
+- use custom Postgres plugins that aren't supported by Prisma
+- optimize for fewer round trips to the database
+
+## Building Raw Queries
+
+To write raw queries in OpenGB, you need to use [`$queryRawUnsafe`](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries#queryrawunsafe) and [`$executeRawUnsafe`](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries#executerawunsafe). Do not use [`$queryRaw`](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries#queryraw) and [`$executeRaw`](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries#executeraw).
+
+Your query must use the `ctx.dbSchema` value to select from the correct [Postgres schema](https://www.postgresql.org/docs/current/ddl-schemas.html) (not to be confused with the [Prisma schema](https://www.prisma.io/docs/orm/prisma-schema/overview)).
+
+For example, to query all usernames:
+
+```typescript
+interface User {
+    id: string,
+    username: string,
+}
+
+export async function run(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
+    const users = await ctx.db.$queryRawUnsafe<User[]>(
+        `
+        SELECT "id", "username"
+        FROM "${ctx.dbSchema}"."User"
+        `
+    );
+
+    // ...
+}
+```
+
+This will run the following query:
+
+```sql
+SELECT "id", "username"
+FROM "module_users"."User"
+```
+
+### Safely passing variables to the query
+
+<Warning>
+    Read this section carefully if passing user-provided values to the query.
+    
+    SQL injection is game-over for your backend.
+</Warning>
+
+In order to pass data to the query, it's important to do this safely. You can write parameterized queries where each argument corresponds to a provided parameter, similar to a regular function.
+
+In this example, `$1` corresponds to `req.userId` and `$2` corresponds to `req.createdAfter`:
+
+```typescript
+interface User {
+    id: string,
+    username: string,
+}
+
+export async function run(
+	ctx: ScriptContext,
+	req: Request,
+): Promise<Response> {
+    const users = await ctx.db.$queryRawUnsafe<User[]>(
+        `
+        SELECT "id", "username"
+        FROM "${ctx.dbSchema}"."User"
+        WHERE "id" = $1 AND "createdAt" > $2
+        `,
+        req.userId,  // This gets injected to $1
+        req.createdAfter,  // This gets injected to $2
+    );
+
+    // ...
+}
+```
+
+<Warning>
+    Never directly inject user-provided values to a query:
+
+    ```typescript
+    // IMPORTANT: Never write queries like this
+    const users = await ctx.db.$queryRawUnsafe<User[]>(
+        `
+        SELECT "id", "username"
+        FROM "${ctx.dbSchema}"."User"
+        WHERE "id" = '${req.userId}' AND "createdAt" > ${req.createdAfter}
+        `,
+    );
+    ```
+
+    This will expose a serious security flaw in your backend via [SQL injection](https://owasp.org/www-community/attacks/SQL_Injection).
+</Warning>
+
+Read more about raw queries [here](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries#in-queryrawunsafe-and-executerawunsafe).
+
+### Converting `$queryRaw` to `$queryRawUnsafe`
+
+<Info>
+    This section is only relevant if you're already familiar with `$queryRaw`.
+</Info>
+
+If you are already familiar `$queryRaw`, it's easy (and safe) to move to `$queryRawUnsafe`.
+
+Here is an example before & after migrating to `$queryRawUnsafe`:
+
+<CodeGroup>
+
+```typescript Before
+// IMPORTANT: This will not work in OpenGB because it does not define the schema
+const users = await ctx.db.$queryRaw<User[]>`
+    SELECT "id", "username"
+    FROM "User"
+    WHERE "id" = ${req.userId} AND "createdAt" > ${req.createdAfter}
+`;
+```
+
+```typescript After
+// This will work in OpenGB because it uses `ctx.dbSchema`
+const users = await ctx.db.$queryRawUnsafe<User[]>(
+    `
+    SELECT "id", "username"
+    FROM "${ctx.dbSchema}"."User"
+    WHERE "id" = $1 AND "createdAt" > $2
+    `,
+    req.userId,
+    req.createdAfter,
+);
+```
+
+</CodeGroup>
+
+Referencing `ctx.dbSchema` does not work in `$queryRaw` because strings can not be used as placeholders for schema names.
+
+## FAQ
+
+### What are schemas & why are they used?
+
+Each modules' tables are isolated in their own Postgres schema. This allows for tables with the same name (i.e. `Users`) across multiple modules (e.g. `"module_foo"."User"` and `"module_bar"."User"`).
+
+In order to query modules' tables, the query must explicitly state the shcema of the table in your query. For example: instead of `SELECT * FROM "User"`, you need to use `SELECT * FROM "module_users"."User"`.
+
+To achieve this, the schema for the module needs to be dynamically injected in to the query.
+
+### Why are schema names dynamic?
+
+The name of the schema the table lives in may change depending on the module's alias. This allows for [running multiple instances of the same module](/concepts/multiple-games) in a single database and prevent naming conflicts between modules.
+
+### Why not use `SET search_path = "..."`?
+
+Postgres allows you to set the `search_path` setting to define which schemas to find tables in.
+
+Doing this has two major problems:
+
+- We need to run this query before every modules' script runs if sharing a connection, adding a round trip to the database
+- This is not supported in many database driver
+
+### Why not use a pool for each module?
+
+It's possible to work around this issue by using a pool for each module and running `SET search_path = "..."` once when the connection is acquired.
+
+This has two problems:
+
+- Connections cannot be shared between modules. If you have 10 modules, you need to have _at least_ 10 connections open. Postgres has a [default connection limit of 100](https://www.postgresql.org/docs/current/runtime-config-connection.html#GUC-MAX-CONNECTIONS) connections, which will get exhausted quickly if using separate pools under load.
+- Some database drivers or database providers do not support setting the `search_path` because of how they handle connection pooling under the hood.
+

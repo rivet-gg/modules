@@ -100,7 +100,13 @@
             "build/config",
             "build/errors",
             "build/public",
-            "build/conventions"
+            "build/conventions",
+            {
+              "group": "Advanced",
+              "pages": [
+                "build/raw-sql"
+              ]
+            }
           ]
         }
       ]
