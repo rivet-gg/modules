@@ -25,18 +25,21 @@ export async function run(
 
 	// Sets revokedAt on all tokens that have not already been revoked. Returns
 	// wether or not each token was revoked.
-	const rows = await ctx.db.$queryRaw<TokenRow[]>`
+	const rows = await ctx.db.$queryRawUnsafe<TokenRow[]>(
+    `
 		WITH "PreUpdate" AS (
 			SELECT "id", "revokedAt"
-			FROM "Token"
-			WHERE "id" IN (${Prisma.join(req.tokenIds)})
+			FROM "${ctx.dbSchema}"."Token"
+			WHERE "id" = ANY($1)
 		)
-		UPDATE "Token"
+		UPDATE "${ctx.dbSchema}"."Token"
 		SET "revokedAt" = COALESCE("Token"."revokedAt", current_timestamp)
 		FROM "PreUpdate"
 		WHERE "Token"."id" = "PreUpdate"."id"
 		RETURNING "Token"."id" AS "id", "PreUpdate"."revokedAt" IS NOT NULL AS "alreadyRevoked"
-	`;
+    `,
+    req.tokenIds,
+  );
 
 	const updates: Record<string, TokenUpdate> = {};
 	for (const tokenId of req.tokenIds) {
