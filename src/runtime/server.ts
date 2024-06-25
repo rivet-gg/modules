@@ -1,3 +1,4 @@
+import { RuntimeError } from "./error.ts";
 import { Runtime } from "./runtime.ts";
 
 const MODULE_CALL = /^\/modules\/(?<module>\w+)\/scripts\/(?<script>\w+)\/call\/?$/;
@@ -129,11 +130,20 @@ export async function handleRequest<DependenciesSnakeT, DependenciesCamelT, Acto
 				...runtime.corsHeaders(req),
 			},
 		});
-	} catch (e) {
+	} catch (err) {
 		// Error response
-		const output = {
-			message: e.message,
-		};
+		let output;
+		if (err instanceof RuntimeError) {
+			console.error("Unhandled runtime error", err);
+			output = {
+				message: err.message,
+			};
+		} else {
+			console.error("Internal error", err);
+			output = {
+				message: "Internal error. More details have been printed in the logs.",
+			};
+		}
 
 		return new Response(JSON.stringify(output), {
 			status: 500,
