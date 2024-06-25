@@ -1,5 +1,5 @@
 import { BuildState, buildStep, waitForBuildPromises } from "../../build_state/mod.ts";
-import { denoPlugins, esbuild, exists, relative, resolve } from "../../deps.ts";
+import { exists, relative, resolve } from "../../deps.ts";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, Runtime } from "../mod.ts";
 import { generateClient } from "../../migrate/generate.ts";
@@ -25,6 +25,13 @@ import {
 import { compileActorTypeHelpers } from "../gen/mod.ts";
 import { inflateArchive } from "../util.ts";
 import runtimeArchive from "../../../artifacts/runtime_archive.json" with { type: "json" };
+import { nodeModulesPolyfillPlugin } from "npm:esbuild-plugins-node-modules-polyfill@1.6.4";
+
+// Must match version in `esbuild_deno_loader`
+//
+// See also Prisma esbuild in `src/migrate/deps.ts`
+import * as esbuild from "npm:esbuild@0.20.2";
+import { denoPlugins } from "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -145,48 +152,100 @@ export async function planProjectBuild(
 			async build({ signal }) {
 				const bundledFile = genPath(project, BUNDLE_PATH);
 
-				await esbuild.build({
+				// See Cloudflare Wrangler implementation:
+				//
+				// https://github.com/cloudflare/workers-sdk/blob/e8997b879605fb2eabc3e241086feb7aa219ef03/packages/wrangler/src/deployment-bundle/bundle.ts#L276
+				const analyzeResult = Deno.env.get("_OPENGB_ESBUILD_META") == "1";
+				const noMinify = Deno.env.get("_OPENGB_ESBUILD_NO_MINIFY") == "1";
+				const result = await esbuild.build({
 					entryPoints: [genPath(project, ENTRYPOINT_PATH)],
 					outfile: bundledFile,
+					platform: "browser",
 					format: "esm",
-					platform: "neutral",
-					plugins: [...denoPlugins({
-						// Portable loader in order to work outside of Deno-specific contexts
-						loader: "portable",
-					})],
+					target: "es2022",
+					sourcemap: true,
+					conditions: ["workerd", "worker", "browser"],
+					plugins: [
+						// Deno
+						//
+						// This will resolve all npm, jsr, https, etc. imports. We disable
+						// the `node` specifier so it will be polyfilled later.
+						...denoPlugins({
+							// Portable loader in order to work outside of Deno-specific contexts
+							// loader: "portable",
+							loader: "native",
+							specifiers: {
+								file: true,
+								http: true,
+								https: true,
+								data: true,
+								npm: true,
+								jsr: true,
+							},
+						}),
+
+						// Node
+						nodeModulesPolyfillPlugin({
+							globals: {
+								Buffer: true,
+								process: true,
+							},
+							modules: {
+								// Not used:
+								// https://github.com/brianc/node-postgres/blob/50c06f9bc6ff2ca1e8d7b7268b9af54ce49d72c1/packages/pg/lib/crypto/utils.js#L3
+								crypto: "empty",
+								dns: "empty",
+								events: true,
+								fs: "empty",
+								net: "empty",
+								path: "empty",
+								string_decoder: true,
+								tls: "empty",
+								buffer: true,
+							},
+						}),
+					],
+					define: {
+						// HACK: Disable `process.domain` in order to correctly handle this edge case:
+						// https://github.com/brianc/node-postgres/blob/50c06f9bc6ff2ca1e8d7b7268b9af54ce49d72c1/packages/pg/lib/native/query.js#L126
+						"process.domain": "undefined",
+					},
 					external: [
-						// Don't include deno's crypto, its a standard js API
-						"*crypto/crypto.ts",
-						// Exclude node APIs, most are included in CF workers with
+						// Check supported compat by Cloudflare Workers:
 						// https://developers.cloudflare.com/workers/runtime-apis/nodejs/
-						"node:*",
+						"node:process",
+						"node:stream",
+						"node:util",
+
+						// TODO: Why is node:crypto not working? Are any of these external imports working?
+						// https://community.cloudflare.com/t/not-being-able-to-import-node-crypto/613973
+						// "node:crypto",
+
+						// pg-native is overrided with pg-cloudflare at runtime
+						"pg-native",
+
 						// Wasm must be loaded as a separate file manually, cannot be bundled
 						"*.wasm",
 						"*.wasm?module",
+
 						// This import only exists when running on cloudflare
-						"cloudflare:workers",
+						"cloudflare:*",
 					],
 					bundle: true,
-					minify: true,
+					minify: !noMinify,
+
+					logLevel: analyzeResult ? "debug" : "error",
+					metafile: analyzeResult,
 				});
+
+				if (result.metafile) {
+					console.log(await esbuild.analyzeMetafile(result.metafile));
+				}
 
 				signal.throwIfAborted();
 
-				// For some reason causes the program to exit early instead of waiting
-				// await esbuild.stop();
-
 				if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 					let bundleStr = await Deno.readTextFile(bundledFile);
-
-					// Remove unused import to deno crypto
-					bundleStr = bundleStr.replace(
-						/import\{crypto as \w+\}from"https:\/\/deno\.land\/std@[\d\.]+\/crypto\/crypto\.ts";/,
-						"",
-					);
-
-					// Remove unused import (`node:timers` isn't available in cf workers)
-					// https://developers.cloudflare.com/workers/runtime-apis/nodejs/
-					bundleStr = bundleStr.replaceAll(`import"node:timers";`, "");
 
 					// Find any `query-engine.wasm`
 					let wasmPath;
