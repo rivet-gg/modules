@@ -34,7 +34,7 @@ export interface ModuleMeta {
 }
 
 export interface ModuleDatabaseMeta {
-	name: string;
+	schema: string;
 }
 
 export interface ScriptMeta {

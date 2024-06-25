@@ -7,7 +7,7 @@ import { migrateReset } from "../../migrate/reset.ts";
 import { UserError } from "../../error/mod.ts";
 import { Project } from "../../project/mod.ts";
 import { verbose, warn } from "../../term/status.ts";
-import { getDatabaseUrl, getDefaultDatabaseUrl } from "../../utils/db.ts";
+import { getDatabaseUrl } from "../../utils/db.ts";
 
 export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
 // Unique container name for this runtime so we can run multiple instances in
@@ -96,8 +96,7 @@ dbCommand
 
 		if (!module.db) throw new UserError(`Module does not have a database configured: ${name}`);
 
-		// const dbUrl = getDatabaseUrl(module.db.name).toString();
-		const dbUrl = getDefaultDatabaseUrl();
+		const dbUrl = getDatabaseUrl();
 		if (dbUrl.hostname == "localhost" || dbUrl.hostname == "0.0.0.0" || dbUrl.hostname == "127.0.0.1") {
 			dbUrl.hostname = "host.docker.internal";
 		}
@@ -117,7 +116,7 @@ dbCommand
 				dbUrl.toString(),
 				// Update schema
 				"-c",
-				`SET search_path TO "${module.db.name}";`,
+				`SET search_path TO "${module.db.schema}";`,
 				// Continue REPL
 				"-f",
 				"-",
@@ -130,14 +129,8 @@ dbCommand
 
 dbCommand
 	.command("url")
-	.arguments("<module>")
-	.action(async (opts, moduleName: string) => {
-		const project = await initProject(opts);
-		const module = resolveModules(project, [moduleName])[0];
-
-		if (!module.db) throw new UserError(`Module does not have a database configured: ${name}`);
-
-		const dbUrl = getDatabaseUrl(module.db.name).toString();
+	.action(async () => {
+		const dbUrl = getDatabaseUrl().toString();
 
 		await Deno.stdout.write(new TextEncoder().encode(dbUrl));
 		console.error("");

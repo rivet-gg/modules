@@ -1,7 +1,7 @@
 import { addFormats, Ajv } from "./deps.ts";
 import { ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
-import { Postgres, PrismaClientDummy } from "./postgres.ts";
+import { PgPoolDummy, Postgres, PrismaClientDummy } from "./postgres.ts";
 import { handleRequest } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
@@ -12,6 +12,9 @@ export interface Config {
 	runtime: BuildRuntime;
 	modules: Record<string, Module>;
 	cors?: CorsConfig;
+	db: {
+		createPgPool: (url: URL) => PgPoolDummy;
+	};
 }
 
 /**
@@ -27,8 +30,9 @@ export interface Module {
 	actors: Record<string, Actor>;
 	errors: Record<string, ErrorConfig>;
 	db?: {
-		name: string;
-		createPrisma: (databaseUrl: URL, schema: string) => CreatePrismaOutput;
+		/** Name of the Postgres schema the tables live in. */
+		schema: string;
+		createPrismaClient: (pool: PgPoolDummy, schema: string) => PrismaClientDummy;
 	};
 	dependencies: Set<string>;
 	userConfig: unknown;
@@ -38,14 +42,9 @@ export interface CorsConfig {
 	origins: Set<string>;
 }
 
-interface CreatePrismaOutput {
-	prisma: PrismaClientDummy;
-	pgPool?: any;
-}
-
 export interface Script {
 	// deno-lint-ignore no-explicit-any
-	run: ScriptRun<any, any, any, any>;
+	run: ScriptRun<any, any, any, any, any>;
 	// deno-lint-ignore no-explicit-any
 	requestSchema: any;
 	// deno-lint-ignore no-explicit-any
@@ -53,8 +52,8 @@ export interface Script {
 	public: boolean;
 }
 
-export type ScriptRun<Req, Res, UserConfigT, DatabaseT> = (
-	ctx: ScriptContext<any, any, any, any, UserConfigT, DatabaseT>,
+export type ScriptRun<Req, Res, UserConfigT, DatabaseT, DatabaseSchemaT> = (
+	ctx: ScriptContext<any, any, any, any, UserConfigT, DatabaseT, DatabaseSchemaT>,
 	req: Req,
 ) => Promise<Res>;
 
@@ -123,7 +122,7 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 		moduleName: string,
 		testName: string,
 		fn: (
-			ctx: TestContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, any>,
+			ctx: TestContext<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT, UserConfigT, any, any>,
 		) => Promise<void>,
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorDependencyCaseConversionMap: RegistryCallMap,
@@ -151,14 +150,16 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 					ActorsSnakeT,
 					ActorsCamelT,
 					UserConfigT,
-					PrismaClientDummy | undefined
+					PrismaClientDummy | undefined,
+					string | undefined
 				>(
 					runtime,
 					newTrace({
 						test: { module: moduleName, name: testName },
 					}),
 					moduleName,
-					runtime.postgres.getOrCreatePool(module)?.prisma,
+					runtime.postgres.getOrCreatePrismaClient(runtime.config, module),
+					module.db?.schema,
 					dependencyCaseConversionMap,
 					actorDependencyCaseConversionMap,
 				);

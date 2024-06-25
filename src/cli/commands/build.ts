@@ -15,11 +15,11 @@ export const buildCommand = new Command<GlobalOpts>()
 			value: (value: string) => {
 				if (value == "deno") {
 					return Runtime.Deno;
-				} else if (value == "cloudflare-workers") {
-					return Runtime.CloudflareWorkers;
+				} else if (value == "cloudflare-workers-platforms") {
+					return Runtime.CloudflareWorkersPlatforms;
 				} else {
 					throw new ValidationError(
-						`\`runtime\` must be one of "deno" or "cloudflare-workers" but got "${value}".`,
+						`\`runtime\` must be one of "deno" or "cloudflare-workers-platforms" but got "${value}".`,
 					);
 				}
 			},
@@ -53,9 +53,11 @@ export const buildCommand = new Command<GlobalOpts>()
 					return DbDriver.NodePostgres;
 				} else if (value == "neon-serverless") {
 					return DbDriver.NeonServerless;
+				} else if (value == "cloudflare-hyperdrive") {
+					return DbDriver.CloudflareHyperdrive;
 				} else {
 					throw new ValidationError(
-						`\`db-driver\` must be one of "node-postgres", or "neon-serverless", but got "${value}".`,
+						`\`db-driver\` must be one of "node-postgres", "neon-serverless", or "cloudflare-hyperdrive", but got "${value}".`,
 					);
 				}
 			},
@@ -78,21 +80,21 @@ export const buildCommand = new Command<GlobalOpts>()
 		if (opts.runtime == Runtime.Deno) {
 			if (opts.outputFormat == undefined) opts.outputFormat = Format.Native;
 			if (opts.dbDriver == undefined) opts.dbDriver = DbDriver.NodePostgres;
-		} else if (opts.runtime == Runtime.CloudflareWorkers) {
+		} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 			if (opts.outputFormat == undefined) opts.outputFormat = Format.Bundled;
-			if (opts.dbDriver == undefined) opts.dbDriver = DbDriver.NeonServerless;
+			if (opts.dbDriver == undefined) opts.dbDriver = DbDriver.CloudflareHyperdrive;
 		}
 
 		// Validate
-		if (opts.runtime == Runtime.CloudflareWorkers) {
+		if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 			if (opts.outputFormat != Format.Bundled) {
 				throw new ValidationError(
-					`\`format\` must be "bundled" if \`runtime\` is "cloudflare-workers".`,
+					`\`format\` must be "bundled" if \`runtime\` is "cloudflare-workers-platforms".`,
 				);
 			}
-			if (opts.dbDriver != DbDriver.NeonServerless) {
+			if (opts.dbDriver != DbDriver.NeonServerless && opts.dbDriver != DbDriver.CloudflareHyperdrive) {
 				throw new ValidationError(
-					`\`db-driver\` must be "neon-serverless" if \`runtime\` is "cloudflare-workers".`,
+					`\`db-driver\` must be "neon-serverless" or "cloudflare-hyperdrive" if \`runtime\` is "cloudflare-workers-platforms".`,
 				);
 			}
 		}

@@ -56,7 +56,8 @@ export interface Module {
 }
 
 export interface ModuleDatabase {
-	name: string;
+	/** Name of the Postgres schema the tables live in. */
+	schema: string;
 }
 
 export async function loadModule(
@@ -172,7 +173,7 @@ export async function loadModule(
 	let db: ModuleDatabase | undefined = undefined;
 	if (await exists(resolve(modulePath, "db"), { isDirectory: true })) {
 		db = {
-			name: `module_${name.replace("-", "_")}`,
+			schema: `module_${name.replace("-", "_")}`,
 		};
 	}
 

@@ -6,7 +6,7 @@ import { verbose } from "../term/status.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createOnce, Once } from "../utils/once.ts";
 import { getOrInitOnce } from "../utils/once.ts";
-import { getDatabaseUrl, getDefaultDatabaseUrl } from "../utils/db.ts";
+import { getDatabaseUrl, getPrismaDatabaseUrlWithSchema } from "../utils/db.ts";
 
 export type ForEachDatabaseCallback = (
 	opts: { databaseUrl: string; module: Module; db: ModuleDatabase },
@@ -28,7 +28,7 @@ interface DbState {
 
 async function getDefaultClient(_project: Project) {
 	return await getOrInitOnce(DB_STATE.defaultClientOnce, async () => {
-		const client = new PostgresClient(getDefaultDatabaseUrl().toString());
+		const client = new PostgresClient(getDatabaseUrl().toString());
 		await client.connect();
 
 		addShutdownHandler(async () => {
@@ -69,7 +69,7 @@ export async function forEachDatabase(
 		// Create database
 		await createSchema(defaultClient, mod.db);
 
-		const databaseUrl = getDatabaseUrl(mod.db.name).toString();
+		const databaseUrl = getPrismaDatabaseUrlWithSchema(mod.db.schema).toString();
 
 		// Callback
 		await callback({ databaseUrl, module: mod, db: mod.db });
@@ -81,16 +81,16 @@ export async function forEachDatabase(
  */
 async function createSchema(client: PostgresClient, db: ModuleDatabase) {
 	// Check if already created
-	if (DB_STATE.createdSchemas.has(db.name)) return;
+	if (DB_STATE.createdSchemas.has(db.schema)) return;
 
 	// Create database
 	const existsQuery = await client.queryObject<
 		{ exists: boolean }
-	>`SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ${db.name})`;
+	>`SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ${db.schema})`;
 	if (!existsQuery.rows[0].exists) {
-		await client.queryObject(`CREATE SCHEMA ${assertValidString(db.name)}`);
+		await client.queryObject(`CREATE SCHEMA ${assertValidString(db.schema)}`);
 	}
 
 	// Save as created
-	DB_STATE.createdSchemas.add(db.name);
+	DB_STATE.createdSchemas.add(db.schema);
 }

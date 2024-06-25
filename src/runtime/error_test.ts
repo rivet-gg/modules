@@ -50,6 +50,9 @@ Deno.test("error", async () => {
 					userConfig: null,
 				},
 			},
+			db: {
+				createPgPool: () => unimplemented(),
+			},
 		},
 		DUMMY_ACTOR_DRIVER,
 		dependencyCaseConversionMap,
@@ -62,11 +65,13 @@ Deno.test("error", async () => {
 		ActorsSnake,
 		ActorsCamel,
 		null,
+		undefined,
 		undefined
 	>(
 		runtime,
 		newTrace({ internalTest: {} }),
 		"test_module",
+		undefined,
 		undefined,
 		dependencyCaseConversionMap,
 		actorCaseConversionMap,

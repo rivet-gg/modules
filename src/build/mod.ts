@@ -18,7 +18,7 @@ export enum Format {
  */
 export enum Runtime {
 	Deno,
-	CloudflareWorkers,
+	CloudflareWorkersPlatforms,
 }
 
 /**
@@ -27,6 +27,7 @@ export enum Runtime {
 export enum DbDriver {
 	NodePostgres,
 	NeonServerless,
+	CloudflareHyperdrive,
 }
 
 /**
@@ -66,7 +67,7 @@ export async function build(project: Project, opts: BuildOpts) {
 
 export function runtimeToString(runtime: Runtime) {
 	if (runtime == Runtime.Deno) return "Deno";
-	if (runtime == Runtime.CloudflareWorkers) return "Cloudflare";
+	if (runtime == Runtime.CloudflareWorkersPlatforms) return "Cloudflare";
 
 	throw new UnreachableError(runtime);
 }

@@ -217,7 +217,8 @@ function genModule(
 				ActorsSnake,
 				ActorsCamel,
 				${userConfigType},
-				${module.db ? "prisma.PrismaClient" : "undefined"}
+				${module.db ? "prisma.PrismaClient" : "undefined"},
+				${module.db ? "string" : "undefined"}
 			>;
 		`;
 }
@@ -238,7 +239,8 @@ function genTest(
 				ActorsSnake,
 				ActorsCamel,
 				${userConfigType},
-				${module.db ? "prisma.PrismaClient" : "undefined"}
+				${module.db ? "prisma.PrismaClient" : "undefined"},
+				${module.db ? "string" : "undefined"}
 			>;
 		`;
 
@@ -276,7 +278,8 @@ function genScript(
 				ActorsSnake,
 				ActorsCamel,
 				${userConfigType},
-				${module.db ? "prisma.PrismaClient" : "undefined"}
+				${module.db ? "prisma.PrismaClient" : "undefined"},
+				${module.db ? "string" : "undefined"}
 			>;
 		`;
 }

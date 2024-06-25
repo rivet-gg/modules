@@ -175,7 +175,7 @@ export async function planProjectBuild(
 				// For some reason causes the program to exit early instead of waiting
 				// await esbuild.stop();
 
-				if (opts.runtime == Runtime.CloudflareWorkers) {
+				if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 					let bundleStr = await Deno.readTextFile(bundledFile);
 
 					// Remove unused import to deno crypto
@@ -242,7 +242,7 @@ export async function planProjectBuild(
 	await waitForBuildPromises(buildState);
 
 	// TODO: This is disabled when building for cf because there is an unresolved import
-	if (opts.runtime != Runtime.CloudflareWorkers) {
+	if (opts.runtime != Runtime.CloudflareWorkersPlatforms) {
 		buildStep(buildState, {
 			id: `project.check.entrypoint`,
 			name: "Check",
