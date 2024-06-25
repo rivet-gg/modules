@@ -1,9 +1,9 @@
 // This file is only imported when the runtime is `Cloudflare`. See `actor.ts` in the same directory.
 
-// This import comes directly from the workers runtime
 import { DurableObject } from "cloudflare:workers";
+import { ActorDriver } from "./runtime/src/runtime/actor.ts";
 
-export const ACTOR_DRIVER = {
+export const ACTOR_DRIVER: ActorDriver = {
 	async getId(moduleName: string, actorName: string, label: string) {
 		const storageId = config.modules[moduleName].actors[actorName].storageId;
 		const name = `%%${storageId}%%${label}`;
