@@ -6,7 +6,8 @@ import { handleRequest } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
 import { RegistryCallMap } from "./proxy.ts";
-import { ActorDriver } from "./actor.ts";
+import { ActorDriver } from "./actor/driver.ts";
+import { ActorBase } from "./actor/actor.ts";
 
 export interface Config {
 	runtime: BuildRuntime;
@@ -58,7 +59,8 @@ export type ScriptRun<Req, Res, UserConfigT, DatabaseT, DatabaseSchemaT> = (
 ) => Promise<Res>;
 
 export interface Actor {
-	actor: any;
+	// This monstrosity is to allow passing the constructor a subclass of ActorBase.
+	actor: new (...args: ConstructorParameters<typeof ActorBase<unknown, unknown>>) => ActorBase<unknown, unknown>;
 	storageId: string;
 }
 
