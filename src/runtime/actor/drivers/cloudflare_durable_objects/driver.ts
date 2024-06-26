@@ -4,11 +4,6 @@ import { ActorDriver } from "../../driver.ts";
 import { Config } from "../../../mod.ts";
 import { __GlobalDurableObject } from "./global_durable_object.ts";
 
-// TODO: Fix Deno.env.get hack
-// TODO: doc performance requirements
-// TODO: names?
-// TODO: ctx.waitUntil
-
 // MARK: Driver
 export const ACTOR_DRIVER: ActorDriver = {
 	config: undefined as unknown as Config,

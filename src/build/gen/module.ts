@@ -162,37 +162,8 @@ function genActors(
 		} from "${typedefPath}";
 	`;
 
-	const actorsTypedefSnake = helper.chunk.withNewlinesPerChunk(1);
-	const actorsTypedefCamel = helper.chunk.withNewlinesPerChunk(1);
-
 	const moduleNameSnake = module.name;
 	const moduleNameCamel = camelify(module.name);
-
-	// for (const dependencyName of Object.keys(module.config.dependencies || {})) {
-	// 	const dependencyNameSnake = dependencyName;
-	// 	const dependencyNameCamel = camelify(dependencyName);
-	//
-	// 	actorsTypedefSnake.append`
-	// 		${dependencyNameSnake}: ActorsSnakeFull["${dependencyNameSnake}"];
-	// 	`;
-	// 	actorsTypedefCamel.append`
-	// 		${dependencyNameCamel}: ActorsCamelFull["${dependencyNameCamel}"];
-	// 	`;
-	// }
-	//
-	// actorsTypedefSnake.prepend`${moduleNameSnake}: ActorsSnakeFull["${moduleNameSnake}"];`;
-	// actorsTypedefCamel.prepend`${moduleNameCamel}: ActorsCamelFull["${moduleNameCamel}"];`;
-	//
-	// GeneratedCodeBuilder.wrap(
-	// 	"interface ActorsSnake {",
-	// 	actorsTypedefSnake,
-	// 	"}",
-	// );
-	// GeneratedCodeBuilder.wrap(
-	// 	"interface ActorsCamel {",
-	// 	actorsTypedefCamel,
-	// 	"}",
-	// );
 
 	helper.append`
     type ActorsSnake = ActorsSnakeFull["${moduleNameSnake}"];

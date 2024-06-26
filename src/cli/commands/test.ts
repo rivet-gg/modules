@@ -6,7 +6,7 @@ import { ensurePostgresRunning } from "../../utils/postgres_daemon.ts";
 import { watch } from "../../watch/mod.ts";
 import { Project } from "../../project/mod.ts";
 import { UserError } from "../../error/mod.ts";
-import { info, progress } from "../../term/status.ts";
+import { info } from "../../term/status.ts";
 
 // TODO: https://github.com/rivet-gg/opengb-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()

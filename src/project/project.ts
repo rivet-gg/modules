@@ -241,7 +241,6 @@ function moduleNameInRegistry(
 export const GITIGNORE_PATH = ".gitignore";
 export const RUNTIME_CONFIG_PATH = "runtime_config.ts";
 export const ENTRYPOINT_PATH = "entrypoint.ts";
-export const ACTOR_PATH = "actor.ts";
 export const BUNDLE_PATH = "output.js";
 export const MANIFEST_PATH = "manifest.json";
 export const META_PATH = "meta.json";

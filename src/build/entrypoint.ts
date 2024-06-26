@@ -1,5 +1,5 @@
 import { resolve } from "../deps.ts";
-import { ACTOR_PATH, genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } from "../project/mod.ts";
+import { genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } from "../project/mod.ts";
 import {
 	ENTRYPOINT_PATH,
 	genDependencyCaseConversionMapPath,
@@ -85,7 +85,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	// Generate entrypoint.ts
 	let entrypointSource = "";
 
-	let actorDriverPath: string = genRuntimeActorDriverPath(project, opts.runtime);
+	const actorDriverPath: string = genRuntimeActorDriverPath(project, opts.runtime);
 	if (opts.runtime == Runtime.Deno) {
 		entrypointSource = `
 			${autoGenHeader()}
@@ -169,7 +169,6 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const distDir = resolve(project.path, "_gen");
 	const configPath = genPath(project, RUNTIME_CONFIG_PATH);
 	const entrypointPath = genPath(project, ENTRYPOINT_PATH);
-	const actorPath = genPath(project, ACTOR_PATH);
 
 	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
