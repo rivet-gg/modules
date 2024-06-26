@@ -1,6 +1,6 @@
 import { Context, Runtime } from "../runtime/mod.ts";
 import { RequestOf, ResponseOf } from "../types/registry.ts";
-import { ActorProxy } from "./actor.ts";
+import { ActorProxy } from "./actor/proxy.ts";
 
 type ModuleRegistryPair = readonly [string, string];
 

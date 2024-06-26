@@ -1,5 +1,5 @@
 import { resolve } from "../deps.ts";
-import { ACTOR_PATH, genActorCaseConversionMapPath, Project } from "../project/mod.ts";
+import { ACTOR_PATH, genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } from "../project/mod.ts";
 import {
 	ENTRYPOINT_PATH,
 	genDependencyCaseConversionMapPath,
@@ -14,7 +14,6 @@ import { CommandError, UnreachableError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
 import { dedent } from "./deps.ts";
-import dynamicArchive from "../../artifacts/dynamic_archive.json" with { type: "json" };
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
@@ -55,19 +54,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		`;
 	}
 
-	let actorSource = `
-		import { Config } from "${runtimeModPath}";
-		import config from "./runtime_config.ts";
-	`;
-
-	if (opts.runtime == Runtime.Deno) {
-		actorSource += dynamicArchive["actor_deno.ts"];
-	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
-		actorSource += dynamicArchive["actor_cf.ts"];
-	} else {
-		throw new UnreachableError(opts.runtime);
-	}
-
+	// CORS
 	let corsSource = "";
 	if (project.config.runtime?.cors) {
 		corsSource = `
@@ -98,6 +85,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	// Generate entrypoint.ts
 	let entrypointSource = "";
 
+	let actorDriverPath: string = genRuntimeActorDriverPath(project, opts.runtime);
 	if (opts.runtime == Runtime.Deno) {
 		entrypointSource = `
 			${autoGenHeader()}
@@ -107,7 +95,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
-			import { ACTOR_DRIVER } from "./actor.ts";
+			import { ACTOR_DRIVER } from ${JSON.stringify(actorDriverPath)};
+
+			ACTOR_DRIVER.config = config;
 
 			const runtime = new Runtime<
 				DependenciesSnake, DependenciesCamel
@@ -136,7 +126,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
 			import { handleRequest } from "${serverTsPath}";
-			import { ACTOR_DRIVER } from "./actor.ts";
+			import { ACTOR_DRIVER, __GlobalDurableObject } from ${JSON.stringify(actorDriverPath)};
+
+			ACTOR_DRIVER.config = config;
 
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
@@ -169,7 +161,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			}
 
 			// Export durable object binding
-			export { __GlobalDurableObject } from "./actor.ts";
+			export { __GlobalDurableObject };
 			`;
 	}
 
@@ -182,12 +174,10 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
-	await Deno.writeTextFile(actorPath, actorSource);
 	await Deno.writeTextFile(
 		genPath(project, GITIGNORE_PATH),
 		".",
 	);
-	await Deno.writeTextFile(actorPath, actorSource);
 
 	// Format files
 	const fmtOutput = await new Deno.Command("deno", {

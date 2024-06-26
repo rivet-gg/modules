@@ -90,7 +90,7 @@ export async function handleRequest<DependenciesSnakeT, DependenciesCamelT, Acto
 	});
 
 	// Parse body
-	let body;
+	let body: any;
 	try {
 		body = await req.json();
 	} catch {
