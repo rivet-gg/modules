@@ -164,31 +164,36 @@ function genActors(
 	const moduleNameSnake = module.name;
 	const moduleNameCamel = camelify(module.name);
 
-	for (const dependencyName of Object.keys(module.config.dependencies || {})) {
-		const dependencyNameSnake = dependencyName;
-		const dependencyNameCamel = camelify(dependencyName);
+	// for (const dependencyName of Object.keys(module.config.dependencies || {})) {
+	// 	const dependencyNameSnake = dependencyName;
+	// 	const dependencyNameCamel = camelify(dependencyName);
+	//
+	// 	actorsTypedefSnake.append`
+	// 		${dependencyNameSnake}: ActorsSnakeFull["${dependencyNameSnake}"];
+	// 	`;
+	// 	actorsTypedefCamel.append`
+	// 		${dependencyNameCamel}: ActorsCamelFull["${dependencyNameCamel}"];
+	// 	`;
+	// }
+	//
+	// actorsTypedefSnake.prepend`${moduleNameSnake}: ActorsSnakeFull["${moduleNameSnake}"];`;
+	// actorsTypedefCamel.prepend`${moduleNameCamel}: ActorsCamelFull["${moduleNameCamel}"];`;
+	//
+	// GeneratedCodeBuilder.wrap(
+	// 	"interface ActorsSnake {",
+	// 	actorsTypedefSnake,
+	// 	"}",
+	// );
+	// GeneratedCodeBuilder.wrap(
+	// 	"interface ActorsCamel {",
+	// 	actorsTypedefCamel,
+	// 	"}",
+	// );
 
-		actorsTypedefSnake.append`
-			${dependencyNameSnake}: ActorsSnakeFull["${dependencyNameSnake}"];
-		`;
-		actorsTypedefCamel.append`
-			${dependencyNameCamel}: ActorsCamelFull["${dependencyNameCamel}"];
-		`;
-	}
-
-	actorsTypedefSnake.prepend`${moduleNameSnake}: ActorsSnakeFull["${moduleNameSnake}"];`;
-	actorsTypedefCamel.prepend`${moduleNameCamel}: ActorsCamelFull["${moduleNameCamel}"];`;
-
-	GeneratedCodeBuilder.wrap(
-		"interface ActorsSnake {",
-		actorsTypedefSnake,
-		"}",
-	);
-	GeneratedCodeBuilder.wrap(
-		"interface ActorsCamel {",
-		actorsTypedefCamel,
-		"}",
-	);
+	helper.append`
+    type ActorsSnake = ActorsSnakeFull["${moduleNameSnake}"];
+    type ActorsCamel = ActorsCamelFull["${moduleNameCamel}"];
+  `;
 }
 
 function genModule(

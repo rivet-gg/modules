@@ -66,7 +66,7 @@ export interface ErrorConfig {
 	description?: string;
 }
 
-export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT> {
+export class Runtime<DependenciesSnakeT, DependenciesCamelT> {
 	public postgres: Postgres;
 
 	public ajv: Ajv.default;
@@ -92,7 +92,7 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 
 	public createRootContext(
 		traceEntryType: TraceEntryType,
-	): Context<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT> {
+	): Context<DependenciesSnakeT, DependenciesCamelT> {
 		return new Context(
 			this,
 			newTrace(traceEntryType, this.config.runtime),
@@ -135,7 +135,7 @@ export class Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, Actor
 			sanitizeResources: false,
 
 			async fn() {
-				const runtime = new Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>(
+				const runtime = new Runtime<DependenciesSnakeT, DependenciesCamelT>(
 					config,
 					actorDriver,
 					dependencyCaseConversionMap,

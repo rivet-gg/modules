@@ -36,7 +36,7 @@ Deno.test("error", async () => {
 	const actorCaseConversionMap = {} as const;
 
 	// Setup
-	const runtime = new Runtime<DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel>(
+	const runtime = new Runtime<DependenciesSnake, DependenciesCamel>(
 		{
 			runtime: BuildRuntime.Deno,
 			modules: {
