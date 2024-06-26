@@ -109,19 +109,16 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import config from "./runtime_config.ts";
 			import { ACTOR_DRIVER } from "./actor.ts";
 
-			async function main() {
-				const runtime = new Runtime<
-					DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel
-				>(
-					config,
-					ACTOR_DRIVER,
-					dependencyCaseConversionMap,
-					actorCaseConversionMap,
-				);
-				await runtime.serve();
-			}
+			const runtime = new Runtime<
+				DependenciesSnake, DependenciesCamel
+			>(
+				config,
+				ACTOR_DRIVER,
+				dependencyCaseConversionMap,
+				actorCaseConversionMap,
+			);
 
-			main();
+			await runtime.serve();
 			`;
 	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 		const runtimePath = genPath(project, RUNTIME_PATH);
@@ -149,7 +146,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
           // TODO(OGBE-159): Move this back to global scope after dbs are correctly isolated
           const runtime = new Runtime<
-            DependenciesSnake, DependenciesCamel, ActorsSnake, ActorsCamel
+            DependenciesSnake, DependenciesCamel
           >(
             config,
             ACTOR_DRIVER,

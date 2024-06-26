@@ -8,7 +8,7 @@ interface RequestInfo {
 }
 
 export async function handleRequest<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>(
-	runtime: Runtime<DependenciesSnakeT, DependenciesCamelT, ActorsSnakeT, ActorsCamelT>,
+	runtime: Runtime<DependenciesSnakeT, DependenciesCamelT>,
 	req: Request,
 	info: RequestInfo,
 ): Promise<Response> {
