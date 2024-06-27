@@ -1,13 +1,14 @@
 import { ScriptContext } from "../module.gen.ts";
-import { tokenFromRow, TokenWithSecret } from "../utils/types.ts";
+import { Token, tokenFromRow } from "../utils/types.ts";
 
 export interface Request {
 	token: string;
-	newExpiration: string | null;
+	newMeta: { [key: string]: any };
 }
 
 export interface Response {
-	token: TokenWithSecret;
+	token: Token;
+	oldMeta: { [key: string]: any };
 }
 
 export async function run(
@@ -25,12 +26,13 @@ export async function run(
 			id: token.id,
 		},
 		data: {
-			expireAt: req.newExpiration,
+			meta: req.newMeta,
 		},
 	});
 
 	// Return the updated token
 	return {
 		token: tokenFromRow(newToken),
+		oldMeta: token.meta,
 	};
 }

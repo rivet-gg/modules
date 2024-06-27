@@ -18,6 +18,11 @@ export function tokenFromRow(
 ): TokenWithSecret {
 	return {
 		...row,
+		// NOTE: Not sure why this is necessary— prisma seems to be stringifying
+		// all JSON values before returning them.
+		//
+		// Should look into more.
+		meta: row.meta ? JSON.parse(row.meta.toString()) : row.meta,
 		createdAt: row.createdAt.toISOString(),
 		expireAt: row.expireAt?.toISOString() ?? null,
 		revokedAt: row.revokedAt?.toISOString() ?? null,

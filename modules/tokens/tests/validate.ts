@@ -1,8 +1,8 @@
 import { RuntimeError, test, TestContext } from "../module.gen.ts";
 import {
 	assertEquals,
-	assertRejects,
 	assertGreater,
+	assertRejects,
 } from "https://deno.land/std@0.217.0/assert/mod.ts";
 
 test(
@@ -97,6 +97,6 @@ test(
 		}, {
 			...token,
 			expireAt: null,
-		})
+		});
 	},
 );

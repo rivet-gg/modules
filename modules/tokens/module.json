@@ -1,50 +1,54 @@
 {
-    "name": "Tokens",
-    "description": "Create & verify tokens for authorization purposes.",
-    "icon": "lock",
-    "tags": [
-        "core",
-        "utility"
-    ],
-    "authors": [
-        "rivet-gg",
-        "NathanFlurry"
-    ],
-    "status": "stable",
-    "scripts": {
-        "create": {
-            "name": "Create Token"
-        },
-        "fetch": {
-            "name": "Fetch Token",
-            "description": "Get a token by its ID."
-        },
-        "fetch_by_token": {
-            "name": "Fetch by Token",
-            "description": "Get a token by its secret token."
-        },
-        "revoke": {
-            "name": "Revoke Token",
-            "description": "Revoke a token, preventing it from being used again."
-        },
-        "validate": {
-            "name": "Validate Token",
-            "description": "Validate a token. Throws an error if the token is invalid."
-        },
-        "extend": {
-            "name": "Extend Token",
-            "description": "Extend or remove the expiration date of a token. (Only works on valid tokens.)"
-        }
-    },
-    "errors": {
-        "token_not_found": {
-            "name": "Token Not Found"
-        },
-        "token_revoked": {
-            "name": "Token Revoked"
-        },
-        "token_expired": {
-            "name": "Token Expired"
-        }
-    }
+	"name": "Tokens",
+	"description": "Create & verify tokens for authorization purposes.",
+	"icon": "lock",
+	"tags": [
+		"core",
+		"utility"
+	],
+	"authors": [
+		"rivet-gg",
+		"NathanFlurry"
+	],
+	"status": "stable",
+	"scripts": {
+		"create": {
+			"name": "Create Token"
+		},
+		"fetch": {
+			"name": "Fetch Token",
+			"description": "Get a token by its ID."
+		},
+		"fetch_by_token": {
+			"name": "Fetch by Token",
+			"description": "Get a token by its secret token."
+		},
+		"revoke": {
+			"name": "Revoke Token",
+			"description": "Revoke a token, preventing it from being used again."
+		},
+		"validate": {
+			"name": "Validate Token",
+			"description": "Validate a token. Throws an error if the token is invalid."
+		},
+		"extend": {
+			"name": "Extend Token",
+			"description": "Extend or remove the expiration date of a token. (Only works on valid tokens.)"
+		},
+		"modify_meta": {
+			"name": "Modify Token Metadata",
+			"description": "Modify the token's associated metadata, additionally returning the old metadata. (Only works on valid tokens.)"
+		}
+	},
+	"errors": {
+		"token_not_found": {
+			"name": "Token Not Found"
+		},
+		"token_revoked": {
+			"name": "Token Revoked"
+		},
+		"token_expired": {
+			"name": "Token Expired"
+		}
+	}
 }
