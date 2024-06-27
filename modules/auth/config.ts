@@ -1,8 +1,5 @@
-export interface Config {
-	email?: EmailConfig;
-}
+import { Provider } from "./utils/types.ts";
 
-export interface EmailConfig {
-	fromEmail: string;
-	fromName?: string;
+export interface Config {
+	providers: Provider[];
 }

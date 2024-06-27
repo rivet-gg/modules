@@ -1,52 +1,71 @@
 {
-    "name": "Authentication",
-    "description": "Authenticate users with multiple authentication methods.",
-    "icon": "key",
-    "tags": [
-        "core",
-        "auth",
-        "user"
-    ],
-    "authors": [
-        "rivet-gg",
-        "NathanFlurry"
-    ],
-    "status": "stable",
-    "dependencies": {
-        "email": {},
-        "users": {},
-        "rate_limit": {}
-    },
-    "scripts": {
-        "send_email_verification": {
-            "name": "Send Email Verification",
-            "description": "Send a one-time verification code to a user's email address to authenticate them.",
-            "public": true
-        },
-        "complete_email_verification": {
-            "name": "Complete Email Verification",
-            "description": "Verify a user's email address with a one-time verification code.",
-            "public": true
-        }
-    },
-    "errors": {
-        "provider_disabled": {
-            "name": "Provider Disabled"
-        },
-        "verification_code_invalid": {
-            "name": "Verification Code Invalid"
-        },
-        "verification_code_attempt_limit": {
-            "name": "Verification Code Attempt Limit"
-        },
-        "verification_code_expired": {
-            "name": "Verification Code Expired"
-        },
-        "verification_code_already_used": {
-            "name": "Verification Code Already Used"
-        },
-        "email_already_used": {
-            "name": "Email Already Used"
-        }
-    }
+	"name": "Authentication",
+	"description": "Authenticate users with multiple authentication methods.",
+	"icon": "key",
+	"tags": [
+		"core",
+		"auth",
+		"user"
+	],
+	"authors": [
+		"rivet-gg",
+		"NathanFlurry"
+	],
+	"status": "stable",
+	"dependencies": {
+		"email": {},
+		"users": {},
+		"rate_limit": {},
+		"tokens": {}
+	},
+	"scripts": {
+		"get_flow_status": {
+			"name": "Get Flow Status",
+			"description": "Get the status of a login flow by the flow token. Returns the userToken if the flow is completed.",
+			"public": true
+		},
+		"cancel_flow": {
+			"name": "Cancel Flow",
+			"description": "Cancels a login flow. This is irreversible and will error if the flow is not `pending`."
+		},
+		"complete_flow": {
+			"name": "Complete Flow",
+			"description": "Completes a login flow and generates a user token. This is irreversible and will error if the flow is not `pending`."
+		},
+		"list_providers": {
+			"name": "Send Email Verification",
+			"description": "Send a one-time verification code to a user's email address to authenticate them.",
+			"public": true
+		},
+		"start_login_flow": {
+			"name": "Send Email Verification",
+			"description": "Send a one-time verification code to a user's email address to authenticate them.",
+			"public": true
+		},
+		"list_identities": {
+			"name": "Complete Email Verification",
+			"description": "Verify a user's email address with a one-time verification code.",
+			"public": true
+		}
+	},
+	"errors": {
+		"provider_disabled": {
+			"name": "Provider Disabled"
+		},
+		"verification_code_invalid": {
+			"name": "Verification Code Invalid"
+		},
+		"verification_code_attempt_limit": {
+			"name": "Verification Code Attempt Limit"
+		},
+		"verification_code_expired": {
+			"name": "Verification Code Expired"
+		},
+		"verification_code_already_used": {
+			"name": "Verification Code Already Used"
+		},
+		"email_already_used": {
+			"name": "Email Already Used"
+		}
+	}
 }
