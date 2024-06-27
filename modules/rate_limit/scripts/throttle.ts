@@ -1,3 +1,5 @@
+import { assert } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { ThrottleRequest, ThrottleResponse } from "../actors/limiter.ts";
 import { RuntimeError, ScriptContext } from "../module.gen.ts";
 
 export interface Request {
@@ -28,58 +30,23 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	interface TokenBucket {
-		tokens: number;
-		lastRefill: Date;
-	}
+  assert(req.requests > 0);
+  assert(req.period > 0);
 
-	// Update the token bucket
-	//
-	// `TokenBucket` is an unlogged table which are significantly faster to
-	// write to than regular tables, but are not durable. This is important
-	// because this script will be called on every request.
-	const rows = await ctx.db.$queryRawUnsafe<TokenBucket[]>(
-    `
-		WITH
-    "UpdateBucket" AS (
-			UPDATE "${ctx.dbSchema}"."TokenBuckets" b
-			SET
-				"tokens" = CASE
-						-- Reset the bucket and consume 1 token
-						WHEN now() > b."lastRefill" + make_interval(secs => $4) THEN $3 - 1
-						-- Consume 1 token
-						ELSE b.tokens - 1
-					END,
-				"lastRefill" = CASE
-						WHEN now() > b."lastRefill" + make_interval(secs => $4) THEN now()
-						ELSE b."lastRefill"
-					END
-			WHERE b."type" = $1 AND b."key" = $2
-			RETURNING b."tokens", b."lastRefill"
-		),
-		inserted AS (
-			INSERT INTO "${ctx.dbSchema}"."TokenBuckets" ("type", "key", "tokens", "lastRefill")
-			SELECT $1, $2,  $3 - 1, now()
-			WHERE NOT EXISTS (SELECT 1 FROM "UpdateBucket")
-			RETURNING "tokens", "lastRefill"
-		)
-		SELECT * FROM "UpdateBucket"
-		UNION ALL
-		SELECT * FROM inserted;
-    `,
-    req.type,
-    req.key,
-    req.requests,
-    req.period,
-  );
-	const { tokens, lastRefill } = rows[0];
+  // Create key
+  const key = `${JSON.stringify(req.type)}.${JSON.stringify(req.key)}`;
 
-	// If the bucket is empty, throw an error
-	if (tokens < 0) {
+  // Throttle request
+  const res = await ctx.actors.limiter.getOrCreateAndCall<undefined, ThrottleRequest, ThrottleResponse>(key, undefined, "throttle", {
+    requests: req.requests,
+    period: req.period,
+  });
+
+  // Check if allowed
+	if (!res.success) {
 		throw new RuntimeError("RATE_LIMIT_EXCEEDED", {
 			meta: {
-				retryAfter: new Date(lastRefill.getTime() + req.period * 1000)
-					.toUTCString(),
+				retryAfter: new Date(res.refillAt).toUTCString(),
 			},
 		});
 	}

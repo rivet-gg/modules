@@ -1,29 +1,32 @@
 {
-    "name": "Rate Limit",
-    "description": "Prevent abuse by limiting request rate.",
-    "icon": "gauge-circle-minus",
-    "tags": [
-        "core",
-        "utility"
-    ],
-    "authors": [
-        "rivet-gg",
-        "NathanFlurry"
-    ],
-    "status": "stable",
-    "scripts": {
-        "throttle": {
-            "name": "Throttle",
-            "description": "Limit the amount of times an request can be made by a given key."
-        },
-        "throttle_public": {
-            "name": "Throttle Public",
-            "description": "Limit the amount of times a public request can be made by a given key. This will rate limit based off the user's IP address."
-        }
-    },
-    "errors": {
-        "rate_limit_exceeded": {
-            "name": "Rate Limit Exceeded"
-        }
-    }
+	"name": "Rate Limit",
+	"description": "Prevent abuse by limiting request rate.",
+	"icon": "gauge-circle-minus",
+	"tags": [
+		"core",
+		"utility"
+	],
+	"authors": [
+		"rivet-gg",
+		"NathanFlurry"
+	],
+	"status": "stable",
+	"scripts": {
+		"throttle": {
+			"name": "Throttle",
+			"description": "Limit the amount of times an request can be made by a given key."
+		},
+		"throttle_public": {
+			"name": "Throttle Public",
+			"description": "Limit the amount of times a public request can be made by a given key. This will rate limit based off the user's IP address."
+		}
+	},
+	"errors": {
+		"rate_limit_exceeded": {
+			"name": "Rate Limit Exceeded"
+		}
+	},
+	"actors": {
+		"limiter": {}
+	}
 }
