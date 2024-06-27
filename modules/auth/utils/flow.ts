@@ -1,4 +1,6 @@
 import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { pollProvider } from "./providers.ts";
+import { Provider } from "./types.ts";
 
 /**
  * The token type that designates that this is a flow token
@@ -30,11 +32,11 @@ function getExpiryTime() {
  * @returns A flow token (TokenWithSecret) with the correct meta and expiry
  * time.
  */
-export async function createFlowToken(ctx: ScriptContext) {
+export async function createFlowToken(ctx: ScriptContext, provider: Provider) {
 	const { token } = await ctx.modules.tokens.create({
 		type: FLOW_TYPE,
-		meta: {},
-		expireAt: getExpiryTime().toString(),
+		meta: { provider },
+		expireAt: getExpiryTime().toISOString(),
 	});
 	return token;
 }
@@ -69,13 +71,22 @@ export async function getFlowStatus(
 		return { status: "cancelled" };
 	} else if (expireDate.getTime() <= Date.now()) {
 		return { status: "expired" };
-	} else if (!flowData.meta.userToken) {
-		return { status: "pending" };
-	} else {
+	} else if (flowData.meta.userToken) {
 		return {
 			status: "complete",
 			userToken: flowData.meta.userToken.toString(),
 		};
+	}
+
+	const provider = flowData.meta.provider;
+	const pollResult = await pollProvider(ctx, flowToken, provider);
+	if (pollResult) {
+		return {
+			status: "complete",
+			userToken: pollResult,
+		};
+	} else {
+		return { status: "pending" };
 	}
 }
 
@@ -106,6 +117,7 @@ export async function completeFlow(
 	ctx: ScriptContext,
 	flowToken: string,
 	userId: string,
+	additionalData: unknown,
 ): Promise<string> {
 	const status = await getFlowStatus(ctx, flowToken);
 	switch (status.status) {
@@ -123,6 +135,12 @@ export async function completeFlow(
 	await ctx.modules.tokens.modifyMeta({
 		token: flowToken,
 		newMeta: { userToken: token.token },
+	});
+	await ctx.modules.tokens.modifyMeta({
+		token: token.token,
+		newMeta: {
+			data: additionalData,
+		},
 	});
 
 	return token.token;

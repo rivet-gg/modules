@@ -16,7 +16,8 @@
 		"email": {},
 		"users": {},
 		"rate_limit": {},
-		"tokens": {}
+		"tokens": {},
+		"auth_oauth2": {}
 	},
 	"scripts": {
 		"get_flow_status": {
@@ -27,10 +28,6 @@
 		"cancel_flow": {
 			"name": "Cancel Flow",
 			"description": "Cancels a login flow. This is irreversible and will error if the flow is not `pending`."
-		},
-		"complete_flow": {
-			"name": "Complete Flow",
-			"description": "Completes a login flow and generates a user token. This is irreversible and will error if the flow is not `pending`."
 		},
 		"list_providers": {
 			"name": "Send Email Verification",

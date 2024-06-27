@@ -26,7 +26,7 @@ export async function run(
 	// Sets revokedAt on all tokens that have not already been revoked. Returns
 	// wether or not each token was revoked.
 	const rows = await ctx.db.$queryRawUnsafe<TokenRow[]>(
-    `
+		`
 		WITH "PreUpdate" AS (
 			SELECT "id", "revokedAt"
 			FROM "${ctx.dbSchema}"."Token"
@@ -38,8 +38,8 @@ export async function run(
 		WHERE "Token"."id" = "PreUpdate"."id"
 		RETURNING "Token"."id" AS "id", "PreUpdate"."revokedAt" IS NOT NULL AS "alreadyRevoked"
     `,
-    req.tokenIds,
-  );
+		req.tokenIds,
+	);
 
 	const updates: Record<string, TokenUpdate> = {};
 	for (const tokenId of req.tokenIds) {
