@@ -1,4 +1,4 @@
-import { Prisma, ScriptContext } from "../module.gen.ts";
+import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	tokenIds: string[];
