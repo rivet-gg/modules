@@ -38,6 +38,9 @@
                 }
             }
         },
+        "auth_providers": {
+            "registry": "local"
+        },
         "email": {
             "registry": "local",
             "config": {

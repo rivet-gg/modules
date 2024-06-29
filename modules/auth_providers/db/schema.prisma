@@ -1,0 +1,16 @@
+// Do not modify this `datasource` block
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model ProviderEntries {
+    userId          String      @db.Uuid
+	providerType    String
+	providerId      String
+	providerData    Json
+
+	@@id([userId, providerType, providerId])
+	@@index([userId])
+	@@index([providerType, providerId])
+}

@@ -1,0 +1,48 @@
+{
+    "name": "OAuth2 Authentication Provider",
+    "description": "Authenticate users with OAuth 2.0.",
+    "icon": "key",
+    "tags": [
+        "core",
+        "user",
+        "auth"
+    ],
+    "authors": [
+        "rivet-gg",
+        "Skyler Calaman"
+    ],
+    "status": "beta",
+    "dependencies": {
+        "rate_limit": {},
+        "users": {},
+        "tokens": {}
+    },
+    "scripts": {
+        "list_providers": {
+            "name": "List Providers",
+            "description": "List all providers the user is identified with.",
+            "public": true
+        },
+        "get_provider_data": {
+            "name": "Get Provider Data",
+            "description": "Get the data associated with a specific provider for a user."
+        },
+        "set_provider_data": {
+            "name": "Set Provider Data",
+            "description": "Set the data associated with a specific provider for a user."
+        },
+        "add_provider_to_user": {
+            "name": "Add Provider To User",
+            "description": "Add a new provider and its associated data to a user."
+        }
+    },
+    "routes": {},
+    "errors": {
+        "provider_not_found": {
+            "name": "Provider Not Found"
+        },
+        "provider_already_added": {
+            "name": "Provider Already Added"
+        }
+    }
+}
