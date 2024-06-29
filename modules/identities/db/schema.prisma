@@ -1,0 +1,27 @@
+// Do not modify this `datasource` block
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model UserIdentities {
+    userId          String      @db.Uuid
+
+	// Used to identify the user from the identity
+	identityType    String
+	identityId      String
+	uniqueData      Json
+
+	additionalData  Json
+
+	// Additional indexes for speed
+	@@index([userId])
+	@@index([identityType, identityId])
+
+	// Each user should only have one identity per (type, id) pair (for now)
+	@@id([userId, identityType, identityId])
+
+	// Each identity should only be linked to one user
+	@@index([identityType, identityId, uniqueData])
+	@@unique([identityType, identityId, uniqueData])
+}

@@ -38,6 +38,9 @@
                 }
             }
         },
+        "identities": {
+            "registry": "local"
+        },
         "email": {
             "registry": "local",
             "config": {
