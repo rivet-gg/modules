@@ -1,0 +1,137 @@
+---
+title: "Lobbies"
+description: "Lobby & player management. Create & join lobbies instantly."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/lobbies) | `lobbies` | stable | No |
+
+**Authors**
+
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+- [Tokens](/modules/tokens/overview)
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add lobbies
+```
+
+</Tab>
+
+<Tab title="backend.json">
+
+Add the following to your `backend.json`:
+
+```json backend.json
+"modules": {
+	"lobbies": {
+		"config": {
+			// Your config here. See below for more details.
+		}
+	}
+}
+
+```
+</Tab>
+
+</Tabs>
+
+## Config
+
+### Schema
+		
+```typescript
+export interface Config {
+  lobbies: LobbyConfig;
+  lobbyRules: LobbyRule[];
+  players: {
+    maxPerIp?: number;
+    maxUnconnected?: number;
+    unconnectedExpireAfter: number;
+    autoDestroyAfter?: number;
+  };
+}
+export interface LobbyConfig {
+  destroyOnEmptyAfter?: null | number;
+  unreadyExpireAfter: number;
+  maxPlayers: number;
+  maxPlayersDirect: number;
+  enableDynamicMaxPlayers?: PlayerRange;
+  enableDynamicMaxPlayersDirect?: PlayerRange;
+  enableCreate: boolean;
+  enableDestroy: boolean;
+  enableFind: boolean;
+  enableFindOrCreate: boolean;
+  enableJoin: boolean;
+  enableList: boolean;
+}
+export interface PlayerRange {
+  min: number;
+  max: number;
+}
+export interface LobbyRule {
+  tags: RecordStringString;
+  config: LobbyConfig;
+}
+export interface RecordStringString {}
+```
+
+### Default
+
+```json
+{
+    "lobbies": {
+        "destroyOnEmptyAfter": 60000,
+        "unreadyExpireAfter": 300000,
+        "maxPlayers": 16,
+        "maxPlayersDirect": 16,
+        "enableCreate": false,
+        "enableDestroy": false,
+        "enableFind": true,
+        "enableFindOrCreate": true,
+        "enableJoin": true,
+        "enableList": true
+    },
+    "lobbyRules": [],
+    "players": {
+        "maxPerIp": 8,
+        "maxUnconnected": 128,
+        "unconnectedExpireAfter": 60000,
+        "autoDestroyAfter": 4147200000
+    }
+}
+```
+
+
+
+## Scripts
+
+### Public
+
+<CardGroup><Card title="Create Lobby" href="/modules/lobbies/scripts/create">Creates a new lobby on-demand.</Card><Card title="Destroy Lobby" href="/modules/lobbies/scripts/destroy">Destroys an existing lobby.</Card><Card title="Find Lobby" href="/modules/lobbies/scripts/find">Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.</Card><Card title="Find Or Create Lobby" href="/modules/lobbies/scripts/find_or_create">Finds a lobby or creates one if there are no available spots for players.</Card><Card title="Join Lobby" href="/modules/lobbies/scripts/join">Add a player to an existing lobby.</Card><Card title="List Lobbies" href="/modules/lobbies/scripts/list">List & query all lobbies.</Card><Card title="Set Lobby Ready" href="/modules/lobbies/scripts/set_lobby_ready">Called on lobby startup after initiation to notify it can start accepting player. This should be called after operations like loading maps are complete.</Card><Card title="Set Player Connected" href="/modules/lobbies/scripts/set_player_connected">Called when a player connects to the lobby.</Card><Card title="Set Player Disconnected" href="/modules/lobbies/scripts/set_player_disconnected">Called when a player disconnects from the lobby.</Card></CardGroup>
+
+### Internal
+
+<CardGroup><Card title="Force Garbage Collection" href="/modules/lobbies/scripts/force_gc">Rarely used. Forces the matchmaker to purge lobbies & players.</Card></CardGroup>
+
+## Errors
+
+- **Lobby Already Ready** (`lobby_already_ready`) Lobby already set as ready.
+- **Lobby Create Missing Players** (`lobby_create_missing_players`) When creating a lobby with `config.lobbies.autoDestroyWhenEmpty`, a lobby must be created with players in order to avoid creating an empty lobby.
+- **Lobby Full** (`lobby_full`) No more players can join this lobby.
+- **Lobby Not Found** (`lobby_not_found`) Lobby not found.
+- **More Players Than Max** (`more_players_than_max`) More players were passed to the create lobby than the number of max players in a lobby.
+- **No Matching Lobbies** (`no_matching_lobbies`) No lobbies matched the given query.
+- **Player Already Connected** (`player_already_connected`) The player has already connected to this server. This error helps mitigate botting attacks by only allowing one scoket to connect to a game server for every player.
+- **Player Disconnected** (`player_disconnected`) The player has already disconnected from the server. Create a new player for the specified lobby using the `join` script.
+- **Too Many Players For IP** (`too_many_players_for_ip`) The player has too many existing players for the given IP.
