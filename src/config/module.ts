@@ -4,7 +4,7 @@ import schema from "../../artifacts/module_schema.json" with { type: "json" };
 import { InternalError, UserError } from "../error/mod.ts";
 
 export interface ModuleConfig extends Record<string, unknown> {
-	status?: "preview" | "beta" | "stable" | "maintenance" | "end_of_life";
+	status?: "coming_soon" | "preview" | "beta" | "stable" | "maintenance" | "end_of_life";
 
 	/**
 	 * The human readable name of the module.
