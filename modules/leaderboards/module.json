@@ -1,0 +1,12 @@
+{
+  "name": "Leaderboards",
+  "description": "Track and display top player rankings. (Coming mid-2024)",
+  "icon": "ranking-star",
+  "tags": [
+    "game"
+  ],
+  "authors": [],
+  "status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}

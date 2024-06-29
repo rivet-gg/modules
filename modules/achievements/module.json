@@ -1,0 +1,12 @@
+{
+  "name": "Achievements",
+  "description": "Unlock and track user achievements. (Coming late-2024)",
+  "icon": "medal",
+  "tags": [
+    "game"
+  ],
+  "authors": [],
+  "status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Parties",
+  "description": "Real-time player groups. Integrates with matchmaking. (Coming mid-2024)",
+  "icon": "party-horn",
+  "tags": [
+    "game"
+  ],
+  "authors": [],
+  "status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}

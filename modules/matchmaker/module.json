@@ -1,0 +1,12 @@
+{
+  "name": "Matchmaker",
+  "description": "Ticket-based matchmaking that balances skill, latency, and more. (Coming mid-2024)",
+  "icon": "chess-knight",
+  "tags": [
+    "game"
+  ],
+  "authors": [],
+  "status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}
