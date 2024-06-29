@@ -67,12 +67,12 @@ export interface ScriptConfig {
 }
 export interface ActorConfig {
   /**
-   * Used to keep actor IDs the same in case the actor name changes.
+   * A globally unique string for storing data for this actor.
    *
-   * **IMPORTANT** Changing this will effectively unlink all data stored in
-   * this actor. Changing it back to the old value will restore the data.
+   * **IMPORTANT** Changing this will effectively unlink all data stored in this actor. Changing it back to
+   * the old value will restore the data.
    */
-  storageAlias?: string;
+  storage_id: string;
 }
 export interface ErrorConfig {
   /**
