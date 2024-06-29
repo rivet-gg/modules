@@ -360,7 +360,7 @@
   "analytics": {
     "posthog": {
       "apiHost": "https://ph.rivet.gg/",
-      "apiKey": "phc_SQI0wHagPhev5KK7wHJnIf2JNF8fuYBdzzOgNEGylKW"
+      "apiKey": "phc_6kfTNEAVw7rn1LA51cO3D69FefbKupSWFaM7OUgEpEo"
     }
   },
   "redirects": [
