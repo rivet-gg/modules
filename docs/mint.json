@@ -129,6 +129,20 @@
       "pages": [
         "modules/overview",
         {
+          "icon": "medal",
+          "group": "Achievements",
+          "pages": [
+            "modules/achievements/overview"
+          ]
+        },
+        {
+          "icon": "chart-line",
+          "group": "Analytics",
+          "pages": [
+            "modules/analytics/overview"
+          ]
+        },
+        {
           "icon": "key",
           "group": "Authentication",
           "pages": [
@@ -140,6 +154,13 @@
                 "modules/auth/scripts/send_email_verification"
               ]
             }
+          ]
+        },
+        {
+          "icon": "messages",
+          "group": "Chat",
+          "pages": [
+            "modules/chat/overview"
           ]
         },
         {
@@ -194,6 +215,68 @@
                 "modules/friends/scripts/send_request"
               ]
             }
+          ]
+        },
+        {
+          "icon": "floppy-disk",
+          "group": "Game Saves",
+          "pages": [
+            "modules/game_saves/overview"
+          ]
+        },
+        {
+          "icon": "user-group",
+          "group": "Gropus",
+          "pages": [
+            "modules/groups/overview"
+          ]
+        },
+        {
+          "icon": "ranking-star",
+          "group": "Leaderboards",
+          "pages": [
+            "modules/leaderboards/overview"
+          ]
+        },
+        {
+          "icon": "game-board",
+          "group": "Lobbies",
+          "pages": [
+            "modules/lobbies/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/lobbies/scripts/create",
+                "modules/lobbies/scripts/destroy",
+                "modules/lobbies/scripts/find",
+                "modules/lobbies/scripts/find_or_create",
+                "modules/lobbies/scripts/join",
+                "modules/lobbies/scripts/list",
+                "modules/lobbies/scripts/set_lobby_ready",
+                "modules/lobbies/scripts/set_player_connected",
+                "modules/lobbies/scripts/set_player_disconnected"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/lobbies/scripts/force_gc"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "chess-knight",
+          "group": "Matchmaker",
+          "pages": [
+            "modules/matchmaker/overview"
+          ]
+        },
+        {
+          "icon": "party-horn",
+          "group": "Parties",
+          "pages": [
+            "modules/parties/overview"
           ]
         },
         {
