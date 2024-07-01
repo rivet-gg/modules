@@ -14,16 +14,11 @@
     "status": "beta",
     "dependencies": {
         "rate_limit": {},
+        "auth_providers": {},
         "users": {},
         "tokens": {}
     },
     "routes": {
-        "login_link": {
-            "name": "Login Link",
-            "description": "Generate a login link for accessing OpenGB.",
-            "method": "GET",
-            "pathPrefix": "/login/"
-        },
         "login_callback": {
             "name": "OAuth Redirect Callback",
             "description": "Verify a user's OAuth login and create a session.",
@@ -31,7 +26,18 @@
             "pathPrefix": "/callback/"
         }
     },
-    "scripts": {},
+    "scripts": {
+        "start_login": {
+            "name": "Start Login",
+            "description": "Start the OAuth login process. Returns a URL to redirect the user to and a flow token.",
+            "public": true
+        },
+        "get_status": {
+            "name": "Get Status",
+            "description": "Check the status of a OAuth login using the flow token. Returns the status of the login flow.",
+            "public": true
+        }
+    },
     "errors": {
         "already_friends": {
             "name": "Already Friends"

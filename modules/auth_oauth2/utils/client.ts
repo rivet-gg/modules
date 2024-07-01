@@ -2,11 +2,14 @@ import { OAuth2Client } from "https://deno.land/x/oauth2_client@v1.0.2/mod.ts";
 import { FullConfig, ProviderConfig } from "./env.ts";
 import { RuntimeError } from "../module.gen.ts";
 
-export function getClient(cfg: FullConfig, provider: string, uri: URL) {
+export function getClient(cfg: FullConfig, provider: string) {
 	const providerCfg = cfg.providers[provider];
 	if (!providerCfg) throw new RuntimeError("invalid_provider", { statusCode: 400 });
 
-	const redirectUri = new URL(`./modules/auth_oauth2/route/callback/${provider}`, uri.origin).toString();
+	// TODO: Make this configurable
+	const baseUri = new URL("http://localhost:6420");
+
+	const redirectUri = new URL(`./modules/auth_oauth2/route/callback/${provider}`, baseUri.origin).toString();
 
 	return new OAuth2Client({
 		clientId: providerCfg.clientId,
