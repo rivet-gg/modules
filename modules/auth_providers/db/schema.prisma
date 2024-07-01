@@ -6,11 +6,21 @@ datasource db {
 
 model ProviderEntries {
     userId          String      @db.Uuid
+
 	providerType    String
 	providerId      String
-	providerData    Json
+	uniqueData      Json
 
-	@@id([userId, providerType, providerId])
+	additionalData  Json
+
+	// Additional indexes for speed
 	@@index([userId])
 	@@index([providerType, providerId])
+
+	// Each user should only have one identity per provider (for now)
+	@@id([userId, providerType, providerId])
+
+	// Each provider identity should only be linked to one user
+	@@index([providerType, providerId, uniqueData])
+	@@unique([providerType, providerId, uniqueData])
 }

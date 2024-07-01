@@ -15,17 +15,19 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
+    // Ensure the user token is valid and get the user ID
     const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
 
-    return {
-        providers: await ctx.db.providerEntries.findMany({
-            where: {
-                userId,
-            },
-            select: {
-                providerType: true,
-                providerId: true,
-            }
-        }),
-    };
+    // Select providerType and providerId entries that match the userId
+    const providers = await ctx.db.providerEntries.findMany({
+        where: {
+            userId,
+        },
+        select: {
+            providerType: true,
+            providerId: true,
+        }
+    });
+
+    return { providers };
 }

@@ -7,7 +7,10 @@ export interface Request {
 }
 
 export interface Response {
-    data: ProviderData | null;
+    data: {
+        uniqueData: ProviderData;
+        additionalData: ProviderData;
+    } | null;
 }
 
 export async function run(
@@ -21,8 +24,10 @@ export async function run(
         type: "user",
     });
 
+    // Ensure the user token is valid and get the user ID
     const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
 
+    // Get provider data
     const provider = await ctx.db.providerEntries.findFirst({
         where: {
             userId,
@@ -30,15 +35,24 @@ export async function run(
             providerId: req.info.providerId,
         },
         select: {
-            providerData: true,
+            uniqueData: true,
+            additionalData: true
         }
     });
 
-    const data = provider?.providerData;
-
-    if (data && typeof data === 'object' && !Array.isArray(data)) {
-        return { data };
-    } else {
+    // Type checking to make typescript happy
+    const data = provider ?? null;
+    if (!data) {
         return { data: null };
     }
+
+    const { uniqueData, additionalData } = data;
+    if (typeof uniqueData !== 'object' || Array.isArray(uniqueData) || uniqueData === null) {
+        return { data: null };
+    }
+    if (typeof additionalData !== 'object' || Array.isArray(additionalData) || additionalData === null) {
+        return { data: null };
+    }
+
+    return { data: { uniqueData, additionalData } };
 }

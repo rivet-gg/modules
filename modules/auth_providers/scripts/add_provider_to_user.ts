@@ -1,10 +1,11 @@
-import { RuntimeError, ScriptContext, prisma } from "../module.gen.ts";
-import { ProviderData, ProviderInfo } from "../utils/types.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { ProviderDataInput, ProviderInfo } from "../utils/types.ts";
 
 export interface Request {
 	userToken: string;
     info: ProviderInfo;
-    data: ProviderData & prisma.Prisma.InputJsonValue;
+    uniqueData: ProviderDataInput;
+    additionalData: ProviderDataInput;
 }
 
 export interface Response {
@@ -35,7 +36,8 @@ export async function run(
             userId,
             providerType: req.info.providerType,
             providerId: req.info.providerId,
-            providerData: req.data,
+            uniqueData: req.uniqueData,
+            additionalData: req.additionalData,
         },
     });
 

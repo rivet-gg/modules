@@ -31,6 +31,10 @@
             "name": "Set Provider Data",
             "description": "Set the data associated with a specific provider for a user."
         },
+        "get_or_create_user_from_provider": {
+            "name": "Get or Create User From Provider",
+            "description": "Using provider info and data, match an existing user or create a new one based on the data."
+        },
         "add_provider_to_user": {
             "name": "Add Provider To User",
             "description": "Add a new provider and its associated data to a user."
