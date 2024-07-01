@@ -3,18 +3,8 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model EmailPasswordless {
-    id        String   @id @default(uuid()) @db.Uuid
-    userId    String   @db.Uuid @unique
-    email     String   @unique
-    createdAt DateTime @default(now()) @db.Timestamp
-}
-
-model EmailPasswordlessVerification {
+model Verifications {
     id String @id @default(uuid()) @db.Uuid
-
-    // If exists, link to existing identity. If null, create new identity.
-    userId String? @db.Uuid
 
     email String
 
