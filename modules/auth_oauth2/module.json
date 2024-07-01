@@ -36,6 +36,16 @@
             "name": "Get Status",
             "description": "Check the status of a OAuth login using the flow token. Returns the status of the login flow.",
             "public": true
+        },
+        "add_to_user": {
+            "name": "Add OAuth Login to User",
+            "description": "Use a finished OAuth flow to add the OAuth login to an already-authenticated users.",
+            "public": true
+        },
+        "login_to_user": {
+            "name": "Login to or Create User with OAuth",
+            "description": "Use a finished OAuth flow to login to a user, creating a new one if it doesn't exist.",
+            "public": true
         }
     },
     "errors": {

@@ -29,7 +29,7 @@ export async function run(
     });
     if (!flow) throw new RuntimeError("invalid_token", { statusCode: 400 });
 
-    if (flow.identifier) {
+    if (flow.identifier && flow.tokenData) {
         return { status: "complete" };
     } else if (new Date(flow.expiresAt) < new Date()) {
         return { status: "expired" };

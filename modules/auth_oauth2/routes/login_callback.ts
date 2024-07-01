@@ -89,6 +89,7 @@ export async function handle(
 		},
 		data: {
 			identifier: ident,
+			tokenData: { ...tokens },
 			completedAt: new Date(),
 		},
 	});

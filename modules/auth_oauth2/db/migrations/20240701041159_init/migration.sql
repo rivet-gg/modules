@@ -5,6 +5,7 @@ CREATE TABLE "LoginAttempts" (
     "state" TEXT NOT NULL,
     "codeVerifier" TEXT NOT NULL,
     "identifier" TEXT,
+    "tokenData" JSONB,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "completedAt" TIMESTAMP(3),

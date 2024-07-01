@@ -12,6 +12,7 @@ model LoginAttempts {
 	codeVerifier    String
 
 	identifier      String?
+	tokenData       Json?
 
 	startedAt       DateTime    @default(now())
 	expiresAt       DateTime
