@@ -14,6 +14,7 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 			actor: opts.actorName,
 			instance: opts.instanceName,
 			input: opts.input,
+			trace: opts.trace,
 		});
 	}
 
@@ -24,6 +25,7 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 		return await stub.callRpc({
 			fn: opts.fn,
 			request: opts.request,
+			trace: opts.trace,
 		});
 	}
 
@@ -37,9 +39,11 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 				actor: opts.actorName,
 				instance: opts.instanceName,
 				input: opts.input,
+				trace: opts.trace,
 			},
 			fn: opts.fn,
 			request: opts.request,
+			trace: opts.trace,
 		});
 	}
 
