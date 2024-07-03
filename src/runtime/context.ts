@@ -1,10 +1,12 @@
 import { Runtime } from "./runtime.ts";
-import { Trace } from "./trace.ts";
+import { stringifyTraceEntryType, Trace } from "./trace.ts";
 import { RuntimeError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 import { buildActorRegistryProxy, buildDependencyRegistryProxy, RegistryCallMap } from "./proxy.ts";
 import { DependencyScriptCallFunction } from "../types/registry.ts";
 import { camelify } from "../types/case_conversions.ts";
+import { errorToLogEntries, log, LogEntry, spreadObjectToLogEntries } from "./logger.ts";
+import { LogLevel } from "./logger.ts";
 
 export interface ContextParams {
 	dependenciesSnake: any;
@@ -12,12 +14,16 @@ export interface ContextParams {
 }
 
 export class Context<Params extends ContextParams> {
+	public readonly log: ContextLog<Params>;
+
 	public constructor(
 		protected readonly runtime: Runtime<Params>,
 		public readonly trace: Trace,
 		private readonly dependencyCaseConversionMap: RegistryCallMap,
 		protected readonly actorCaseConversionMap: RegistryCallMap,
-	) {}
+	) {
+		this.log = new ContextLog(this);
+	}
 
 	protected isAllowedModuleName(_moduleName: string): boolean {
 		return true;
@@ -28,10 +34,6 @@ export class Context<Params extends ContextParams> {
 		scriptName,
 		req,
 	) {
-		console.log(
-			`Request ${moduleName}.${scriptName}:\n${JSON.stringify(req, null, 2)}`,
-		);
-
 		try {
 			// Check if calling module is allowed to call target module
 			if (!this.isAllowedModuleName(moduleName)) {
@@ -75,10 +77,23 @@ export class Context<Params extends ContextParams> {
 			// 	);
 			// }
 
+			// Log start
+			const scriptStart = performance.now();
+			ctx.log.debug("script request", ...spreadObjectToLogEntries("request", req));
+
 			// Execute script
+			const duration = Math.ceil(performance.now() - scriptStart);
 			const res = await ctx.runBlock(async () => await script.run(ctx, req));
-			console.log(
-				`Response ${moduleName}.${scriptName}:\n${JSON.stringify(res, null, 2)}`,
+
+			// Log finish
+			//
+      // `duration` will be 0 on Cloudflare Workers if there are no async
+      // actions performed inside of the request:
+      // https://developers.cloudflare.com/workers/runtime-apis/performance/
+			ctx.log.debug(
+				"script response",
+				...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),
+				...spreadObjectToLogEntries("response", res),
 			);
 
 			// TODO: Replace with OGBE-15
@@ -90,12 +105,12 @@ export class Context<Params extends ContextParams> {
 			// }
 
 			return res as any;
-		} catch (cause) {
-			console.warn(
-				`Failed to execute script: ${moduleName}.${scriptName}`,
-				cause,
+		} catch (error) {
+			this.log.warn(
+				"script error",
+				...errorToLogEntries("error", error),
 			);
-			throw cause;
+			throw error;
 		}
 	};
 
@@ -149,17 +164,52 @@ export class Context<Params extends ContextParams> {
 		try {
 			return await fn();
 		} catch (cause) {
-			// Convert error to RuntimeError. Enrich with context.
 			if (cause instanceof RuntimeError) {
+				// Enrich error with more context
 				cause.enrich(this.runtime, this);
 				throw cause;
 			} else {
-				console.error("Caught internal error:", cause);
+				// Convert to RuntimeError
 				const error = new RuntimeError("INTERNAL_ERROR", { cause });
 				error.enrich(this.runtime, this);
 				throw error;
 			}
 		}
+	}
+}
+
+class ContextLog<Params extends ContextParams> {
+	constructor(private readonly context: Context<Params>) {}
+
+	private log(level: LogLevel, message: string, ...data: LogEntry[]) {
+		const trace = this.context.trace.entries.map((x) => stringifyTraceEntryType(x.type)).join(" > ");
+
+		log(
+			level,
+			message,
+			["trace", trace],
+			...data,
+		);
+	}
+
+	public error(message: string, ...data: LogEntry[]) {
+		this.log("error", message, ...data);
+	}
+
+	public warn(message: string, ...data: LogEntry[]) {
+		this.log("warn", message, ...data);
+	}
+
+	public info(message: string, ...data: LogEntry[]) {
+		this.log("info", message, ...data);
+	}
+
+	public debug(message: string, ...data: LogEntry[]) {
+		this.log("debug", message, ...data);
+	}
+
+	public trace(message: string, ...data: LogEntry[]) {
+		this.log("trace", message, ...data);
 	}
 }
 

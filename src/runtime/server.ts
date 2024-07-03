@@ -1,4 +1,5 @@
 import { RuntimeError } from "./error.ts";
+import { errorToLogEntries } from "./logger.ts";
 import { ModuleContextParams } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
 
@@ -131,16 +132,19 @@ export async function handleRequest<Params extends ModuleContextParams>(
 				...runtime.corsHeaders(req),
 			},
 		});
-	} catch (err) {
+	} catch (error) {
 		// Error response
 		let output;
-		if (err instanceof RuntimeError) {
-			console.error("Unhandled runtime error", err);
+		if (error instanceof RuntimeError) {
+			ctx.log.error(
+				"runtime error",
+				...errorToLogEntries("error", error),
+			);
 			output = {
-				message: err.message,
+				message: error.message,
 			};
 		} else {
-			console.error("Internal error", err);
+			ctx.log.error("internal error", ["error", error]);
 			output = {
 				message: "Internal error. More details have been printed in the logs.",
 			};

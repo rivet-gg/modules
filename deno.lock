@@ -858,7 +858,9 @@
     "https://esm.sh/ajv-formats@^2.1.1": "https://esm.sh/ajv-formats@2.1.1",
     "https://esm.sh/ajv@^8.12.0": "https://esm.sh/ajv@8.12.0",
     "https://esm.sh/dedent@^1.5.1": "https://esm.sh/dedent@1.5.3",
-    "https://esm.sh/glob@^10.3.10": "https://esm.sh/glob@10.4.1"
+    "https://esm.sh/glob@^10.3.10": "https://esm.sh/glob@10.4.1",
+    "https://esm.sh/logfmt@^1.4.0": "https://esm.sh/logfmt@1.4.0",
+    "https://esm.sh/v135/@types/logfmt@~1/index.d.ts": "https://esm.sh/v135/@types/logfmt@1.2.6/index.d.ts"
   },
   "remote": {
     "https://deno.land/std@0.196.0/assert/assert.ts": "9a97dad6d98c238938e7540736b826440ad8c1c1e54430ca4c4e623e585607ee",
@@ -1263,6 +1265,7 @@
     "https://esm.sh/ajv@8.12.0": "965ce16eff0cefef99e67478c5ee760928bd8931d40c3b958325cdd6ab6149f2",
     "https://esm.sh/dedent@1.5.3": "e93ee89d43744b3902768c197df3d665cc0e161c96b1ee17d36e0cc38a2cd674",
     "https://esm.sh/glob@10.4.1": "9b6904cc5d5586913e09c1f904282348f7f410d4a4cb89e8648f863dcafd304f",
+    "https://esm.sh/logfmt@1.4.0": "c57abaa63a5eed2a3d2f5c4f8915da1e4f1db94830a318c66b3b04b873ed6da0",
     "https://esm.sh/v135/@aws-crypto/crc32@3.0.0/denonext/crc32.mjs": "f9a98501e686244b2f327c7791df0f1f7830b8769dd2815b9de7e2aaca1f657f",
     "https://esm.sh/v135/@aws-crypto/crc32c@3.0.0/denonext/crc32c.mjs": "5acc8d5648bf7266477caacf836109147e2815cb13ba198270b783e77380cd19",
     "https://esm.sh/v135/@aws-crypto/ie11-detection@3.0.0/denonext/ie11-detection.mjs": "ae42f42b38941df739396432e9da809820c13a9f780bccb635326324bf51464e",

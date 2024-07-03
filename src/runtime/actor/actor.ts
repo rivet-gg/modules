@@ -1,4 +1,5 @@
 import { ModuleContextParams } from "../context.ts";
+import { errorToLogEntries, log } from "../logger.ts";
 import { ActorContext } from "../mod.ts";
 import { ScheduleDriver, StorageDriver } from "./driver.ts";
 
@@ -28,7 +29,7 @@ export abstract class ActorBase<
 		// TODO: Pass this to the actor driver
 
 		promise
-			.then(() => console.log("Actor background promise complete"))
-			.catch((err) => console.error("Actor background promise failed", err));
+			.then(() => log("trace", "actor background promise complete"))
+			.catch((err) => log("error", "actor background promise failed", ...errorToLogEntries("error", err)));
 	}
 }

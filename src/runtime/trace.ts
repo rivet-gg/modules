@@ -1,4 +1,5 @@
 import { JsonObject } from "../types/json.ts";
+import { UnreachableError } from "./error.ts";
 import { BuildRuntime } from "./runtime.ts";
 
 /**
@@ -31,6 +32,31 @@ export type TraceEntryType =
 	| { actorSchedule: TraceEntryTypeActorSchedule }
 	| { test: TraceEntryTypeTest }
 	| { internalTest: TraceEntryTypeInternalTest };
+
+export function stringifyTraceEntryType(trace: TraceEntryType) {
+	if ("httpRequest" in trace) {
+		const { method, path } = trace.httpRequest;
+		return `httpRequest(${method} ${path})`;
+	} else if ("script" in trace) {
+		const { module, script } = trace.script;
+		return `script(${module}.${script})`;
+	} else if ("actorInitialize" in trace) {
+		const { module, actor } = trace.actorInitialize;
+		return `actorInitialize(${module}.${actor})`;
+	} else if ("actorCall" in trace) {
+		const { module, actor, fn } = trace.actorCall;
+		return `actorCall(${module}.${actor}.${fn})`;
+	} else if ("actorSchedule" in trace) {
+		return "actorSchedule";
+	} else if ("test" in trace) {
+		const { module, name } = trace.test;
+		return `test(${module}.${name})`;
+	} else if ("internalTest" in trace) {
+		return "internalTest";
+	} else {
+		throw new UnreachableError(trace);
+	}
+}
 
 export interface TraceEntryTypeHttpRequest extends JsonObject {
 	method: string;

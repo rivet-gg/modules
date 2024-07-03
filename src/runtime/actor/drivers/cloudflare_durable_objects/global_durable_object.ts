@@ -16,6 +16,7 @@ import {
 import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorDriver } from "./driver.ts";
 import { newTrace } from "../../../trace.ts";
+import { errorToLogEntries, log } from "../../../logger.ts";
 
 const KEYS = {
 	META: {
@@ -301,7 +302,7 @@ export function buildGlobalDurableObjectClass(
 					const res = this.callRpc({ fn: event.fn, request: event.request, trace: newTrace({ actorSchedule: {} }) });
 					if (res instanceof Promise) await res;
 				} catch (err) {
-					console.error("Failed to run scheduled event", err, event);
+					log("error", "failed to run scheduled event", ["fn", event.fn], ...errorToLogEntries("error", err));
 				}
 			}
 		}

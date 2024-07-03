@@ -1189,7 +1189,9 @@
     "https://esm.sh/@prisma/adapter-pg@^5.12.0": "https://esm.sh/@prisma/adapter-pg@5.15.0",
     "https://esm.sh/ajv-formats@^2.1.1": "https://esm.sh/ajv-formats@2.1.1",
     "https://esm.sh/ajv@^8.12.0": "https://esm.sh/ajv@8.12.0",
+    "https://esm.sh/logfmt@^1.4.0": "https://esm.sh/logfmt@1.4.0",
     "https://esm.sh/pg@^8.11.3": "https://esm.sh/pg@8.12.0",
+    "https://esm.sh/v135/@types/logfmt@~1/index.d.ts": "https://esm.sh/v135/@types/logfmt@1.2.6/index.d.ts",
     "https://esm.sh/v135/@types/pg@~8/index.d.ts": "https://esm.sh/v135/@types/pg@8.11.6/index.d.ts"
   },
   "remote": {
@@ -1352,6 +1354,7 @@
     "https://esm.sh/@prisma/adapter-pg@5.15.0": "79e84679393009eb21b1aeb31abd20f2273add449fd3be49caec57b8a1987730",
     "https://esm.sh/ajv-formats@2.1.1": "575b3830618970ddc3aba96310bf4df7358bb37fcea101f58b36897ff3ac2ea7",
     "https://esm.sh/ajv@8.12.0": "965ce16eff0cefef99e67478c5ee760928bd8931d40c3b958325cdd6ab6149f2",
+    "https://esm.sh/logfmt@1.4.0": "c57abaa63a5eed2a3d2f5c4f8915da1e4f1db94830a318c66b3b04b873ed6da0",
     "https://esm.sh/pg@8.12.0": "72acd4ad77310056a9249dd996a716872e9bb0b2cef57a6ec0fca6d50bb96e51",
     "https://esm.sh/v135/@aws-crypto/crc32@3.0.0/denonext/crc32.mjs": "f9a98501e686244b2f327c7791df0f1f7830b8769dd2815b9de7e2aaca1f657f",
     "https://esm.sh/v135/@aws-crypto/crc32c@3.0.0/denonext/crc32c.mjs": "5acc8d5648bf7266477caacf836109147e2815cb13ba198270b783e77380cd19",
