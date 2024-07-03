@@ -87,6 +87,10 @@ export const testCommand = new Command<GlobalOpts>()
 						stdout: "inherit",
 						stderr: "inherit",
 						signal,
+						env: {
+							// Force color for test logs
+							"OPENGB_TERM_COLOR": Deno.env.get("OPENGB_TERM_COLOR") ?? "always",
+						},
 					})
 						.output();
 					if (!cmd.success) throw new UserError("Tests failed.");

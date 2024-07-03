@@ -71,7 +71,10 @@ export class RuntimeError extends Error {
 					}`;
 				}
 			} else {
-				console.warn(`Error config not found for ${this.code}`);
+				context.log.warn(
+					"error config not found. if you are the module author, check the error exists in module.json.",
+					["errorCode", this.code],
+				);
 			}
 		}
 
@@ -87,5 +90,11 @@ export class RuntimeError extends Error {
 		}
 		message += `\nTrace: ${JSON.stringify(this.trace)}`;
 		this.message = message;
+	}
+}
+
+export class UnreachableError extends RuntimeError {
+	constructor(public readonly value: never) {
+		super("internal_error", { meta: { value } });
 	}
 }
