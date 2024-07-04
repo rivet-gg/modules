@@ -157,7 +157,7 @@ export function spreadObjectToLogEntries(base: string, data: unknown): LogEntry[
 		Object.keys(data).length != 0 && Object.keys(data).length < 16
 	) {
 		const logData: LogEntry[] = [];
-		for (let key in data) {
+		for (const key in data) {
 			// logData.push([`${base}.${key}`, JSON.stringify((data as any)[key])]);
 			logData.push(...spreadObjectToLogEntries(`${base}.${key}`, (data as any)[key]));
 		}
