@@ -1,5 +1,5 @@
 import { RuntimeError } from "./error.ts";
-import { LogEntry, errorToLogEntries } from "./logger.ts";
+import { errorToLogEntries, LogEntry } from "./logger.ts";
 import { Context, ModuleContextParams } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
 
@@ -26,41 +26,40 @@ export async function handleRequest<Params extends ModuleContextParams>(
 		},
 	});
 
-  // Log request
-  const start = performance.now();
-  ctx.log.debug(
-    "http request",
-    ["method", req.method],
-    ["path", url.pathname],
-    ["remoteAddress", info.remoteAddress],
-    ["userAgent", req.headers.get('user-agent')],
-  );
+	// Log request
+	const start = performance.now();
+	ctx.log.debug(
+		"http request",
+		["method", req.method],
+		["path", url.pathname],
+		["remoteAddress", info.remoteAddress],
+		["userAgent", req.headers.get("user-agent")],
+	);
 
-  // Execute request
-  const res = await handleRequestInner(runtime, req, url, ctx)
+	// Execute request
+	const res = await handleRequestInner(runtime, req, url, ctx);
 
-  // Log response
-  //
-  // `duration` will be 0 on Cloudflare Workers if there are no async actions
-  // performed inside of the request:
-  // https://developers.cloudflare.com/workers/runtime-apis/performance/
-  const duration = Math.ceil(performance.now() - start);
-  ctx.log.debug(
-    "http response",
-    ["status", res.status],
-    ...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),
-  );
+	// Log response
+	//
+	// `duration` will be 0 on Cloudflare Workers if there are no async actions
+	// performed inside of the request:
+	// https://developers.cloudflare.com/workers/runtime-apis/performance/
+	const duration = Math.ceil(performance.now() - start);
+	ctx.log.debug(
+		"http response",
+		["status", res.status],
+		...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),
+	);
 
-  return res;
+	return res;
 }
 
 async function handleRequestInner<Params extends ModuleContextParams>(
 	runtime: Runtime<Params>,
 	req: Request,
-  url: URL,
-  ctx: Context<Params>
+	url: URL,
+	ctx: Context<Params>,
 ): Promise<Response> {
-
 	// Handle CORS preflight
 	if (req.method === "OPTIONS") {
 		return runtime.corsPreflight(req);
