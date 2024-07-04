@@ -8,7 +8,7 @@ import { getS3EnvConfig } from "../utils/env.ts";
 
 test("e2e", async (ctx: TestContext) => {
   if (!getS3EnvConfig()) {
-    console.warn("S3 not configured");
+    ctx.log.warn("s3 not configured");
     return;
   }
 
