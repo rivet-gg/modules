@@ -29,6 +29,7 @@
 
 		// Check
 		"check": "deno task artifacts:build:all && deno check src/**/*.ts",
+		"check:dirty": "deno check src/**/*.ts",
 
 		// Lint
 		"lint": "deno task artifacts:build:all && deno lint src/",
