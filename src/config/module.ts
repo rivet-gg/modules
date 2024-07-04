@@ -101,7 +101,7 @@ const moduleConfigAjv = new Ajv({
 
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	// Read config
-  const configPath = resolve(modulePath, "module.json");
+	const configPath = resolve(modulePath, "module.json");
 	const configRaw = await Deno.readTextFile(configPath);
 	const config = JSON.parse(configRaw) as ModuleConfig;
 
@@ -111,7 +111,7 @@ export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 		throw new InternalError("Failed to get module config schema");
 	}
 	if (!moduleConfigSchema(config)) {
-    throw validationUserError(`Invalid module config.`, configPath, config, moduleConfigAjv, moduleConfigSchema.errors);
+		throw validationUserError(`Invalid module config.`, configPath, config, moduleConfigAjv, moduleConfigSchema.errors);
 	}
 
 	// Validate unique actor storage ids

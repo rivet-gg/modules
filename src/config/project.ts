@@ -91,7 +91,7 @@ const projectConfigAjv = new Ajv({
 
 export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	// Read config
-  const projectConfigPath = configPath(projectPath);
+	const projectConfigPath = configPath(projectPath);
 	const configRaw = await Deno.readTextFile(projectConfigPath);
 	const config = JSON.parse(configRaw) as ProjectConfig;
 
@@ -101,7 +101,13 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 		throw new InternalError("Failed to get project config schema");
 	}
 	if (!projectConfigSchema(config)) {
-    throw validationUserError(`Invalid project config.`, projectConfigPath, config, projectConfigAjv, projectConfigSchema.errors);
+		throw validationUserError(
+			`Invalid project config.`,
+			projectConfigPath,
+			config,
+			projectConfigAjv,
+			projectConfigSchema.errors,
+		);
 	}
 
 	return config;

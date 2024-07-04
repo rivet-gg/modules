@@ -87,9 +87,9 @@ export class Context<Params extends ContextParams> {
 
 			// Log finish
 			//
-      // `duration` will be 0 on Cloudflare Workers if there are no async
-      // actions performed inside of the request:
-      // https://developers.cloudflare.com/workers/runtime-apis/performance/
+			// `duration` will be 0 on Cloudflare Workers if there are no async
+			// actions performed inside of the request:
+			// https://developers.cloudflare.com/workers/runtime-apis/performance/
 			ctx.log.debug(
 				"script response",
 				...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),

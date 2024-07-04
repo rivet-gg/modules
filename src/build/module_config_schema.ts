@@ -62,6 +62,12 @@ export async function compileModuleConfigSchema(
 	}
 
 	if (!moduleConfigSchema(module.userConfig)) {
-    throw validationUserError(`Invalid config for ${module.name}.`, resolve(project.path, "backend.json"), module.userConfig, moduleConfigAjv, moduleConfigSchema.errors);
+		throw validationUserError(
+			`Invalid config for ${module.name}.`,
+			resolve(project.path, "backend.json"),
+			module.userConfig,
+			moduleConfigAjv,
+			moduleConfigSchema.errors,
+		);
 	}
 }

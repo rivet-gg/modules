@@ -3,7 +3,6 @@
 import { Config } from "../../../mod.ts";
 import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
 
-
 export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 	public constructor(public readonly config: Config) {}
 

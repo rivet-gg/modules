@@ -1,9 +1,5 @@
 import { ModuleContextParams } from "../context.ts";
-<<<<<<< HEAD
 import { errorToLogEntries } from "../logger.ts";
-=======
-import { errorToLogEntries, log } from "../logger.ts";
->>>>>>> 0e67bfb (feat(runtime): implement logfmt logging)
 import { ActorContext } from "../mod.ts";
 import { ScheduleDriver, StorageDriver } from "./driver.ts";
 
