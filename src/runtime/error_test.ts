@@ -51,6 +51,7 @@ Deno.test("error", async () => {
 					},
 					dependencies: new Set(["test_module"]),
 					userConfig: null,
+					storageAlias: "test_module"
 				},
 			},
 			db: {
