@@ -20,9 +20,6 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const requests = req.requests || 20;
-	const period = req.period || 300;
-
 	// Find the IP address of the client
 	let key: string | undefined;
 	for (const entry of ctx.trace.entries) {
@@ -32,7 +29,8 @@ export async function run(
 		}
 	}
 
-	// If no IP address, this request is not coming from a client
+  // If no IP address, this request is not coming from a client and should not
+  // be throttled
 	if (!key) {
 		return {};
 	}
