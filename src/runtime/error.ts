@@ -59,10 +59,9 @@ export class RuntimeError extends Error {
 		}
 		this.trace = context.trace;
 
-		// Lookup error config
-		if (this.moduleName) {
-			const errorConfig = runtime.config.modules[this.moduleName]
-				?.errors[this.code];
+		// Lookup error config if doesn't already exist
+		if (!this.errorConfig && this.moduleName) {
+			const errorConfig = runtime.config.modules[this.moduleName]?.errors[this.code];
 			if (errorConfig) {
 				this.errorConfig = errorConfig;
 				if (errorConfig.description) {
