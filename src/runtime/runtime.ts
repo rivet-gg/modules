@@ -9,6 +9,7 @@ import { RegistryCallMap } from "./proxy.ts";
 import { ActorDriver } from "./actor/driver.ts";
 import { ActorBase } from "./actor/actor.ts";
 import { ContextParams } from "./mod.ts";
+import { errorToLogEntries, log } from "./logger.ts";
 
 export interface Config {
 	runtime: BuildRuntime;
@@ -119,10 +120,15 @@ export class Runtime<Params extends ContextParams> {
 	 * Serves the runtime as an HTTP server.
 	 */
 	public async serve() {
+		const host = Deno.env.get("HOST") ?? "127.0.0.1";
 		const port = parseInt(Deno.env.get("PORT") ?? "6420");
-		console.log(`Serving on port ${port}`);
 		await Deno.serve(
-			{ port },
+			{
+				port,
+				onListen() {
+					log("info", "server started", ["endpoint", `http://${host}:${port}`]);
+				},
+			},
 			(req, info) => handleRequest(this, req, { remoteAddress: info.remoteAddr.hostname }),
 		).finished;
 	}
@@ -176,9 +182,12 @@ export class Runtime<Params extends ContextParams> {
 						await fn(ctx);
 					});
 				} catch (cause) {
-					console.error(
-						`Failed to execute test: ${moduleName}.${testName}`,
-						cause,
+					log(
+						"error",
+						"failed to execute test",
+						["module", moduleName],
+						["test", testName],
+						...errorToLogEntries("cause", cause),
 					);
 					throw cause;
 				} finally {
