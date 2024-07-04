@@ -62,7 +62,6 @@ export interface TraceEntryTypeHttpRequest extends JsonObject {
 	method: string;
 	path: string;
 	remoteAddress: string;
-	headers: { [key: string]: string };
 }
 
 export interface TraceEntryTypeScript extends JsonObject {

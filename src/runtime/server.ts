@@ -22,7 +22,6 @@ export async function handleRequest<Params extends ModuleContextParams>(
 			method: req.method,
 			path: url.pathname,
 			remoteAddress: info.remoteAddress,
-			headers: Object.fromEntries(req.headers.entries()),
 		},
 	});
 
