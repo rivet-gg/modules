@@ -8,7 +8,8 @@ import { ProjectModuleConfig } from "../config/project.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
 import { loadDefaultRegistry } from "./registry.ts";
-import { UserError } from "../error/mod.ts";
+import { UnreachableError, UserError } from "../error/mod.ts";
+import { Runtime } from "../build/mod.ts";
 
 export interface Project {
 	path: string;
@@ -240,7 +241,6 @@ function moduleNameInRegistry(
 export const GITIGNORE_PATH = ".gitignore";
 export const RUNTIME_CONFIG_PATH = "runtime_config.ts";
 export const ENTRYPOINT_PATH = "entrypoint.ts";
-export const ACTOR_PATH = "actor.ts";
 export const BUNDLE_PATH = "output.js";
 export const MANIFEST_PATH = "manifest.json";
 export const META_PATH = "meta.json";
@@ -256,6 +256,23 @@ export function genPath(project: Project, ...pathSegments: string[]): string {
 
 export function genRuntimeModPath(project: Project): string {
 	return genPath(project, "runtime", "src", "runtime", "mod.ts");
+}
+
+export function genRuntimeActorPath(project: Project): string {
+	return genPath(project, "runtime", "src", "runtime", "actor", "actor.ts");
+}
+
+export function genRuntimeActorDriverPath(project: Project, runtime: Runtime): string {
+	let actorDriverName: string;
+	if (runtime == Runtime.Deno) {
+		actorDriverName = "memory";
+	} else if (runtime == Runtime.CloudflareWorkersPlatforms) {
+		actorDriverName = "cloudflare_durable_objects";
+	} else {
+		throw new UnreachableError(runtime);
+	}
+
+	return genPath(project, "runtime", "src", "runtime", "actor", "drivers", actorDriverName, "driver.ts");
 }
 
 export function genDependencyTypedefPath(project: Project): string {
@@ -312,10 +329,6 @@ export function genPrismaOutputFolder(project: Project, module: Module): string 
  */
 export function genPrismaOutputBundle(project: Project, module: Module): string {
 	return resolve(genPrismaOutputFolder(project, module), "esm.js");
-}
-
-export function genActorPath(project: Project): string {
-	return genPath(project, "actor.ts");
 }
 
 export interface ListSourceFileOpts {
