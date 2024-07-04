@@ -65,9 +65,7 @@ export class RuntimeError extends Error {
 			if (errorConfig) {
 				this.errorConfig = errorConfig;
 				if (errorConfig.description) {
-					this.message = `${this.moduleName}[${this.code}]: ${errorConfig.description}\nTrace: ${
-						JSON.stringify(context.trace)
-					}`;
+					this.message = `${this.moduleName}[${this.code}]: ${errorConfig.description}`;
 				}
 			} else {
 				context.log.warn(
@@ -87,7 +85,6 @@ export class RuntimeError extends Error {
 		if (this.errorConfig?.description) {
 			message += `: ${this.errorConfig.description}`;
 		}
-		message += `\nTrace: ${JSON.stringify(this.trace)}`;
 		this.message = message;
 	}
 }
