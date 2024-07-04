@@ -1,6 +1,6 @@
 import { RuntimeError } from "./error.ts";
-import { errorToLogEntries } from "./logger.ts";
-import { ModuleContextParams } from "./mod.ts";
+import { LogEntry, errorToLogEntries } from "./logger.ts";
+import { Context, ModuleContextParams } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
 
 const MODULE_CALL = /^\/modules\/(?<module>\w+)\/scripts\/(?<script>\w+)\/call\/?$/;
@@ -15,6 +15,51 @@ export async function handleRequest<Params extends ModuleContextParams>(
 	info: RequestInfo,
 ): Promise<Response> {
 	const url = new URL(req.url);
+
+	// Create context
+	const ctx = runtime.createRootContext({
+		httpRequest: {
+			method: req.method,
+			path: url.pathname,
+			remoteAddress: info.remoteAddress,
+			headers: Object.fromEntries(req.headers.entries()),
+		},
+	});
+
+  // Log request
+  const start = performance.now();
+  ctx.log.debug(
+    "http request",
+    ["method", req.method],
+    ["path", url.pathname],
+    ["remoteAddress", info.remoteAddress],
+    ["userAgent", req.headers.get('user-agent')],
+  );
+
+  // Execute request
+  const res = await handleRequestInner(runtime, req, url, ctx)
+
+  // Log response
+  //
+  // `duration` will be 0 on Cloudflare Workers if there are no async actions
+  // performed inside of the request:
+  // https://developers.cloudflare.com/workers/runtime-apis/performance/
+  const duration = Math.ceil(performance.now() - start);
+  ctx.log.debug(
+    "http response",
+    ["status", res.status],
+    ...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),
+  );
+
+  return res;
+}
+
+async function handleRequestInner<Params extends ModuleContextParams>(
+	runtime: Runtime<Params>,
+	req: Request,
+  url: URL,
+  ctx: Context<Params>
+): Promise<Response> {
 
 	// Handle CORS preflight
 	if (req.method === "OPTIONS") {
@@ -80,16 +125,6 @@ export async function handleRequest<Params extends ModuleContextParams>(
 			},
 		);
 	}
-
-	// Create context
-	const ctx = runtime.createRootContext({
-		httpRequest: {
-			method: req.method,
-			path: url.pathname,
-			remoteAddress: info.remoteAddress,
-			headers: Object.fromEntries(req.headers.entries()),
-		},
-	});
 
 	// Parse body
 	let body: any;
