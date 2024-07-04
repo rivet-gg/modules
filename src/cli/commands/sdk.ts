@@ -1,9 +1,12 @@
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
 import { generateSdk } from "../../sdk/generate.ts";
-import { UserError } from "../../error/mod.ts";
+import { UnreachableError } from "../../error/mod.ts";
 import { SdkTarget } from "../../sdk/generate.ts";
 import { build, DbDriver, Format, Runtime } from "../../build/mod.ts";
+import { EnumType } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
+
+const targetType = new EnumType(["typescript", "unity", "godot"]);
 
 export const sdkCommand = new Command<GlobalOpts>()
 	.description("SDK commands");
@@ -12,7 +15,8 @@ sdkCommand.action(() => sdkCommand.showHelp());
 
 sdkCommand
 	.command("generate")
-	.arguments("<target>")
+	.type("target", targetType)
+	.arguments("<target:target>")
 	.option("-o, --output <path:string>", "SDK output path", { default: "./sdk" })
 	.action(async (opts, target) => {
 		let targetSdk: SdkTarget;
@@ -27,9 +31,7 @@ sdkCommand
 				targetSdk = SdkTarget.Godot;
 				break;
 			default:
-				throw new UserError(`Unknown target: ${target}`, {
-					suggest: "Supported targets: typescript, unity, godot",
-				});
+				throw new UnreachableError(target);
 		}
 
 		const project = await initProject(opts);
