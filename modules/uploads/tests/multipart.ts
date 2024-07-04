@@ -20,7 +20,7 @@ function randomBuffer(size: number): Uint8Array {
 
 test("multipart uploads", async (ctx: TestContext) => {
   if (!getS3EnvConfig()) {
-    console.warn("S3 not configured");
+    ctx.log.warn("s3 not configured");
     return;
   }
 
