@@ -16,7 +16,7 @@ export const testCommand = new Command<GlobalOpts>()
 	.option("--no-check", "Don't check source files before running")
 	.option("--strict-schemas", "Strictly validate schemas", { default: false })
 	.option("--force-deploy-migrations", "Auto deploy migrations without using development prompt", { default: false })
-	.option("--watch", "Automatically rerun tests on changes")
+	.option("-w, --watch", "Automatically rerun tests on changes")
 	.action(
 		async (opts, ...modulesFilter: string[]) => {
 			const project = await initProject(opts);
