@@ -1,7 +1,7 @@
 // This file is only imported when the runtime is `deno`
 //
 import { ModuleContextParams } from "../../../context.ts";
-import { ActorContext, appendTraceEntry, Config, Runtime, Trace, TraceEntry } from "../../../mod.ts";
+import { ActorContext, appendTraceEntry, Config, Runtime, Trace } from "../../../mod.ts";
 import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
 import { MemorySchedule } from "./schedule.ts";
