@@ -2,6 +2,7 @@ import { resolve } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/project_schema.json" with { type: "json" };
 import { InternalError } from "../error/mod.ts";
+import { validationUserError } from "../utils/ajv_validation.ts";
 
 export interface ProjectConfig extends Record<string, unknown> {
 	registries: { [name: string]: RegistryConfig };
@@ -90,9 +91,8 @@ const projectConfigAjv = new Ajv({
 
 export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	// Read config
-	const configRaw = await Deno.readTextFile(
-		configPath(projectPath),
-	);
+  const projectConfigPath = configPath(projectPath);
+	const configRaw = await Deno.readTextFile(projectConfigPath);
 	const config = JSON.parse(configRaw) as ProjectConfig;
 
 	// Validate config
@@ -101,9 +101,7 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 		throw new InternalError("Failed to get project config schema");
 	}
 	if (!projectConfigSchema(config)) {
-		throw new InternalError(
-			`Invalid project config: ${JSON.stringify(projectConfigSchema.errors)}`,
-		);
+    throw validationUserError(`Invalid project config.`, projectConfigPath, config, projectConfigAjv, projectConfigSchema.errors);
 	}
 
 	return config;

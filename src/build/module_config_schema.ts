@@ -6,6 +6,7 @@ import { createWorkerPool } from "../utils/worker_pool.ts";
 import { hasUserConfigSchema } from "../project/module.ts";
 import { InternalError, UserError } from "../error/mod.ts";
 import { resolve } from "../deps.ts";
+import { formatValidationErrors, validationUserError } from "../utils/ajv_validation.ts";
 
 const WORKER_POOL = createWorkerPool<WorkerRequest, WorkerResponse>({
 	source: import.meta.resolve("./module_config_schema.worker.ts"),
@@ -17,7 +18,7 @@ export interface CompileModuleConfigSchemaOpts {
 }
 
 export async function compileModuleConfigSchema(
-	_project: Project,
+	project: Project,
 	module: Module,
 	opts: CompileModuleConfigSchemaOpts,
 ): Promise<void> {
@@ -61,16 +62,6 @@ export async function compileModuleConfigSchema(
 	}
 
 	if (!moduleConfigSchema(module.userConfig)) {
-		throw new UserError(
-			`Invalid module config for ${module.name}.`,
-			{
-				details: `Config:\n\n${JSON.stringify(module.userConfig, null, 2)}\n\nErrors:\n\n${
-					JSON.stringify(moduleConfigSchema.errors, null, 2)
-				}`,
-				suggest: `Compare your config with the following schema:\n\n${
-					JSON.stringify(module.userConfigSchema, null, 2)
-				}`,
-			},
-		);
+    throw validationUserError(`Invalid config for ${module.name}.`, resolve(project.path, "backend.json"), module.userConfig, moduleConfigAjv, moduleConfigSchema.errors);
 	}
 }

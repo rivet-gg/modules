@@ -2,6 +2,7 @@ import { resolve } from "../deps.ts";
 import { Ajv } from "./deps.ts";
 import schema from "../../artifacts/module_schema.json" with { type: "json" };
 import { InternalError, UserError } from "../error/mod.ts";
+import { validationUserError } from "../utils/ajv_validation.ts";
 
 export interface ModuleConfig extends Record<string, unknown> {
 	status?: "coming_soon" | "preview" | "beta" | "stable" | "maintenance" | "end_of_life";
@@ -100,9 +101,8 @@ const moduleConfigAjv = new Ajv({
 
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	// Read config
-	const configRaw = await Deno.readTextFile(
-		resolve(modulePath, "module.json"),
-	);
+  const configPath = resolve(modulePath, "module.json");
+	const configRaw = await Deno.readTextFile(configPath);
 	const config = JSON.parse(configRaw) as ModuleConfig;
 
 	// Validate config
@@ -111,9 +111,7 @@ export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 		throw new InternalError("Failed to get module config schema");
 	}
 	if (!moduleConfigSchema(config)) {
-		throw new InternalError(
-			`Invalid module config: ${JSON.stringify(moduleConfigSchema.errors)}`,
-		);
+    throw validationUserError(`Invalid module config.`, configPath, config, moduleConfigAjv, moduleConfigSchema.errors);
 	}
 
 	// Validate unique actor storage ids
