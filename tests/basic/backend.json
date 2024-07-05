@@ -41,6 +41,9 @@
         "identities": {
             "registry": "local"
         },
+        "user_passwords": {
+            "registry": "local"
+        },
         "email": {
             "registry": "local",
             "config": {
