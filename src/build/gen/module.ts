@@ -38,6 +38,7 @@ export async function compileModuleHelper(
 		.append`
 			import {
 				RuntimeError,
+        UnreachableError,
 				ModuleContextParams as ModuleContextParamsInner,
 				ModuleContext as ModuleContextInner,
 				TestContext as TestContextInner,
@@ -66,7 +67,7 @@ export async function compileModuleHelper(
 
 	// Common exports
 	helper.chunk.append`
-			export { RuntimeError, ActorBase };
+			export { RuntimeError, UnreachableError, ActorBase };
 		`;
 
 	// Gen blocks
