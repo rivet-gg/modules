@@ -1,0 +1,35 @@
+---
+title: "Environment Variables"
+---
+
+<Note>This documentation page is a work in progress.</Note>
+
+## `OPENGB_HOSTNAME`
+
+Default: `127.0.0.1`
+
+Defines the hostname to listen on.
+
+Change this to `0.0.0.0` if you want to allow requests from outside of your machine.
+
+## `OPENGB_PORT`
+
+Default: `6420`
+
+## `OPENGB_TERM_COLOR`
+
+Default: unset
+
+Values:
+
+- `never` Never use color
+- `always` Always use color
+
+Defines if logs are printed with color. By default, OpenGB attempts to automatically determine if your terminal supports this.
+
+## `_OPENGB_LOG_SPILT_OBJECT`
+
+_Experimental_
+
+Set to `1` to enable logging some objects split in to individual keys.
+

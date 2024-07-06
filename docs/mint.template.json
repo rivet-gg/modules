@@ -54,7 +54,8 @@
               "pages": [
                 "concepts/registries",
                 "concepts/self-hosting",
-                "concepts/multiple-games"
+                "concepts/multiple-games",
+                "concepts/environment-variables"
               ]
             },
             {
