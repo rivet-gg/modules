@@ -1,6 +1,7 @@
 import { tjs } from "./deps.ts";
 import { Project } from "../project/mod.ts";
 import { genPath, OPEN_API_PATH } from "../project/project.ts";
+import { encodeHex } from "https://deno.land/std@0.208.0/encoding/hex.ts";
 
 export const DEFAULT_SERVER = "http://localhost:6420";
 
@@ -36,13 +37,13 @@ export async function generateOpenApi(project: Project) {
 		for (const script of mod.scripts.values()) {
 			if (!script.config.public) continue;
 
-			const requestBodyRef = injectSchema(
+			const requestBodyRef = await injectSchema(
 				schema,
 				script.requestSchema!,
 				`${mod.name}__${script.name}`,
 				"Request",
 			);
-			const responseContentRef = injectSchema(
+			const responseContentRef = await injectSchema(
 				schema,
 				script.responseSchema!,
 				`${mod.name}__${script.name}`,
@@ -89,7 +90,7 @@ export async function generateOpenApi(project: Project) {
  * @param prefix The prefix to add to the schema names
  * @param rootDefinition The name of the root definition in the JSON schema
  */
-function injectSchema(
+async function injectSchema(
 	openapi: OpenApiDefinition,
 	schema: tjs.Definition,
 	prefix: string,
@@ -98,7 +99,7 @@ function injectSchema(
 	schema = structuredClone(schema);
 
 	// Add the root definition to the OpenAPI schema
-	replaceRefs(
+	await replaceRefs(
 		schema,
 		(ref) => ref.replace("#/definitions/", `#/components/schemas/${prefix}__`),
 	);
@@ -109,11 +110,11 @@ function injectSchema(
 		const definition = schema.definitions[definitionName];
 
 		// Add the definition to the OpenAPI schema
-		replaceRefs(
+		await replaceRefs(
 			definition,
 			(ref) => ref.replace("#/definitions/", `#/components/schemas/${prefix}__`),
 		);
-		openapi.components.schemas[`${prefix}__${definitionName}`] = definition;
+		openapi.components.schemas[await sanitizeRefTypeName(`${prefix}__${definitionName}`)] = definition;
 	}
 	delete schema.definitions;
 
@@ -123,10 +124,10 @@ function injectSchema(
 /**
  * Recursively replace $ref properties in an object
  */
-function replaceRefs(obj: OpenApiDefinition, replacer: (x: string) => string) {
+async function replaceRefs(obj: OpenApiDefinition, replacer: (x: string) => string) {
 	for (const key in obj) {
 		if (key === "$ref") {
-			obj[key] = replacer(obj[key]);
+			obj["$ref"] = await sanitizeRefTypeName(replacer(obj[key]));
 		} else if (typeof obj[key] === "object") {
 			replaceRefs(obj[key], replacer);
 		} else if (Array.isArray(obj[key])) {
@@ -134,5 +135,36 @@ function replaceRefs(obj: OpenApiDefinition, replacer: (x: string) => string) {
 				replaceRefs(item, replacer);
 			}
 		}
+	}
+}
+
+/**
+ * Sanitize the symbol names to be safe for OpenAPI generators.
+ *
+ * This is usually a generic type, such as `Record<string, string>`.
+ *
+ * If the type name is invalid, then a special name will be auto-genreated with
+ * the hash of the original name.
+ */
+async function sanitizeRefTypeName(name: string): Promise<string> {
+	const split = name.split("/");
+	const type = split[split.length - 1];
+	if (type.match(/[^a-zA-Z0-9_]/g)) {
+		// HACK: Generate a new type name by hashing the name with special
+		// characters to create a new unique type
+		const digest = await crypto.subtle.digest(
+			"SHA-256",
+			new TextEncoder().encode(type),
+		);
+		const newType = `SpecialType${encodeHex(digest).slice(0, 8)}`;
+
+		// Rebuild ref
+		if (split.length > 1) {
+			return split.slice(0, split.length - 1).join("/") + "/" + newType;
+		} else {
+			return newType;
+		}
+	} else {
+		return name;
 	}
 }
