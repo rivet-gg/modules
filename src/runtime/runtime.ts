@@ -86,6 +86,9 @@ export class Runtime<Params extends ContextParams> {
 
 	public ajv: Ajv.default;
 
+  public hostname = Deno.env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
+  public port = parseInt(Deno.env.get("OPENGB_PORT") ?? "6420");
+
 	public constructor(
 		public config: Config,
 		public actorDriver: ActorDriver,
@@ -120,13 +123,12 @@ export class Runtime<Params extends ContextParams> {
 	 * Serves the runtime as an HTTP server.
 	 */
 	public async serve() {
-		const host = Deno.env.get("HOST") ?? "127.0.0.1";
-		const port = parseInt(Deno.env.get("PORT") ?? "6420");
 		await Deno.serve(
 			{
-				port,
-				onListen() {
-					log("info", "server started", ["endpoint", `http://${host}:${port}`]);
+        hostname: this.hostname,
+				port: this.port,
+				onListen: () => {
+					log("info", "server started", ["endpoint", `http://${this.hostname}:${this.port}`]);
 				},
 			},
 			(req, info) => handleRequest(this, req, { remoteAddress: info.remoteAddr.hostname }),
