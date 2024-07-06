@@ -1,5 +1,5 @@
 import { exists, relative, resolve } from "../deps.ts";
-import { deepMerge, glob, tjs } from "./deps.ts";
+import { deepMerge, glob } from "./deps.ts";
 import { configPath as moduleConfigPath, readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
@@ -10,6 +10,7 @@ import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
 import { ProjectModuleConfig } from "../config/project.ts";
 import { UserError } from "../error/mod.ts";
+import { AnySchemaElement } from "../build/schema/mod.ts";
 
 export interface Module {
 	/**
@@ -45,7 +46,7 @@ export interface Module {
 	 *
 	 * Generated from config.ts
 	 */
-	userConfigSchema?: tjs.Definition;
+	userConfigSchema?: AnySchemaElement;
 
 	storageAlias: string;
 

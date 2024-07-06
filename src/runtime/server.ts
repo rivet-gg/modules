@@ -1,3 +1,4 @@
+import { fromValidationError, isValidationError } from "./deps.ts";
 import { RuntimeError } from "./error.ts";
 import { errorToLogEntries, LogEntry } from "./logger.ts";
 import { Context, ModuleContextParams } from "./mod.ts";
@@ -169,6 +170,7 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 	} catch (error) {
 		// Error response
 		let output;
+		let status = 500;
 		if (error instanceof RuntimeError) {
 			ctx.log.error(
 				"runtime error",
@@ -177,6 +179,18 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 			output = {
 				message: error.message,
 				trace: error.trace,
+			};
+		} else if (isValidationError(error)) {
+			const validationError = fromValidationError(error);
+			ctx.log.error(
+				"validation error",
+				["error", validationError.toString()],
+				["input", JSON.stringify(body)],
+			);
+			status = 400;
+			output = {
+				message: "Validation error. See `trace` for more details.",
+				trace: validationError.details,
 			};
 		} else {
 			ctx.log.error("internal error", ["error", error]);
@@ -187,7 +201,7 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 		}
 
 		return new Response(JSON.stringify(output), {
-			status: 500,
+			status,
 			headers: {
 				"Content-Type": "application/json",
 				...runtime.corsHeaders(req),

@@ -1,4 +1,5 @@
-import { exists, tjs } from "../deps.ts";
+import { AnySchemaElement } from "../build/schema/mod.ts";
+import { exists } from "../deps.ts";
 import { UnreachableError } from "../error/mod.ts";
 import { CACHE_PATH, genPath, Project } from "../project/project.ts";
 import { verbose } from "../term/status.ts";
@@ -20,16 +21,16 @@ export interface Cache {
 export interface CachePersist {
 	version: number;
 	hashes: Record<string, string>;
-	moduleConfigSchemas: Record<string, tjs.Definition>;
+	moduleConfigSchemas: Record<string, AnySchemaElement>;
 	scriptSchemas: Record<
 		string,
-		Record<string, { request: tjs.Definition; response: tjs.Definition }>
+		Record<string, Record<string, AnySchemaElement>>
 	>;
 }
 
 export interface CacheScriptSchema {
-	request: tjs.Definition;
-	response: tjs.Definition;
+	request: AnySchemaElement;
+	response: AnySchemaElement;
 }
 
 export async function loadCache(project: Project): Promise<Cache> {

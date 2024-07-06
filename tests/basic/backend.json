@@ -11,9 +11,7 @@
 		"friends": {},
 		"rate_limit": {},
 		"tokens": {},
-		"users": {
-			"config": null
-		},
+		"users": {},
 		"uploads": {},
 		"foo": {
 			"registry": "local"

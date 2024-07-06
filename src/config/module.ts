@@ -1,63 +1,17 @@
 import { resolve } from "../deps.ts";
-import { Ajv } from "./deps.ts";
-import schema from "../../artifacts/module_schema.json" with { type: "json" };
-import { InternalError, UserError } from "../error/mod.ts";
-import { validationUserError } from "../utils/ajv_validation.ts";
+import { UserError } from "../error/mod.ts";
+import { z } from "../build/schema/deps.ts";
 
-export interface ModuleConfig extends Record<string, unknown> {
-	status?: "coming_soon" | "preview" | "beta" | "stable" | "maintenance" | "end_of_life";
-
-	/**
-	 * The human readable name of the module.
-	 */
-	name?: string;
-
-	/**
-	 * A short description of the module.
-	 */
-	description?: string;
-
-	/**
-	 * The [Font Awesome](https://fontawesome.com/icons) icon name of the module.
-	 */
-	icon?: string;
-
-	/**
-	 * The tags associated with this module.
-	 */
-	tags?: string[];
-
-	/**
-	 * The GitHub handle of the authors of the module.
-	 */
-	authors?: string[];
-
-	scripts: { [name: string]: ScriptConfig };
-	actors?: { [name: string]: ActorConfig };
-	errors: { [name: string]: ErrorConfig };
-
-	dependencies?: { [canonicalName: string]: DependencyConfig };
-
-	/**
-	 * Default user config.
-	 *
-	 * The user-provided config will be deep merged with this config.
-	 */
-	defaultConfig?: any;
-}
-
-export type ModuleStatus = "preview" | "beta" | "stable" | "deprecated";
-
-export interface ScriptConfig {
+const ScriptConfigSchema = z.object({
 	/**
 	 * The human readable name of the script.
 	 */
-	name?: string;
+	name: z.string().optional().describe("The human readable name of the script."),
 
 	/**
 	 * A short description of the script.
 	 */
-	description?: string;
+	description: z.string().optional().describe("A short description of the script."),
 
 	/**
 	 * If the script can be called from the public HTTP interface.
@@ -67,52 +21,73 @@ export interface ScriptConfig {
 	 *
 	 * @default false
 	 */
-	public?: boolean;
-}
+	public: z.boolean().optional().default(false).describe(
+		"If the script can be called from the public HTTP interface.",
+	),
+});
 
-export interface ActorConfig {
+const ActorConfigSchema = z.object({
 	/**
 	 * Used to keep actor IDs the same in case the actor name changes.
 	 *
 	 * **IMPORTANT** Changing this will effectively unlink all data stored in
 	 * this actor. Changing it back to the old value will restore the data.
 	 */
-	storageAlias?: string;
-}
+	storageAlias: z.string().optional().describe(
+		"Used to keep actor IDs the same in case the actor name changes.",
+	),
+});
 
-export interface ErrorConfig {
+const ErrorConfigSchema = z.object({
 	/**
 	 * The human readable name of the error.
 	 */
-	name?: string;
+	name: z.string().optional().describe("The human readable name of the error."),
 
 	/**
 	 * A short description of the error.
 	 */
-	description?: string;
-}
-
-export interface DependencyConfig {
-}
-
-const moduleConfigAjv = new Ajv({
-	schemas: [schema],
+	description: z.string().optional().describe("A short description of the error."),
 });
+
+const DependencyConfigSchema = z.object({}).passthrough();
+
+export const ModuleSchema = z.object({
+	status: z.enum(["coming_soon", "preview", "beta", "stable", "maintenance", "end_of_life"]).optional().describe(
+		"The status of the module.",
+	),
+	name: z.string().optional().describe("The human readable name of the module."),
+	description: z.string().optional().describe("A short description of the module."),
+	icon: z.string().optional().describe("The [Font Awesome](https://fontawesome.com/icons) icon name of the module."),
+	tags: z.array(z.string()).optional().describe("The tags associated with this module."),
+	authors: z.array(z.string()).optional().describe("The GitHub handle of the authors of the module."),
+	scripts: z.record(ScriptConfigSchema).optional().describe("The scripts associated with this module."),
+	actors: z.record(ActorConfigSchema).optional().describe("The actors associated with this module."),
+	errors: z.record(ErrorConfigSchema).describe("The errors associated with this module."),
+	dependencies: z.record(DependencyConfigSchema).optional().describe("The dependencies of this module."),
+	defaultConfig: z.unknown().optional().describe("Default user config."),
+});
+
+export type ModuleConfig = z.infer<typeof ModuleSchema>;
+
+export type ModuleStatus = Exclude<z.infer<typeof ModuleSchema>["status"], undefined>;
+
+export type ScriptConfig = z.infer<typeof ScriptConfigSchema>;
+
+export type ActorConfig = z.infer<typeof ActorConfigSchema>;
+
+export type ErrorConfig = z.infer<typeof ErrorConfigSchema>;
+
+export type DependencyConfig = z.infer<typeof DependencyConfigSchema>;
 
 export async function readConfig(modulePath: string): Promise<ModuleConfig> {
 	// Read config
 	const configPath = resolve(modulePath, "module.json");
 	const configRaw = await Deno.readTextFile(configPath);
-	const config = JSON.parse(configRaw) as ModuleConfig;
+	let config = JSON.parse(configRaw) as ModuleConfig;
 
 	// Validate config
-	const moduleConfigSchema = moduleConfigAjv.getSchema("#");
-	if (!moduleConfigSchema) {
-		throw new InternalError("Failed to get module config schema");
-	}
-	if (!moduleConfigSchema(config)) {
-		throw validationUserError(`Invalid module config.`, configPath, config, moduleConfigAjv, moduleConfigSchema.errors);
-	}
+	config = await ModuleSchema.parseAsync(config);
 
 	// Validate unique actor storage ids
 	const uniqueActorStorageIds = new Map();

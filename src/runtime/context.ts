@@ -1,6 +1,6 @@
 import { Runtime } from "./runtime.ts";
 import { stringifyTraceEntryType, Trace } from "./trace.ts";
-import { RuntimeError } from "./error.ts";
+import { RuntimeError, ValidationError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
 import { buildActorRegistryProxy, buildDependencyRegistryProxy, RegistryCallMap } from "./proxy.ts";
 import { DependencyScriptCallFunction } from "../types/registry.ts";
@@ -80,25 +80,20 @@ export class Context<Params extends ContextParams> {
 				this.actorCaseConversionMap,
 			);
 
-			// TODO: Replace with OGBE-15
-			// // Compile schemas
-			// const validateRequest = this.runtime.ajv.compile(script.requestSchema);
-			// const validateResponse = this.runtime.ajv.compile(script.responseSchema);
+			const requestParseResult = await script.requestSchema.safeParseAsync(req);
+			if (!requestParseResult.success) {
+				throw new ValidationError("Request did not match schema.", requestParseResult.error);
+			}
 
-			// // Validate request
-			// if (!validateRequest(req)) {
-			// 	throw new Error(
-			// 		`Invalid request: ${JSON.stringify(validateRequest.errors)}`,
-			// 	);
-			// }
+			const request = requestParseResult.data;
 
 			// Log start
 			const scriptStart = performance.now();
-			ctx.log.debug("script request", ...spreadObjectToLogEntries("request", req));
+			ctx.log.debug("script request", ...spreadObjectToLogEntries("request", request));
 
 			// Execute script
 			const duration = Math.ceil(performance.now() - scriptStart);
-			const res = await ctx.runBlock(async () => await script.run(ctx, req));
+			const res = await ctx.runBlock(async () => await script.run(ctx, request));
 
 			// Log finish
 			//
@@ -111,15 +106,14 @@ export class Context<Params extends ContextParams> {
 				...spreadObjectToLogEntries("response", res),
 			);
 
-			// TODO: Replace with OGBE-15
-			// // Validate response
-			// if (!validateResponse(res)) {
-			// 	throw new Error(
-			// 		`Invalid response: ${JSON.stringify(validateResponse.errors)}`,
-			// 	);
-			// }
-
-			return res as any;
+			const responseParseResult = await script.responseSchema.safeParseAsync<typeof res>(res);
+			if (!responseParseResult.success) {
+				throw new ValidationError(
+					"Response did not match schema. If you are the module author, check the response type.",
+					responseParseResult.error,
+				);
+			}
+			return responseParseResult.data;
 		} catch (error) {
 			this.log.warn(
 				"script error",
@@ -152,11 +146,11 @@ export class Context<Params extends ContextParams> {
 		return await this.call(moduleName as any, scriptName as any, req as any);
 	}
 
-	public canCall(
+	public async canCall(
 		moduleName: string,
 		scriptName: string,
-		_req?: unknown,
-	): boolean {
+		req?: unknown,
+	): Promise<boolean> {
 		// Lookup module
 		const module = this.internalRuntime.config.modules[moduleName];
 		if (!module) return false;
@@ -165,9 +159,8 @@ export class Context<Params extends ContextParams> {
 		const script = module.scripts[scriptName];
 		if (!script) return false;
 
-		// TODO: Replace with OGBE-15
-		// const validateRequest = this.runtime.ajv.compile(script.requestSchema);
-		// if (req && !validateRequest(req)) return false;
+		const result = await script.requestSchema.safeParseAsync(req);
+		if (!result.success) return false;
 
 		return true;
 	}

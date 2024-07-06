@@ -1,5 +1,6 @@
 import { ModuleContext } from "./context.ts";
 import { Context } from "./context.ts";
+import { fromValidationError } from "./deps.ts";
 import { ModuleContextParams } from "./mod.ts";
 import { ErrorConfig, Runtime } from "./runtime.ts";
 import { Trace } from "./trace.ts";
@@ -92,5 +93,16 @@ export class RuntimeError extends Error {
 export class UnreachableError extends RuntimeError {
 	constructor(public readonly value: never) {
 		super("internal_error", { meta: { value } });
+	}
+}
+
+export class ValidationError extends RuntimeError {
+	constructor(message: string, error: any) {
+		super("internal_error", {
+			meta: {
+				error: { ...error, name: "ValidationError" },
+			},
+		});
+		this.cause = `${message} ${fromValidationError(error).toString()}`;
 	}
 }
