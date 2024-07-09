@@ -136,9 +136,9 @@ export function buildGlobalDurableObjectClass(
 		private async constructActor(meta: ActorMeta): Promise<ActorBase<unknown, unknown>> {
 			// Get actor config
 			if (!(meta.moduleName in config.modules)) throw new Error("module not found");
-			const moduleConfig = config.modules[meta.moduleName];
+			const moduleConfig = config.modules[meta.moduleName]!;
 			if (!(meta.actorName in moduleConfig.actors)) throw new Error("actor not found");
-			const actorConfig = moduleConfig.actors[meta.actorName];
+			const actorConfig = moduleConfig.actors[meta.actorName]!;
 
 			// TODO: cache actor instance in memory
 			// TODO: use ctx.waitUntil for all calls
@@ -153,7 +153,7 @@ export function buildGlobalDurableObjectClass(
 
 		private createActorContext(moduleName: string, actorName: string, trace: Trace): ActorContext<ModuleContextParams> {
 			// Build context
-			const module = config.modules[moduleName];
+			const module = config.modules[moduleName]!;
 			const context = new ActorContext<ModuleContextParams>(
 				this.runtime,
 				trace,
@@ -262,7 +262,7 @@ export function buildGlobalDurableObjectClass(
 			}
 		}
 
-		async alarm() {
+		override async alarm() {
 			const now = Date.now();
 
 			// Read index
@@ -282,7 +282,7 @@ export function buildGlobalDurableObjectClass(
 
 			// Set alarm for next event
 			if (scheduleIndex.events.length > 0) {
-				await this.ctx.storage.setAlarm(scheduleIndex.events[0].timestamp);
+				await this.ctx.storage.setAlarm(scheduleIndex.events[0]!.timestamp);
 			}
 
 			// Iterate by event key in order to ensure we call the events in order

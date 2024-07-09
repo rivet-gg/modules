@@ -122,12 +122,12 @@ export function buildDependencyRegistryProxy<Params extends ContextParams>(
 	const handler = {
 		get: (_target: unknown, camelCaseModuleKey: string) => {
 			if (camelCaseModuleKey in dependenciesMapCamelToSnake) {
-				const camelToSnakeMapForModule = dependenciesMapCamelToSnake[camelCaseModuleKey];
+				const camelToSnakeMapForModule = dependenciesMapCamelToSnake[camelCaseModuleKey]!;
 
 				return new Proxy(camelToSnakeMapForModule, {
 					get: (_target: unknown, scriptProp: string) => {
 						if (scriptProp in camelToSnakeMapForModule) {
-							const [snakeCaseModule, snakeCaseScript] = camelToSnakeMapForModule[scriptProp];
+							const [snakeCaseModule, snakeCaseScript] = camelToSnakeMapForModule[scriptProp]!;
 							return (req: unknown) => {
 								return ctx.call(
 									snakeCaseModule as any,
@@ -135,9 +135,13 @@ export function buildDependencyRegistryProxy<Params extends ContextParams>(
 									req as any,
 								);
 							};
+						} else {
+							return undefined;
 						}
 					},
 				});
+			} else {
+				return undefined;
 			}
 		},
 	};
@@ -152,13 +156,15 @@ export function buildActorRegistryProxy<ActorsSnakeT, ActorsCamelT>(
 	return new Proxy(actorMap, {
 		get: (_target: unknown, actorProp: string) => {
 			if (actorProp in actorMap) {
-				const pair = actorMap[actorProp as keyof typeof actorMap];
+				const pair = actorMap[actorProp as keyof typeof actorMap]!;
 				return new ActorProxy(
 					runtime.actorDriver,
 					pair[0] as any,
 					pair[1] as any,
 					trace,
 				);
+			} else {
+				return undefined;
 			}
 		},
 	}) as ActorProxies<ActorsCamelT>;

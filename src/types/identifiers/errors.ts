@@ -9,7 +9,7 @@ export class IdentifierError extends UserError {
 		this.name = "IdentifierError";
 	}
 
-	public toString(identifierType = "identifier") {
+	public override toString(identifierType = "identifier") {
 		const highlightedIdentifier = brightRed(bold(debugIdentifier(this.identifier)));
 		return `invalid ${identifierType} ${highlightedIdentifier}: ${this.issue}`;
 	}

@@ -133,8 +133,8 @@ export class MemoryActorDriver implements ActorDriver {
 	}
 
 	private async getId(moduleName: string, actorName: string, instanceName: string) {
-		const module = this.config.modules[moduleName];
-		const actor = module.actors[actorName];
+		const module = this.config.modules[moduleName]!;
+		const actor = module.actors[actorName]!;
 		const name = `%%${module.storageAlias}%%${actor.storageAlias}%%${instanceName}`;
 		return await this.hash(name);
 	}
@@ -156,9 +156,9 @@ export class MemoryActorDriver implements ActorDriver {
 
 		// Get actor config
 		if (!(record.moduleName in this.config.modules)) throw new Error("module not found");
-		const moduleConfig = this.config.modules[record.moduleName];
+		const moduleConfig = this.config.modules[record.moduleName]!;
 		if (!(record.actorName in moduleConfig.actors)) throw new Error("actor not found");
-		const actorConfig = moduleConfig.actors[record.actorName];
+		const actorConfig = moduleConfig.actors[record.actorName]!;
 
 		// Run actor function
 		const actorId = await this.getId(record.moduleName, record.actorName, record.instanceName);
@@ -188,7 +188,7 @@ export class MemoryActorDriver implements ActorDriver {
 
 	private createActorContext(moduleName: string, actorName: string, trace: Trace): ActorContext<ModuleContextParams> {
 		// Build context
-		const module = this.config.modules[moduleName];
+		const module = this.config.modules[moduleName]!;
 		const context = new ActorContext<ModuleContextParams>(
 			this.runtime,
 			trace,

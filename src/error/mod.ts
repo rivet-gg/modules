@@ -116,7 +116,7 @@ export class ValidationError extends UserError {
 	}
 }
 
-export function printError(error: Error) {
+export function printError(error: unknown) {
 	// Padding
 	console.error();
 
@@ -199,7 +199,7 @@ export function printError(error: Error) {
 			} catch (err) {
 				// HACK: If the command did not pipe stdout, Deno throws a TypeError. There's no
 				// way to check if the command piped stdout without catching the error.
-				if (err.name !== "TypeError") throw err;
+				if (err instanceof Error && err.name !== "TypeError") throw err;
 			}
 
 			try {
@@ -212,17 +212,22 @@ export function printError(error: Error) {
 				}
 			} catch (err) {
 				// HACK: See above
-				if (err.name !== "TypeError") throw err;
+				if (err instanceof Error && err.name !== "TypeError") throw err;
 			}
 		}
 
 		console.error(str);
-	} else {
+	} else if (error instanceof Error) {
 		let str = `${colors.bold(colors.red("[UNCAUGHT] " + error.name))}: ${error.message}\n`;
 
 		// Stack
 		str += prettyPrintStack(error);
 
+		console.error(str);
+	} else {
+		// Unknown error type
+
+		const str = `${colors.bold(colors.red("[UNCAUGHT] " + error))}\n`;
 		console.error(str);
 	}
 }

@@ -106,8 +106,8 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 	}
 
 	// Lookup script
-	const moduleName = matches.groups.module;
-	const scriptName = matches.groups.script;
+	const moduleName = matches.groups["module"]!;
+	const scriptName = matches.groups["script"]!;
 	const script = runtime.config.modules[moduleName]?.scripts[scriptName];
 
 	// Confirm script exists and is public
@@ -193,10 +193,10 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 				trace: validationError.details,
 			};
 		} else {
-			ctx.log.error("internal error", ["error", error]);
+			ctx.log.error("internal error", ["error", `${error}`]);
 			output = {
 				message: "Internal error. More details have been printed in the logs.",
-				trace: error.trace,
+				trace: error instanceof RuntimeError && error.trace,
 			};
 		}
 
