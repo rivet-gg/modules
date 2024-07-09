@@ -7,12 +7,16 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#ff760a",
-    "light": "#ffbd6d",
-    "dark": "#ff760a",
+    "primary": "#ff4f00",
+    "light": "#ff7433",
+    "dark": "#ff4f00",
+    "background": {
+      "light": "#fffdfa",
+      "dark": "#0b0a0a"
+    },
     "anchors": {
-      "from": "#ff760a",
-      "to": "#ffbd6d"
+      "from": "#ff4f00",
+      "to": "#ff4f00"
     }
   },
   "topbarCtaButton": {
@@ -226,7 +230,7 @@
         },
         {
           "icon": "user-group",
-          "group": "Gropus",
+          "group": "Groups",
           "pages": [
             "modules/groups/overview"
           ]
