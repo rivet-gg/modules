@@ -1,5 +1,9 @@
-import { RuntimeError, ScriptContext, prisma } from "../module.gen.ts";
-import { PresignedUpload, prismaToOutput, MultipartUploadFile } from "../utils/types.ts";
+import { prisma, RuntimeError, ScriptContext } from "../module.gen.ts";
+import {
+	MultipartUploadFile,
+	PresignedUpload,
+	prismaToOutput,
+} from "../utils/types.ts";
 import {
 	getPresignedMultipartUploadUrls,
 	getPresignedPutUrl,
@@ -97,12 +101,13 @@ export async function run(
 	const uploadId = crypto.randomUUID();
 	const presignedInputFilePromises = req.files.map(async (file) => {
 		if (file.multipart) {
-			const { chunks, multipartUploadId } = await getPresignedMultipartUploadUrls(
-				config.s3,
-				uploadId,
-				file,
-				getBytes(config.defaultMultipartChunkSize),
-			);
+			const { chunks, multipartUploadId } =
+				await getPresignedMultipartUploadUrls(
+					config.s3,
+					uploadId,
+					file,
+					getBytes(config.defaultMultipartChunkSize),
+				);
 
 			return {
 				...file,

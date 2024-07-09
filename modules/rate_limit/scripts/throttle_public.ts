@@ -29,8 +29,8 @@ export async function run(
 		}
 	}
 
-  // If no IP address, this request is not coming from a client and should not
-  // be throttled
+	// If no IP address, this request is not coming from a client and should not
+	// be throttled
 	if (!key) {
 		return {};
 	}

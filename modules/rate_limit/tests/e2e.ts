@@ -31,9 +31,9 @@ test("e2e", async (ctx: TestContext) => {
 		assertEquals("RATE_LIMIT_EXCEEDED", error.code);
 	}
 
-    // Wait for the rate limit to reset
-    await delay(period * 1000);
+	// Wait for the rate limit to reset
+	await delay(period * 1000);
 
-    // Should be able to make requests again
-    await makeRequest();
+	// Should be able to make requests again
+	await makeRequest();
 });

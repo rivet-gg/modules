@@ -26,14 +26,14 @@ export async function run(
 			declinedAt: Date | null;
 		}
 		const friendRequests = await tx.$queryRawUnsafe<FriendRequestRow[]>(
-      `
+			`
 			SELECT "senderUserId", "targetUserId", "acceptedAt", "declinedAt"
 			FROM "${ctx.dbSchema}"."FriendRequest"
 			WHERE "id" = $1
 			FOR UPDATE
       `,
-      req.friendRequestId
-    );
+			req.friendRequestId,
+		);
 		const friendRequest = friendRequests[0];
 		if (!friendRequest) {
 			throw new RuntimeError("FRIEND_REQUEST_NOT_FOUND", {
