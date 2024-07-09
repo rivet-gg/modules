@@ -35,7 +35,7 @@ test("e2e", async (ctx: TestContext) => {
 	const getAfterRevoke = await ctx.modules.tokens.fetch({
 		tokenIds: [token.id],
 	});
-	assertExists(getAfterRevoke.tokens[0].revokedAt);
+	assertExists(getAfterRevoke.tokens[0]!.revokedAt);
 
 	const revokeTwiceRes = await ctx.modules.tokens.revoke({
 		tokenIds: [token.id],

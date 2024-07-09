@@ -52,7 +52,7 @@ function generateToken(type: string): string {
 	// Map to characters
 	let output = "";
 	for (let i = 0; i < buf.length; i++) {
-		output += CHARACTERS[buf[i] % CHARACTERS.length];
+		output += CHARACTERS[buf[i]! % CHARACTERS.length];
 	}
 
 	return `${type}_${output}`;

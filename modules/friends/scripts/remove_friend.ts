@@ -18,11 +18,11 @@ export async function run(
 	});
 
 	// Sort the user IDs to ensure consistency
-	const [userIdA, userIdB] = [userId, req.targetUserId].sort();
+	const userIds = [userId, req.targetUserId].sort();
 
 	const updated = await ctx.db.friend.update({
 		where: {
-			userIdA_userIdB: { userIdA, userIdB },
+			userIdA_userIdB: { userIdA: userIds[0]!, userIdB: userIds[1]! },
 			removedAt: null,
 		},
 		data: {
@@ -31,7 +31,9 @@ export async function run(
 		select: { userIdA: true, userIdB: true },
 	});
 	if (!updated) {
-		throw new RuntimeError("FRIEND_NOT_FOUND", { meta: { userIdA, userIdB } });
+		throw new RuntimeError("FRIEND_NOT_FOUND", {
+			meta: { userIdA: userIds[0], userIdB: userIds[1] },
+		});
 	}
 
 	return {};

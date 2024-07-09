@@ -41,8 +41,7 @@ test("multipart uploads", async (ctx: TestContext) => {
 			},
 		],
 	});
-
-	const { files: [{ presignedChunks }] } = presigned;
+	const presignedChunks = presigned.files[0]!.presignedChunks;
 
 	for (const chunk of presignedChunks) {
 		// Upload the data using the presigned URL(s) returned
@@ -94,10 +93,11 @@ test("multipart uploads", async (ctx: TestContext) => {
 	assertEquals(completed, retrieved);
 
 	// Get presigned URLs to download the files from
-	const { files: [{ url: fileDownloadUrl }] } = await ctx.modules.uploads
+	const { files } = await ctx.modules.uploads
 		.getPublicFileUrls({
 			files: [{ uploadId: completed.id, path: path }],
 		});
+	const fileDownloadUrl = files[0]!.url;
 
 	// Download the files, and make sure the data matches
 	const fileDownloadReq = await fetch(fileDownloadUrl);

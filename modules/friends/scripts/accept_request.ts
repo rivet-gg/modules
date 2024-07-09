@@ -57,7 +57,7 @@ export async function run(
 		}
 
 		// Sort the user IDs to ensure consistency
-		const [userIdA, userIdB] = [
+		const userIds = [
 			friendRequest.senderUserId,
 			friendRequest.targetUserId,
 		].sort();
@@ -70,7 +70,7 @@ export async function run(
 			data: {
 				acceptedAt: new Date(),
 				friend: {
-					create: { userIdA, userIdB },
+					create: { userIdA: userIds[0]!, userIdB: userIds[1]! },
 				},
 			},
 		});
