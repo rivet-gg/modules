@@ -1,0 +1,103 @@
+export const CTAButtons = () => {
+  const styles = {
+    container: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    getStartedLink: {
+      color: 'white',
+      borderRadius: '9999px',
+      border: '1px solid #ff4f0055',
+      padding: '4px',
+      display: 'flex',
+      alignItems: 'stretch',
+      justifyContent: 'center',
+      textDecoration: 'none',
+    },
+    getStartedSpan: {
+      backgroundColor: '#ff4f00',
+      borderRadius: '9999px',
+      padding: '8px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    docsLink: {
+      color: '#ff4f00',
+      display: 'flex',
+      alignItems: 'center',
+      textDecoration: 'none',
+      marginLeft: '16px',
+    },
+    icon: {
+      width: '20px',
+      height: '20px',
+      marginLeft: '4px',
+    },
+  };
+
+  return (
+    <div style={styles.container}>
+      <a href="/docs/quickstart" style={styles.getStartedLink}>
+        <span style={styles.getStartedSpan}>
+          <span>Get Started</span>
+        </span>
+      </a>
+      <a href="/modules/overview" style={styles.docsLink}>
+        <span>See Modules</span>
+        <Icon icon="chevron-right" iconType="solid" color="#ff4f00" style={styles.icon} />
+      </a>
+    </div>
+  );
+};
+
+export const H2 = ({ children }) => {
+  return (
+    <h2 style={{color:'white', fontWeight: 700, fontSize: '1.5em', marginTop: '2em', marginBottom: '0.6em', lineHeight: 1.3}}>{children}</h2>
+  );
+}
+
+export const Separator = () => {
+  return <div style={{ width: '80%', height: '2px', margin: '100px auto', background: 'white', opacity: 0.05 }}/>;
+}
+
+export const Footer = () => {
+  const socialLinks = [
+    { name: 'twitter', url: 'https://twitter.com/rivet_gg', icon: 'https://mintlify.b-cdn.net/v6.5.1/brands/twitter.svg' },
+    { name: 'github', url: 'https://github.com/rivet-gg', icon: 'https://mintlify.b-cdn.net/v6.5.1/brands/github.svg' },
+    { name: 'discord', url: 'https://rivet.gg/discord', icon: 'https://mintlify.b-cdn.net/v6.5.1/brands/discord.svg' }
+  ];
+
+  return (
+    <footer className="justify-between pt-10 border-t border-gray-100 sm:flex dark:border-gray-800/50 pb-28">
+      <div className="flex mb-6 space-x-6 sm:mb-0">
+        {socialLinks.map((link) => (
+          <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer">
+            <span className="sr-only">{link.name}</span>
+            <svg 
+              className="w-5 h-5 bg-gray-400 dark:bg-gray-500 hover:bg-gray-500 dark:hover:bg-gray-400" 
+              style={{
+                maskImage: `url("${link.icon}")`,
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center center'
+              }}
+            />
+          </a>
+        ))}
+      </div>
+      <div className="sm:flex">
+        <a 
+          href="https://mintlify.com?utm_campaign=poweredBy&utm_medium=docs&utm_source=undefined" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+        >
+          Powered by Mintlify
+        </a>
+      </div>
+    </footer>
+  );
+};
+

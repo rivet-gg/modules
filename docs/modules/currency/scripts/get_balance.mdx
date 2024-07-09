@@ -21,7 +21,8 @@ const data = await ctx.modules.currency.getBalance({
 
 ```typescript
 export interface Request {
-  userId: string;
+  userId?: string;
+  [k: string]: any;
 }
 ```
 
@@ -29,6 +30,7 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  balance: number;
+  balance?: number;
+  [k: string]: any;
 }
 ```

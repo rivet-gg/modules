@@ -21,8 +21,11 @@ const data = await ctx.modules.uploads.get({
 
 ```typescript
 export interface Request {
-  uploadIds: string[];
-  includeFiles?: boolean;
+  uploadIds?: any[];
+  includeFiles?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 
@@ -30,35 +33,7 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  uploads: UploadWithOptionalFiles[];
-}
-export interface UploadWithOptionalFiles {
-  metadata?: any;
-  id: string;
-  bucket: string;
-  /**
-   * The total size of all files in the upload in bytes.
-   *
-   * *(This is a string instead of a bigint because JSON doesn't support
-   * serializing/deserializing bigints, and we want to be able to represent
-   * very large file sizes.)*
-   */
-  contentLength: string;
-  createdAt: string;
-  updatedAt: string;
-  completedAt: null | string;
-  files?: UploadFile[];
-}
-export interface UploadFile {
-  path: string;
-  mime: null | string;
-  /**
-   * The size of the file in bytes.
-   *
-   * *(This is a string instead of a bigint because JSON doesn't support
-   * serializing/deserializing bigints, and we want to be able to represent
-   * very large file sizes.)*
-   */
-  contentLength: string;
+  uploads?: any[];
+  [k: string]: any;
 }
 ```

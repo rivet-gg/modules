@@ -1,8 +1,8 @@
-export const ModuleCards = () => (
+export const ModuleCards = ({ cols }) => (
 <>
-	<p>These modules are thoroughly reviewed, tested, and documented to help you get your game backend up and running as quickly as possible. Learn more about <a href="/build">creating your own module</a> and <a href="/concepts/registries">using your own registries</a>.</p>
+	<p>These modules are thoroughly reviewed, tested, and documented to help you get your game backend up and running as quickly as possible. Learn more about <a href="/build">creating your own module</a> and <a href="/docs/registries">using your own registries</a>.</p>
 
-	<CardGroup cols={2}>
+	<CardGroup cols={cols ?? 2}>
 		<Card title="Build your own" icon="plus" href="/build" />
 		
         <Card title="Achievements" icon="medal" href="/modules/achievements/overview">
@@ -73,6 +73,11 @@ export const ModuleCards = () => (
         <Card title="Rate Limit" icon="gauge-circle-minus" href="/modules/rate_limit/overview">
           <div>Prevent abuse by limiting request rate.</div>
           <Tags tags={["stable","core","utility"]} />
+        </Card>
+      
+        <Card title="Rivet API" icon="r" href="/modules/rivet/overview">
+          <div>Helper for calling the Rivet API.</div>
+          <Tags tags={["stable","core","api"]} />
         </Card>
       
         <Card title="Tokens" icon="lock" href="/modules/tokens/overview">

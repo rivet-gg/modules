@@ -3,7 +3,7 @@ title: Supabase
 ---
 
 <Note>
-  Please read Open Game Backend's [roadmap](/concepts/roadmap) for known limitations.
+  Please read Open Game Backend's [roadmap](/docs/roadmap) for known limitations.
 </Note>
 
 [Supabase](https://supabase.com/) was founded in 2020. While not specifically a game backend, it is a rising choice for game developers due to its ease of use and flexibility.
@@ -59,10 +59,10 @@ Supabase is built to be a general purpose backend framework. Backend code is not
 
 Open Game Backend is a combination of two components:
 
-- **OpenGB Engine** Abstracts away backend complexity to make writing [modules](/concepts/modules) simple & fast
-- **OpenGB Module Registry** Pre-made [modules](/concepts/modules) that can be used to get up and running instantly
+- **OpenGB Engine** Abstracts away backend complexity to make writing [modules](/docs/modules) simple & fast
+- **OpenGB Module Registry** Pre-made [modules](/docs/modules) that can be used to get up and running instantly
 
-OpenGB's modularity lets you use pre-existing [modules](/concepts/modules) to get started faster, use modules from the community, and share modules across multiple games.  This allows it to be easily customized and extended to fit the needs of a game.
+OpenGB's modularity lets you use pre-existing [modules](/docs/modules) to get started faster, use modules from the community, and share modules across multiple games.  This allows it to be easily customized and extended to fit the needs of a game.
 
 ### Supabase Edge Functions vs OpenGB Scripts
 
@@ -84,7 +84,7 @@ Supabase provides core functionality that cannot be modified, such as: [authenti
 
 **Open Game Backend**
 
-Open Game Backend instead provides these same features as [modules](/concepts/modules) that can be modified & extended as needed. For example: [authentication](/modules/auth/overview) and [storage](https://github.com/rivet-gg/opengb-modules/tree/20f3bc34f8dea4382f442cdb1308834ea30b3fe9/modules/uploads) modules. These can be customized easily by running the `opengb fork` command.
+Open Game Backend instead provides these same features as [modules](/docs/modules) that can be modified & extended as needed. For example: [authentication](/modules/auth/overview) and [storage](https://github.com/rivet-gg/opengb-modules/tree/20f3bc34f8dea4382f442cdb1308834ea30b3fe9/modules/uploads) modules. These can be customized easily by running the `opengb fork` command.
 
 For example, this is specifically important for games where authentication with platforms like Steam, consoles, and instant gaming platforms don't fit well with Supabase's core authentication features.
 

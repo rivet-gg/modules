@@ -1,0 +1,84 @@
+---
+title: "Rivet API"
+description: "Helper for calling the Rivet API."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rivet) | `rivet` | stable | No |
+
+**Authors**
+
+- [NathanFlurry](https://github.com/NathanFlurry)
+
+**Dependencies**
+
+_No dependencies_
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add rivet
+```
+
+</Tab>
+
+<Tab title="backend.json">
+
+Add the following to your `backend.json`:
+
+```json backend.json
+"modules": {
+	"rivet": {
+		"config": {
+			// Your config here. See below for more details.
+		}
+	}
+}
+
+```
+</Tab>
+
+</Tabs>
+
+## Config
+
+### Schema
+		
+```typescript
+export interface Config {
+  apiEndpoint?: string;
+  serviceTokenVariable?: string;
+  [k: string]: any;
+}
+```
+
+### Default
+
+```json
+{
+    "apiEndpoint": "https://api.rivet.gg",
+    "serviceTokenVariable": "RIVET_SERVICE_TOKEN"
+}
+```
+
+
+
+## Scripts
+
+### Public
+
+<CardGroup>_No public scripts._</CardGroup>
+
+### Internal
+
+<CardGroup><Card title="Call" href="/modules/rivet/scripts/call">Call a Rivet REST endpoint.</Card></CardGroup>
+
+## Errors
+
+- **Rivet Error** (`rivet_error`) An error from the Rivet API.

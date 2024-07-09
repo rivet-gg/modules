@@ -21,32 +21,34 @@ const data = await ctx.modules.email.sendEmail({
 
 ```typescript
 export interface Request {
-  from: Email;
-  to: Email[];
-  cc?: Email[];
-  bcc?: Email[];
-  replyTo?: Email[];
-  subject: string;
-  html?: string;
-  text?: string;
-}
-/**
- * Identifies an email address and optionally a name.
- */
-export interface Email {
-  /**
-   * Target email.
-   */
-  email: string;
-  /**
-   * Optional display name for the email.
-   */
-  name?: string;
+  from?: {
+    [k: string]: any;
+  };
+  to?: any[];
+  cc?: {
+    [k: string]: any;
+  };
+  bcc?: {
+    [k: string]: any;
+  };
+  replyTo?: {
+    [k: string]: any;
+  };
+  subject?: string;
+  html?: {
+    [k: string]: any;
+  };
+  text?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 
 ## Response
 
 ```typescript
-export interface Response {}
+export interface Response {
+  [k: string]: any;
+}
 ```

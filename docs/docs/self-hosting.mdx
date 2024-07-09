@@ -1,0 +1,98 @@
+---
+title: Self-Hosting
+---
+
+# Self-Hosting
+
+<Note>This documentation page is a work in progress.</Note>
+
+## Overview
+
+This guide will walk you through self-hosting Open Game Backend on a virtual machine.
+
+TODO: explain this is going to run everything on a single vm, suitable for hobby deployments
+
+## Prerequisites
+
+- Linux VM with Debian 11
+    - You can rent a VM from Linode, Digital Ocean, or AWS
+- [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+- [Docker](https://docs.docker.com/get-docker/)
+- Git
+
+<Info>This guide works with most Linux distributions, but is not tested. Reach out on [Discord](https://rivet.gg/discord) if you have questions.</Info>
+
+## Upload To Server
+
+TODO: demonstrate using git clone of their own repo
+
+## Configure firewall
+
+Open port 80
+
+## Write Dockerfile
+
+TODO: not using opengb dev for prod
+
+```dockerfile
+# TODO: Need dockerfile for opengb
+- from debian
+- install opengb (pin version)
+- opengb build
+- set cmd to `deno run .opengb/entrypoint.ts`
+```
+
+## Write Docker Compose
+
+TODO: quickly explain how this works
+
+```yaml docker-compose.yaml
+# TODO: Not tested
+services:
+  opengb:
+    build: .
+    restart: always
+    ports:
+      - "80:8000"
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db-migrate:
+    build: .
+    entrypoint: ["opengb", "db", "deploy"]
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/
+    depends_on:
+      db:
+        condition: service_healthy
+ 
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+```
+
+## Up
+
+```
+docker-compose up -d
+```
+
+```
+docker-compose logs
+```
+
+## Next Steps
+
+- Set up SSL
+- Secure Postgres database credentials
+- Monitor with docker-compose logs

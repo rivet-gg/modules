@@ -21,8 +21,9 @@ const data = await ctx.modules.currency.withdraw({
 
 ```typescript
 export interface Request {
-  userId: string;
-  amount: number;
+  userId?: string;
+  amount?: number;
+  [k: string]: any;
 }
 ```
 
@@ -30,6 +31,7 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  updatedBalance: number;
+  updatedBalance?: number;
+  [k: string]: any;
 }
 ```

@@ -52,20 +52,11 @@ Add the following to your `backend.json`:
 ### Schema
 		
 ```typescript
-export type Provider =
-  | {
-      test: ProviderTest;
-    }
-  | {
-      sendGrid: ProviderSendGrid;
-    };
-
 export interface Config {
-  provider: Provider;
-}
-export interface ProviderTest {}
-export interface ProviderSendGrid {
-  apiKeyVariable?: string;
+  provider?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 

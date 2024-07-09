@@ -1,0 +1,63 @@
+---
+title: SDK Generation
+---
+
+Open Game Backend generates a unique SDK for your backend with type-safe methods to call your scripts.
+
+## Setup
+
+<Note>Godot, Unity, Unreal, and Rust SDKs coming soon.</Note>
+
+### JavaScript & TypeScript
+
+<Steps>
+    <Step title="Generating SDK">
+
+        Replace `<output>` with the path where you want to generate the SDK.
+
+        ```sh
+        opengb sdk generate --output <output> typescript
+        ```
+
+    </Step>
+
+    <Step title="Install SDK">
+        Replace `./path/to/sdk` with the path to the generated SDK.
+
+        <CodeGroup>
+
+        ```sh npm
+        npm install ./path/to/sdk
+        ```
+
+        ```sh yarn
+        yarn add ./path/to/sdk
+        ```
+
+        </CodeGroup>
+
+    </Step>
+
+    <Step title="Initiate SDK">
+
+        ```typescript
+        import { BackendApi } from "opengb-sdk";
+        const backend = new BackendApi({});
+        ```
+
+        <Warning>
+            The default SDK connects to `http://localhost:8080` by default (where `opengb dev` runs). See [#255](https://github.com/rivet-gg/opengb/issues/255).
+        </Warning>
+
+    </Step>
+
+    <Step title="Call script">
+
+        ```typescript
+        const data = await backend.callUsersGetUser({ userIds });
+        console.log("Users", data.users);
+        ```
+
+    </Step>
+
+</Steps>

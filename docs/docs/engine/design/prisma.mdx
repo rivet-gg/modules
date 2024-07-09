@@ -1,0 +1,47 @@
+---
+title: Why Prisma?
+---
+
+## Prisma vs vanilla SQL
+
+Open Game Backend is designed to use an ORM to be more friendly for game developers & provide type safety out to the database of the box.
+
+Vanilla SQL requires a lot of repetition between redefining the model in TypeScript & selecting columns to query. It's very easy to write hard to find bugs using vanilla SQL because of this repetition.
+
+## Prisma vs Drizzle
+
+The original proof of concept of Open Game Backend was built using Drizzle.
+
+However, one core goal of Open Game Backend is to make using SQL databases easy for game devs who have no experience with SQL. Drizzle is explicitly designed for developers who know SQL well, which makes it difficult to pick up.
+
+Prisma is built primarily to make using SQL databases easy for developers who don't know SQL, while still providing a powerful API for developers who do know SQL. The API is easy to understand, schemas are easy to write, migrations are buit to be fool-proof, and the entire API is intellisense friendly so you rarely have to read the docs.
+
+While Drizzle does have a [Queries API](https://orm.drizzle.team/docs/rqb) intended to work similar to Prisma, designing schemas is still done in an SQL-like manner.
+
+## Prisma myths
+
+### Interactive transactions
+
+Prisma was late to support interactive database transactions, but they do exist now. See [here](https://www.prisma.io/docs/orm/prisma-client/queries/transactions#interactive-transactions-1).
+
+## Prisma gripes
+
+Prisma is not perfect, so Open Game Backend needs to do some work to make Prisma play nice with the rest of the stack.
+
+### Unnecessary `SELECT` statement after `create`
+
+See [this issue](https://github.com/prisma/prisma/issues/4246).
+
+This has a pretty nasty performance impact when inserting rows frequently. Most use cases won't notice the impact, but it's important to be aware of for performance-sensitive modules.
+
+### Heavy WASM dependency
+
+Prisma depends ona WASM module in order to serialize & deserialize database queries. This is intended to make the client faster, but it makes Prisma (a) harder to run in serverless with larger bundles and (b) requires finnessing to reuse the same WASM engine across multiple generated libraries.
+
+### No headless migrations CLI
+
+Prisma requires a TTY to run development migrations. It took a lot of work to get the Prisma CLI to play nice with the Open Game Backend `dev` command. It would be nice to have a raw API we can call to run migrations within our own code.
+
+### Slow builds
+
+Prisma takes a long time to build new clients. Open Game Backend caches heavily and parallelizes builds to make this less of an issue, but it's still a pain point.

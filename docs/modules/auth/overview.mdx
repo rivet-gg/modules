@@ -55,11 +55,10 @@ Add the following to your `backend.json`:
 		
 ```typescript
 export interface Config {
-  email?: EmailConfig;
-}
-export interface EmailConfig {
-  fromEmail: string;
-  fromName?: string;
+  email?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 

@@ -54,10 +54,19 @@ Add the following to your `backend.json`:
 		
 ```typescript
 export interface Config {
-  maxUploadSize?: string;
-  maxMultipartUploadSize?: string;
-  maxFilesPerUpload?: number;
-  defaultMultipartChunkSize?: string;
+  maxUploadSize?: {
+    [k: string]: any;
+  };
+  maxMultipartUploadSize?: {
+    [k: string]: any;
+  };
+  maxFilesPerUpload?: {
+    [k: string]: any;
+  };
+  defaultMultipartChunkSize?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 

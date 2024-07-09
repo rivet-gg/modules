@@ -15,55 +15,21 @@ const data = await ctx.modules.lobbies.find({
 });
 ```
 ```javascript JavaScript
-import { BackendApi } from "opengb-sdk";
-const backend = new BackendApi({});
-const data = await backend.callLobbiesFind({
+import { Backend } from "opengb-sdk";
+const backend = new Backend({ endpoint: "http://localhost:6420" });
+const data = await backend.lobbies.find({
   // Request body
 });
 ```
 
 ```gdscript Godot
-# IMPORTANT: Auto-generated SDK coming soon
-
-var url = "https://localhost:6420/modules/lobbies/scripts/find/call"
-var headers = ["Content-Type: application/json"]
-var json = JSON.stringify(data_to_send)
-var request = $HTTPRequest.request(url, headers, HTTPClient.METHOD_POST, json)
-
-var response = await http.request_completed
-if response[0] != HTTPRequest.RESULT_SUCCESS:
-  push_error("Error: " + str(response[0]))
-  return
-
-var json = JSON.new()
-json.parse(body.get_string_from_utf8())
-var data = json.get_data()
-
-# Success
+var data = backend.lobbies.find({
+  # Request body
+})
 ```
 
 ```csharp Unity
-// IMPORTANT: Auto-generated SDK coming soon
-
-IEnumerator PostData() {
-    var json = "{\"key\":\"value\"}"; // Your JSON payload
-    var www = new UnityWebRequest("https://localhost:6420/modules/lobbies/scripts/find/call", "POST");
-    byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
-    www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-    www.downloadHandler = new DownloadHandlerBuffer();
-    www.SetRequestHeader("Content-Type", "application/json");
-    yield return www.SendWebRequest();
-
-    if (www.result != UnityWebRequest.Result.Success) {
-        Debug.Log(www.error);
-        return;
-    }
-
-    var data = request.downloadHandler.text;
-
-    // Success
-}
-
+var data = Backend.Lobbies.Find();
 ```
 
 ```cpp Unreal Engine
@@ -127,47 +93,23 @@ curl -X POST "https://localhost:6420/modules/lobbies/scripts/find/call" \
 
 ```typescript
 export interface Request {
-  version: string;
-  tags: RecordStringString;
-  players: PlayerRequest[];
+  version?: string;
+  tags?: {
+    [k: string]: any;
+  };
+  players?: any[];
+  [k: string]: any;
 }
-export interface RecordStringString {}
-export interface PlayerRequest {}
 ```
 
 ## Response
 
 ```typescript
 export interface Response {
-  lobby: Lobby;
-  players: PlayerWithToken[];
-}
-export interface Lobby {
-  id: string;
-  version: string;
-  tags: RecordStringString;
-  createdAt: number;
-  readyAt?: number;
-  /**
-   * Timestamp at which the last player left the lobby.
-   */
-  emptyAt?: number;
-  players: MapStringPlayer;
-  maxPlayers: number;
-  maxPlayersDirect: number;
-  serverId: string;
-}
-export interface RecordStringString {}
-export interface MapStringPlayer {
-  size: number;
-  "__@toStringTag@15529": string;
-}
-export interface PlayerWithToken {
-  token: string;
-  id: string;
-  lobbyId: string;
-  createdAt: number;
-  connectedAt?: number;
-  publicIp?: string;
+  lobby?: {
+    [k: string]: any;
+  };
+  players?: any[];
+  [k: string]: any;
 }
 ```

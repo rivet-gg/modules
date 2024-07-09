@@ -21,13 +21,16 @@ const data = await ctx.modules.currency.setBalance({
 
 ```typescript
 export interface Request {
-  userId: string;
-  balance: number;
+  userId?: string;
+  balance?: number;
+  [k: string]: any;
 }
 ```
 
 ## Response
 
 ```typescript
-export interface Response {}
+export interface Response {
+  [k: string]: any;
+}
 ```

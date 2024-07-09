@@ -21,18 +21,18 @@ const data = await ctx.modules.tokens.revoke({
 
 ```typescript
 export interface Request {
-  tokenIds: string[];
+  tokenIds?: any[];
+  [k: string]: any;
 }
 ```
 
 ## Response
 
 ```typescript
-export type TokenUpdate = "REVOKED" | "ALREADY_REVOKED" | "NOT_FOUND";
-
 export interface Response {
-  updates: {
-    [k: string]: TokenUpdate;
+  updates?: {
+    [k: string]: any;
   };
+  [k: string]: any;
 }
 ```
