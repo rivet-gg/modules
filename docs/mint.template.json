@@ -55,9 +55,9 @@
 			"url": "https://github.com/rivet-gg/opengb/issues"
 		},
 		{
-			"name": "Deploy to Rivet",
-			"icon": "cloud-arrow-up",
-			"url": "https://b8v8449klvp.typeform.com/to/RsL6LgBW"
+			"name": "Sign In to Rivet",
+			"icon": "browser",
+			"url": "https://hub.rivet.gg"
 		}
 	],
 	"navigation": [
@@ -84,18 +84,18 @@
 			"group": "Developing Modules",
 			"pages": [
 				"docs/build/overview",
-				"docs/build/crash-course",
-				"docs/build/ide",
+				"docs/build/quickstart",
 				"docs/build/module-config",
 				"docs/build/scripts",
 				"docs/build/database",
-				"docs/build/config",
+				"docs/build/user-config",
 				"docs/build/errors",
-				"docs/build/public",
-				"docs/build/conventions",
 				{
 					"group": "Advanced",
 					"pages": [
+						"docs/build/conventions",
+						"docs/build/ide",
+						"docs/build/public",
 						"docs/build/raw-sql"
 					]
 				}
@@ -131,7 +131,6 @@
 				}
 			]
 		},
-
 		{
 			"group": "Integrations",
 			"pages": [
@@ -179,7 +178,7 @@
 		},
 		{
 			"source": "/concepts/enterprise-support",
-			"destination": "/docs/enterprise-support"
+			"destination": "/docs/enterprise"
 		},
 		{
 			"source": "/concepts/registries",
@@ -203,7 +202,7 @@
 		},
 		{
 			"source": "/build/crash-course",
-			"destination": "/docs/build/crash-course"
+			"destination": "/docs/build/quickstart"
 		},
 		{
 			"source": "/build/ide",
@@ -223,7 +222,7 @@
 		},
 		{
 			"source": "/build/config",
-			"destination": "/docs/build/config"
+			"destination": "/docs/build/user-config"
 		},
 		{
 			"source": "/build/errors",
