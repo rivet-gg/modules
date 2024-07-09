@@ -21,12 +21,11 @@ const data = await ctx.modules.uploads.getPublicFileUrls({
 
 ```typescript
 export interface Request {
-  files: FileIdentifier[];
-  expirySeconds?: number;
-}
-export interface FileIdentifier {
-  uploadId: string;
-  path: string;
+  files?: any[];
+  expirySeconds?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 
@@ -34,20 +33,7 @@ export interface FileIdentifier {
 
 ```typescript
 export interface Response {
-  files: DownloadableFile[];
-}
-export interface DownloadableFile {
-  uploadId: string;
-  url: string;
-  path: string;
-  mime: null | string;
-  /**
-   * The size of the file in bytes.
-   *
-   * *(This is a string instead of a bigint because JSON doesn't support
-   * serializing/deserializing bigints, and we want to be able to represent
-   * very large file sizes.)*
-   */
-  contentLength: string;
+  files?: any[];
+  [k: string]: any;
 }
 ```

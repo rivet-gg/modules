@@ -1,0 +1,31 @@
+---
+title: Why Deno?
+---
+
+For simplicity, we'll assume that we're comparing Deno to Node.js. To read more on why Open Game Backend chose TypeScript as a language, see [here](/engine/design/typescript).
+
+## Portability
+
+Unlike Node.js which uses CommonJS modules with a heavy standard library, Deno provides an absolutely minimal standard library and relies instead on ECMAScript modules which are very portable. ECMAScript modules are the standard way of managing JavaScript modules across multiple JS runtimes & browsers.
+
+This means that code written for Deno is usually very portable. Node modules can still be used easily via something like [ESM](https://esm.sh/), but they way they're used is more portable.
+
+### Portable code
+
+This is important because it means that code written for Open Game Backend modules are very portable, instead of being built around a specific runtime (such as Node.js).
+
+Because of this, adding support for a runtime like [Bun](https://bun.sh/) would be very easy.
+
+### Serverless Runtimes
+
+Open Game Backend aims to be as portable as possible, and this means that it should be able to run on any serverless runtime, such as Deno Deploy, Cloudflare Workers, Vercel, and Netlify.
+
+## Tooling
+
+Open Game Backend was initiated by a bunch of Rust nerds who value the quality tooling (e.g. Cargo, Crates, Clippy, Rustfmt, RA, etc.) provided around the language.
+
+Deno aims to provide the same quality of tooling (tests, documentation, formatting, linting, package managers, etc) but for TypeScript, which provides faster iteration speeds and is accessible to a wider audience than Rust. If you've used Rust before, you'll notice a lot of similarities to the Rust ecosystem in the tooling provided by Deno.
+
+## Easy installer
+
+Deno makes it very easy to install the Open Game Backend using the `deno install` command.

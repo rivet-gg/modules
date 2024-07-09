@@ -21,7 +21,8 @@ const data = await ctx.modules.tokens.validate({
 
 ```typescript
 export interface Request {
-  token: string;
+  token?: string;
+  [k: string]: any;
 }
 ```
 
@@ -29,14 +30,9 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  token: Token;
-}
-export interface Token {
-  id: string;
-  type: string;
-  meta: any;
-  createdAt: string;
-  expireAt: null | string;
-  revokedAt: null | string;
+  token?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```

@@ -21,19 +21,20 @@ const data = await ctx.modules.rateLimit.throttlePublic({
 
 ```typescript
 export interface Request {
-  /**
-   * Number of requests in `period` before rate limiting.
-   */
-  requests?: number;
-  /**
-   * How frequently to reset the request counter.
-   */
-  period?: number;
+  requests?: {
+    [k: string]: any;
+  };
+  period?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 
 ## Response
 
 ```typescript
-export interface Response {}
+export interface Response {
+  [k: string]: any;
+}
 ```

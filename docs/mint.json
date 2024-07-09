@@ -7,18 +7,42 @@
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#ff760a",
-    "light": "#ffbd6d",
-    "dark": "#ff760a",
+    "primary": "#ff4f00",
+    "light": "#ff8952",
+    "dark": "#ff4f00",
+    "background": {
+      "light": "#fffdfa",
+      "dark": "#0b0a0a"
+    },
     "anchors": {
-      "from": "#ff760a",
-      "to": "#ffbd6d"
+      "from": "#ff4f00",
+      "to": "#ff4f00"
     }
+  },
+  "modeToggle": {
+    "isHidden": true
   },
   "topbarCtaButton": {
     "type": "github",
     "url": "https://github.com/rivet-gg/opengb"
   },
+  "primaryTab": {
+    "name": "Home"
+  },
+  "tabs": [
+    {
+      "name": "Documentation",
+      "url": "docs"
+    },
+    {
+      "name": "Modules",
+      "url": "modules"
+    },
+    {
+      "name": "Integrations",
+      "url": "integrations"
+    }
+  ],
   "anchors": [
     {
       "name": "Community",
@@ -41,70 +65,66 @@
       "group": "Getting Started",
       "pages": [
         "introduction",
-        "concepts/quickstart",
+        "docs/quickstart",
+        "docs/project-config",
+        "docs/modules",
+        "docs/sdk",
         {
-          "group": "Concepts",
+          "group": "Advanced",
           "pages": [
-            "concepts/project-config",
-            "concepts/modules",
-            "concepts/sdk",
-            "concepts/enterprise-support",
-            {
-              "group": "Advanced",
-              "pages": [
-                "concepts/registries",
-                "concepts/self-hosting",
-                "concepts/multiple-games"
-              ]
-            },
-            {
-              "group": "Engine Internals",
-              "pages": [
-                "engine/introduction",
-                {
-                  "group": "Design Decisions",
-                  "pages": [
-                    "engine/design/typescript",
-                    "engine/design/deno",
-                    "engine/design/postgres",
-                    "engine/design/prisma",
-                    "engine/design/registries-dependencies"
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "group": "Comparison",
-          "pages": [
-            "comparison/playfab",
-            "comparison/nakama",
-            "comparison/supabase"
+            "docs/registries",
+            "docs/self-hosting",
+            "docs/multiple-games",
+            "docs/environment-variables"
           ]
         }
       ]
     },
     {
-      "group": "Building Modules",
+      "group": "Developing Modules",
       "pages": [
-        "build/overview",
-        "build/crash-course",
+        "docs/build/overview",
+        "docs/build/crash-course",
+        "docs/build/ide",
+        "docs/build/module-config",
+        "docs/build/scripts",
+        "docs/build/database",
+        "docs/build/config",
+        "docs/build/errors",
+        "docs/build/public",
+        "docs/build/conventions",
         {
-          "group": "Concepts",
+          "group": "Advanced",
           "pages": [
-            "build/ide",
-            "build/module-config",
-            "build/scripts",
-            "build/database",
-            "build/config",
-            "build/errors",
-            "build/public",
-            "build/conventions",
+            "docs/build/raw-sql"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Miscellaneous",
+      "pages": [
+        "docs/enterprise",
+        {
+          "group": "Comparison",
+          "pages": [
+            "docs/comparison/playfab",
+            "docs/comparison/nakama",
+            "docs/comparison/supabase"
+          ]
+        },
+        {
+          "group": "Engine Internals",
+          "pages": [
+            "docs/engine/introduction",
             {
-              "group": "Advanced",
+              "group": "Design Decisions",
               "pages": [
-                "build/raw-sql"
+                "docs/engine/design/typescript",
+                "docs/engine/design/deno",
+                "docs/engine/design/postgres",
+                "docs/engine/design/prisma",
+                "docs/engine/design/registries-dependencies"
               ]
             }
           ]
@@ -115,13 +135,8 @@
       "group": "Integrations",
       "pages": [
         "integrations/overview",
-        {
-          "group": "Integrations",
-          "pages": [
-            "integrations/sendgrid",
-            "integrations/infisical"
-          ]
-        }
+        "integrations/sendgrid",
+        "integrations/infisical"
       ]
     },
     {
@@ -226,7 +241,7 @@
         },
         {
           "icon": "user-group",
-          "group": "Gropus",
+          "group": "Groups",
           "pages": [
             "modules/groups/overview"
           ]
@@ -289,6 +304,19 @@
               "pages": [
                 "modules/rate_limit/scripts/throttle",
                 "modules/rate_limit/scripts/throttle_public"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "r",
+          "group": "Rivet API",
+          "pages": [
+            "modules/rivet/overview",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/rivet/scripts/call"
               ]
             }
           ]
@@ -366,7 +394,103 @@
   "redirects": [
     {
       "source": "/concepts/known-limitations",
-      "destination": "/concepts/roadmap"
+      "destination": "/docs/roadmap"
+    },
+    {
+      "source": "/concepts/roadmap",
+      "destination": "/docs/roadmap"
+    },
+    {
+      "source": "/concepts/quickstart",
+      "destination": "/docs/quickstart"
+    },
+    {
+      "source": "/concepts/project-config",
+      "destination": "/docs/project-config"
+    },
+    {
+      "source": "/concepts/modules",
+      "destination": "/docs/modules"
+    },
+    {
+      "source": "/concepts/sdk",
+      "destination": "/docs/sdk"
+    },
+    {
+      "source": "/concepts/enterprise-support",
+      "destination": "/docs/enterprise-support"
+    },
+    {
+      "source": "/concepts/registries",
+      "destination": "/docs/registries"
+    },
+    {
+      "source": "/concepts/self-hosting",
+      "destination": "/docs/self-hosting"
+    },
+    {
+      "source": "/concepts/multiple-games",
+      "destination": "/docs/multiple-games"
+    },
+    {
+      "source": "/concepts/environment-variables",
+      "destination": "/docs/environment-variables"
+    },
+    {
+      "source": "/build/overview",
+      "destination": "/docs/build/overview"
+    },
+    {
+      "source": "/build/crash-course",
+      "destination": "/docs/build/crash-course"
+    },
+    {
+      "source": "/build/ide",
+      "destination": "/docs/build/ide"
+    },
+    {
+      "source": "/build/module-config",
+      "destination": "/docs/build/module-config"
+    },
+    {
+      "source": "/build/scripts",
+      "destination": "/docs/build/scripts"
+    },
+    {
+      "source": "/build/database",
+      "destination": "/docs/build/database"
+    },
+    {
+      "source": "/build/config",
+      "destination": "/docs/build/config"
+    },
+    {
+      "source": "/build/errors",
+      "destination": "/docs/build/errors"
+    },
+    {
+      "source": "/build/public",
+      "destination": "/docs/build/public"
+    },
+    {
+      "source": "/build/conventions",
+      "destination": "/docs/build/conventions"
+    },
+    {
+      "source": "/build/raw-sql",
+      "destination": "/docs/build/raw-sql"
+    },
+    {
+      "source": "/comparison/playfab",
+      "destination": "/docs/comparison/playfab"
+    },
+    {
+      "source": "/comparison/nakama",
+      "destination": "/docs/comparison/nakama"
+    },
+    {
+      "source": "/comparison/supabase",
+      "destination": "/docs/comparison/supabase"
     }
   ]
 }

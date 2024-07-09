@@ -21,7 +21,8 @@ const data = await ctx.modules.users.createToken({
 
 ```typescript
 export interface Request {
-  userId: string;
+  userId?: string;
+  [k: string]: any;
 }
 ```
 
@@ -29,15 +30,9 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  token: TokenWithSecret;
-}
-export interface TokenWithSecret {
-  token: string;
-  id: string;
-  type: string;
-  meta: any;
-  createdAt: string;
-  expireAt: null | string;
-  revokedAt: null | string;
+  token?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```

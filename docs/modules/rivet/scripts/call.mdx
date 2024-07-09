@@ -1,0 +1,42 @@
+---
+title: "Call"
+description: "Call a Rivet REST endpoint."
+sidebarTitle: "Call"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rivet/scripts/call.ts) | `call` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.rivet.call({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+export interface Request {
+  method?: string;
+  path?: string;
+  body?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
+}
+```
+
+## Response
+
+```typescript
+export interface Response {
+  body?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
+}
+```

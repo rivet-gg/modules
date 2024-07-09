@@ -24,7 +24,7 @@ if (!Deno.env.get("SKIP_BUILD_MODULES")) {
   if (!Deno.env.get("SKIP_BUILD_OPENGB")) {
     console.log("Build OpenGB CLI");
     const installOutput = await new Deno.Command("deno", {
-      args: ["task", "artifacts:build:all"],
+      args: ["task", "artifacts:build"],
       cwd: OPENGB_PATH,
       stdout: "inherit",
       stderr: "inherit",
@@ -126,11 +126,11 @@ async function generateModuleCards() {
         </Card>
       `;
 		});
-	const source = `export const ModuleCards = () => (
+	const source = `export const ModuleCards = ({ cols }) => (
 <>
-	<p>These modules are thoroughly reviewed, tested, and documented to help you get your game backend up and running as quickly as possible. Learn more about <a href="/build">creating your own module</a> and <a href="/concepts/registries">using your own registries</a>.</p>
+	<p>These modules are thoroughly reviewed, tested, and documented to help you get your game backend up and running as quickly as possible. Learn more about <a href="/build">creating your own module</a> and <a href="/docs/registries">using your own registries</a>.</p>
 
-	<CardGroup cols={2}>
+	<CardGroup cols={cols ?? 2}>
 		<Card title="Build your own" icon="plus" href="/build" />
 		${moduleCards.join("")}
 	</CardGroup>
@@ -154,7 +154,7 @@ async function generateProjectConfig() {
 	const projectSchema = await Deno.readTextFile(resolve(OPENGB_PATH, "artifacts", "project_schema.json"));
 	const configTs = await schemaToTypeScript(JSON.parse(projectSchema), "Config");
 	await Deno.writeTextFile(
-		resolve(PROJECT_ROOT, "concepts", "project-config.mdx"),
+		resolve(PROJECT_ROOT, "docs", "project-config.mdx"),
 		`---
 title: "Config (backend.json)"
 ---
@@ -172,7 +172,7 @@ async function generateModuleConfig() {
 	const projectSchema = await Deno.readTextFile(resolve(OPENGB_PATH, "artifacts", "module_schema.json"));
 	const configTs = await schemaToTypeScript(JSON.parse(projectSchema), "Config");
 	await Deno.writeTextFile(
-		resolve(PROJECT_ROOT, "build", "module-config.mdx"),
+		resolve(PROJECT_ROOT, "docs", "build", "module-config.mdx"),
 		`---
 title: "Config (module.json)"
 ---

@@ -20,11 +20,15 @@ const data = await ctx.modules.lobbies.forceGc({
 ## Request
 
 ```typescript
-export interface Request {}
+export interface Request {
+  [k: string]: any;
+}
 ```
 
 ## Response
 
 ```typescript
-export interface Response {}
+export interface Response {
+  [k: string]: any;
+}
 ```

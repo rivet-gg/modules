@@ -21,27 +21,18 @@ const data = await ctx.modules.rateLimit.throttle({
 
 ```typescript
 export interface Request {
-  /**
-   * The type of entity to rate limit by. For example, "ip" or "user".
-   */
-  type: string;
-  /**
-   * The key to rate limit by. For example, the IP address or user ID.
-   */
-  key: string;
-  /**
-   * Number of requests in `period` before rate limiting.
-   */
-  requests: number;
-  /**
-   * How frequently to reset the request counter, in seconds.
-   */
-  period: number;
+  type?: string;
+  key?: string;
+  requests?: number;
+  period?: number;
+  [k: string]: any;
 }
 ```
 
 ## Response
 
 ```typescript
-export interface Response {}
+export interface Response {
+  [k: string]: any;
+}
 ```

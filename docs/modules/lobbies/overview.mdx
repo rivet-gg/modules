@@ -14,6 +14,7 @@ sidebarTitle: Overview
 
 **Dependencies**
 
+- [Rivet API](/modules/rivet/overview)
 - [Tokens](/modules/tokens/overview)
 
 ## Installation
@@ -52,38 +53,46 @@ Add the following to your `backend.json`:
 		
 ```typescript
 export interface Config {
-  lobbies: LobbyConfig;
-  lobbyRules: LobbyRule[];
-  players: {
-    maxPerIp?: number;
-    maxUnconnected?: number;
-    unconnectedExpireAfter: number;
-    autoDestroyAfter?: number;
+  lobbies?: {
+    destroyOnEmptyAfter?: {
+      [k: string]: any;
+    };
+    unreadyExpireAfter?: number;
+    maxPlayers?: number;
+    maxPlayersDirect?: number;
+    enableDynamicMaxPlayers?: {
+      [k: string]: any;
+    };
+    enableDynamicMaxPlayersDirect?: {
+      [k: string]: any;
+    };
+    enableCreate?: boolean;
+    enableDestroy?: boolean;
+    enableFind?: boolean;
+    enableFindOrCreate?: boolean;
+    enableJoin?: boolean;
+    enableList?: boolean;
+    backend?: {
+      [k: string]: any;
+    };
+    [k: string]: any;
   };
+  lobbyRules?: any[];
+  players?: {
+    maxPerIp?: {
+      [k: string]: any;
+    };
+    maxUnconnected?: {
+      [k: string]: any;
+    };
+    unconnectedExpireAfter?: number;
+    autoDestroyAfter?: {
+      [k: string]: any;
+    };
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
-export interface LobbyConfig {
-  destroyOnEmptyAfter?: null | number;
-  unreadyExpireAfter: number;
-  maxPlayers: number;
-  maxPlayersDirect: number;
-  enableDynamicMaxPlayers?: PlayerRange;
-  enableDynamicMaxPlayersDirect?: PlayerRange;
-  enableCreate: boolean;
-  enableDestroy: boolean;
-  enableFind: boolean;
-  enableFindOrCreate: boolean;
-  enableJoin: boolean;
-  enableList: boolean;
-}
-export interface PlayerRange {
-  min: number;
-  max: number;
-}
-export interface LobbyRule {
-  tags: RecordStringString;
-  config: LobbyConfig;
-}
-export interface RecordStringString {}
 ```
 
 ### Default

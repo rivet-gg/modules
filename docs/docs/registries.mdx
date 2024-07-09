@@ -1,0 +1,128 @@
+---
+title: Registries
+---
+
+Registries are used to manage collections of modules & share modules across backends.  All modules belong to a registry.
+
+## Common practices
+
+Most mature game studios have registries configured like this inside of their game's repo:
+
+```json backend.json
+{
+	"registries": {
+    // Modules shared across multiple games
+		"shared": {
+			"git": {
+				"url": "https://github.com/my-studio/my-registry.git",
+				"directory": "./modules"
+			}
+		},
+    // Modules specific to this game
+		"local": {
+			"local": {
+				"directory": "./modules"
+			}
+		}
+	},
+	"modules": {
+		"module_a": {},  // Pulls from the registry named `default`
+		"module_b": {
+			"registry": "shared"
+		},
+		"module_c": {
+			"registry": "local"
+		}
+	}
+}
+```
+
+## Special registries
+
+### `default`
+
+The registry named `default` is special. Any modules without a specified registry will be fetched from the default registry.
+
+The default config for the `default` registry is:
+
+```json backend.json
+{
+	"registries": {
+		"default": {
+			"git": {
+				"url": {
+					"https": "https://github.com/rivet-gg/opengb-modules.git",
+					"ssh": "git@github.com:rivet-gg/opengb-modules.git"
+				},
+				"directory": "./modules",
+				"rev": "foobar"
+			}
+		}
+	}
+}
+```
+
+You can override this in your `backend.json` file.
+
+### `local`
+
+The registry named `local` is special. All commands with `opengb create` will create a module in the `local` registry.
+
+Most projects specify a default registry like:
+
+```json backend.json
+{
+	"registries": {
+		"local": {
+			"local": {
+				"directory": "./modules"
+			}
+		}
+	}
+}
+```
+
+## Types of registries
+
+### `local`
+
+Local registires represent a directory on your local filesystem holding modules. This is useful for custom modules that won't be shared with other backends or for testing.
+
+If a module is stored locally but shared across multiple backends, set `isExternal` to true.
+
+`local` modules are included by default in tests & generate migrations, unless `isExternal` is specified.
+
+Example:
+
+```json backend.json
+{
+	"registries": {
+		"local": {
+			"local": {
+				"directory": "./modules",
+        // Optional
+				"isExternal": true
+			}
+		}
+	}
+}
+```
+
+### `git`
+
+Git registries represent a git repository holding modules. This is useful for sharing modules across multiple backends.
+
+This uses the native Git CLI to fetch modules, so you can use private Git registries that your computer has access to.
+
+```json backend.json
+{
+	"registries": {
+		"shared": {
+			"git": {
+				"url": "https://github.com/my-studio/my-registry.git",
+				"directory": "./modules"
+			}
+		}
+	}
+}
+```

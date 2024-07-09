@@ -21,7 +21,10 @@ const data = await ctx.modules.users.create({
 
 ```typescript
 export interface Request {
-  username?: string;
+  username?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
 
@@ -29,12 +32,9 @@ export interface Request {
 
 ```typescript
 export interface Response {
-  user: User;
-}
-export interface User {
-  id: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
+  user?: {
+    [k: string]: any;
+  };
+  [k: string]: any;
 }
 ```
