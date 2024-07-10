@@ -88,8 +88,19 @@
         "docs/build/module-config",
         "docs/build/scripts",
         "docs/build/database",
+        "docs/build/actors",
         "docs/build/user-config",
         "docs/build/errors",
+        {
+          "group": "Core Modules",
+          "pages": [
+            "docs/build/core-modules",
+            "docs/build/tokens",
+            "docs/build/rate-limit",
+            "docs/build/uploads",
+            "docs/build/analytics"
+          ]
+        },
         {
           "group": "Advanced",
           "pages": [
