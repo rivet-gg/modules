@@ -186,6 +186,12 @@ function generateSerializableDeclarationSchema(
 	return s.unknown();
 }
 
+// This is a stripped down version of the typescript lib
+// that only contains the types we want to serialize.
+// This is to avoid serializing the entire typescript lib which
+// is huge and contains a lot of types we don't need.
+const tsLib = Deno.readTextFileSync(import.meta.dirname + "/schema_ts_lib.ts");
+
 export function createSchemaSerializer(
 	opts: { path: string } | { code: string },
 ) {
@@ -268,7 +274,9 @@ interface Date {}
 
 	const hasCode = "code" in opts;
 	const project = new Project({
-		compilerOptions: hasCode ? { target: ts.ScriptTarget.ESNext, strict: true, noLib: true } : DEFAULT_COMPILER_OPTIONS,
+		compilerOptions: hasCode
+			? { target: ts.ScriptTarget.ESNext, strict: true, noLib: true }
+			: DEFAULT_COMPILER_OPTIONS,
 		skipAddingFilesFromTsConfig: hasCode,
 		useInMemoryFileSystem: hasCode,
 	});

@@ -14,6 +14,7 @@ import { UnreachableError, UserError } from "../error/mod.ts";
 import { Runtime } from "../build/mod.ts";
 import { PathResolver, QualifiedPathPair } from "../../path_resolver/mod.ts";
 import { RouteCollisionError } from "../error/mod.ts";
+import { IndexedModuleConfig } from "../config/module.ts";
 
 export interface Project {
 	path: string;
@@ -94,7 +95,14 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 			projectModuleName,
 			projectModuleConfig,
 		);
-		const module = await loadModule(projectConfigPath, path, projectModuleName, projectModuleConfig, registry, signal);
+		const module = await loadModule(
+			projectConfigPath,
+			path,
+			projectModuleName,
+			projectModuleConfig,
+			registry,
+			signal,
+		);
 		modules.set(projectModuleName, module);
 	}
 
@@ -197,6 +205,11 @@ interface FetchAndResolveModuleOutput {
 	 * Registry the module was fetched from.
 	 */
 	registry: Registry;
+
+	/**
+	 * A short version of the module config
+	 */
+	config: IndexedModuleConfig;
 }
 
 /**
@@ -222,9 +235,9 @@ export async function fetchAndResolveModule(
 
 	// Resolve module path
 	const pathModuleName = moduleNameInRegistry(moduleName, module);
-	const sourcePath = resolve(registry.path, pathModuleName);
-	if (!await exists(resolve(sourcePath, "module.json"))) {
-		if (pathModuleName != moduleName) {
+	const moduleConfig = registry.modules[pathModuleName];
+	if (!moduleConfig) {
+		if (pathModuleName !== moduleName) {
 			// Has alias
 			throw new UserError(
 				`Module \`${pathModuleName}\` (alias of \`${moduleName}\`) not found in registry \`${registryName}\`.`,
@@ -239,6 +252,7 @@ export async function fetchAndResolveModule(
 		}
 	}
 
+	const sourcePath = resolve(registry.path, pathModuleName);
 	let path: string;
 	if (registry.isExternal) {
 		// Copy to gen dir
@@ -279,7 +293,7 @@ export async function fetchAndResolveModule(
 		path = sourcePath;
 	}
 
-	return { path, sourcePath: sourcePath, registry };
+	return { path, sourcePath: sourcePath, registry, config: moduleConfig };
 }
 
 function registryNameForModule(module: ProjectModuleConfig): string {
@@ -307,6 +321,10 @@ export const DRIZZLE_ORM_REEXPORT = "drizzle_orm_reexport.ts";
 
 export function projectGenPath(project: Project, ...pathSegments: string[]): string {
 	return resolve(project.path, ".opengb", ...pathSegments);
+}
+
+export function metaPath(project: Project): string {
+	return projectGenPath(project, META_PATH);
 }
 
 export function genRuntimeModPath(project: Project): string {

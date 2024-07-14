@@ -22,9 +22,7 @@ export async function inflateArchive(
 		await Deno.mkdir(dirname(absPath), { recursive: true });
 
 		if (encode == "base64") {
-			const decodedData = atob(value);
-			const uint8Array = new Uint8Array(decodedData.length).map((_, i) => decodedData.charCodeAt(i));
-			await Deno.writeFile(absPath, uint8Array);
+			await Deno.writeFile(absPath, encoding.decodeBase64(value));
 		} else if (encode == "string") {
 			await Deno.writeTextFile(absPath, value);
 		} else {
