@@ -1,4 +1,5 @@
 import { resolve } from "@std/path";
+import { encodeBase64 } from "@std/encoding";
 import * as glob from "glob";
 
 /**
@@ -46,7 +47,7 @@ export async function buildArtifacts(
 		let content: string;
 		if (encode == "base64") {
 			const data = await Deno.readFile(resolve(rootPath, file));
-			content = btoa(new Uint8Array(data).reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
+			content = encodeBase64(new Uint8Array(data));
 		} else if (encode == "string") {
 			content = await Deno.readTextFile(resolve(rootPath, file));
 		} else {
