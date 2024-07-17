@@ -1,7 +1,6 @@
 import { ModuleContextParams, ScriptContext } from "./context.ts";
 import { Context, RouteContext, TestContext } from "./context.ts";
 import { PgPoolDummy, Postgres, PrismaClientDummy } from "./postgres.ts";
-import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
 import { RegistryCallMap } from "./proxy.ts";
@@ -218,34 +217,12 @@ export class Runtime<Params extends ContextParams> {
 			this,
 			newTrace(traceEntryType),
 			moduleName,
-			this.postgres.getOrCreatePrismaClient(this.config, module),
+			this.postgres.getOrCreatePrismaClient(this.env, this.config, module),
 			module.db?.schema,
 			routeName,
 			this.dependencyCaseConversionMap,
 			this.actorCaseConversionMap,
 		);
-	}
-
-	/**
-	 * Serves the runtime as an HTTP server.
-	 */
-	public async serve() {
-		await Deno.serve(
-			{
-				hostname: this.hostname,
-				port: this.port,
-				onListen: () => {
-					log(
-						"info",
-						"server started",
-						["hostname", this.hostname],
-						["port", this.port],
-						["endpoint", this.publicEndpoint],
-					);
-				},
-			},
-			serverHandler(this),
-		).finished;
 	}
 
 	/**
@@ -286,7 +263,7 @@ export class Runtime<Params extends ContextParams> {
 						test: { module: moduleName, name: testName },
 					}),
 					moduleName,
-					runtime.postgres.getOrCreatePrismaClient(runtime.config, module),
+					runtime.postgres.getOrCreatePrismaClient(runtime.env, runtime.config, module),
 					module.db?.schema,
 					dependencyCaseConversionMap,
 					actorDependencyCaseConversionMap,
