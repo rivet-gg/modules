@@ -1,4 +1,3 @@
-import { addFormats, Ajv } from "./deps.ts";
 import { ModuleContextParams, ScriptContext } from "./context.ts";
 import { Context, TestContext } from "./context.ts";
 import { PgPoolDummy, Postgres, PrismaClientDummy } from "./postgres.ts";
@@ -10,6 +9,26 @@ import { ActorDriver } from "./actor/driver.ts";
 import { ActorBase } from "./actor/actor.ts";
 import { ContextParams } from "./mod.ts";
 import { errorToLogEntries, log } from "./logger.ts";
+
+interface ParseSuccessResult<Output = unknown> {
+	success: true;
+	data: Output;
+	error?: never;
+}
+
+interface ParseErrorResult {
+	success: false;
+	error: Error;
+	data?: never;
+}
+
+interface ValidationSchema {
+	safeParseAsync: <Output = unknown>(
+		data: unknown,
+	) => Promise<
+		ParseSuccessResult<Output> | ParseErrorResult
+	>;
+}
 
 export interface Config {
 	runtime: BuildRuntime;
@@ -49,10 +68,8 @@ export interface CorsConfig {
 export interface Script {
 	// deno-lint-ignore no-explicit-any
 	run: ScriptRun<any, any, any, any, any>;
-	// deno-lint-ignore no-explicit-any
-	requestSchema: any;
-	// deno-lint-ignore no-explicit-any
-	responseSchema: any;
+	requestSchema: ValidationSchema;
+	responseSchema: ValidationSchema;
 	public: boolean;
 }
 
@@ -84,8 +101,6 @@ export interface ErrorConfig {
 export class Runtime<Params extends ContextParams> {
 	public postgres: Postgres;
 
-	public ajv: Ajv.default;
-
 	public hostname = Deno.env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
 	public port = parseInt(Deno.env.get("OPENGB_PORT") ?? "6420");
 	public publicEndpoint: string;
@@ -99,12 +114,6 @@ export class Runtime<Params extends ContextParams> {
 		this.publicEndpoint = Deno.env.get("OPENGB_PUBLIC_ENDPOINT") ?? `http://${this.hostname}:${this.port}`;
 
 		this.postgres = new Postgres();
-
-		this.ajv = new Ajv.default({
-			removeAdditional: true,
-		});
-		// TODO: Why are types incompatible
-		addFormats.default(this.ajv as any);
 	}
 
 	private async shutdown() {

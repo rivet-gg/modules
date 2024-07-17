@@ -11,7 +11,7 @@ export const devCommand = new Command<GlobalOpts>()
 	.description("Start the development server")
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")
-	.option("--strict-schemas", "Strictly validate schemas", { default: false })
+	.option("--strict-schemas", "Strictly validate schemas", { default: true })
 	.option("--no-watch", "Automatically restart server on changes")
 	.action(
 		async (opts) => {

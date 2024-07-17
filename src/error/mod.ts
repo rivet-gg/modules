@@ -1,4 +1,4 @@
-import { relative } from "../deps.ts";
+import { fromValidationError, relative } from "../deps.ts";
 import { colors } from "../term/deps.ts";
 
 /**
@@ -103,6 +103,18 @@ export class CombinedError extends KnownError {
 		}
 	}
 }
+interface ValidationErrorOpts extends UserErrorOpts {
+	validationError: Error;
+}
+
+export class ValidationError extends UserError {
+	public readonly validationError: Error;
+	constructor(message: string, opts: ValidationErrorOpts) {
+		super(message, opts);
+		this.name = "ValidationError";
+		this.validationError = opts.validationError;
+	}
+}
 
 export function printError(error: Error) {
 	// Padding
@@ -117,7 +129,9 @@ export function printError(error: Error) {
 		console.error(
 			`${
 				colors.bold(
-					colors.red(`Failed. Found ${error.errors.length} ${error.errors.length == 1 ? "error" : "errors"}.`),
+					colors.red(
+						`Failed. Found ${error.errors.length} ${error.errors.length == 1 ? "error" : "errors"}.`,
+					),
 				)
 			}`,
 		);
@@ -133,6 +147,10 @@ export function printError(error: Error) {
 			for (const line of error.details.split("\n")) {
 				str += `  ${colors.dim(line)}\n`;
 			}
+		}
+
+		if (error instanceof ValidationError) {
+			str += `  ${colors.dim(fromValidationError(error.validationError).toString())}\n`;
 		}
 
 		if (error instanceof UserError && error.suggest) {

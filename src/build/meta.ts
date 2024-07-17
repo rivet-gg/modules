@@ -1,10 +1,10 @@
 import { ModuleConfig, ScriptConfig } from "../config/module.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
-import { tjs } from "../deps.ts";
 import { hasUserConfigSchema, Project } from "../project/mod.ts";
 import { genPath, META_PATH } from "../project/project.ts";
 import { camelify, pascalify } from "../types/case_conversions.ts";
+import { AnySchemaElement } from "./schema/mod.ts";
 
 export interface ProjectMeta {
 	config: ProjectConfig;
@@ -27,7 +27,7 @@ export interface ModuleMeta {
 	config: ModuleConfig;
 	registryName: string;
 	userConfig: unknown;
-	userConfigSchema?: tjs.Definition;
+	userConfigSchema?: AnySchemaElement;
 	scripts: Record<string, ScriptMeta>;
 	db?: ModuleDatabaseMeta;
 	hasUserConfigSchema: boolean;
@@ -43,8 +43,8 @@ export interface ScriptMeta {
 	nameCamel: string;
 	namePascal: string;
 	config: ScriptConfig;
-	requestSchema: tjs.Definition;
-	responseSchema: tjs.Definition;
+	requestSchema: AnySchemaElement;
+	responseSchema: AnySchemaElement;
 }
 
 /**
@@ -80,8 +80,8 @@ export async function generateMeta(project: Project) {
 					nameCamel: camelify(name),
 					namePascal: pascalify(name),
 					config: script.config,
-					requestSchema: script.requestSchema!,
-					responseSchema: script.responseSchema!,
+					requestSchema: script.schemas?.request!,
+					responseSchema: script.schemas?.response!,
 				}]),
 			),
 			db: module.db,

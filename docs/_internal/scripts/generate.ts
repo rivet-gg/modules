@@ -4,7 +4,9 @@ import { resolve } from "https://deno.land/std@0.214.0/path/mod.ts";
 import { ModuleMeta, ProjectMeta } from "../../../src/build/meta.ts";
 import { emptyDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { compile } from "npm:json-schema-to-typescript@^13.1.2";
+import { convertSerializedSchemaToTypeScript, convertZodToSerializedSchema } from "../../../src/build/schema/mod.ts";
+import { ProjectConfigSchema } from "../../../src/config/project.ts";
+import { ModuleSchema } from "../../../src/config/module.ts";
 
 const PROJECT_ROOT = resolve(import.meta.dirname!, "..", "..");
 const OPENGB_PATH = resolve(
@@ -21,16 +23,16 @@ const TEST_PROJECT_PATH = resolve(
 );
 
 if (!Deno.env.get("SKIP_BUILD_MODULES")) {
-  if (!Deno.env.get("SKIP_BUILD_OPENGB")) {
-    console.log("Build OpenGB CLI");
-    const installOutput = await new Deno.Command("deno", {
-      args: ["task", "artifacts:build"],
-      cwd: OPENGB_PATH,
-      stdout: "inherit",
-      stderr: "inherit",
-    }).output();
-    assert(installOutput.success);
-  }
+	if (!Deno.env.get("SKIP_BUILD_OPENGB")) {
+		console.log("Build OpenGB CLI");
+		const installOutput = await new Deno.Command("deno", {
+			args: ["task", "artifacts:build"],
+			cwd: OPENGB_PATH,
+			stdout: "inherit",
+			stderr: "inherit",
+		}).output();
+		assert(installOutput.success);
+	}
 
 	console.log("Building project");
 	const buildOutput = await new Deno.Command("deno", {
@@ -80,9 +82,9 @@ const TEMPLATES = {
 
 // Sort modules
 for (let key in meta.modules) {
-  if (!meta.modules[key].config.name) {
-    throw new Error(`Module missing name: ${key}`)
-  }
+	if (!meta.modules[key].config.name) {
+		throw new Error(`Module missing name: ${key}`);
+	}
 }
 const modulesSorted = Object.entries(meta.modules)
 	.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!));
@@ -90,7 +92,9 @@ const modulesSorted = Object.entries(meta.modules)
 // Generate introduction
 await generateModuleCards();
 await generateModulesOverview();
+console.log("Generating project config");
 await generateProjectConfig();
+console.log("Generating module config");
 await generateModuleConfig();
 
 // Generate modules
@@ -151,8 +155,8 @@ async function generateModulesOverview() {
 }
 
 async function generateProjectConfig() {
-	const projectSchema = await Deno.readTextFile(resolve(OPENGB_PATH, "artifacts", "project_schema.json"));
-	const configTs = await schemaToTypeScript(JSON.parse(projectSchema), "Config");
+	const projectSchema = convertZodToSerializedSchema(ProjectConfigSchema);
+	const configTs = await schemaToTypeScript(projectSchema, "Config");
 	await Deno.writeTextFile(
 		resolve(PROJECT_ROOT, "docs", "project-config.mdx"),
 		`---
@@ -169,8 +173,8 @@ ${configTs}
 }
 
 async function generateModuleConfig() {
-	const projectSchema = await Deno.readTextFile(resolve(OPENGB_PATH, "artifacts", "module_schema.json"));
-	const configTs = await schemaToTypeScript(JSON.parse(projectSchema), "Config");
+	const moduleConfigSchema = convertZodToSerializedSchema(ModuleSchema);
+	const configTs = await schemaToTypeScript(moduleConfigSchema, "Config");
 	await Deno.writeTextFile(
 		resolve(PROJECT_ROOT, "docs", "build", "module-config.mdx"),
 		`---
@@ -203,11 +207,11 @@ async function generateModule(moduleName: string, module: ModuleMeta) {
 	);
 
 	// Validate scripts
-for (let key in module.scripts) {
-  if (!module.scripts[key].config.name) {
-    throw new Error(`Script missing name: ${moduleName}.${key}`)
-  }
-}
+	for (let key in module.scripts) {
+		if (!module.scripts[key].config.name) {
+			throw new Error(`Script missing name: ${moduleName}.${key}`);
+		}
+	}
 	const scriptsSorted = Object.entries(module.scripts)
 		.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!));
 	for (const [scriptName, script] of scriptsSorted) {
@@ -221,31 +225,30 @@ for (let key in module.scripts) {
 		}
 	}
 
-  // Sort scripts
-  const publicScripts = Object.entries(meta.modules[moduleName].scripts)
-    .filter(([_,x]) => x.config.public);
-  const internalScripts = Object.entries(meta.modules[moduleName].scripts)
-    .filter(([_,x]) => !x.config.public);
+	// Sort scripts
+	const publicScripts = Object.entries(meta.modules[moduleName].scripts)
+		.filter(([_, x]) => x.config.public);
+	const internalScripts = Object.entries(meta.modules[moduleName].scripts)
+		.filter(([_, x]) => !x.config.public);
 
 	// Add nav
-  let pages: any[] = [`modules/${moduleName}/overview`];
-  if (publicScripts.length > 0) {
-    pages.push({
-      "group": "Scripts (Public)",
-      "pages": 
-        publicScripts
-        .sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
-        .map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
-    });
-  }
-  if (internalScripts.length > 0) {
-    pages.push({
-      "group": "Scripts (Internal)",
-      "pages": internalScripts
-        .sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
-        .map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
-    });
-  }
+	let pages: any[] = [`modules/${moduleName}/overview`];
+	if (publicScripts.length > 0) {
+		pages.push({
+			"group": "Scripts (Public)",
+			"pages": publicScripts
+				.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
+				.map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
+		});
+	}
+	if (internalScripts.length > 0) {
+		pages.push({
+			"group": "Scripts (Internal)",
+			"pages": internalScripts
+				.sort((a, b) => a[1].config.name!.localeCompare(b[1].config.name!))
+				.map(([scriptName]) => `modules/${moduleName}/scripts/${scriptName}`),
+		});
+	}
 	modulesNav.pages.push({
 		"icon": module.config.icon,
 		"group": module.config.name,
@@ -351,7 +354,10 @@ ${JSON.stringify(module.config.defaultConfig ?? {}, null, 4)}
 		.replace(/%%INSTALL_CONFIG%%/g, install)
 		.replace(/%%CONFIG_SCHEMA%%/g, configSchema)
 		.replace(/%%SCRIPTS_PUBLIC%%/g, publicScripts.length > 0 ? publicScriptCards.join("") : "_No public scripts._")
-		.replace(/%%SCRIPTS_INTERNAL%%/g, internalScripts.length > 0 ? internalScriptCards.join("") : "_No internal scripts._")
+		.replace(
+			/%%SCRIPTS_INTERNAL%%/g,
+			internalScripts.length > 0 ? internalScriptCards.join("") : "_No internal scripts._",
+		)
 		.replace(/%%ERRORS%%/g, errors);
 	await Deno.writeTextFile(resolve(modulePath, "overview.mdx"), overview);
 
@@ -399,9 +405,35 @@ ${JSON.stringify(module.config.defaultConfig ?? {}, null, 4)}
 }
 
 async function schemaToTypeScript(schema: any, name: string): Promise<string> {
-	const ts = await compile(schema, name, {
-		bannerComment: "",
-		unknownAny: false,
+	const sourceCode = convertSerializedSchemaToTypeScript(schema, { name });
+
+	// using the same formatter as the Deno itself
+	// https://github.com/denoland/deno/blob/v1.41.0/tools/format.js
+	const cmd = new Deno.Command("deno", {
+		args: [
+			"run",
+			"-A",
+			"--no-config",
+			"npm:dprint@0.45.0",
+			"fmt",
+			"--stdin",
+			"tsx",
+			"--config",
+			resolve(Deno.cwd(), "docs/_internal/scripts/.dprint.json"),
+		],
+		stdin: "piped",
+		stdout: "piped",
+		stderr: "inherit",
 	});
-	return ts.trim();
+
+	const process = cmd.spawn();
+
+	const writter = process.stdin.getWriter();
+	await writter.write(new TextEncoder().encode(`${sourceCode}\n`));
+	await writter.ready;
+	await writter.close();
+
+	const raw = await process.output();
+	const formatted = new TextDecoder().decode(raw.stdout);
+	return formatted;
 }

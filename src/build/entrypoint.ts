@@ -14,6 +14,7 @@ import { CommandError, UnreachableError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
 import { dedent } from "./deps.ts";
+import { convertSerializedSchemaToZodExpression } from "./schema/mod.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
@@ -21,7 +22,10 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	// Generate module configs
 	const [modImports, modConfig] = generateModImports(project, opts);
 
-	let imports = "";
+	let imports = `
+		// Schemas
+		import * as z from "npm:zod@3.23.8";
+		`;
 
 	if (opts.dbDriver == DbDriver.NodePostgres) {
 		imports += `
@@ -204,8 +208,8 @@ function generateModImports(project: Project, opts: BuildOpts) {
 			modConfig += `${JSON.stringify(script.name)}: {`;
 			modConfig += `run: ${runIdent},`;
 			modConfig += `public: ${JSON.stringify(script.config.public ?? false)},`;
-			modConfig += `requestSchema: ${JSON.stringify(script.requestSchema)},`;
-			modConfig += `responseSchema: ${JSON.stringify(script.responseSchema)},`;
+			modConfig += `requestSchema: ${convertSerializedSchemaToZodExpression(script.schemas?.request!)},`;
+			modConfig += `responseSchema: ${convertSerializedSchemaToZodExpression(script.schemas?.response!)},`;
 			modConfig += `},`;
 		}
 		modConfig += "},";
