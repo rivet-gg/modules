@@ -42,31 +42,61 @@ export function stringifyTrace(trace: Trace) {
 	return trace.entries.map((x) => stringifyTraceEntryType(x.type)).join(" > ");
 }
 
+// export function stringifyTraceEntryType(trace: TraceEntryType) {
+// 	if ("httpRequest" in trace) {
+// 		return "httpRequest";
+// 	} else if ("script" in trace) {
+// 		const { module, script } = trace.script;
+// 		return `script(${module}.${script})`;
+// 	} else if ("route" in trace) {
+// 		const { module, route } = trace.route;
+// 		return `route(${module}.${route})`;
+// 	} else if ("actorInitialize" in trace) {
+// 		const { module, actor } = trace.actorInitialize;
+// 		return `actorInitialize(${module}.${actor})`;
+// 	} else if ("actorGetOrCreateAndCall" in trace) {
+// 		const { module, actor, fn } = trace.actorGetOrCreateAndCall;
+// 		return `actorGetOrCreateAndCall(${module}.${actor}.${fn})`;
+// 	} else if ("actorCall" in trace) {
+// 		const { module, actor, fn } = trace.actorCall;
+// 		return `actorCall(${module}.${actor}.${fn})`;
+// 	} else if ("actorSchedule" in trace) {
+// 		return "actorSchedule";
+// 	} else if ("test" in trace) {
+// 		const { module, name } = trace.test;
+// 		return `test(${module}.${name})`;
+// 	} else if ("internalTest" in trace) {
+// 		return "internalTest";
+// 	} else {
+// 		throw new UnreachableError(trace);
+// 	}
+// }
+
 export function stringifyTraceEntryType(trace: TraceEntryType) {
 	if ("httpRequest" in trace) {
-		return "httpRequest";
+		return "request";
 	} else if ("script" in trace) {
 		const { module, script } = trace.script;
-		return `script(${module}.${script})`;
+		return `${module}.${script}`;
 	} else if ("route" in trace) {
 		const { module, route } = trace.route;
-		return `route(${module}.${route})`;
+		return `${module}.${route}`;
 	} else if ("actorInitialize" in trace) {
 		const { module, actor } = trace.actorInitialize;
-		return `actorInitialize(${module}.${actor})`;
+		return `${module}.${actor}.init`;
 	} else if ("actorGetOrCreateAndCall" in trace) {
 		const { module, actor, fn } = trace.actorGetOrCreateAndCall;
-		return `actorGetOrCreateAndCall(${module}.${actor}.${fn})`;
+		return `${module}.${actor}.${fn}`;
 	} else if ("actorCall" in trace) {
 		const { module, actor, fn } = trace.actorCall;
-		return `actorCall(${module}.${actor}.${fn})`;
+		return `${module}.${actor}.${fn}`;
 	} else if ("actorSchedule" in trace) {
-		return "actorSchedule";
+		return "schedule";
 	} else if ("test" in trace) {
 		const { module, name } = trace.test;
-		return `test(${module}.${name})`;
+		return `${module}.${name}`;
 	} else if ("internalTest" in trace) {
-		return "internalTest";
+		return "internal";
 	} else {
 		throw new UnreachableError(trace);
 	}
