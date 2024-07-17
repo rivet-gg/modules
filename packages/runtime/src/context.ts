@@ -203,6 +203,27 @@ export class Context<Params extends ContextParams> {
 		try {
 			return await fn();
 		} catch (cause) {
+      if (cause === undefined) {
+        this.log.warn('caught undefined error from task. this may be caused using by cross-request promises.')
+      }
+      
+			if (cause instanceof RuntimeError) {
+				// Enrich error with more context
+				cause.enrich(this.internalRuntime, this);
+				throw cause;
+      } else {
+				// Convert to RuntimeError
+				const error = new RuntimeError(INTERNAL_ERROR_CODE, { cause });
+				error.enrich(this.internalRuntime, this);
+				throw error;
+			}
+		}
+	}
+
+	public runBlockSync<Res>(fn: () => Res): Res {
+		try {
+			return fn();
+		} catch (cause) {
 			if (cause instanceof RuntimeError) {
 				// Enrich error with more context
 				cause.enrich(this.internalRuntime, this);
