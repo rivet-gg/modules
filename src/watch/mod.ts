@@ -41,8 +41,13 @@ export async function watch(initProject: Project, opts: WatchOpts) {
 			console.warn("Failed to run `stty sane`. This may cause terminal issues.");
 		}
 
-		const { columns } = Deno.consoleSize();
-		console.log(`\n${colors.dim("─".repeat(columns))}\n`);
+		// Try to print horizontal line if has TTY
+		try {
+			const { columns } = Deno.consoleSize();
+			console.log(`\n${colors.dim("─".repeat(columns))}\n`);
+		} catch (_) {
+			console.log(`\n${colors.dim("─".repeat(8))}\n`);
+		}
 
 		// Run action
 		let fnAbortController: AbortController | undefined;
