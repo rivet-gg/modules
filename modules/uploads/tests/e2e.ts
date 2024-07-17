@@ -7,7 +7,7 @@ import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 import { getS3EnvConfig } from "../utils/env.ts";
 
 test("e2e", async (ctx: TestContext) => {
-	if (!getS3EnvConfig()) {
+	if (!getS3EnvConfig(ctx)) {
 		ctx.log.warn("s3 not configured");
 		return;
 	}

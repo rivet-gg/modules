@@ -19,7 +19,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	getConfig(ctx.config);
+	getConfig(ctx);
 
 	// Find uploads that match the IDs in the request
 	const dbUploads = await ctx.db.upload.findMany({
