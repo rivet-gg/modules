@@ -5,9 +5,9 @@ import { appendTraceEntry } from "./trace.ts";
 import { ActorProxies, buildActorRegistryProxy, buildDependencyRegistryProxy, RegistryCallMap } from "./proxy.ts";
 import { DependencyScriptCallFunction } from "./types/registry.ts";
 import { camelify } from "../../case_conversion/src/mod.ts";
-import { errorToLogEntries, log, LogEntry, spreadObjectToLogEntries } from "./logger.ts";
+import { buildLogEntries, errorToLogEntries, LogEntry, logRaw, spreadObjectToLogEntries } from "./logger.ts";
 import { LogLevel } from "./logger.ts";
-import { stringifyTrace } from "./mod.ts";
+import { INTERNAL_ERROR_CODE, stringifyTrace } from "./mod.ts";
 
 export interface ContextParams {
 	dependenciesSnake: any;
@@ -77,83 +77,76 @@ export class Context<Params extends ContextParams> {
 		scriptName,
 		req,
 	) {
-		try {
-			// Check if calling module is allowed to call target module
-			if (!this.isAllowedModuleName(moduleName)) {
-				throw new RuntimeError(
-					"CANNOT_ACCESS_MODULE",
-					{ cause: `Module \`${moduleName}\` is not a dependency` },
-				);
-			}
-
-			// Lookup module
-			const module = this.internalRuntime.config.modules[moduleName]!;
-			if (!module) throw new Error(`Module not found: ${moduleName}`);
-
-			// Lookup script
-			const script = module.scripts[scriptName];
-			if (!script) throw new Error(`Script not found: ${scriptName}`);
-
-			// Build context
-			const ctx = new ScriptContext(
-				this.internalRuntime,
-				appendTraceEntry(this.trace, {
-					script: { module: moduleName, script: scriptName },
-				}),
-				moduleName,
-				this.internalRuntime.postgres.getOrCreatePrismaClient(
-					this.internalRuntime.env,
-					this.internalRuntime.config,
-					module,
-				),
-				module.db?.schema,
-				scriptName,
-				this.dependencyCaseConversionMap,
-				this.actorCaseConversionMap,
+		// Check if calling module is allowed to call target module
+		if (!this.isAllowedModuleName(moduleName)) {
+			throw new RuntimeError(
+				"CANNOT_ACCESS_MODULE",
+				{ cause: `Module \`${moduleName}\` is not a dependency` },
 			);
-
-			const requestParseResult = await script.requestSchema.safeParseAsync(req);
-			if (!requestParseResult.success) {
-				throw new ValidationError("Request did not match schema.", requestParseResult.error);
-			}
-
-			const request = requestParseResult.data;
-
-			// Log start
-			const scriptStart = performance.now();
-			ctx.log.debug("script request", ...spreadObjectToLogEntries("request", request));
-
-			// Execute script
-			const duration = Math.ceil(performance.now() - scriptStart);
-			const res = await ctx.runBlock(async () => await script.run(ctx, request));
-
-			// Log finish
-			//
-			// `duration` will be 0 on Cloudflare Workers if there are no async
-			// actions performed inside of the request:
-			// https://developers.cloudflare.com/workers/runtime-apis/performance/
-			ctx.log.debug(
-				"script response",
-				...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),
-				...spreadObjectToLogEntries("response", res),
-			);
-
-			const responseParseResult = await script.responseSchema.safeParseAsync<typeof res>(res);
-			if (!responseParseResult.success) {
-				throw new ValidationError(
-					"Response did not match schema. If you are the module author, check the response type.",
-					responseParseResult.error,
-				);
-			}
-			return responseParseResult.data;
-		} catch (error) {
-			this.log.warn(
-				"script error",
-				...errorToLogEntries("error", error),
-			);
-			throw error;
 		}
-	};
+
+		// Lookup module
+		const module = this.internalRuntime.config.modules[moduleName]!;
+		if (!module) throw new Error(`Module not found: ${moduleName}`);
+
+		// Lookup script
+		const script = module.scripts[scriptName];
+		if (!script) throw new Error(`Script not found: ${scriptName}`);
+
+		// Build context
+		const ctx = new ScriptContext(
+			this.internalRuntime,
+			appendTraceEntry(this.trace, {
+				script: { module: moduleName, script: scriptName },
+			}),
+			moduleName,
+			this.internalRuntime.postgres.getOrCreatePrismaClient(
+				this.internalRuntime.env,
+				this.internalRuntime.config,
+				module,
+			),
+			module.db?.schema,
+			scriptName,
+			this.dependencyCaseConversionMap,
+			this.actorCaseConversionMap,
+		);
+		ctx.log._listeners.push(...this.log._listeners);
+
+		const requestParseResult = await script.requestSchema.safeParseAsync(req);
+		if (!requestParseResult.success) {
+			throw new ValidationError("Request did not match schema.", requestParseResult.error);
+		}
+
+		const request = requestParseResult.data;
+
+		// Log start
+		const scriptStart = performance.now();
+		ctx.log.debug("script request", ...spreadObjectToLogEntries("request", request));
+
+		// Execute script
+		const duration = Math.ceil(performance.now() - scriptStart);
+		const res = await ctx.runBlock(async () => await script.run(ctx, request));
+
+		// Log finish
+		//
+		// `duration` will be 0 on Cloudflare Workers if there are no async
+		// actions performed inside of the request:
+		// https://developers.cloudflare.com/workers/runtime-apis/performance/
+		ctx.log.debug(
+			"script response",
+			...(duration > 0 ? [["duration", `${duration}ms`] as LogEntry] : []),
+			...spreadObjectToLogEntries("response", res),
+		);
+
+		const responseParseResult = await script.responseSchema.safeParseAsync<typeof res>(res);
+		if (!responseParseResult.success) {
+			throw new ValidationError(
+				"Response did not match schema. If you are the module author, check the response type.",
+				responseParseResult.error,
+			);
+		}
+		return responseParseResult.data;
+	}
 
 	public get modules() {
 		return buildDependencyRegistryProxy<Params>(
@@ -198,9 +191,10 @@ export class Context<Params extends ContextParams> {
 	}
 
 	/**
-	 * Runs a block of code and catches any related errors.
+	 * Runs a block of code and catches any related errors. Errors thrown from
+	 * this block will be enriched or replaced with an INTERNAL_ERROR.
 	 */
-	public async runBlock<Res>(fn: () => Promise<Res>) {
+	public async runBlock<Res>(fn: () => Promise<Res>): Promise<Res> {
 		try {
 			return await fn();
 		} catch (cause) {
@@ -210,7 +204,7 @@ export class Context<Params extends ContextParams> {
 				throw cause;
 			} else {
 				// Convert to RuntimeError
-				const error = new RuntimeError("INTERNAL_ERROR", { cause });
+				const error = new RuntimeError(INTERNAL_ERROR_CODE, { cause });
 				error.enrich(this.internalRuntime, this);
 				throw error;
 			}
@@ -218,16 +212,33 @@ export class Context<Params extends ContextParams> {
 	}
 }
 
+export type LogListener = (level: LogLevel, entries: LogEntry[]) => void;
+
 class ContextLog<Params extends ContextParams> {
+	public _listeners: LogListener[] = [];
+
 	constructor(private readonly context: Context<Params>) {}
 
+	public addListener(listener: LogListener) {
+		this._listeners.push(listener);
+	}
+
 	private log(level: LogLevel, message: string, ...data: LogEntry[]) {
-		log(
+		// Build entries
+		const logEntries = buildLogEntries(
 			level,
 			message,
 			["trace", stringifyTrace(this.context.trace)],
 			...data,
 		);
+
+		// Capture logs
+		for (const listener of this._listeners) {
+			listener(level, logEntries);
+		}
+
+		// Output
+		logRaw(level, ...logEntries);
 	}
 
 	public error(message: string, ...data: LogEntry[]) {

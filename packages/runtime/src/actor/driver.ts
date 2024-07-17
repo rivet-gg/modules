@@ -47,6 +47,11 @@ export interface ActorDriver {
 	destroyActor(opts: DestroyOpts): Promise<void>;
 }
 
+export interface ActorInstanceDriver {
+	runInBackground(promise: Promise<void>): void;
+	forceSaveState(): Promise<void>;
+}
+
 export interface StorageDriver {
 	get<V>(key: string): Promise<V | undefined>;
 	put<V>(key: string, value: V): Promise<void>;

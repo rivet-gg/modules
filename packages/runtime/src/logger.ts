@@ -16,13 +16,20 @@ const LOG_LEVEL_COLORS: Record<LogLevel, string> = {
 
 const RESET_COLOR = "\x1b[0m";
 
-export function log(level: LogLevel, message: string, ...data: LogEntry[]) {
-	logRaw(
-		level,
+/** Builds the full entries for a log. */
+export function buildLogEntries(level: LogLevel, message: string, ...data: LogEntry[]): LogEntry[] {
+	return [
 		["ts", getFormattedTimestamp()],
 		["level", level],
 		["msg", message],
 		...data,
+	];
+}
+
+export function log(level: LogLevel, message: string, ...data: LogEntry[]) {
+	logRaw(
+		level,
+		...buildLogEntries(level, message, ...data),
 	);
 }
 
