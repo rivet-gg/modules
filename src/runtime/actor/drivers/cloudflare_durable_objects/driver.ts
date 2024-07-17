@@ -1,7 +1,7 @@
 // This file is only imported when the runtime is `cloudflare_workers_platform`.
 
 import { Config, Environment } from "../../../mod.ts";
-import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
+import { ActorDriver, CallOpts, CreateOpts, DestroyOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
 
 export { buildGlobalDurableObjectClass } from "./global_durable_object.ts";
 
@@ -49,8 +49,14 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 	}
 
 	async actorExists(opts: ExistsOpts): Promise<boolean> {
+    // TODO: Mark the actor base as destroyed
 		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
 		return await stub.initialized();
+	}
+
+	async destroyActor(opts: DestroyOpts): Promise<void> {
+		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
+		await stub.destroy();
 	}
 
 	private getStub(

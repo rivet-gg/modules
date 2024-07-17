@@ -20,7 +20,7 @@ import { errorToLogEntries, log } from "../../../logger.ts";
 const KEYS = {
 	META: {
 		MODULE: "meta:module",
-		ACTOR: "meta:module",
+		ACTOR: "meta:actor",
 		CREATED_AT: "__meta:created_at",
 	},
 	SCHEDULE: {
@@ -78,6 +78,7 @@ interface CallRpcOpts {
 export interface __GlobalDurableObjectT extends DurableObject {
 	init(opts: InitOpts): Promise<void>;
 	initialized(): Promise<boolean>;
+	destroy(): Promise<void>;
 	getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<any>;
 	callRpc({ fn, request }: CallRpcOpts): Promise<any>;
 	scheduleEvent(timestamp: number, fn: string, request: unknown): Promise<void>;
@@ -150,9 +151,9 @@ export function buildGlobalDurableObjectClass(
 		// TODO: optimize to use in-memory state
 		private async constructActor(meta: ActorMeta): Promise<ActorBase<unknown, unknown>> {
 			// Get actor config
-			if (!(meta.moduleName in config.modules)) throw new Error("module not found");
+			if (!(meta.moduleName in config.modules)) throw new Error(`module not found: ${meta.moduleName}`);
 			const moduleConfig = config.modules[meta.moduleName]!;
-			if (!(meta.actorName in moduleConfig.actors)) throw new Error("actor not found");
+			if (!(meta.actorName in moduleConfig.actors)) throw new Error(`actor not found: ${meta.moduleName}.${meta.actorName}`);
 			const actorConfig = moduleConfig.actors[meta.actorName]!;
 
 			// TODO: cache actor instance in memory
@@ -214,6 +215,12 @@ export function buildGlobalDurableObjectClass(
 		async initialized() {
 			return await this.ctx.storage.get(KEYS.META.MODULE) != undefined;
 		}
+
+    async destroy() {
+      await this.ctx.storage.deleteAll();
+      await this.ctx.storage.deleteAlarm()
+      await this.ctx.storage.sync();
+    }
 
 		async getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<any> {
 			await this.init({

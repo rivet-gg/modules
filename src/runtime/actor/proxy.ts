@@ -55,4 +55,12 @@ export class ActorProxy {
 			instanceName,
 		});
 	}
+
+  async destroy(instanceName: string) {
+    return await this.driver.destroyActor({
+			moduleName: this.moduleName,
+			actorName: this.actorName,
+			instanceName,
+		});
+  }
 }

@@ -4,7 +4,7 @@ import { ModuleContext } from "./context.ts";
 import { RuntimeError } from "./error.ts";
 import { BuildRuntime, ModuleContextParams, newTrace } from "./mod.ts";
 import { Runtime } from "./runtime.ts";
-import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "./actor/driver.ts";
+import { ActorDriver, CallOpts, CreateOpts, DestroyOpts, ExistsOpts, GetOrCreateAndCallOpts } from "./actor/driver.ts";
 
 interface Params extends ModuleContextParams {
 	dependenciesSnake: { test_module: Record<string, never> };
@@ -27,6 +27,9 @@ class DummyActorDriver implements ActorDriver {
 		throw new Error("Method not implemented.");
 	}
 	actorExists(_opts: ExistsOpts): Promise<boolean> {
+		throw new Error("Method not implemented.");
+	}
+	destroyActor(_opts: DestroyOpts): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
 }

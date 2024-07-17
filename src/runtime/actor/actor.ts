@@ -12,6 +12,8 @@ export abstract class ActorBase<
 > {
 	public state!: State;
 
+	public destroyed: boolean = false;
+
 	private backgroundPromises: Promise<void>[] = [];
 
 	public constructor(

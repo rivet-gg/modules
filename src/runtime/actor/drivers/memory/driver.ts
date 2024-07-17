@@ -4,7 +4,7 @@ import { ModuleContextParams } from "../../../context.ts";
 import { ActorContext, appendTraceEntry, Config, Environment, Runtime, Trace } from "../../../mod.ts";
 import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorBase } from "../../actor.ts";
-import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
+import { ActorDriver, CallOpts, CreateOpts, DestroyOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
 import { MemorySchedule } from "./schedule.ts";
 import { MemoryStorage } from "./storage.ts";
 
@@ -30,7 +30,7 @@ export class MemoryActorDriver implements ActorDriver {
 	 * List of persistent actor data. This is the data that is durable and
 	 * outlives actor instances.
 	 *
-	 * RUnning actors are stored in `actorInstances`.
+	 * Running actors are stored in `actorInstances`.
 	 */
 	private actorRecords = new Map<string, ActorRecord>();
 
@@ -133,6 +133,16 @@ export class MemoryActorDriver implements ActorDriver {
 	async actorExists({ moduleName, actorName, instanceName }: ExistsOpts): Promise<boolean> {
 		return this.actorRecords.has(await this.getId(moduleName, actorName, instanceName));
 	}
+
+	async destroyActor({ moduleName, actorName, instanceName }: DestroyOpts): Promise<void> {
+    // TODO: Does not handle cancelling timeouts correctly
+    const id = await this.getId(moduleName, actorName, instanceName);
+    this.actorRecords.delete(id);
+    if (this.actorInstances.has(id)) {
+      this.actorInstances.get(id)!.actor.destroyed = true;
+      this.actorInstances.delete(id);
+    }
+  }
 
 	private async getId(moduleName: string, actorName: string, instanceName: string) {
 		const module = this.config.modules[moduleName]!;
