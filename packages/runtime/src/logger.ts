@@ -150,11 +150,13 @@ console.trace = consoleLogWrapper.bind(undefined, "trace");
 interface GlobalLoggerConfig {
 	enableColor: boolean;
 	enableSpreadObject: boolean;
+  enableErrorStack: boolean,
 }
 
 export const LOGGER_CONFIG: GlobalLoggerConfig = {
 	enableColor: false,
 	enableSpreadObject: false,
+  enableErrorStack: false,
 };
 
 // MARK: Utils
@@ -184,7 +186,7 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 			[`${base}.description`, error.errorConfig?.description],
 			[`${base}.module`, error.moduleName],
 			...(error.trace ? [[`${base}.trace`, stringifyTrace(error.trace)] as LogEntry] : []),
-			...(error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
+			...(LOGGER_CONFIG.enableErrorStack && error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
 			...(error.meta ? [[`${base}.meta`, JSON.stringify(error.meta)] as LogEntry] : []),
 			...(error.cause ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
@@ -192,7 +194,7 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 		return [
 			[`${base}.name`, error.name],
 			[`${base}.message`, error.message],
-			...(error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
+			...(LOGGER_CONFIG.enableErrorStack && error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
 			...(error.cause ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
 	} else {

@@ -5,7 +5,9 @@ icon: leaf
 
 <Note>This documentation page is a work in progress.</Note>
 
-## `OPENGB_HOSTNAME`
+## Runtime
+
+### `OPENGB_HOSTNAME`
 
 Default: `127.0.0.1`
 
@@ -13,11 +15,55 @@ Defines the hostname to listen on.
 
 Change this to `0.0.0.0` if you want to allow requests from outside of your machine.
 
-## `OPENGB_PORT`
+### `OPENGB_PORT`
 
 Default: `6420`
 
-## `OPENGB_TERM_COLOR`
+### `OPENGB_PUBLIC_ENDPOINT`
+
+Default: `http://127.0.0.1:6420`
+
+The endpoint that this server can be connected to externally.
+
+### `_OPENGB_LOG_SPILT_OBJECT`
+
+_Experimental_
+
+Set to `1` to enable logging some objects split in to individual keys.
+
+### `_OPENGB_LOG_ERROR_STACK`
+
+_Experimental_
+
+Set to `1` to enable logging the full JavaScript stack trace for errors. This is different than `trace`.
+
+### `DATABASE_URL`
+
+Default: `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable`
+
+## CLI
+
+### `VERBOSE`
+
+_Experimental_
+
+Enable detailed logging.
+
+### `_OPENGB_ESBUILD_META`
+
+_Experimental_
+
+Set to `1` to print detailed information about the output bundle.
+
+### `_OPENGB_ESBUILD_NO_MINIFY`
+
+_Experimental_
+
+Set to `1` to disable minifying the output bundle.
+
+## CLI & Runtime
+
+### `OPENGB_TERM_COLOR`
 
 Default: unset
 
@@ -28,9 +74,9 @@ Values:
 
 Defines if logs are printed with color. By default, OpenGB attempts to automatically determine if your terminal supports this.
 
-## `_OPENGB_LOG_SPILT_OBJECT`
+This also respects [`NO_COLOR`]()
 
-_Experimental_
+## `NO_COLOR`
 
-Set to `1` to enable logging some objects split in to individual keys.
+[See here](https://no-color.org/)
 

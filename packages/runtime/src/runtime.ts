@@ -150,7 +150,7 @@ export class Runtime<Params extends ContextParams> {
 
 		// Configure logger
 		LOGGER_CONFIG.enableSpreadObject = env.get("_OPENGB_LOG_SPILT_OBJECT") == "1";
-
+		LOGGER_CONFIG.enableErrorStack = env.get("_OPENGB_LOG_ERROR_STACK") == "1";
 		if (env.get("OPENGB_TERM_COLOR") === "never") {
 			LOGGER_CONFIG.enableColor = false;
 		} else if (env.get("OPENGB_TERM_COLOR") === "always") {
