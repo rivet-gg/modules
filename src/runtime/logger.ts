@@ -1,4 +1,5 @@
 import { RuntimeError } from "./error.ts";
+import { stringifyTrace } from "./mod.ts";
 
 export type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 
@@ -15,12 +16,6 @@ const LOG_LEVEL_COLORS: Record<LogLevel, string> = {
 
 const RESET_COLOR = "\x1b[0m";
 
-function isColorEnabled(): boolean {
-	if (Deno.env.get("OPENGB_TERM_COLOR") === "never") return false;
-	if (Deno.env.get("OPENGB_TERM_COLOR") === "always") return true;
-	return Deno?.stdout?.isTerminal() == true;
-}
-
 export function log(level: LogLevel, message: string, ...data: LogEntry[]) {
 	logRaw(
 		level,
@@ -32,11 +27,9 @@ export function log(level: LogLevel, message: string, ...data: LogEntry[]) {
 }
 
 export function logRaw(level: LogLevel, ...data: any[]) {
-	const colorEnabled = isColorEnabled();
-
 	let message = stringify(...data);
 
-	if (colorEnabled) {
+	if (LOGGER_CONFIG.enableColor) {
 		message = `${LOG_LEVEL_COLORS[level]}${message}${RESET_COLOR}`;
 	}
 
@@ -82,7 +75,7 @@ export function stringify(...data: LogEntry[]) {
 		if (needsQuoting || needsEscaping) valueString = '"' + valueString + '"';
 		if (valueString === "" && !isNull) valueString = '""';
 
-		if (isColorEnabled()) {
+		if (LOGGER_CONFIG.enableColor) {
 			// With color
 
 			// Secial message colors
@@ -146,17 +139,24 @@ console.log = consoleLogWrapper.bind(undefined, "info");
 console.debug = consoleLogWrapper.bind(undefined, "debug");
 console.trace = consoleLogWrapper.bind(undefined, "trace");
 
-// MARK: Utils
-function enableSpreadObject(): boolean {
-  return Deno.env.get("_OPENGB_LOG_SPILT_OBJECT") == "1"
+// MARK: Config
+interface GlobalLoggerConfig {
+	enableColor: boolean;
+	enableSpreadObject: boolean;
 }
 
+export const LOGGER_CONFIG: GlobalLoggerConfig = {
+	enableColor: false,
+	enableSpreadObject: false,
+};
+
+// MARK: Utils
 /**
  * Converts an object in to an easier to read KV of entries.
  */
 export function spreadObjectToLogEntries(base: string, data: unknown): LogEntry[] {
 	if (
-		enableSpreadObject() && typeof data == "object" && !Array.isArray(data) && data !== null &&
+		LOGGER_CONFIG.enableSpreadObject && typeof data == "object" && !Array.isArray(data) && data !== null &&
 		Object.keys(data).length != 0 && Object.keys(data).length < 16
 	) {
 		const logData: LogEntry[] = [];
@@ -176,6 +176,8 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 			[`${base}.code`, error.code],
 			[`${base}.description`, error.errorConfig?.description],
 			[`${base}.module`, error.moduleName],
+			...(error.trace ? [[`${base}.trace`, stringifyTrace(error.trace)] as LogEntry] : []),
+			...(error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
 			...(error.meta ? [[`${base}.meta`, JSON.stringify(error.meta)] as LogEntry] : []),
 			...(error.cause instanceof Error ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
@@ -183,6 +185,7 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 		return [
 			[`${base}.name`, error.name],
 			[`${base}.message`, error.message],
+			...(error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
 			...(error.cause instanceof Error ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
 	} else {
@@ -191,3 +194,17 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 		];
 	}
 }
+
+/**
+ * Formats a JS stack trace in to a legible one-liner.
+ */
+function formatStackTrace(stackTrace: string): string {
+    const regex = /at (.+?)$/gm;
+    const matches = [...stackTrace.matchAll(regex)];
+    // Reverse array since the OpenGB stack goes from top level -> bottom level
+    matches.reverse();
+    return matches
+        .map(match => match[1]!.trim())
+        .join(" > ");
+}
+

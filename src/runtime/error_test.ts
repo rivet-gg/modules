@@ -39,6 +39,7 @@ Deno.test("error", async () => {
 
 	// Setup
 	const runtime = new Runtime<Params>(
+		Deno.env,
 		{
 			runtime: BuildRuntime.Deno,
 			modules: {

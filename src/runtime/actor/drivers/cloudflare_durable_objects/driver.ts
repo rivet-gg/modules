@@ -1,12 +1,12 @@
 // This file is only imported when the runtime is `cloudflare_workers_platform`.
 
-import { Config } from "../../../mod.ts";
+import { Config, Environment } from "../../../mod.ts";
 import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
 
 export { buildGlobalDurableObjectClass } from "./global_durable_object.ts";
 
 export class CloudflareDurableObjectsActorDriver implements ActorDriver {
-	public constructor(public readonly config: Config) {}
+	public constructor(public readonly env: Environment, public readonly config: Config) {}
 
 	async createActor(opts: CreateOpts): Promise<void> {
 		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
@@ -59,7 +59,7 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 		instanceName: string,
 	): any {
 		// TODO: Fix Deno.env.get hack. This does not return a string, it returns an object.
-		const ns = Deno.env.get("__GLOBAL_DURABLE_OBJECT") as any;
+		const ns = this.env.get("__GLOBAL_DURABLE_OBJECT") as any;
 
 		const module = this.config.modules[moduleName]!;
 		const actor = module.actors[actorName]!;

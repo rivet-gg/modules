@@ -1,7 +1,7 @@
 // This file is only imported when the runtime is `deno`
 //
 import { ModuleContextParams } from "../../../context.ts";
-import { ActorContext, appendTraceEntry, Config, Runtime, Trace } from "../../../mod.ts";
+import { ActorContext, appendTraceEntry, Config, Environment, Runtime, Trace } from "../../../mod.ts";
 import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorBase } from "../../actor.ts";
 import { ActorDriver, CallOpts, CreateOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
@@ -43,11 +43,13 @@ export class MemoryActorDriver implements ActorDriver {
 	private actorInstances = new Map<string, ActorInstance>();
 
 	public constructor(
+		public readonly env: Environment,
 		public readonly config: Config,
 		private dependencyCaseConversionMap: RegistryCallMap,
 		private actorDependencyCaseConversionMap: RegistryCallMap,
 	) {
 		this.runtime = new Runtime(
+			this.env,
 			this.config,
 			this,
 			this.dependencyCaseConversionMap,
