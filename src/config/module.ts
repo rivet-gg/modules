@@ -38,6 +38,33 @@ const ActorConfigSchema = z.object({
 	),
 });
 
+const RouteConfigBaseSchema = z.object({
+	name: z.string().optional().describe("The human readable name of the route."),
+	description: z.string().optional().describe("A short description of the route."),
+	method: z.string().optional().describe("The HTTP method of the route."),
+});
+
+const ExactRouteConfigSchema = RouteConfigBaseSchema.extend({
+	path: z.string().describe("The path of the route."),
+});
+
+const DynamicRouteConfigSchema = RouteConfigBaseSchema.extend({
+	pathPrefix: z.string().describe("The path prefix of the route."),
+});
+
+const RouteConfigSchema = z.union([
+	ExactRouteConfigSchema,
+	DynamicRouteConfigSchema,
+]);
+
+export type RouteConfigBase = z.infer<typeof RouteConfigBaseSchema>;
+
+export type ExactRouteConfig = z.infer<typeof ExactRouteConfigSchema>;
+
+export type DynamicRouteConfig = z.infer<typeof DynamicRouteConfigSchema>;
+
+export type RouteConfig = z.infer<typeof RouteConfigSchema>;
+
 const ErrorConfigSchema = z.object({
 	/**
 	 * The human readable name of the error.
@@ -63,6 +90,7 @@ export const ModuleSchema = z.object({
 	authors: z.array(z.string()).optional().describe("The GitHub handle of the authors of the module."),
 	scripts: z.record(ScriptConfigSchema).optional().describe("The scripts associated with this module."),
 	actors: z.record(ActorConfigSchema).optional().describe("The actors associated with this module."),
+	routes: z.record(RouteConfigSchema).optional().describe("The routes associated with this module."),
 	errors: z.record(ErrorConfigSchema).describe("The errors associated with this module."),
 	dependencies: z.record(DependencyConfigSchema).optional().describe("The dependencies of this module."),
 	defaultConfig: z.unknown().optional().describe("Default user config."),

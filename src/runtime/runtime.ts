@@ -1,12 +1,13 @@
 import { ModuleContextParams, ScriptContext } from "./context.ts";
-import { Context, TestContext } from "./context.ts";
+import { Context, RouteContext, TestContext } from "./context.ts";
 import { PgPoolDummy, Postgres, PrismaClientDummy } from "./postgres.ts";
-import { handleRequest } from "./server.ts";
+import { serverHandler } from "./server.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
 import { RegistryCallMap } from "./proxy.ts";
 import { ActorDriver } from "./actor/driver.ts";
 import { ActorBase } from "./actor/actor.ts";
+import { QualifiedPathPair } from "./path_resolver.ts";
 import { ContextParams } from "./mod.ts";
 import { errorToLogEntries, log, LOGGER_CONFIG } from "./logger.ts";
 import { Environment } from "./environment.ts";
@@ -52,6 +53,7 @@ export interface Module {
 	storageAlias: string;
 	scripts: Record<string, Script>;
 	actors: Record<string, Actor>;
+	routes: Record<string, Route>;
 	errors: Record<string, ErrorConfig>;
 	db?: {
 		/** Name of the Postgres schema the tables live in. */
@@ -74,6 +76,22 @@ export interface Script {
 	public: boolean;
 }
 
+export interface RouteBase {
+	// deno-lint-ignore no-explicit-any
+	run: RouteRun<any, any, any>;
+	methods: Set<string>;
+}
+
+export interface PrefixRoute extends RouteBase {
+	pathPrefix: string;
+}
+
+export interface ExactRoute extends RouteBase {
+	path: string;
+}
+
+export type Route = ExactRoute | PrefixRoute;
+
 export type ScriptRun<Req, Res, UserConfigT, DatabaseT, DatabaseSchemaT> = (
 	ctx: ScriptContext<{
 		dependenciesSnake: any;
@@ -95,6 +113,19 @@ export interface Actor {
 	storageAlias: string;
 }
 
+export type RouteRun<UserConfigT, DatabaseT, DatabaseSchemaT> = (
+	ctx: RouteContext<{
+		dependenciesSnake: any;
+		dependenciesCamel: any;
+		actorsSnake: any;
+		actorsCamel: any;
+		userConfig: UserConfigT;
+		database: DatabaseT;
+		databaseSchema: DatabaseSchemaT;
+	}>,
+	req: Request,
+) => Promise<Response>;
+
 export interface ErrorConfig {
 	description?: string;
 }
@@ -111,7 +142,7 @@ export class Runtime<Params extends ContextParams> {
 		public readonly config: Config,
 		public actorDriver: ActorDriver,
 		private dependencyCaseConversionMap: RegistryCallMap,
-		private actorDependencyCaseConversionMap: RegistryCallMap,
+		private actorCaseConversionMap: RegistryCallMap,
 	) {
 		// Read config
 		this.hostname = env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
@@ -142,12 +173,56 @@ export class Runtime<Params extends ContextParams> {
 
 	public createRootContext(
 		traceEntryType: TraceEntryType,
-	): Context<{ dependenciesSnake: Params["dependenciesSnake"]; dependenciesCamel: Params["dependenciesCamel"] }> {
+	): Context<{
+		dependenciesSnake: Params["dependenciesSnake"];
+		dependenciesCamel: Params["dependenciesCamel"];
+		actorsSnake: Params["actorsSnake"];
+		actorsCamel: Params["actorsCamel"];
+	}> {
 		return new Context(
 			this,
 			newTrace(traceEntryType, this.config.runtime),
 			this.dependencyCaseConversionMap,
-			this.actorDependencyCaseConversionMap,
+			this.actorCaseConversionMap,
+		);
+	}
+
+	public createRouteContext(
+		ctx: Context<Params>,
+		moduleName: string,
+		routeName: string,
+	) {
+		// FIXME: This is a pretty terrible hack. We should find a better way to
+		// do this, probably with a "public" underscore function.
+		const ctxWithPublicGRC = ctx as unknown as { getRouteContext: Context<Params>["getRouteContext"] };
+		return ctxWithPublicGRC.getRouteContext(moduleName, routeName);
+	}
+
+	public createRootRouteContext(
+		traceEntryType: TraceEntryType,
+		moduleName: string,
+		routeName: string,
+	): RouteContext<{
+		"dependenciesSnake": Params["dependenciesSnake"];
+		"dependenciesCamel": Params["dependenciesCamel"];
+		"actorsSnake": Params["actorsSnake"];
+		"actorsCamel": Params["actorsCamel"];
+		"userConfig": any;
+		"database": PrismaClientDummy | undefined;
+		"databaseSchema": any;
+	}> {
+		const module = this.config.modules[moduleName];
+		if (!module) throw new Error(`Module not found: ${moduleName}`);
+
+		return new RouteContext(
+			this,
+			newTrace(traceEntryType),
+			moduleName,
+			this.postgres.getOrCreatePrismaClient(this.config, module),
+			module.db?.schema,
+			routeName,
+			this.dependencyCaseConversionMap,
+			this.actorCaseConversionMap,
 		);
 	}
 
@@ -169,7 +244,7 @@ export class Runtime<Params extends ContextParams> {
 					);
 				},
 			},
-			(req, info) => handleRequest(this, req, { remoteAddress: info.remoteAddr.hostname }),
+			serverHandler(this),
 		).finished;
 	}
 
@@ -302,4 +377,28 @@ export class Runtime<Params extends ContextParams> {
 		if (!origin) return true;
 		return this.config.cors?.origins.has(origin) ?? false;
 	}
+
+	public routePaths(): QualifiedPathPair[] {
+		const paths: QualifiedPathPair[] = [];
+		for (const [moduleName, module] of Object.entries(this.config.modules)) {
+			for (const [routeName, route] of Object.entries(module.routes)) {
+				if ("path" in route) {
+					paths.push({
+						module: moduleName,
+						route: routeName,
+						path: { path: route.path, isPrefix: false },
+					});
+				} else {
+					paths.push({
+						module: moduleName,
+						route: routeName,
+						path: { path: route.pathPrefix, isPrefix: true },
+					});
+				}
+			}
+		}
+		return paths;
+	}
 }
+
+export type PathPair = { path: string; isPrefix: boolean };

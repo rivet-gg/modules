@@ -2,7 +2,7 @@ import { Runtime } from "./runtime.ts";
 import { stringifyTraceEntryType, Trace } from "./trace.ts";
 import { RuntimeError, ValidationError } from "./error.ts";
 import { appendTraceEntry } from "./trace.ts";
-import { buildActorRegistryProxy, buildDependencyRegistryProxy, RegistryCallMap } from "./proxy.ts";
+import { ActorProxies, buildActorRegistryProxy, buildDependencyRegistryProxy, RegistryCallMap } from "./proxy.ts";
 import { DependencyScriptCallFunction } from "../types/registry.ts";
 import { camelify } from "../types/case_conversions.ts";
 import { errorToLogEntries, log, LogEntry, spreadObjectToLogEntries } from "./logger.ts";
@@ -13,6 +13,8 @@ import { stringifyTrace } from "./mod.ts";
 export interface ContextParams {
 	dependenciesSnake: any;
 	dependenciesCamel: any;
+	actorsSnake: any;
+	actorsCamel: any;
 }
 
 /**
@@ -40,6 +42,27 @@ export class Context<Params extends ContextParams> {
 		protected readonly actorCaseConversionMap: RegistryCallMap,
 	) {
 		this.log = new ContextLog(this);
+	}
+
+	protected getRouteContext(moduleName: string, routeName: string) {
+		const module = this.internalRuntime.config.modules[moduleName];
+		if (!module) throw new Error(`Module not found: ${moduleName}`);
+
+		const route = module.routes[routeName];
+		if (!route) throw new Error(`Route not found: ${routeName}`);
+
+		return new RouteContext(
+			this.internalRuntime,
+			appendTraceEntry(this.trace, {
+				route: { module: moduleName, route: routeName },
+			}),
+			moduleName,
+			this.internalRuntime.postgres.getOrCreatePrismaClient(this.internalRuntime.config, module),
+			module.db?.schema,
+			routeName,
+			this.dependencyCaseConversionMap,
+			this.actorCaseConversionMap,
+		);
 	}
 
 	protected isAllowedModuleName(_moduleName: string): boolean {
@@ -256,7 +279,7 @@ export class ModuleContext<Params extends ModuleContextParams> extends Context<P
 		return this.internalRuntime.config.modules[this.moduleName]!.userConfig as Params["userConfig"];
 	}
 
-	public get actors() {
+	public get actors(): ActorProxies<Params["actorsCamel"]> {
 		return buildActorRegistryProxy<Params["actorsSnake"], Params["actorsCamel"]>(
 			this.internalRuntime,
 			// TODO: Find a better way of looking up the module name. We don't use
@@ -300,6 +323,35 @@ export class ActorContext<Params extends ModuleContextParams> extends ModuleCont
 		actorCaseConversionMap: RegistryCallMap,
 	) {
 		super(runtime, trace, moduleName, db, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
+	}
+}
+
+/**
+ * Context for a route.
+ */
+export class RouteContext<Params extends ModuleContextParams> extends ModuleContext<Params> {
+	public constructor(
+		runtime: Runtime<Params>,
+		trace: Trace,
+		moduleName: string,
+		db: Params["database"],
+		dbSchema: Params["databaseSchema"],
+		public readonly routeName: string,
+		dependencyCaseConversionMap: RegistryCallMap,
+		actorCaseConversionMap: RegistryCallMap,
+	) {
+		super(runtime, trace, moduleName, db, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
+	}
+
+	public static fromContext<Params extends ModuleContextParams>(
+		ctx: Context<Params>,
+		moduleName: string,
+		routeName: string,
+	): RouteContext<Params> {
+		// FIXME: This is a pretty terrible hack. We should find a better way to
+		// do this, probably with a "public" underscore function.
+		const ctxWithPublicGRC = ctx as unknown as { getRouteContext: Context<Params>["getRouteContext"] };
+		return ctxWithPublicGRC.getRouteContext(moduleName, routeName);
 	}
 }
 

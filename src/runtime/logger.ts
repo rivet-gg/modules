@@ -199,12 +199,11 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
  * Formats a JS stack trace in to a legible one-liner.
  */
 function formatStackTrace(stackTrace: string): string {
-    const regex = /at (.+?)$/gm;
-    const matches = [...stackTrace.matchAll(regex)];
-    // Reverse array since the OpenGB stack goes from top level -> bottom level
-    matches.reverse();
-    return matches
-        .map(match => match[1]!.trim())
-        .join(" > ");
+	const regex = /at (.+?)$/gm;
+	const matches = [...stackTrace.matchAll(regex)];
+	// Reverse array since the OpenGB stack goes from top level -> bottom level
+	matches.reverse();
+	return matches
+		.map((match) => match[1]!.trim())
+		.join(" > ");
 }
-

@@ -44,6 +44,7 @@ export async function compileModuleHelper(
 				TestContext as TestContextInner,
 				ScriptContext as ScriptContextInner,
 				ActorContext as ActorContextInner,
+				RouteContext as RouteContextInner,
 				Runtime,
 			} from "${runtimePath}";
 			import config from "${runtimeConfigPath}";
@@ -78,6 +79,7 @@ export async function compileModuleHelper(
 	genModule(project, module, helper, importBlock, userConfigType);
 	genTest(project, module, helper);
 	genScript(project, module, helper);
+	genRoute(project, module, helper);
 	genActor(project, module, helper);
 
 	// Write source
@@ -262,5 +264,24 @@ function genActor(
 		.newline()
 		.append`
 			export type ActorContext = ActorContextInner<ModuleContextParams>;
+		`;
+}
+
+function genRoute(
+	_project: Project,
+	_module: Module,
+	helper: GeneratedCodeBuilder,
+) {
+	// Export block
+	helper.chunk.withNewlinesPerChunk(1)
+		.newline()
+		.append`
+			export type RouteContext = RouteContextInner<ModuleContextParams>;
+
+			export type RouteRequest = Request;
+			export const RouteRequest = Request;
+
+			export type RouteResponse = Response;
+			export const RouteResponse = Response;
 		`;
 }

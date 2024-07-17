@@ -4,13 +4,70 @@ import { configPath as moduleConfigPath, readConfig as readModuleConfig } from "
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
 import { Actor } from "./actor.ts";
+import { Route } from "./route.ts";
 import { Project } from "./project.ts";
 import { Registry } from "./registry.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
-import { ProjectModuleConfig } from "../config/project.ts";
+import { configPath as projectConfigPath, ProjectModuleConfig } from "../config/project.ts";
 import { UserError } from "../error/mod.ts";
 import { AnySchemaElement } from "../build/schema/mod.ts";
+import { RouteConfig } from "../config/module.ts";
+
+/**
+ * Validates a path provided by the user.
+ *
+ * If the path is invalid, a {@linkcode UserError} is thrown, otherwise the
+ * function returns nothing.
+ *
+ * Paths must:
+ * - Start with a forward slash
+ * - IF they are a prefix, end with a forward slash
+ * - IF they are an exact path, NOT end with a forward slash
+ *
+ * @param path The user-provided http path
+ * @param isPrefix Whether or not the path should be treated as a prefix
+ * @param configPath Where the (possibly) offending config file is located
+ * @throws {UserError} if the path is invalid
+ */
+function validatePath(
+	path: string,
+	isPrefix: boolean,
+	configPath: string,
+): void {
+	// Ensure path starts with a forward slash
+	if (!path.startsWith("/")) {
+		throw new UserError(
+			"Route paths must start with a forward slash",
+			{
+				path: configPath,
+				details: `Got ${JSON.stringify(path)}`,
+				suggest: `Change this to ${JSON.stringify("/" + path)}`,
+			},
+		);
+	}
+
+	const hasTrailingSlash = path.endsWith("/");
+	if (isPrefix && !hasTrailingSlash) {
+		throw new UserError(
+			"Prefix paths must end with a forward slash",
+			{
+				path: configPath,
+				details: `Got ${JSON.stringify(path)}`,
+				suggest: `Change this to ${JSON.stringify(path + "/")}`,
+			},
+		);
+	} else if (!isPrefix && hasTrailingSlash) {
+		throw new UserError(
+			"Exact paths must not end with a forward slash",
+			{
+				path: configPath,
+				details: `Got ${JSON.stringify(path)}`,
+				suggest: `Change this to ${JSON.stringify(path.replace(/\/$/, ""))}`,
+			},
+		);
+	}
+}
 
 export interface Module {
 	/**
@@ -52,6 +109,7 @@ export interface Module {
 
 	scripts: Map<string, Script>;
 	actors: Map<string, Actor>;
+	routes: Map<string, Route>;
 	db?: ModuleDatabase;
 
 	// Cache
@@ -64,6 +122,7 @@ export interface ModuleDatabase {
 }
 
 export async function loadModule(
+	projectRoot: string,
 	modulePath: string,
 	name: string,
 	projectModuleConfig: ProjectModuleConfig,
@@ -79,6 +138,50 @@ export async function loadModule(
 	const storageAlias = projectModuleConfig.storageAlias ?? name;
 	validateIdentifier(storageAlias, Casing.Snake);
 
+	const scripts = await loadScripts(modulePath, config);
+	const actors = await loadActors(modulePath, config);
+	const routes = await loadRoutes(modulePath, config, name, projectRoot, projectModuleConfig);
+
+	// Verify error names
+	for (const errorName in config.errors) {
+		validateIdentifier(errorName, Casing.Snake);
+	}
+
+	// Load db config
+	let db: ModuleDatabase | undefined = undefined;
+	if (await exists(resolve(modulePath, "db"), { isDirectory: true })) {
+		db = {
+			schema: `module_${storageAlias}`,
+		};
+	}
+
+	// Merge user config with default config
+	const userConfig = deepMerge(
+		config.defaultConfig ?? {},
+		projectModuleConfig.config ?? {},
+		{
+			arrays: "replace",
+			maps: "merge",
+			sets: "replace",
+		},
+	);
+
+	return {
+		path: modulePath,
+		name,
+		projectModuleConfig,
+		userConfig,
+		config,
+		registry,
+		storageAlias,
+		scripts,
+		actors,
+		routes,
+		db,
+	};
+}
+
+async function loadScripts(modulePath: string, config: ModuleConfig) {
 	// Find names of the expected scripts to find. Used to print error for extra scripts.
 	const scriptsPath = resolve(modulePath, "scripts");
 	const expectedScripts = new Set(
@@ -127,6 +230,10 @@ export async function loadModule(
 		);
 	}
 
+	return scripts;
+}
+
+async function loadActors(modulePath: string, config: ModuleConfig) {
 	// Find names of the expected actors to find. Used to print error for extra actors.
 	const actorsPath = resolve(modulePath, "actors");
 	const expectedActors = new Set(
@@ -191,42 +298,124 @@ export async function loadModule(
 		}
 	}
 
-	// Verify error names
-	for (const errorName in config.errors) {
-		validateIdentifier(errorName, Casing.Snake);
-	}
+	return actors;
+}
 
-	// Load db config
-	let db: ModuleDatabase | undefined = undefined;
-	if (await exists(resolve(modulePath, "db"), { isDirectory: true })) {
-		db = {
-			schema: `module_${storageAlias}`,
-		};
-	}
-
-	// Merge user config with default config
-	const userConfig = deepMerge(
-		config.defaultConfig ?? {},
-		projectModuleConfig.config ?? {},
-		{
-			arrays: "replace",
-			maps: "merge",
-			sets: "replace",
-		},
+async function loadRoutes(
+	modulePath: string,
+	config: ModuleConfig,
+	moduleName: string,
+	projectRoot: string,
+	projectModuleConfig: ProjectModuleConfig,
+) {
+	// Read routes
+	const routesPath = resolve(modulePath, "routes");
+	const expectedRoutes = new Set(
+		await glob.glob("*.ts", { cwd: resolve(modulePath, "routes") }),
 	);
 
-	return {
-		path: modulePath,
-		name,
-		projectModuleConfig,
-		userConfig,
-		config,
-		registry,
-		storageAlias,
-		scripts,
-		actors,
-		db,
-	};
+	const routes = new Map<string, Route>();
+	if (config.routes) {
+		let rawPathPrefix: string;
+		if (projectModuleConfig.routes?.pathPrefix) {
+			validatePath(
+				projectModuleConfig.routes.pathPrefix,
+				true,
+				projectConfigPath(projectRoot),
+			);
+
+			rawPathPrefix = projectModuleConfig.routes.pathPrefix;
+		} else {
+			// Default to /modules/{module}/route/ for the path prefix
+			const prefix = `/modules/${moduleName}/route/`;
+			validatePath(
+				prefix,
+				true,
+				projectConfigPath(projectRoot),
+			);
+
+			rawPathPrefix = prefix;
+		}
+
+		// Remove the trailing slash
+		const pathPrefix = rawPathPrefix.replace(/\/$/, "");
+
+		for (const [routeName, relativeRouteConfig] of Object.entries(config.routes)) {
+			validateIdentifier(routeName, Casing.Snake);
+
+			// Load script
+			const routeScriptPath = resolve(
+				routesPath,
+				routeName + ".ts",
+			);
+			if (!await exists(routeScriptPath)) {
+				throw new UserError(
+					`Route not found at ${relative(Deno.cwd(), routeScriptPath)}.`,
+					{
+						suggest: "Check the routes in the module.yaml are configured correctly.",
+						path: moduleConfigPath(modulePath),
+					},
+				);
+			}
+
+			// Get subpath (either path or pathPrefix)
+			let subpath: string;
+			if ("path" in relativeRouteConfig) {
+				validatePath(
+					relativeRouteConfig.path,
+					false,
+					moduleConfigPath(modulePath),
+				);
+
+				// Remove leading slash
+				subpath = relativeRouteConfig.path.replace(/^\//, "");
+			} else {
+				validatePath(
+					relativeRouteConfig.pathPrefix,
+					true,
+					moduleConfigPath(modulePath),
+				);
+
+				// Remove leading and trailing slashes
+				subpath = relativeRouteConfig.pathPrefix.replace(/^\//, "").replace(/\/$/, "");
+			}
+
+			// Create route config with absolute path
+			let routeConfig: RouteConfig;
+			if ("path" in relativeRouteConfig) {
+				routeConfig = {
+					...relativeRouteConfig,
+					path: `${pathPrefix}/${subpath}`,
+				};
+			} else {
+				routeConfig = {
+					...relativeRouteConfig,
+					pathPrefix: `${pathPrefix}/${subpath}`,
+				};
+			}
+
+			const route: Route = {
+				path: routesPath,
+				name: routeName,
+				config: routeConfig,
+			};
+			routes.set(routeName, route);
+
+			// Remove script
+			expectedRoutes.delete(routeName + ".ts");
+		}
+	}
+
+	// Throw error extra routes
+	if (expectedRoutes.size > 0) {
+		const routeList = Array.from(expectedRoutes).map((x) => `- ${resolve(routesPath, x)}\n`);
+		throw new UserError(
+			`Found extra routes not registered in module.yaml.`,
+			{ details: routeList.join(""), suggest: "Add these routes to the module.yaml file.", path: routesPath },
+		);
+	}
+
+	return routes;
 }
 
 export function moduleHelperGen(

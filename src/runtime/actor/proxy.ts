@@ -56,11 +56,11 @@ export class ActorProxy {
 		});
 	}
 
-  async destroy(instanceName: string) {
-    return await this.driver.destroyActor({
+	async destroy(instanceName: string) {
+		return await this.driver.destroyActor({
 			moduleName: this.moduleName,
 			actorName: this.actorName,
 			instanceName,
 		});
-  }
+	}
 }

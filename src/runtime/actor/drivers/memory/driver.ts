@@ -135,14 +135,14 @@ export class MemoryActorDriver implements ActorDriver {
 	}
 
 	async destroyActor({ moduleName, actorName, instanceName }: DestroyOpts): Promise<void> {
-    // TODO: Does not handle cancelling timeouts correctly
-    const id = await this.getId(moduleName, actorName, instanceName);
-    this.actorRecords.delete(id);
-    if (this.actorInstances.has(id)) {
-      this.actorInstances.get(id)!.actor.destroyed = true;
-      this.actorInstances.delete(id);
-    }
-  }
+		// TODO: Does not handle cancelling timeouts correctly
+		const id = await this.getId(moduleName, actorName, instanceName);
+		this.actorRecords.delete(id);
+		if (this.actorInstances.has(id)) {
+			this.actorInstances.get(id)!.actor.destroyed = true;
+			this.actorInstances.delete(id);
+		}
+	}
 
 	private async getId(moduleName: string, actorName: string, instanceName: string) {
 		const module = this.config.modules[moduleName]!;

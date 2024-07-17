@@ -28,6 +28,9 @@ export type TraceEntryType =
 	| {
 		script: TraceEntryTypeScript;
 	}
+	| {
+		route: TraceEntryTypeRoute;
+	}
 	| { actorInitialize: TraceEntryTypeActorInitialize }
 	| { actorCall: TraceEntryTypeActorCall }
 	| { actorSchedule: TraceEntryTypeActorSchedule }
@@ -45,6 +48,9 @@ export function stringifyTraceEntryType(trace: TraceEntryType) {
 	} else if ("script" in trace) {
 		const { module, script } = trace.script;
 		return `script(${module}.${script})`;
+	} else if ("route" in trace) {
+		const { module, route } = trace.route;
+		return `route(${module}.${route})`;
 	} else if ("actorInitialize" in trace) {
 		const { module, actor } = trace.actorInitialize;
 		return `actorInitialize(${module}.${actor})`;
@@ -73,6 +79,11 @@ export interface TraceEntryTypeHttpRequest extends JsonObject {
 export interface TraceEntryTypeScript extends JsonObject {
 	module: string;
 	script: string;
+}
+
+export interface TraceEntryTypeRoute extends JsonObject {
+	module: string;
+	route: string;
 }
 
 export interface TraceEntryTypeActorInitialize extends JsonObject {

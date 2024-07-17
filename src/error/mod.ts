@@ -1,4 +1,5 @@
 import { fromValidationError, relative } from "../deps.ts";
+import { QualifiedPathPair } from "../runtime/path_resolver.ts";
 import { colors } from "../term/deps.ts";
 
 /**
@@ -116,6 +117,16 @@ export class ValidationError extends UserError {
 	}
 }
 
+export class RouteCollisionError extends KnownError {
+	public readonly routes: Set<QualifiedPathPair>;
+
+	constructor(routes: QualifiedPathPair[]) {
+		super("Route collision detected");
+		this.name = "RouteCollisionError";
+		this.routes = new Set(routes);
+	}
+}
+
 export function printError(error: unknown) {
 	// Padding
 	console.error();
@@ -213,6 +224,25 @@ export function printError(error: unknown) {
 			} catch (err) {
 				// HACK: See above
 				if (err instanceof Error && err.name !== "TypeError") throw err;
+			}
+		}
+
+		if (error instanceof RouteCollisionError) {
+			const routesArr = Array.from(error.routes);
+
+			const moduleNameWidth = Math.max(...routesArr.map(({ module }) => module.length)) + 2;
+			const routeNameWidth = Math.max(...routesArr.map(({ route }) => route.length)) + 2;
+
+			for (const { module, route, path } of routesArr) {
+				const moduleFmt = colors.green(
+					("`" + module + "`").padStart(moduleNameWidth),
+				);
+				const routeNameFmt = colors.green(
+					("`" + route + "`").padStart(routeNameWidth),
+				);
+				const routeType = path.isPrefix ? "prefix" : " exact";
+				const pathFmt = colors.bold(colors.green("`" + path.path + "`"));
+				str += `\t- Route ${routeNameFmt} in module ${moduleFmt} - ${routeType} ${pathFmt}\n`;
 			}
 		}
 
