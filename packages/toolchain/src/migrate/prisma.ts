@@ -8,7 +8,7 @@ import { genPath, PRISMA_WORKSPACE_PATH } from "../project/project.ts";
 import prismaArchive from "../../../../artifacts/prisma_archive.json" with { type: "json" };
 import { inflateArchive } from "../build/util.ts";
 
-export const PRISMA_VERSION = "5.15.0";
+export const PRISMA_VERSION = "5.17.0";
 const PRISMA_BIN_NAME = `opengb_prisma_${PRISMA_VERSION.replace(/\./g, "_")}`;
 
 const PRISMA_DEFAULT_ENV = {
