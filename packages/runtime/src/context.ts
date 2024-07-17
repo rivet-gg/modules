@@ -8,6 +8,7 @@ import { camelify } from "../../case_conversion/src/mod.ts";
 import { buildLogEntries, errorToLogEntries, LogEntry, logRaw, spreadObjectToLogEntries } from "./logger.ts";
 import { LogLevel } from "./logger.ts";
 import { INTERNAL_ERROR_CODE, stringifyTrace } from "./mod.ts";
+import { Environment } from "./environment.ts";
 
 export interface ContextParams {
 	dependenciesSnake: any;
@@ -33,6 +34,10 @@ export class Context<Params extends ContextParams> {
 	public get runtime(): ContextRuntime<Params> {
 		return new ContextRuntime(this.internalRuntime);
 	}
+
+  public get environment(): Environment {
+    return this.internalRuntime.env;
+  }
 
 	public constructor(
 		protected readonly internalRuntime: Runtime<Params>,
