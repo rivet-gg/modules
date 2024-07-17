@@ -42,9 +42,7 @@ export async function buildArtifacts(
 	// one entry per line in alphabetical order for more useful Git diffs.
 	const archiveFileSizes: Record<string, number> = {};
 	let archiveFile = "{\n";
-	for (let i = 0; i < files.length; i++) {
-		const file = files[i];
-
+	for (const [i, file] of files.entries()) {
 		// Get file contents
 		let content: string;
 		if (encode == "base64") {
@@ -74,6 +72,6 @@ export async function buildArtifacts(
 	// Print largest files. File sizes are in encoded format.
 	console.log("Largest files:");
 	Object.keys(archiveFileSizes)
-		.sort((a, b) => archiveFileSizes[b] - archiveFileSizes[a]).slice(0, 10)
-		.forEach((key) => console.log(key, Math.ceil(archiveFileSizes[key] / 1000) + "KB"));
+		.sort((a, b) => archiveFileSizes[b]! - archiveFileSizes[a]!).slice(0, 10)
+		.forEach((key) => console.log(key, Math.ceil(archiveFileSizes[key]! / 1000) + "KB"));
 }

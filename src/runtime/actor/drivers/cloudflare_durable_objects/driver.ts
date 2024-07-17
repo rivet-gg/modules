@@ -59,8 +59,8 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 		// TODO: Fix Deno.env.get hack. This does not return a string, it returns an object.
 		const ns = Deno.env.get("__GLOBAL_DURABLE_OBJECT") as any;
 
-		const module = this.config.modules[moduleName];
-		const actor = module.actors[actorName];
+		const module = this.config.modules[moduleName]!;
+		const actor = module.actors[actorName]!;
 		const name = `%%${module.storageAlias}%%${actor.storageAlias}%%${instanceName}`;
 		const id = ns.idFromName(name);
 

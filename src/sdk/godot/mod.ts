@@ -171,9 +171,9 @@ export async function generateBackendAndModules(project: Project, sdkGenPath: st
 		const scriptNames = Array.from(mod.scripts.keys());
 		const escapedScriptNames = escapeReservedWords(scriptNames);
 
-		for (let i = 0, l = scriptNames.length; i < l; i++) {
+		for (const [i, scriptName] of scriptNames.entries()) {
 			const escapedScriptName = escapedScriptNames[i];
-			const script = mod.scripts.get(scriptNames[i])!;
+			const script = mod.scripts.get(scriptName)!;
 
 			if (!script.config.public) continue;
 
@@ -224,9 +224,7 @@ function escapeReservedWords(wordsList: string[]) {
 	const escaped = [];
 	const usedNames = new Set();
 
-	for (let i = 0; i < wordsList.length; i++) {
-		let word = wordsList[i];
-
+	for (let [i, word] of wordsList.entries()) {
 		while (RESERVED_WORDS.includes(word) || usedNames.has(word)) {
 			word = "call_" + word;
 		}

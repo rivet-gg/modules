@@ -64,7 +64,7 @@ export function stringify(...data: LogEntry[]) {
 	let line = "";
 
 	for (let i = 0; i < data.length; i++) {
-		const [key, valueRaw] = data[i];
+		const [key, valueRaw] = data[i]!;
 
 		let isNull = false;
 		let valueString: string;
@@ -167,7 +167,7 @@ export function spreadObjectToLogEntries(base: string, data: unknown): LogEntry[
 	}
 }
 
-export function errorToLogEntries(base: string, error: Error): LogEntry[] {
+export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 	if (error instanceof RuntimeError) {
 		return [
 			[`${base}.code`, error.code],
@@ -176,11 +176,15 @@ export function errorToLogEntries(base: string, error: Error): LogEntry[] {
 			...(error.meta ? [[`${base}.meta`, JSON.stringify(error.meta)] as LogEntry] : []),
 			...(error.cause instanceof Error ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
-	} else {
+	} else if (error instanceof Error) {
 		return [
 			[`${base}.name`, error.name],
 			[`${base}.message`, error.message],
 			...(error.cause instanceof Error ? errorToLogEntries(`${base}.cause`, error.cause) : []),
+		];
+	} else {
+		return [
+			[base, `${error}`],
 		];
 	}
 }

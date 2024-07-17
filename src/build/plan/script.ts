@@ -36,11 +36,11 @@ export async function planScriptBuild(
 		},
 		async alreadyCached() {
 			// Read schemas from cache
-			const schemas = buildState.cache.persist.scriptSchemas[module.name][script.name];
+			const schemas = buildState.cache.persist.scriptSchemas[module.name]![script.name]!;
 			assertExists(schemas);
 			script.schemas = {
-				request: schemas.request,
-				response: schemas.response,
+				request: schemas.request!,
+				response: schemas.response!,
 			};
 		},
 		async finally() {
@@ -51,7 +51,7 @@ export async function planScriptBuild(
 			if (!buildState.cache.persist.scriptSchemas[module.name]) {
 				buildState.cache.persist.scriptSchemas[module.name] = {};
 			}
-			buildState.cache.persist.scriptSchemas[module.name][script.name] = {
+			buildState.cache.persist.scriptSchemas[module.name]![script.name] = {
 				request: script.schemas?.request,
 				response: script.schemas?.response,
 			};

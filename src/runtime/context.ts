@@ -7,6 +7,7 @@ import { DependencyScriptCallFunction } from "../types/registry.ts";
 import { camelify } from "../types/case_conversions.ts";
 import { errorToLogEntries, log, LogEntry, spreadObjectToLogEntries } from "./logger.ts";
 import { LogLevel } from "./logger.ts";
+import { isValidationError } from "./deps.ts";
 
 export interface ContextParams {
 	dependenciesSnake: any;
@@ -59,7 +60,7 @@ export class Context<Params extends ContextParams> {
 			}
 
 			// Lookup module
-			const module = this.internalRuntime.config.modules[moduleName];
+			const module = this.internalRuntime.config.modules[moduleName]!;
 			if (!module) throw new Error(`Module not found: ${moduleName}`);
 
 			// Lookup script
@@ -245,15 +246,15 @@ export class ModuleContext<Params extends ModuleContextParams> extends Context<P
 		super(runtime, trace, dependencyCaseConversionMap, actorCaseConversionMap);
 	}
 
-	protected isAllowedModuleName(targetModuleName: string): boolean {
+	protected override isAllowedModuleName(targetModuleName: string): boolean {
 		return this.internalRuntime.config
 			.modules[this.moduleName]
 			?.dependencies
-			.has(targetModuleName);
+			.has(targetModuleName) ?? false;
 	}
 
 	public get config(): Params["userConfig"] {
-		return this.internalRuntime.config.modules[this.moduleName].userConfig as Params["userConfig"];
+		return this.internalRuntime.config.modules[this.moduleName]!.userConfig as Params["userConfig"];
 	}
 
 	public get actors() {
@@ -261,7 +262,7 @@ export class ModuleContext<Params extends ModuleContextParams> extends Context<P
 			this.internalRuntime,
 			// TODO: Find a better way of looking up the module name. We don't use
 			// camel -> snake conversions anymore for modules in actors.
-			this.actorCaseConversionMap[camelify(this.moduleName)],
+			this.actorCaseConversionMap[camelify(this.moduleName)]!,
 			this.trace,
 		);
 	}

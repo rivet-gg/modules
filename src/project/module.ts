@@ -87,33 +87,35 @@ export async function loadModule(
 
 	// Read scripts
 	const scripts = new Map<string, Script>();
-	for (const scriptName in config.scripts) {
-		validateIdentifier(scriptName, Casing.Snake);
+	if (config.scripts) {
+		for (const [scriptName, scriptConfig] of Object.entries(config.scripts)) {
+			validateIdentifier(scriptName, Casing.Snake);
 
-		// Load script
-		const scriptPath = resolve(
-			scriptsPath,
-			scriptName + ".ts",
-		);
-		if (!await exists(scriptPath)) {
-			throw new UserError(
-				`Script not found at ${relative(Deno.cwd(), scriptPath)}.`,
-				{
-					suggest: "Check the scripts in the module.json are configured correctly.",
-					path: moduleConfigPath(modulePath),
-				},
+			// Load script
+			const scriptPath = resolve(
+				scriptsPath,
+				scriptName + ".ts",
 			);
+			if (!await exists(scriptPath)) {
+				throw new UserError(
+					`Script not found at ${relative(Deno.cwd(), scriptPath)}.`,
+					{
+						suggest: "Check the scripts in the module.json are configured correctly.",
+						path: moduleConfigPath(modulePath),
+					},
+				);
+			}
+
+			const script: Script = {
+				path: scriptPath,
+				name: scriptName,
+				config: scriptConfig,
+			};
+			scripts.set(scriptName, script);
+
+			// Remove script
+			expectedScripts.delete(scriptName + ".ts");
 		}
-
-		const script: Script = {
-			path: scriptPath,
-			name: scriptName,
-			config: config.scripts[scriptName],
-		};
-		scripts.set(scriptName, script);
-
-		// Remove script
-		expectedScripts.delete(scriptName + ".ts");
 	}
 
 	// Throw error extra scripts
@@ -133,37 +135,39 @@ export async function loadModule(
 
 	// Read actors
 	const actors = new Map<string, Actor>();
-	for (const actorName in config.actors) {
-		validateIdentifier(actorName, Casing.Snake);
+	if (config.actors) {
+		for (const [actorName, actorConfig] of Object.entries(config.actors)) {
+			validateIdentifier(actorName, Casing.Snake);
 
-		// Load actor
-		const actorPath = resolve(
-			actorsPath,
-			actorName + ".ts",
-		);
-		if (!await exists(actorPath)) {
-			throw new UserError(
-				`actor not found at ${relative(Deno.cwd(), actorPath)}.`,
-				{
-					suggest: "Check the actors in the module.json are configured correctly.",
-					path: moduleConfigPath(modulePath),
-				},
+			// Load actor
+			const actorPath = resolve(
+				actorsPath,
+				actorName + ".ts",
 			);
+			if (!await exists(actorPath)) {
+				throw new UserError(
+					`actor not found at ${relative(Deno.cwd(), actorPath)}.`,
+					{
+						suggest: "Check the actors in the module.json are configured correctly.",
+						path: moduleConfigPath(modulePath),
+					},
+				);
+			}
+
+			const storageAlias = actorConfig.storageAlias ?? actorName;
+			validateIdentifier(storageAlias, Casing.Snake);
+
+			const actor: Actor = {
+				path: actorPath,
+				name: actorName,
+				storageAlias,
+				config: actorConfig,
+			};
+			actors.set(actorName, actor);
+
+			// Remove actor
+			expectedActors.delete(actorName + ".ts");
 		}
-
-		const storageAlias = config.actors[actorName].storageAlias ?? actorName;
-		validateIdentifier(storageAlias, Casing.Snake);
-
-		const actor: Actor = {
-			path: actorPath,
-			name: actorName,
-			storageAlias,
-			config: config.actors[actorName],
-		};
-		actors.set(actorName, actor);
-
-		// Remove actor
-		expectedActors.delete(actorName + ".ts");
 	}
 
 	// Throw error extra actors

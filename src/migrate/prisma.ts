@@ -63,7 +63,7 @@ async function ensurePrismaInstalledInner(signal?: AbortSignal): Promise<void> {
 			verbose("Prisma command failed", versionCommand.code.toString());
 		}
 	} catch (err) {
-		verbose("Prisma not installed", err);
+		verbose("Prisma not installed", `${err}`);
 	}
 
 	// HACK: --no-lock fixes a weird bug that causes `Argument list too lock` as of Deno 1.44.1.

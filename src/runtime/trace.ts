@@ -1,5 +1,6 @@
 import { JsonObject } from "../types/json.ts";
 import { UnreachableError } from "./error.ts";
+import { log } from "./logger.ts";
 import { BuildRuntime } from "./runtime.ts";
 
 /**
@@ -101,7 +102,14 @@ export function newTrace(entryType: TraceEntryType, runtime: BuildRuntime = Buil
 	// Read managed opengb ray id from request header (set by cloudflare)
 	let rayId: string;
 	if (runtime == BuildRuntime.Cloudflare && "httpRequest" in entry) {
-		rayId = (entry.httpRequest as TraceEntryTypeHttpRequest).headers["x-opengb-ray-id"];
+		const rayIdHeader = (entry.httpRequest as TraceEntryTypeHttpRequest).headers["x-opengb-ray-id"];
+		if (rayIdHeader) {
+			rayId = rayIdHeader;
+		} else {
+			log("warn", "no x-opengb-ray-id header found");
+			// Generate random ray ID
+			rayId = crypto.randomUUID();
+		}
 	} else {
 		// Generate random ray ID
 		rayId = crypto.randomUUID();

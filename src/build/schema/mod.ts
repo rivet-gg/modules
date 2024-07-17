@@ -44,7 +44,7 @@ export const convertSchemaToZod = (
 	}
 	if (is("tuple", schema)) {
 		const [schemaA, schemaB, ...schemas] = schema.items.map(convertSchemaToZod);
-		return zod.tuple([schemaA, schemaB, ...schemas]);
+		return zod.tuple([schemaA!, schemaB!, ...schemas]);
 	}
 	if (is("array", schema)) {
 		return zod.array(convertSchemaToZod(schema.item));
@@ -57,7 +57,7 @@ export const convertSchemaToZod = (
 	}
 	if (is("union", schema)) {
 		const [schemaA, schemaB, ...schemas] = schema.items.map(convertSchemaToZod);
-		return zod.union([schemaA, schemaB, ...schemas]);
+		return zod.union([schemaA!, schemaB!, ...schemas]);
 	}
 	if (is("nullable", schema)) {
 		return zod.nullable(convertSchemaToZod(schema.item));

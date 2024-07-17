@@ -183,7 +183,7 @@ export class Runtime<Params extends ContextParams> {
 				);
 
 				// Build context
-				const module = config.modules[moduleName];
+				const module = config.modules[moduleName]!;
 				const ctx = new TestContext<Params>(
 					runtime,
 					newTrace({

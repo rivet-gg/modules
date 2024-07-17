@@ -78,7 +78,7 @@ export async function watch(initProject: Project, opts: WatchOpts) {
 		try {
 			fnAbortController?.abort("Rebuilding project due to file change.");
 		} catch (err) {
-			if (err.name != "AbortError") throw err;
+			if (err instanceof Error && err.name != "AbortError") throw err;
 		}
 
 		// Try to reload project

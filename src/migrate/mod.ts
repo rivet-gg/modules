@@ -87,7 +87,7 @@ async function createSchema(client: PostgresClient, db: ModuleDatabase) {
 	const existsQuery = await client.queryObject<
 		{ exists: boolean }
 	>`SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ${db.schema})`;
-	if (!existsQuery.rows[0].exists) {
+	if (!(existsQuery.rows[0]!.exists)) {
 		await client.queryObject(`CREATE SCHEMA ${assertValidString(db.schema)}`);
 	}
 

@@ -92,7 +92,7 @@ dbCommand
 		}
 
 		const project = await initProject(opts);
-		const module = resolveModules(project, [moduleName])[0];
+		const module = resolveModules(project, [moduleName])[0]!;
 
 		if (!module.db) throw new UserError(`Module does not have a database configured: ${name}`);
 

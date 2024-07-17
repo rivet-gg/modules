@@ -33,8 +33,7 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 	// Load registries
 	const registries = new Map();
 
-	for (const registryName in projectConfig.registries) {
-		const registryConfig = projectConfig.registries[registryName];
+	for (const [registryName, registryConfig] of Object.entries(projectConfig.registries)) {
 		const registry = await loadRegistry(
 			projectRoot,
 			registryName,
@@ -66,9 +65,7 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 
 	// Load modules
 	const modules = new Map<string, Module>();
-	for (const projectModuleName in projectConfig.modules) {
-		const projectModuleConfig = projectConfig.modules[projectModuleName];
-
+	for (const [projectModuleName, projectModuleConfig] of Object.entries(projectConfig.modules)) {
 		const { path, registry } = await fetchAndResolveModule(
 			projectRoot,
 			registries,
