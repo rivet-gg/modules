@@ -99,7 +99,14 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
+			import { handleRequest } from ${
+			JSON.stringify(genPath(project, RUNTIME_PATH, "packages", "runtime", "src", "server.ts"))
+		};
 			import { ActorDriver } from ${JSON.stringify(actorDriverPath)};
+			import { PathResolver } from ${
+			JSON.stringify(genPath(project, RUNTIME_PATH, "packages", "path_resolver", "src", "mod.ts"))
+		};
+			import { log } from ${JSON.stringify(genPath(project, RUNTIME_PATH, "packages", "runtime", "src", "logger.ts"))};
 
 			const runtime = new Runtime<{
 				dependenciesSnake: DependenciesSnake,
@@ -114,7 +121,31 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 				actorCaseConversionMap,
 			);
 
-			await runtime.serve();
+			const resolver = new PathResolver(runtime.routePaths());
+
+			await Deno.serve(
+				{
+					hostname: runtime.hostname,
+					port: runtime.port,
+					onListen: () => {
+						log(
+							"info",
+							"server started",
+							["hostname", runtime.hostname],
+							["port", runtime.port],
+							["endpoint", runtime.publicEndpoint],
+						);
+					},
+				},
+				(req: Request, reqMeta: Deno.ServeHandlerInfo): Promise<Response> => {
+					return handleRequest(
+						runtime,
+						req,
+						{ remoteAddress: reqMeta.remoteAddr.hostname },
+						resolver,
+					);
+				},
+			).finished;
 			`;
 	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 		const runtimePath = genPath(project, RUNTIME_PATH);
@@ -131,7 +162,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
-			import { handleRequest } from "${serverTsPath}";
+			import { handleRequest } from ${JSON.stringify(serverTsPath)};
 			import { ActorDriver, buildGlobalDurableObjectClass } from ${JSON.stringify(actorDriverPath)};
 
 			export default {

@@ -10,23 +10,6 @@ interface RequestInfo {
 	remoteAddress: string;
 }
 
-export function serverHandler<Params extends ContextParams>(
-	runtime: Runtime<Params>,
-): Deno.ServeHandler {
-	const resolver = new PathResolver(runtime.routePaths());
-
-	return async (
-		req: Request,
-		reqMeta: Deno.ServeHandlerInfo,
-	): Promise<Response> =>
-		handleRequest(
-			runtime,
-			req,
-			{ remoteAddress: reqMeta.remoteAddr.hostname },
-			resolver,
-		);
-}
-
 export async function handleRequest<Params extends ModuleContextParams>(
 	runtime: Runtime<Params>,
 	req: Request,

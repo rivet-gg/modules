@@ -1,10 +1,11 @@
 import { Module } from "./runtime.ts";
 import { Config } from "./mod.ts";
+import { Environment } from "./environment.ts";
 
 const DEFAULT_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable";
 
-export function getDatabaseUrl(): URL {
-	return new URL(Deno.env.get("DATABASE_URL") ?? DEFAULT_DATABASE_URL);
+export function getDatabaseUrl(env: Environment): URL {
+	return new URL(env.get("DATABASE_URL") ?? DEFAULT_DATABASE_URL);
 }
 
 /**
@@ -38,13 +39,13 @@ export class Postgres {
 		if (this.pgPool?.end) await this.pgPool.end();
 	}
 
-	public getOrCreatePgPool(config: Config): PgPoolDummy {
+	public getOrCreatePgPool(env: Environment, config: Config): PgPoolDummy {
 		if (this.isShutDown) throw new Error("Postgres is shutting down");
 
 		if (this.pgPool) {
 			return this.pgPool;
 		} else {
-			const url = getDatabaseUrl();
+			const url = getDatabaseUrl(env);
 
 			// Create & insert pool
 			const output = config.db.createPgPool(url);
@@ -53,7 +54,7 @@ export class Postgres {
 		}
 	}
 
-	public getOrCreatePrismaClient(config: Config, module: Module): PrismaClientDummy | undefined {
+	public getOrCreatePrismaClient(env: Environment, config: Config, module: Module): PrismaClientDummy | undefined {
 		if (!module.db) return undefined;
 		if (this.isShutDown) throw new Error("Postgres is shutting down");
 
@@ -61,7 +62,7 @@ export class Postgres {
 			return this.prismaClients.get(module.db.schema)!;
 		} else {
 			// Create & insert pool
-			const pool = this.getOrCreatePgPool(config);
+			const pool = this.getOrCreatePgPool(env, config);
 			const client = module.db.createPrismaClient(pool, module.db.schema);
 			this.prismaClients.set(module.db.schema, client);
 			return client;

@@ -205,7 +205,7 @@ export class MemoryActorDriver implements ActorDriver {
 			this.runtime,
 			trace,
 			moduleName,
-			this.runtime.postgres.getOrCreatePrismaClient(this.runtime.config, module),
+			this.runtime.postgres.getOrCreatePrismaClient(this.runtime.env, this.runtime.config, module),
 			module.db?.schema,
 			actorName,
 			this.dependencyCaseConversionMap,
