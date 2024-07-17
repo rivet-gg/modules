@@ -1,21 +1,21 @@
 import { StorageDriver } from "../../driver.ts";
-import { ActorEntry } from "./driver.ts";
+import { ActorRecord } from "./driver.ts";
 
 export class MemoryStorage implements StorageDriver {
-	constructor(private readonly actorEntry: ActorEntry) {}
+	constructor(private readonly actorRecord: ActorRecord) {}
 
 	async get<V>(key: string): Promise<V | undefined> {
-		const value = this.actorEntry.storage.get(key);
+		const value = this.actorRecord.storage.get(key);
 		if (value) return JSON.parse(value);
 		else return undefined;
 	}
 
 	async put<V>(key: string, value: V): Promise<void> {
-		this.actorEntry.storage.set(key, JSON.stringify(value));
+		this.actorRecord.storage.set(key, JSON.stringify(value));
 	}
 
 	async delete(key: string): Promise<void> {
-		this.actorEntry.storage.delete(key);
+		this.actorRecord.storage.delete(key);
 		throw new Error("Method not implemented.");
 	}
 }
