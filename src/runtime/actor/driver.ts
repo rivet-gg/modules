@@ -33,11 +33,18 @@ export interface ExistsOpts {
 	instanceName: string;
 }
 
+export interface DestroyOpts {
+	moduleName: string;
+	actorName: string;
+	instanceName: string;
+}
+
 export interface ActorDriver {
 	createActor(opts: CreateOpts): Promise<void>;
 	callActor(opts: CallOpts): Promise<unknown>;
 	getOrCreateAndCallActor(opts: GetOrCreateAndCallOpts): Promise<unknown>;
 	actorExists(opts: ExistsOpts): Promise<boolean>;
+	destroyActor(opts: DestroyOpts): Promise<void>;
 }
 
 export interface StorageDriver {
