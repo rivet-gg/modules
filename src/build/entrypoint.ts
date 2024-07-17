@@ -47,12 +47,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
 		imports += `
 		// Import Prisma adapter for Postgres
-    //
-    // We can't use esm.sh for these because they rely on special Node
-    // functionality & don't need to be portable
-    //
-    // https://github.com/esm-dev/esm.sh/issues/684
-    // import 'npm:pg-cloudflare';
+		//
+		// We can't use esm.sh for these because they rely on special Node
+		// functionality & don't need to be portable
+		//
+		// https://github.com/esm-dev/esm.sh/issues/684
+		// import 'npm:pg-cloudflare';
 		import pg from "npm:pg@8.12.0";
 		import { PrismaPg } from "npm:@prisma/adapter-pg@5.12.0";
 		`;
@@ -80,9 +80,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			runtime: BuildRuntime.${runtimeToString(opts.runtime)},
 			modules: ${modConfig},
 			${corsSource}
-      db: {
-        createPgPool: ${generateCreatePgPool(opts)},
-      },
+			db: {
+				createPgPool: ${generateCreatePgPool(opts)},
+			},
 		} as Config;
 		`;
 
@@ -102,11 +102,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import { ActorDriver } from ${JSON.stringify(actorDriverPath)};
 
 			const runtime = new Runtime<{
-        dependenciesSnake: DependenciesSnake,
-        dependenciesCamel: DependenciesCamel,
-      }>(
+				dependenciesSnake: DependenciesSnake,
+				dependenciesCamel: DependenciesCamel,
+			}>(
+				Deno.env,
 				config,
-				new ActorDriver(config, dependencyCaseConversionMap, actorCaseConversionMap),
+				new ActorDriver(Deno.env, config, dependencyCaseConversionMap, actorCaseConversionMap),
 				dependencyCaseConversionMap,
 				actorCaseConversionMap,
 			);
@@ -121,7 +122,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import type { IncomingRequestCf } from 'https://raw.githubusercontent.com/skymethod/denoflare/v0.6.0/common/cloudflare_workers_types.d.ts';
-			import { Runtime } from "${runtimeModPath}";
+			import { Runtime, Environment } from "${runtimeModPath}";
 			import { RuntimeError } from "${errorTsPath}";
 			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
 			import { actorCaseConversionMap } from "${genActorCaseConversionMapPath(project)}";
@@ -133,20 +134,26 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
-          ${hyperdriveAdapter(opts)}
+					${hyperdriveAdapter(opts)}
 
-          ${denoEnvPolyfill()}
+					// Environment adapter
+					const envAdapter: Environment = {
+						get(key: string): string | undefined {
+							return env[key];
+						},
+					};
 
-          // TODO(OGBE-159): Move this back to global scope after dbs are correctly isolated
-          const runtime = new Runtime<{
-            dependenciesSnake: DependenciesSnake,
-            dependenciesCamel: DependenciesCamel,
-          }>(
-            config,
-            new ActorDriver(config, dependencyCaseConversionMap, actorCaseConversionMap),
-            dependencyCaseConversionMap,
-            actorCaseConversionMap,
-          );
+					// TODO(OGBE-159): Move this back to global scope after dbs are correctly isolated
+					const runtime = new Runtime<{
+						dependenciesSnake: DependenciesSnake,
+						dependenciesCamel: DependenciesCamel,
+					}>(
+						envAdapter,
+						config,
+						new ActorDriver(envAdapter, config, dependencyCaseConversionMap, actorCaseConversionMap),
+						dependencyCaseConversionMap,
+						actorCaseConversionMap,
+					);
 
 					const ip = req.headers.get("CF-Connecting-IP");
 					if (!ip) {
@@ -163,7 +170,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			}
 
 			// Export durable object binding
-      const __GlobalDurableObject = buildGlobalDurableObjectClass(config);
+			const __GlobalDurableObject = buildGlobalDurableObjectClass(config);
 			export { __GlobalDurableObject };
 			`;
 	}
@@ -265,32 +272,32 @@ function generateModImports(project: Project, opts: BuildOpts) {
 function generateCreatePgPool(opts: BuildOpts) {
 	if (opts.dbDriver == DbDriver.NodePostgres) {
 		return dedent`
-      (url: URL) => {
-        return new pg.Pool({
-          connectionString: url.toString(),
-        });
-      }
-    `;
+			(url: URL) => {
+				return new pg.Pool({
+					connectionString: url.toString(),
+				});
+			}
+		`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		return dedent`
-      (url: URL) => {
-        return new neon.Pool({
-          connectionString: url.toString(),
-        });
-      }
-    `;
+			(url: URL) => {
+				return new neon.Pool({
+					connectionString: url.toString(),
+				});
+			}
+		`;
 	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
 		return dedent`
-      (url: URL) => {
-        return new pg.Pool({
-          connectionString: url.toString(),
-          // Limit connection pool size since Hyperdrive already maintains a pool
-          //
-          // https://github.com/prisma/prisma/issues/23367#issuecomment-1981340554
-          max: 2,
-        });
-      }
-    `;
+			(url: URL) => {
+				return new pg.Pool({
+					connectionString: url.toString(),
+					// Limit connection pool size since Hyperdrive already maintains a pool
+					//
+					// https://github.com/prisma/prisma/issues/23367#issuecomment-1981340554
+					max: 2,
+				});
+			}
+		`;
 	} else {
 		throw new UnreachableError(opts.dbDriver);
 	}
@@ -299,26 +306,26 @@ function generateCreatePgPool(opts: BuildOpts) {
 function generateCreatePrismaClient(opts: BuildOpts, prismaImportName: string) {
 	if (opts.dbDriver == DbDriver.NodePostgres || opts.dbDriver == DbDriver.CloudflareHyperdrive) {
 		return dedent`
-      (pgPool: pg.Pool, schema: string) => {
-        const adapter = new PrismaPg(pgPool, { schema });
-        const prisma = new ${prismaImportName}.PrismaClient({
-          adapter,
-          log: ['query', 'info', 'warn', 'error'],
-        });
-        return prisma;
-      }
-    `;
+			(pgPool: pg.Pool, schema: string) => {
+				const adapter = new PrismaPg(pgPool, { schema });
+				const prisma = new ${prismaImportName}.PrismaClient({
+					adapter,
+					log: ['query', 'info', 'warn', 'error'],
+				});
+				return prisma;
+			}
+		`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		return dedent`
-      (pgPool: neon.Pool, schema: string) => {
-        const adapter = new PrismaNeon(pgPool, { schema });
-        const prisma = new ${prismaImportName}.PrismaClient({
-          adapter,
-          log: ['query', 'info', 'warn', 'error'],
-        });
-        return prisma;
-      }
-    `;
+			(pgPool: neon.Pool, schema: string) => {
+				const adapter = new PrismaNeon(pgPool, { schema });
+				const prisma = new ${prismaImportName}.PrismaClient({
+					adapter,
+					log: ['query', 'info', 'warn', 'error'],
+				});
+				return prisma;
+			}
+		`;
 	} else {
 		throw new UnreachableError(opts.dbDriver);
 	}
@@ -327,42 +334,10 @@ function generateCreatePrismaClient(opts: BuildOpts, prismaImportName: string) {
 function hyperdriveAdapter(opts: BuildOpts): string {
 	if (opts.dbDriver != DbDriver.CloudflareHyperdrive) return "";
 	return dedent`
-    interface Hyperdrive {
-      connectionString: string;
-    }
+		interface Hyperdrive {
+			connectionString: string;
+		}
 
-    env.DATABASE_URL = (env.__HYPERDRIVE as Hyperdrive).connectionString;
-  `;
-}
-
-function denoEnvPolyfill() {
-	// Deno env polyfill
-	return dedent`
-		globalThis.Deno = {
-			env: {
-				get(name: string): unknown | undefined {
-					return env.hasOwnProperty(name) ? env[name] : undefined;
-				},
-				set() {
-					throw new RuntimeError("UNIMPLEMENTED", {
-						cause: "Deno.env.set is unimplemented in Cloudflare Workers"
-					});
-				},
-				delete() {
-					throw new RuntimeError("UNIMPLEMENTED", {
-						cause: "Deno.env.delete is unimplemented in Cloudflare Workers"
-					});
-				},
-				has(name: string): boolean {
-					return env.hasOwnProperty(name);
-				},
-				toObject(): { [k:string]: string; } {
-					return Object.fromEntries(
-						Object.entries(env as { [k: string]: string; })
-							.filter(([k, v]) => typeof v === 'string')
-						);
-				}
-			}
-		} as any;
+		env.DATABASE_URL = (env.__HYPERDRIVE as Hyperdrive).connectionString;
 	`;
 }

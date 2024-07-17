@@ -8,6 +8,7 @@ import { camelify } from "../types/case_conversions.ts";
 import { errorToLogEntries, log, LogEntry, spreadObjectToLogEntries } from "./logger.ts";
 import { LogLevel } from "./logger.ts";
 import { isValidationError } from "./deps.ts";
+import { stringifyTrace } from "./mod.ts";
 
 export interface ContextParams {
 	dependenciesSnake: any;
@@ -191,12 +192,10 @@ class ContextLog<Params extends ContextParams> {
 	constructor(private readonly context: Context<Params>) {}
 
 	private log(level: LogLevel, message: string, ...data: LogEntry[]) {
-		const trace = this.context.trace.entries.map((x) => stringifyTraceEntryType(x.type)).join(" > ");
-
 		log(
 			level,
 			message,
-			["trace", trace],
+			["trace", stringifyTrace(this.context.trace)],
 			...data,
 		);
 	}

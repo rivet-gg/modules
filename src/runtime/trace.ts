@@ -34,6 +34,10 @@ export type TraceEntryType =
 	| { test: TraceEntryTypeTest }
 	| { internalTest: TraceEntryTypeInternalTest };
 
+export function stringifyTrace(trace: Trace) {
+	return trace.entries.map((x) => stringifyTraceEntryType(x.type)).join(" > ");
+}
+
 export function stringifyTraceEntryType(trace: TraceEntryType) {
 	if ("httpRequest" in trace) {
 		const { method, path } = trace.httpRequest;

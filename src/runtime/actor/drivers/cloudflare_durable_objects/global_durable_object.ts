@@ -3,7 +3,15 @@ import { DurableObject } from "cloudflare:workers";
 import { CloudflareDurableObjectsStorage } from "./storage.ts";
 import { CloudflareDurableObjectsSchedule } from "./schedule.ts";
 import { ActorBase } from "../../actor.ts";
-import { ActorContext, appendTraceEntry, Config, ModuleContextParams, Runtime, Trace } from "../../../mod.ts";
+import {
+	ActorContext,
+	appendTraceEntry,
+	Config,
+	Environment,
+	ModuleContextParams,
+	Runtime,
+	Trace,
+} from "../../../mod.ts";
 import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorDriver } from "./driver.ts";
 import { newTrace } from "../../../trace.ts";
@@ -107,9 +115,16 @@ export function buildGlobalDurableObjectClass(
 		constructor(ctx: DurableObjectState, env: unknown) {
 			super(ctx, env);
 
+			const envAdapter: Environment = {
+				get(key: string): string | undefined {
+					return (env as any)[key];
+				},
+			};
+
 			this.runtime = new Runtime(
+				envAdapter,
 				config,
-				new ActorDriver(config),
+				new ActorDriver(envAdapter, config),
 				dependencyCaseConversionMap,
 				actorDependencyCaseConversionMap,
 			);

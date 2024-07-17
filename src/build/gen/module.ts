@@ -228,7 +228,7 @@ function genTest(
 			export function test(name: string, fn: TestFn) {
 				Runtime.test(
 					config,
-					new ActorDriver(config, dependencyCaseConversionMap, actorCaseConversionMap),
+					new ActorDriver(Deno.env, config, dependencyCaseConversionMap, actorCaseConversionMap),
 					"${module.name}",
 					name,
 					fn,

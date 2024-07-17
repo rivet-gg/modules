@@ -8,7 +8,8 @@ import { RegistryCallMap } from "./proxy.ts";
 import { ActorDriver } from "./actor/driver.ts";
 import { ActorBase } from "./actor/actor.ts";
 import { ContextParams } from "./mod.ts";
-import { errorToLogEntries, log } from "./logger.ts";
+import { errorToLogEntries, log, LOGGER_CONFIG } from "./logger.ts";
+import { Environment } from "./environment.ts";
 
 interface ParseSuccessResult<Output = unknown> {
 	success: true;
@@ -101,18 +102,37 @@ export interface ErrorConfig {
 export class Runtime<Params extends ContextParams> {
 	public postgres: Postgres;
 
-	public hostname = Deno.env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
-	public port = parseInt(Deno.env.get("OPENGB_PORT") ?? "6420");
+	public hostname: string;
+	public port: number;
 	public publicEndpoint: string;
 
 	public constructor(
-		public config: Config,
+		public readonly env: Environment,
+		public readonly config: Config,
 		public actorDriver: ActorDriver,
 		private dependencyCaseConversionMap: RegistryCallMap,
 		private actorDependencyCaseConversionMap: RegistryCallMap,
 	) {
-		this.publicEndpoint = Deno.env.get("OPENGB_PUBLIC_ENDPOINT") ?? `http://${this.hostname}:${this.port}`;
+		// Read config
+		this.hostname = env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
+		this.port = parseInt(env.get("OPENGB_PORT") ?? "6420");
+		this.publicEndpoint = env.get("OPENGB_PUBLIC_ENDPOINT") ?? `http://${this.hostname}:${this.port}`;
 
+		// Configure logger
+		LOGGER_CONFIG.enableSpreadObject = env.get("_OPENGB_LOG_SPILT_OBJECT") == "1";
+
+		if (env.get("OPENGB_TERM_COLOR") === "never") {
+			LOGGER_CONFIG.enableColor = false;
+		} else if (env.get("OPENGB_TERM_COLOR") === "always") {
+			LOGGER_CONFIG.enableColor = true;
+		} else if (env.get("NO_COLOR") != undefined && env.get("NO_COLOR") != "") {
+			// https://no-color.org/
+			LOGGER_CONFIG.enableColor = false;
+		} else {
+			LOGGER_CONFIG.enableColor = globalThis.Deno?.stdout?.isTerminal() == true;
+		}
+
+		// Create database
 		this.postgres = new Postgres();
 	}
 
@@ -176,6 +196,7 @@ export class Runtime<Params extends ContextParams> {
 
 			async fn() {
 				const runtime = new Runtime<Params>(
+					Deno.env,
 					config,
 					actorDriver,
 					dependencyCaseConversionMap,
