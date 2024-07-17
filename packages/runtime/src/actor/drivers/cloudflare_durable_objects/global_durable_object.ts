@@ -16,6 +16,8 @@ import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorDriver } from "./driver.ts";
 import { newTrace } from "../../../trace.ts";
 import { errorToLogEntries, log } from "../../../logger.ts";
+import { captureRpcOutput, RpcOutput } from "./rpc_output.ts";
+import { CloudflareDurableObjectsInstance } from "./instance.ts";
 
 const KEYS = {
 	META: {
@@ -76,11 +78,17 @@ interface CallRpcOpts {
  * __GlobalDurableObject type used for referencing an instance of the class.
  */
 export interface __GlobalDurableObjectT extends DurableObject {
-	init(opts: InitOpts): Promise<void>;
+	// ALlow accessing from ActorInstanceDriver
+	readonly publicCtx: DurableObjectState;
+
+	// Called over network
+	init(opts: InitOpts): Promise<RpcOutput<void>>;
 	initialized(): Promise<boolean>;
 	destroy(): Promise<void>;
-	getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<any>;
-	callRpc({ fn, request }: CallRpcOpts): Promise<any>;
+	getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<RpcOutput<any>>;
+	callRpc({ fn, request }: CallRpcOpts): Promise<RpcOutput<any>>;
+
+	// Called internally
 	scheduleEvent(timestamp: number, fn: string, request: unknown): Promise<void>;
 	alarm(): Promise<void>;
 	get storage(): DurableObjectStorage;
@@ -131,6 +139,10 @@ export function buildGlobalDurableObjectClass(
 			);
 		}
 
+		get publicCtx(): DurableObjectState {
+			return this.ctx;
+		}
+
 		/**
 		 * Reads the metadata related to this actor from storage.
 		 *
@@ -149,7 +161,7 @@ export function buildGlobalDurableObjectClass(
 		}
 
 		// TODO: optimize to use in-memory state
-		private async constructActor(meta: ActorMeta): Promise<ActorBase<unknown, unknown>> {
+		private async constructActor(context: ActorContext<ModuleContextParams>, meta: ActorMeta): Promise<ActorBase<unknown, unknown>> {
 			// Get actor config
 			if (!(meta.moduleName in config.modules)) throw new Error(`module not found: ${meta.moduleName}`);
 			const moduleConfig = config.modules[meta.moduleName]!;
@@ -161,10 +173,13 @@ export function buildGlobalDurableObjectClass(
 			// TODO: cache actor instance in memory
 			// TODO: use ctx.waitUntil for all calls
 			// Run actor function
-			const actor = new (actorConfig.actor)(
-				new CloudflareDurableObjectsStorage(this),
-				new CloudflareDurableObjectsSchedule(this),
-			);
+			const actor = await context.runBlock(async () => {
+				return new (actorConfig.actor)(
+					new CloudflareDurableObjectsInstance(this),
+					new CloudflareDurableObjectsStorage(this),
+					new CloudflareDurableObjectsSchedule(this),
+				);
+			});
 
 			return actor;
 		}
@@ -186,7 +201,18 @@ export function buildGlobalDurableObjectClass(
 			return context;
 		}
 
-		async init(opts: InitOpts) {
+		async init(opts: InitOpts): Promise<RpcOutput<void>> {
+			const context = this.createActorContext(
+				opts.module,
+				opts.actor,
+				appendTraceEntry(opts.trace, { actorInitialize: { module: opts.module, actor: opts.actor } }),
+			);
+			return await captureRpcOutput(context, async () => {
+				this.initInner(context, opts);
+			});
+		}
+
+		async initInner(context: ActorContext<ModuleContextParams>, opts: InitOpts): Promise<{ meta: ActorMeta }> {
 			// Check if already initialized
 			if (await this.initialized()) {
 				if (!opts.ignoreAlreadyInitialized) throw new Error("already initialized");
@@ -200,53 +226,84 @@ export function buildGlobalDurableObjectClass(
 			});
 
 			// Build initial state
-			const actor = await this.constructActor({
+			const actor = await this.constructActor(context, {
 				moduleName: opts.module,
 				actorName: opts.actor,
 				state: undefined,
 			});
-			const context = this.createActorContext(
-				opts.module,
-				opts.actor,
-				appendTraceEntry(opts.trace, { actorInitialize: { module: opts.module, actor: opts.actor } }),
-			);
-			const state = actor.initialize(context, opts.input);
+			const state = await context.runBlock(async () => {
+				let state = actor.initialize(context, opts.input);
+				if (state instanceof Promise) state = await state;
+				return state;
+			});
 			await this.ctx.storage.put(KEYS.STATE, state);
+
+			return {
+				meta: {
+					moduleName: opts.module,
+					actorName: opts.actor,
+					state: state,
+				},
+			};
 		}
 
-		async initialized() {
+		async initialized(): Promise<boolean> {
 			return await this.ctx.storage.get(KEYS.META.MODULE) != undefined;
 		}
 
-		async destroy() {
+		async destroy(): Promise<void> {
 			await this.ctx.storage.deleteAll();
 			await this.ctx.storage.deleteAlarm();
 			await this.ctx.storage.sync();
 		}
 
-		async getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<any> {
-			await this.init({
+		async getOrCreateAndCallRpc(opts: GetOrCreateAndCallOpts): Promise<RpcOutput<any>> {
+			const context = this.createActorContext(
+				opts.init.module,
+				opts.init.actor,
+				appendTraceEntry(opts.trace, { actorGetOrCreateAndCall: { module: opts.init.module, actor: opts.init.actor, fn: opts.fn } }),
+			);
+			return await captureRpcOutput(context, async () => {
+				return this.getOrCreateAndCallRpcInner(context, opts);
+			});
+		}
+
+		async getOrCreateAndCallRpcInner(
+			context: ActorContext<ModuleContextParams>,
+			opts: GetOrCreateAndCallOpts,
+		): Promise<any> {
+			const { meta } = await this.initInner(context, {
 				...opts.init,
 				ignoreAlreadyInitialized: true,
 			});
 
-			return await this.callRpc({ fn: opts.fn, request: opts.request, trace: opts.trace });
+			return await this.callRpcInner(context, meta, { fn: opts.fn, request: opts.request, trace: opts.trace });
 		}
 
-		async callRpc({ fn, request, trace }: CallRpcOpts): Promise<any> {
+		async callRpc(opts: CallRpcOpts): Promise<RpcOutput<any>> {
 			const meta = await this.getMeta();
-			const actor = await this.constructActor(meta);
-			actor.state = meta.state;
 
 			const context = this.createActorContext(
 				meta.moduleName,
 				meta.actorName,
-				appendTraceEntry(trace, { actorCall: { module: meta.moduleName, actor: meta.actorName, fn } }),
+				appendTraceEntry(opts.trace, { actorCall: { module: meta.moduleName, actor: meta.actorName, fn: opts.fn } }),
 			);
 
+			return await captureRpcOutput(context, async () => {
+				return this.callRpcInner(context, meta, opts);
+			});
+		}
+
+		async callRpcInner(context: ActorContext<ModuleContextParams>, meta: ActorMeta, opts: CallRpcOpts): Promise<any> {
+			const actor = await this.constructActor(context, meta);
+			actor.state = meta.state;
+
 			// Call fn
-			let callRes = (actor as any)[fn](context, request);
-			if (callRes instanceof Promise) callRes = await callRes;
+			const callRes = await context.runBlock(async () => {
+				let callRes = (actor as any)[opts.fn](context, opts.request)
+				if (callRes instanceof Promise) callRes = await callRes;
+				return callRes;
+			});
 
 			// Update state
 			await this.ctx.storage.put(KEYS.STATE, actor.state);
@@ -254,7 +311,7 @@ export function buildGlobalDurableObjectClass(
 			return callRes;
 		}
 
-		async scheduleEvent(timestamp: number, fn: string, request: unknown) {
+		async scheduleEvent(timestamp: number, fn: string, request: unknown): Promise<void> {
 			// Save event
 			const eventId = crypto.randomUUID();
 			await this.ctx.storage.put<ScheduleEvent>(KEYS.SCHEDULE.event(eventId), {
@@ -286,7 +343,7 @@ export function buildGlobalDurableObjectClass(
 			}
 		}
 
-		override async alarm() {
+		override async alarm(): Promise<void> {
 			const now = Date.now();
 
 			// Read index

@@ -2,7 +2,7 @@
 
 import { Config, Environment } from "../../../mod.ts";
 import { ActorDriver, CallOpts, CreateOpts, DestroyOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
-
+import { handleRpcOutput } from "./rpc_output.ts";
 export { buildGlobalDurableObjectClass } from "./global_durable_object.ts";
 
 export class CloudflareDurableObjectsActorDriver implements ActorDriver {
@@ -10,42 +10,48 @@ export class CloudflareDurableObjectsActorDriver implements ActorDriver {
 
 	async createActor(opts: CreateOpts): Promise<void> {
 		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
-		return await stub.init({
-			module: opts.moduleName,
-			actor: opts.actorName,
-			instance: opts.instanceName,
-			input: opts.input,
-			trace: opts.trace,
-		});
+		return handleRpcOutput(
+			await stub.init({
+				module: opts.moduleName,
+				actor: opts.actorName,
+				instance: opts.instanceName,
+				input: opts.input,
+				trace: opts.trace,
+			}),
+		);
 	}
 
 	async callActor(opts: CallOpts): Promise<unknown> {
 		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
 
 		// HACK: Fixes "Type instantiation is excessively deep and possibly infinite."
-		return await stub.callRpc({
-			fn: opts.fn,
-			request: opts.request,
-			trace: opts.trace,
-		});
+		return handleRpcOutput(
+			await stub.callRpc({
+				fn: opts.fn,
+				request: opts.request,
+				trace: opts.trace,
+			}),
+		);
 	}
 
 	async getOrCreateAndCallActor(opts: GetOrCreateAndCallOpts): Promise<unknown> {
 		const stub = this.getStub(opts.moduleName, opts.actorName, opts.instanceName);
 
 		// HACK: Fixes "Type instantiation is excessively deep and possibly infinite."
-		return await stub.getOrCreateAndCallRpc({
-			init: {
-				module: opts.moduleName,
-				actor: opts.actorName,
-				instance: opts.instanceName,
-				input: opts.input,
+		return handleRpcOutput(
+			await stub.getOrCreateAndCallRpc({
+				init: {
+					module: opts.moduleName,
+					actor: opts.actorName,
+					instance: opts.instanceName,
+					input: opts.input,
+					trace: opts.trace,
+				},
+				fn: opts.fn,
+				request: opts.request,
 				trace: opts.trace,
-			},
-			fn: opts.fn,
-			request: opts.request,
-			trace: opts.trace,
-		});
+			}),
+		);
 	}
 
 	async actorExists(opts: ExistsOpts): Promise<boolean> {

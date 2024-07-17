@@ -1,5 +1,5 @@
 import { errorToLogEntries } from "./logger.ts";
-import { Context, RuntimeError } from "./mod.ts";
+import { Context, INTERNAL_ERROR_DESCRIPTION, RuntimeError } from "./mod.ts";
 
 /**
  * Builds a response indicating that the route was not found.
@@ -78,16 +78,19 @@ export function serverOrRuntimeError<Ctx extends Context<any>>(ctx: Ctx, e: unkn
 	let output: unknown;
 	if (e instanceof RuntimeError) {
 		ctx.log.error(
-			"runtime error",
+			"caught error",
 			...errorToLogEntries("error", e),
 		);
+
+		// Never return error details to the client in order to prevent reverse
+		// engineering & accidentally leaking secrets.
 		output = {
-			message: e.message,
+			message: e.internal ? INTERNAL_ERROR_DESCRIPTION : e.message,
 		};
 	} else {
-		ctx.log.error("internal error", ["error", JSON.stringify(e)]);
+		ctx.log.error("unknown error", ["error", JSON.stringify(e)]);
 		output = {
-			message: "Internal error. More details have been printed in the logs.",
+			message: INTERNAL_ERROR_DESCRIPTION
 		};
 	}
 	return new Response(

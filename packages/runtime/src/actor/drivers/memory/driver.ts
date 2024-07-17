@@ -5,6 +5,7 @@ import { ActorContext, appendTraceEntry, Config, Environment, Runtime, Trace } f
 import { RegistryCallMap } from "../../../proxy.ts";
 import { ActorBase } from "../../actor.ts";
 import { ActorDriver, CallOpts, CreateOpts, DestroyOpts, ExistsOpts, GetOrCreateAndCallOpts } from "../../driver.ts";
+import { MemoryInstance } from "./instance.ts";
 import { MemorySchedule } from "./schedule.ts";
 import { MemoryStorage } from "./storage.ts";
 
@@ -184,6 +185,7 @@ export class MemoryActorDriver implements ActorDriver {
 			// New instance
 
 			const actor = new (actorConfig.actor)(
+				new MemoryInstance(this, record),
 				new MemoryStorage(record),
 				new MemorySchedule(this, record),
 			);

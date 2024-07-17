@@ -32,6 +32,7 @@ export type TraceEntryType =
 		route: TraceEntryTypeRoute;
 	}
 	| { actorInitialize: TraceEntryTypeActorInitialize }
+	| { actorGetOrCreateAndCall: TraceEntryTypeActorCall }
 	| { actorCall: TraceEntryTypeActorCall }
 	| { actorSchedule: TraceEntryTypeActorSchedule }
 	| { test: TraceEntryTypeTest }
@@ -43,8 +44,7 @@ export function stringifyTrace(trace: Trace) {
 
 export function stringifyTraceEntryType(trace: TraceEntryType) {
 	if ("httpRequest" in trace) {
-		const { method, path } = trace.httpRequest;
-		return `httpRequest(${method} ${path})`;
+		return "httpRequest";
 	} else if ("script" in trace) {
 		const { module, script } = trace.script;
 		return `script(${module}.${script})`;
@@ -54,6 +54,9 @@ export function stringifyTraceEntryType(trace: TraceEntryType) {
 	} else if ("actorInitialize" in trace) {
 		const { module, actor } = trace.actorInitialize;
 		return `actorInitialize(${module}.${actor})`;
+	} else if ("actorGetOrCreateAndCall" in trace) {
+		const { module, actor, fn } = trace.actorGetOrCreateAndCall;
+		return `actorGetOrCreateAndCall(${module}.${actor}.${fn})`;
 	} else if ("actorCall" in trace) {
 		const { module, actor, fn } = trace.actorCall;
 		return `actorCall(${module}.${actor}.${fn})`;
