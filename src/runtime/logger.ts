@@ -18,7 +18,7 @@ const RESET_COLOR = "\x1b[0m";
 function isColorEnabled(): boolean {
 	if (Deno.env.get("OPENGB_TERM_COLOR") === "never") return false;
 	if (Deno.env.get("OPENGB_TERM_COLOR") === "always") return true;
-	return Deno.stdout.isTerminal();
+	return Deno?.stdout?.isTerminal() == true;
 }
 
 export function log(level: LogLevel, message: string, ...data: LogEntry[]) {
@@ -147,13 +147,16 @@ console.debug = consoleLogWrapper.bind(undefined, "debug");
 console.trace = consoleLogWrapper.bind(undefined, "trace");
 
 // MARK: Utils
-const SPREAD_OBJECT = Deno.env.get("_OPENGB_LOG_SPILT_OBJECT") == "1";
+function enableSpreadObject(): boolean {
+  return Deno.env.get("_OPENGB_LOG_SPILT_OBJECT") == "1"
+}
+
 /**
  * Converts an object in to an easier to read KV of entries.
  */
 export function spreadObjectToLogEntries(base: string, data: unknown): LogEntry[] {
 	if (
-		SPREAD_OBJECT && typeof data == "object" && !Array.isArray(data) && data !== null &&
+		enableSpreadObject() && typeof data == "object" && !Array.isArray(data) && data !== null &&
 		Object.keys(data).length != 0 && Object.keys(data).length < 16
 	) {
 		const logData: LogEntry[] = [];

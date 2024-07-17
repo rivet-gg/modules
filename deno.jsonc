@@ -9,10 +9,10 @@
 		"cli:run:clean_build": "deno task artifacts:build && deno task cli:run:dirty clean && deno task cli:run build",
 
 		// Compiles the CLI to a binary
-		"cli:compile": "deno task artifacts:build && deno compile --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output dist/cli src/cli/main.ts",
+		"cli:compile": "deno task artifacts:build && deno compile --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output dist/cli src/cli/main.ts",
 
 		// Installs the CLI on the local machine
-		"cli:install": "deno task artifacts:build && deno install --check --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force src/cli/main.ts",
+		"cli:install": "deno task artifacts:build && deno install --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force src/cli/main.ts",
 
     // Build Dockerfile
 		"docker:build": "docker build -t opengb -f cli.Dockerfile .",

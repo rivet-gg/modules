@@ -163,9 +163,8 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			}
 
 			// Export durable object binding
-			export {
-        __GlobalDurableObject: buildGlobalDurableObjectClass(config)
-      };
+      const __GlobalDurableObject = buildGlobalDurableObjectClass(config);
+			export { __GlobalDurableObject };
 			`;
 	}
 

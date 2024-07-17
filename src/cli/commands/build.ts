@@ -9,7 +9,7 @@ export const buildCommand = new Command<GlobalOpts>()
 	.option("-w, --watch", "Automatically rebuild on changes", { default: false })
 	.option(
 		"-r, --runtime <runtime:string>",
-		"Set target runtime (deno, cloudflare)",
+		"Set target runtime (deno, cloudflare-workers-platforms)",
 		{
 			default: "deno",
 			value: (value: string) => {
@@ -45,7 +45,7 @@ export const buildCommand = new Command<GlobalOpts>()
 	)
 	.option(
 		"--db-driver <target:string>",
-		"Set target runtime (node-postgres, neon-serverless)",
+		"Set target runtime (node-postgres, neon-serverless, cloudflare-hyperdrive)",
 		{
 			// default: "node-postgres",
 			value: (value: string) => {
@@ -82,7 +82,7 @@ export const buildCommand = new Command<GlobalOpts>()
 			if (opts.dbDriver == undefined) opts.dbDriver = DbDriver.NodePostgres;
 		} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 			if (opts.outputFormat == undefined) opts.outputFormat = Format.Bundled;
-			if (opts.dbDriver == undefined) opts.dbDriver = DbDriver.CloudflareHyperdrive;
+			if (opts.dbDriver == undefined) opts.dbDriver = DbDriver.NeonServerless;
 		}
 
 		// Validate
