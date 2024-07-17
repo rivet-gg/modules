@@ -176,11 +176,13 @@ async function handleRequestInner<Params extends ModuleContextParams>(
 			);
 			output = {
 				message: error.message,
+				trace: error.trace,
 			};
 		} else {
 			ctx.log.error("internal error", ["error", error]);
 			output = {
 				message: "Internal error. More details have been printed in the logs.",
+				trace: error.trace,
 			};
 		}
 
