@@ -206,7 +206,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			}
 
 			// Export durable object binding
-			const __GlobalDurableObject = buildGlobalDurableObjectClass(config);
+			const __GlobalDurableObject = buildGlobalDurableObjectClass(config, dependencyCaseConversionMap, actorCaseConversionMap);
 			export { __GlobalDurableObject };
 			`;
 	}
