@@ -13,6 +13,7 @@ export const devCommand = new Command<GlobalOpts>()
 	.option("--no-check", "Don't check source files before running")
 	.option("--strict-schemas", "Strictly validate schemas", { default: true })
 	.option("--no-watch", "Automatically restart server on changes")
+	.option("--force-deploy-migrations", "Auto deploy migrations without using development prompt", { default: false })
 	.action(
 		async (opts) => {
 			const project = await initProject(opts);
@@ -32,7 +33,7 @@ export const devCommand = new Command<GlobalOpts>()
 							// This gets ran on `deno run`
 							skipDenoCheck: true,
 							migrate: {
-								forceDeploy: false,
+								forceDeploy: opts.forceDeployMigrations,
 							},
 							signal,
 						});
