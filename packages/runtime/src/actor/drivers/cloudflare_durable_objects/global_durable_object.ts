@@ -92,6 +92,7 @@ export interface __GlobalDurableObjectT extends DurableObject {
 	scheduleEvent(timestamp: number, fn: string, request: unknown): Promise<void>;
 	alarm(): Promise<void>;
 	get storage(): DurableObjectStorage;
+  forceSaveState(): Promise<void>;
 }
 
 /**
@@ -100,7 +101,6 @@ export interface __GlobalDurableObjectT extends DurableObject {
 interface ActorMeta {
 	moduleName: string;
 	actorName: string;
-	state: any;
 }
 
 /**
@@ -120,6 +120,8 @@ export function buildGlobalDurableObjectClass(
 ) {
 	class __GlobalDurableObject extends DurableObject implements __GlobalDurableObjectT {
 		private runtime: Runtime<ModuleContextParams>;
+
+    private actorInstance?: ActorBase<unknown, unknown>;
 
 		constructor(ctx: DurableObjectState, env: unknown) {
 			super(ctx, env);
@@ -157,11 +159,13 @@ export function buildGlobalDurableObjectClass(
 			if (moduleName == undefined || actorName == undefined) throw new Error("actor not initialized");
 			if (state == undefined) throw Error("actor state not initiated");
 
-			return { moduleName, actorName, state };
+			return { moduleName, actorName };
 		}
 
-		// TODO: optimize to use in-memory state
 		private async constructActor(context: ActorContext<ModuleContextParams>, meta: ActorMeta): Promise<ActorBase<unknown, unknown>> {
+      // Actor already running
+      if (this.actorInstance) return this.actorInstance;
+
 			// Get actor config
 			if (!(meta.moduleName in config.modules)) throw new Error(`module not found: ${meta.moduleName}`);
 			const moduleConfig = config.modules[meta.moduleName]!;
@@ -170,16 +174,21 @@ export function buildGlobalDurableObjectClass(
 			}
 			const actorConfig = moduleConfig.actors[meta.actorName]!;
 
-			// TODO: cache actor instance in memory
+
+      // Read state
+      const state = await this.ctx.storage.get<string>(KEYS.STATE);
+
 			// TODO: use ctx.waitUntil for all calls
-			// Run actor function
-			const actor = await context.runBlock(async () => {
+      // Construct actor
+			const actor = context.runBlockSync(() => {
 				return new (actorConfig.actor)(
 					new CloudflareDurableObjectsInstance(this),
 					new CloudflareDurableObjectsStorage(this),
 					new CloudflareDurableObjectsSchedule(this),
 				);
 			});
+      actor.state = state;
+      this.actorInstance = actor;
 
 			return actor;
 		}
@@ -229,7 +238,6 @@ export function buildGlobalDurableObjectClass(
 			const actor = await this.constructActor(context, {
 				moduleName: opts.module,
 				actorName: opts.actor,
-				state: undefined,
 			});
 			const state = await context.runBlock(async () => {
 				let state = actor.initialize(context, opts.input);
@@ -242,7 +250,6 @@ export function buildGlobalDurableObjectClass(
 				meta: {
 					moduleName: opts.module,
 					actorName: opts.actor,
-					state: state,
 				},
 			};
 		}
@@ -296,19 +303,19 @@ export function buildGlobalDurableObjectClass(
 
 		async callRpcInner(context: ActorContext<ModuleContextParams>, meta: ActorMeta, opts: CallRpcOpts): Promise<any> {
 			const actor = await this.constructActor(context, meta);
-			actor.state = meta.state;
 
-			// Call fn
-			const callRes = await context.runBlock(async () => {
-				let callRes = (actor as any)[opts.fn](context, opts.request)
-				if (callRes instanceof Promise) callRes = await callRes;
-				return callRes;
-			});
-
-			// Update state
-			await this.ctx.storage.put(KEYS.STATE, actor.state);
-
-			return callRes;
+      try {
+        // Call fn
+        const callRes = await context.runBlock(async () => {
+          let callRes = (actor as any)[opts.fn](context, opts.request)
+          if (callRes instanceof Promise) callRes = await callRes;
+          return callRes;
+        });
+        return callRes;
+      } finally {
+        // Update state
+        await this.ctx.storage.put(KEYS.STATE, actor.state);
+      }
 		}
 
 		async scheduleEvent(timestamp: number, fn: string, request: unknown): Promise<void> {
@@ -385,6 +392,12 @@ export function buildGlobalDurableObjectClass(
 		public get storage(): DurableObjectStorage {
 			return this.ctx.storage;
 		}
+
+    async forceSaveState(): Promise<void> {
+      if (this.actorInstance) {
+        await this.ctx.storage.put(KEYS.STATE, this.actorInstance.state);
+      }
+    }
 	}
 
 	return __GlobalDurableObject;

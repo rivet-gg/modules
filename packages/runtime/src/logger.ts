@@ -186,14 +186,14 @@ export function errorToLogEntries(base: string, error: unknown): LogEntry[] {
 			...(error.trace ? [[`${base}.trace`, stringifyTrace(error.trace)] as LogEntry] : []),
 			...(error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
 			...(error.meta ? [[`${base}.meta`, JSON.stringify(error.meta)] as LogEntry] : []),
-			...(error.cause instanceof Error ? errorToLogEntries(`${base}.cause`, error.cause) : []),
+			...(error.cause ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
 	} else if (error instanceof Error) {
 		return [
 			[`${base}.name`, error.name],
 			[`${base}.message`, error.message],
 			...(error.stack ? [[`${base}.stack`, formatStackTrace(error.stack)] as LogEntry] : []),
-			...(error.cause instanceof Error ? errorToLogEntries(`${base}.cause`, error.cause) : []),
+			...(error.cause ? errorToLogEntries(`${base}.cause`, error.cause) : []),
 		];
 	} else {
 		return [

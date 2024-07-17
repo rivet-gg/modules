@@ -9,9 +9,7 @@ export class CloudflareDurableObjectsInstance implements ActorInstanceDriver {
 	}
 
 	async forceSaveState(): Promise<void> {
-		// TODO:
-		// await this.durableObject.ctx.storage.put(KEYS.STATE, actor.state);
-		// await this.durableObject.storage.sync();
+    this.durableObject.forceSaveState();
 	}
 
 }
