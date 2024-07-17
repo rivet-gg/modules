@@ -2,48 +2,47 @@
 	"tasks": {
 		// Runs the CLI
 		"cli:run": "deno task artifacts:build && deno task cli:run:dirty",
-		"cli:run:dirty": "deno run -A --check src/cli/main.ts --path tests/basic",
+		"cli:run:dirty": "deno run -A --check packages/cli/src/main.ts --path tests/basic",
 
 		// Specific CLI tasks
 		"cli:run:build": "deno task cli:run build",
 		"cli:run:clean_build": "deno task artifacts:build && deno task cli:run:dirty clean && deno task cli:run build",
 
 		// Compiles the CLI to a binary
-		"cli:compile": "deno task artifacts:build && deno compile --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output dist/cli src/cli/main.ts",
+		"cli:compile": "deno task artifacts:build && deno compile --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --output dist/cli packages/cli/src/main.ts",
 
 		// Installs the CLI on the local machine
-		"cli:install": "deno task artifacts:build && deno install --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force src/cli/main.ts",
+		"cli:install": "deno task artifacts:build && deno install --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force packages/cli/src/main.ts",
 
     // Build Dockerfile
 		"docker:build": "docker build -t opengb -f cli.Dockerfile .",
 
 		// Generates schema
-		"artifacts:build": "deno task format && deno task artifacts:build:schema && deno task artifacts:build:runtime && deno task artifacts:build:dynamic && deno task artifacts:build:prisma",
-		"artifacts:build:schema": "deno run --allow-env --allow-read --allow-write src/artifacts/build_schema.ts",
-		"artifacts:build:runtime": "deno run --allow-env --allow-read --allow-write src/artifacts/build_runtime_archive.ts",
-		"artifacts:build:dynamic": "deno run --allow-env --allow-read --allow-write src/artifacts/build_dynamic_archive.ts",
-		"artifacts:build:prisma": "deno run --allow-env --allow-read --allow-write --allow-run src/artifacts/build_prisma_archive.ts",
+		"artifacts:build": "deno task format && deno task artifacts:build:runtime && deno task artifacts:build:dynamic && deno task artifacts:build:prisma",
+		"artifacts:build:runtime": "deno run --allow-env --allow-read --allow-write scripts/artifacts/build_runtime_archive.ts",
+		"artifacts:build:dynamic": "deno run --allow-env --allow-read --allow-write scripts/artifacts/build_dynamic_archive.ts",
+		"artifacts:build:prisma": "deno run --allow-env --allow-read --allow-write --allow-run scripts/artifacts/build_prisma_archive.ts",
 
 		// Format
-		"format": "deno fmt src/",
-		"format:check": "deno fmt --check src/",
+		"format": "deno fmt packages/",
+		"format:check": "deno fmt --check packages/",
 
 		// Check
-		"check": "deno task artifacts:build && deno check src/**/*.ts",
-		"check:dirty": "deno check src/**/*.ts",
+		"check": "deno task artifacts:build && deno check packages/**/*.ts",
+		"check:dirty": "deno check packages/**/*.ts",
 
 		// Lint
-		"lint": "deno task artifacts:build && deno lint src/",
-		"lint:dirty": "deno lint src/",
-		"lint:fix": "deno task artifacts:build && deno lint --fix src/",
+		"lint": "deno task artifacts:build && deno lint packages/",
+		"lint:dirty": "deno lint packages/",
+		"lint:fix": "deno task artifacts:build && deno lint --fix packages/",
 
 		// Runs tests
-		"test:core": "deno task artifacts:build && deno test -A src/",
+		"test:core": "deno task artifacts:build && deno test -A packages/",
 		"test:project": "deno task cli:run test --strict-schemas --force-deploy-migrations",
-		"test:registry": "deno task artifacts:build && deno run -A --check src/cli/main.ts --path ../opengb-modules/tests/basic test --strict-schemas --force-deploy-migrations"
+		"test:registry": "deno task artifacts:build && deno run -A --check packages/cli/src/main.ts --path ../opengb-modules/tests/basic test --strict-schemas --force-deploy-migrations"
 	},
 	"lint": {
-		"include": ["src/"],
+		"include": ["packages/"],
 		"exclude": ["tests/"],
 		"rules": {
 			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
