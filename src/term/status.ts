@@ -2,6 +2,10 @@
 
 import { colors } from "./deps.ts";
 
+// Override colors to respect OpenGB env.
+if (Deno.env.get("OPENGB_TERM_COLOR") === "never") colors.setColorEnabled(false);
+else if (Deno.env.get("OPENGB_TERM_COLOR") === "always") colors.setColorEnabled(true);
+
 export function verbose(msg: string, data = "") {
 	if (Deno.env.get("VERBOSE")) console.error(`${colors.bold(colors.gray(msg))} ${data}`);
 }
