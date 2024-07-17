@@ -13,11 +13,26 @@ export interface ContextParams {
 	dependenciesCamel: any;
 }
 
+/**
+ * Provides access to information about the runtime from a context.
+ */
+export class ContextRuntime<Params extends ContextParams> {
+	constructor(private readonly runtime: Runtime<Params>) {}
+
+	public get publicEndpoint(): string {
+		return this.runtime.publicEndpoint;
+	}
+}
+
 export class Context<Params extends ContextParams> {
 	public readonly log: ContextLog<Params>;
 
+	public get runtime(): ContextRuntime<Params> {
+		return new ContextRuntime(this.internalRuntime);
+	}
+
 	public constructor(
-		protected readonly runtime: Runtime<Params>,
+		protected readonly internalRuntime: Runtime<Params>,
 		public readonly trace: Trace,
 		private readonly dependencyCaseConversionMap: RegistryCallMap,
 		protected readonly actorCaseConversionMap: RegistryCallMap,
@@ -44,7 +59,7 @@ export class Context<Params extends ContextParams> {
 			}
 
 			// Lookup module
-			const module = this.runtime.config.modules[moduleName];
+			const module = this.internalRuntime.config.modules[moduleName];
 			if (!module) throw new Error(`Module not found: ${moduleName}`);
 
 			// Lookup script
@@ -53,12 +68,12 @@ export class Context<Params extends ContextParams> {
 
 			// Build context
 			const ctx = new ScriptContext(
-				this.runtime,
+				this.internalRuntime,
 				appendTraceEntry(this.trace, {
 					script: { module: moduleName, script: scriptName },
 				}),
 				moduleName,
-				this.runtime.postgres.getOrCreatePrismaClient(this.runtime.config, module),
+				this.internalRuntime.postgres.getOrCreatePrismaClient(this.internalRuntime.config, module),
 				module.db?.schema,
 				scriptName,
 				this.dependencyCaseConversionMap,
@@ -127,7 +142,7 @@ export class Context<Params extends ContextParams> {
 		req: unknown,
 	): Promise<object | null> {
 		// Lookup module
-		const module = this.runtime.config.modules[moduleName];
+		const module = this.internalRuntime.config.modules[moduleName];
 		if (!module) return null;
 
 		// Lookup script
@@ -143,7 +158,7 @@ export class Context<Params extends ContextParams> {
 		_req?: unknown,
 	): boolean {
 		// Lookup module
-		const module = this.runtime.config.modules[moduleName];
+		const module = this.internalRuntime.config.modules[moduleName];
 		if (!module) return false;
 
 		// Lookup script
@@ -166,12 +181,12 @@ export class Context<Params extends ContextParams> {
 		} catch (cause) {
 			if (cause instanceof RuntimeError) {
 				// Enrich error with more context
-				cause.enrich(this.runtime, this);
+				cause.enrich(this.internalRuntime, this);
 				throw cause;
 			} else {
 				// Convert to RuntimeError
 				const error = new RuntimeError("INTERNAL_ERROR", { cause });
-				error.enrich(this.runtime, this);
+				error.enrich(this.internalRuntime, this);
 				throw error;
 			}
 		}
@@ -238,19 +253,19 @@ export class ModuleContext<Params extends ModuleContextParams> extends Context<P
 	}
 
 	protected isAllowedModuleName(targetModuleName: string): boolean {
-		return this.runtime.config
+		return this.internalRuntime.config
 			.modules[this.moduleName]
 			?.dependencies
 			.has(targetModuleName);
 	}
 
 	public get config(): Params["userConfig"] {
-		return this.runtime.config.modules[this.moduleName].userConfig as Params["userConfig"];
+		return this.internalRuntime.config.modules[this.moduleName].userConfig as Params["userConfig"];
 	}
 
 	public get actors() {
 		return buildActorRegistryProxy<Params["actorsSnake"], Params["actorsCamel"]>(
-			this.runtime,
+			this.internalRuntime,
 			// TODO: Find a better way of looking up the module name. We don't use
 			// camel -> snake conversions anymore for modules in actors.
 			this.actorCaseConversionMap[camelify(this.moduleName)],

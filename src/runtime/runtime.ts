@@ -86,8 +86,9 @@ export class Runtime<Params extends ContextParams> {
 
 	public ajv: Ajv.default;
 
-  public hostname = Deno.env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
-  public port = parseInt(Deno.env.get("OPENGB_PORT") ?? "6420");
+	public hostname = Deno.env.get("OPENGB_HOSTNAME") ?? "127.0.0.1";
+	public port = parseInt(Deno.env.get("OPENGB_PORT") ?? "6420");
+	public publicEndpoint: string;
 
 	public constructor(
 		public config: Config,
@@ -95,6 +96,8 @@ export class Runtime<Params extends ContextParams> {
 		private dependencyCaseConversionMap: RegistryCallMap,
 		private actorDependencyCaseConversionMap: RegistryCallMap,
 	) {
+		this.publicEndpoint = Deno.env.get("OPENGB_PUBLIC_ENDPOINT") ?? `http://${this.hostname}:${this.port}`;
+
 		this.postgres = new Postgres();
 
 		this.ajv = new Ajv.default({
@@ -125,10 +128,16 @@ export class Runtime<Params extends ContextParams> {
 	public async serve() {
 		await Deno.serve(
 			{
-        hostname: this.hostname,
+				hostname: this.hostname,
 				port: this.port,
 				onListen: () => {
-					log("info", "server started", ["endpoint", `http://${this.hostname}:${this.port}`]);
+					log(
+						"info",
+						"server started",
+						["hostname", this.hostname],
+						["port", this.port],
+						["endpoint", this.publicEndpoint],
+					);
 				},
 			},
 			(req, info) => handleRequest(this, req, { remoteAddress: info.remoteAddr.hostname }),
