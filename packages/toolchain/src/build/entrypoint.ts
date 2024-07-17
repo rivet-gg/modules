@@ -41,8 +41,11 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		imports += `
 		// Import Prisma serverless adapter for Neon
-		import * as neon from "https://esm.sh/@neondatabase/serverless@^0.9.3";
-		import { PrismaNeon } from "https://esm.sh/@prisma/adapter-neon@^5.15.0";
+    //
+    // These versions need to be pinned because Neon relies on using
+    // \`instanceof\`, so the dependencies must be exactly the same.
+		import * as neon from "https://esm.sh/@neondatabase/serverless@0.9.3";
+		import { PrismaNeon } from "https://esm.sh/@prisma/adapter-neon@5.17.0?deps=@neondatabase/serverless@0.9.3";
 		`;
 	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
 		imports += `
