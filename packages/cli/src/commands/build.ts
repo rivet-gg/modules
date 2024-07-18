@@ -74,8 +74,6 @@ export const buildCommand = new Command<GlobalOpts>()
 		"Disable strict schema validation",
 	)
 	.action(async (opts) => {
-		const project = await initProject(opts);
-
 		// Defaults based on runtime
 		if (opts.runtime == Runtime.Deno) {
 			if (opts.outputFormat == undefined) opts.outputFormat = Format.Native;
@@ -106,7 +104,8 @@ export const buildCommand = new Command<GlobalOpts>()
 			}
 		}
 
-		await watch(project, {
+		await watch({
+			loadProjectOpts: opts,
 			disableWatch: !opts.watch,
 			async fn(project: Project, signal: AbortSignal) {
 				await build(project, {

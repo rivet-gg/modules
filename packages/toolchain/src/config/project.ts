@@ -1,6 +1,6 @@
-import { resolve } from "../deps.ts";
+import { exists, resolve } from "../deps.ts";
 import { z } from "../build/schema/deps.ts";
-import { ValidationError } from "../error/mod.ts";
+import { UserError, ValidationError } from "../error/mod.ts";
 
 const RegistryGitUrlConfigSchema = z.union([z.string(), z.object({ https: z.string(), ssh: z.string() })]).describe(
 	"The URL to the git repository. If both HTTPS and SSH URL are provided, they will both be tried and use the one that works",
@@ -85,6 +85,9 @@ export type CorsConfig = z.infer<typeof CorsConfigSchema>;
 export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	// Read config
 	const projectConfigPath = configPath(projectPath);
+	if (!await exists(projectConfigPath, { isFile: true })) {
+		throw new UserError("Backend project does not exist.", { details: `${projectConfigPath} does not exist.`, suggest: "Run `opengb init` to create a project." })
+	}
 	const configRaw = await Deno.readTextFile(projectConfigPath);
 	const config = JSON.parse(configRaw);
 

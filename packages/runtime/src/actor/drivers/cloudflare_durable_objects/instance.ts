@@ -9,7 +9,6 @@ export class CloudflareDurableObjectsInstance implements ActorInstanceDriver {
 	}
 
 	async forceSaveState(): Promise<void> {
-    this.durableObject.forceSaveState();
+		this.durableObject.forceSaveState();
 	}
-
 }

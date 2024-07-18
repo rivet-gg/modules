@@ -21,7 +21,7 @@ export async function captureRpcOutput<T>(ctx: ActorContext<any>, fn: () => Prom
 	const logs: [LogLevel, LogEntry[]][] = [];
 	ctx.log.addListener((level, entry) => {
 		if (!finished) {
-			logs.push([level, entry])
+			logs.push([level, entry]);
 		}
 	});
 
