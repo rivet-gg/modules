@@ -86,7 +86,10 @@ export async function readConfig(projectPath: string): Promise<ProjectConfig> {
 	// Read config
 	const projectConfigPath = configPath(projectPath);
 	if (!await exists(projectConfigPath, { isFile: true })) {
-		throw new UserError("Backend project does not exist.", { details: `${projectConfigPath} does not exist.`, suggest: "Run `opengb init` to create a project." })
+		throw new UserError("Backend project does not exist.", {
+			details: `${projectConfigPath} does not exist.`,
+			suggest: "Run `opengb init` to create a project.",
+		});
 	}
 	const configRaw = await Deno.readTextFile(projectConfigPath);
 	const config = JSON.parse(configRaw);
