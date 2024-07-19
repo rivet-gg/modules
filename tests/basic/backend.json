@@ -51,6 +51,14 @@
                     "test": {}
                 }
             }
+        },
+        "sms": {
+            "registry": "local",
+            "config": {
+                "provider": {
+                    "test": {}
+                }
+            }
         }
     }
 }

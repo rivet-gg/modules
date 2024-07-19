@@ -1,0 +1,29 @@
+{
+    "name": "SMS",
+    "description": "Send SMS messages using multiple providers.",
+    "icon": "envelope",
+    "tags": [
+        "sms"
+    ],
+    "authors": [
+        "rivet-gg",
+        "Blckbrry-Pi"
+    ],
+    "status": "stable",
+    "scripts": {
+        "send_sms": {
+            "name": "Send SMS"
+        },
+        "get_message": {
+            "name": "Get metadata of message, such as cost, from, to, and when it was sent."
+        }
+    },
+    "errors": {
+        "twilio_error": {
+            "name": "Twilio SMS Error"
+        },
+        "currency_error": {
+            "name": "Currency Conversion or Recognition Error"
+        }
+    }
+}
