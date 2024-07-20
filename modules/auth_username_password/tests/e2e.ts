@@ -55,7 +55,11 @@ test("test_sign_in", async (ctx: TestContext) => {
 		userToken: token.token,
 	});
 
+<<<<<<< HEAD
 	const { users: [user] } = await ctx.modules.users.fetchByUsername({
+=======
+	const { users: [user] } = await ctx.modules.users.fetchByUname({
+>>>>>>> 7d761a9 (eat: Create the `auth_username_pasword` module)
 		usernames: [username],
 	});
 
