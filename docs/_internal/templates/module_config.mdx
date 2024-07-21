@@ -1,0 +1,31 @@
+---
+title: "Config"
+---
+
+This config can be modified by adding the following to your `backend.json`:
+
+```json
+{
+  "modules": {
+    "%%MODULE_NAME%%": {
+      "config": {
+        // Your config here
+      }
+    }
+  }
+}
+```
+
+## Schema
+
+%%SCHEMA%%
+
+## Default Value
+
+The provided user config will be merged with this config. If no user config is
+  provided, this config will be used.
+
+```json
+%%DEFAULT_VALUE%%
+```
+

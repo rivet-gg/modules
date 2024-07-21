@@ -20,17 +20,31 @@ const data = await ctx.modules.currency.setBalance({
 ## Request
 
 ```typescript
-export interface Request {
-  userId?: string;
-  balance?: number;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type     |
+| :----------------- | :------- |
+| **`userId`** (\*)  | `string` |
+| **`balance`** (\*) | `number` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object record with dynamic keys:_
+
+- _keys of type_ `string`
+- _values of type_ `never`
+
 ```

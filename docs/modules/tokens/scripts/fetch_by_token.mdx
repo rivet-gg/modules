@@ -20,17 +20,33 @@ const data = await ctx.modules.tokens.fetchByToken({
 ## Request
 
 ```typescript
-export interface Request {
-  tokens?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type            |
+| :---------------- | :-------------- |
+| **`tokens`** (\*) | `Array<string>` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  tokens?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type                                                                                                                                                                                                                                     |
+| :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`tokens`** (\*) | _Array of objects:_<br /><ul><li>`id`: `string`</li><li>`type`: `string`</li><li>`meta`: `any` (_nullable_)</li><li>`createdAt`: `string`</li><li>`expireAt`: `string` (_nullable_)</li><li>`revokedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+
 ```

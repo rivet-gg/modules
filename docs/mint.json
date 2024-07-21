@@ -155,24 +155,11 @@
       "pages": [
         "modules/overview",
         {
-          "icon": "medal",
-          "group": "Achievements",
-          "pages": [
-            "modules/achievements/overview"
-          ]
-        },
-        {
-          "icon": "chart-line",
-          "group": "Analytics",
-          "pages": [
-            "modules/analytics/overview"
-          ]
-        },
-        {
           "icon": "key",
           "group": "Authentication",
           "pages": [
             "modules/auth/overview",
+            "modules/auth/config",
             {
               "group": "Scripts (Public)",
               "pages": [
@@ -180,13 +167,6 @@
                 "modules/auth/scripts/send_email_verification"
               ]
             }
-          ]
-        },
-        {
-          "icon": "messages",
-          "group": "Chat",
-          "pages": [
-            "modules/chat/overview"
           ]
         },
         {
@@ -216,6 +196,7 @@
           "group": "Email",
           "pages": [
             "modules/email/overview",
+            "modules/email/config",
             {
               "group": "Scripts (Internal)",
               "pages": [
@@ -244,31 +225,11 @@
           ]
         },
         {
-          "icon": "floppy-disk",
-          "group": "Game Saves",
-          "pages": [
-            "modules/game_saves/overview"
-          ]
-        },
-        {
-          "icon": "user-group",
-          "group": "Groups",
-          "pages": [
-            "modules/groups/overview"
-          ]
-        },
-        {
-          "icon": "ranking-star",
-          "group": "Leaderboards",
-          "pages": [
-            "modules/leaderboards/overview"
-          ]
-        },
-        {
           "icon": "game-board",
           "group": "Lobbies",
           "pages": [
             "modules/lobbies/overview",
+            "modules/lobbies/config",
             {
               "group": "Scripts (Public)",
               "pages": [
@@ -286,23 +247,10 @@
             {
               "group": "Scripts (Internal)",
               "pages": [
-                "modules/lobbies/scripts/force_gc"
+                "modules/lobbies/scripts/force_gc",
+                "modules/lobbies/scripts/list_regions"
               ]
             }
-          ]
-        },
-        {
-          "icon": "chess-knight",
-          "group": "Matchmaker",
-          "pages": [
-            "modules/matchmaker/overview"
-          ]
-        },
-        {
-          "icon": "party-horn",
-          "group": "Parties",
-          "pages": [
-            "modules/parties/overview"
           ]
         },
         {
@@ -324,6 +272,7 @@
           "group": "Rivet API",
           "pages": [
             "modules/rivet/overview",
+            "modules/rivet/config",
             {
               "group": "Scripts (Internal)",
               "pages": [
@@ -355,6 +304,7 @@
           "group": "Uploads",
           "pages": [
             "modules/uploads/overview",
+            "modules/uploads/config",
             {
               "group": "Scripts (Internal)",
               "pages": [

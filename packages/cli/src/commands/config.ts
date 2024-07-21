@@ -10,7 +10,7 @@ configCommand.action(() => configCommand.showHelp());
 
 configCommand.command("show").action(
 	async (opts) => {
-    const config = await readConfig(loadProjectConfigPath(opts))
+		const config = await readConfig(loadProjectConfigPath(opts));
 		console.log(JSON.stringify(config, null, "\t"));
 	},
 );

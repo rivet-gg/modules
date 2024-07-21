@@ -1,0 +1,42 @@
+---
+title: "Config"
+---
+
+This config can be modified by adding the following to your `backend.json`:
+
+```json
+{
+  "modules": {
+    "email": {
+      "config": {
+        // Your config here
+      }
+    }
+  }
+}
+```
+
+## Schema
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property            | Type                                                                                                                                                                                                                    |
+| :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`provider`** (\*) | _Object with properties:_<ul><li>`test`: _Object with properties:_<ul></ul></li></ul> _or_ _Object with properties:_<ul><li>`sendGrid`: _Object with properties:_<ul><li>`apiKeyVariable`: `string`</li></ul></li></ul> |
+
+_(\*) Required._
+
+
+## Default Value
+
+The provided user config will be merged with this config. If no user config is
+  provided, this config will be used.
+
+```json
+{}
+```
+

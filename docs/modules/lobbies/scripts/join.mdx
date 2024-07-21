@@ -92,21 +92,36 @@ curl -X POST "https://localhost:6420/modules/lobbies/scripts/join/call" \
 ## Request
 
 ```typescript
-export interface Request {
-  lobbyId?: string;
-  players?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                               |
+| :----------------- | :--------------------------------- |
+| **`lobbyId`** (\*) | `string`                           |
+| **`players`** (\*) | _Array of objects:_<br /><ul></ul> |
+| `noWait`           | `boolean`                          |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  lobby?: {
-    [k: string]: any;
-  };
-  players?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`lobby`** (\*)   | _Object with properties:_<ul><li>`id`: `string`</li><li>`version`: `string`</li><li>`tags`: `Record<string, string>`</li><li>`createdAt`: `number`</li><li>`readyAt`: `number`</li><li>`players`: `number`</li><li>`maxPlayers`: `number`</li><li>`maxPlayersDirect`: `number`</li><li>`backend`: _Object with properties:_<ul><li>`test`: _Object with properties:_<ul></ul></li></ul>, _Object with properties:_<ul><li>`localDevelopment`: _Object with properties:_<ul><li>`ports`: _Object with dynamic keys of type_ `string` _and values of type_ _Object with properties:_<ul><li>`protocol`: `'http' \| 'tcp' \| 'udp'`</li><li>`hostname`: `string`</li><li>`port`: `number`</li></ul></li></ul></li></ul> _or_ _Object with properties:_<ul><li>`server`: _Object with properties:_<ul><li>`serverId`: `string`</li><li>`ports`: _Object with dynamic keys of type_ `string` _and values of type_ _Object with properties:_<ul><li>`protocol`: `'http' \| 'tcp' \| 'udp' \| 'https' \| 'tcp_tls'`</li><li>`serverPort`: `number`</li><li>`publicHostname`: `string`</li><li>`publicPort`: `number`</li><li>`routing`: _Object with properties:_<ul><li>`game_guard`: _Object with properties:_<ul></ul></li><li>`host`: _Object with properties:_<ul></ul></li></ul></li></ul></li></ul></li></ul></li></ul> |
+| **`players`** (\*) | _Array of objects:_<br /><ul><li>`token`: `string`</li><li>`id`: `string`</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+_(\*) Required._
+
 ```

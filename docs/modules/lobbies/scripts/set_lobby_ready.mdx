@@ -92,16 +92,33 @@ curl -X POST "https://localhost:6420/modules/lobbies/scripts/set_lobby_ready/cal
 ## Request
 
 ```typescript
-export interface Request {
-  lobbyToken?: string;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property     | Type     |
+| :----------- | :------- |
+| `lobbyId`    | `string` |
+| `lobbyToken` | `string` |
+
+_All properties are optional._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property | Type |
+| :------- | :--- |
+
+_All properties are optional._
+
 ```

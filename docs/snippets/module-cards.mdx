@@ -5,24 +5,9 @@ export const ModuleCards = ({ cols }) => (
 	<CardGroup cols={cols ?? 2}>
 		<Card title="Build your own" icon="plus" href="/build" />
 		
-        <Card title="Achievements" icon="medal" href="/modules/achievements/overview">
-          <div>Unlock and track user achievements. (Coming late-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Analytics" icon="chart-line" href="/modules/analytics/overview">
-          <div>Track and visualize user behavior data. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
         <Card title="Authentication" icon="key" href="/modules/auth/overview">
           <div>Authenticate users with multiple authentication methods.</div>
           <Tags tags={["stable","core","auth","user"]} />
-        </Card>
-      
-        <Card title="Chat" icon="messages" href="/modules/chat/overview">
-          <div>In-game player-to-player messaging. (Coming late-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
         </Card>
       
         <Card title="Currency" icon="coin" href="/modules/currency/overview">
@@ -40,34 +25,9 @@ export const ModuleCards = ({ cols }) => (
           <Tags tags={["beta","social"]} />
         </Card>
       
-        <Card title="Game Saves" icon="floppy-disk" href="/modules/game_saves/overview">
-          <div>Store and manage player progress data or world state. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Groups" icon="user-group" href="/modules/groups/overview">
-          <div>Group users in groups/clans/guilds. (Coming late-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Leaderboards" icon="ranking-star" href="/modules/leaderboards/overview">
-          <div>Track and display top player rankings. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
         <Card title="Lobbies" icon="game-board" href="/modules/lobbies/overview">
-          <div>Lobby & player management. Create & join lobbies instantly.</div>
+          <div>Lobby & player management.</div>
           <Tags tags={["stable","core","multiplayer"]} />
-        </Card>
-      
-        <Card title="Matchmaker" icon="chess-knight" href="/modules/matchmaker/overview">
-          <div>Ticket-based matchmaking that balances skill, latency, and more. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Parties" icon="party-horn" href="/modules/parties/overview">
-          <div>Real-time player groups. Integrates with matchmaking. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
         </Card>
       
         <Card title="Rate Limit" icon="gauge-circle-minus" href="/modules/rate_limit/overview">

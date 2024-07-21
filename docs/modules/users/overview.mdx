@@ -50,9 +50,13 @@ Add the following to your `backend.json`:
 
 ### Public
 
+These scripts can be called publicly by your game.
+
 <CardGroup><Card title="Authenticate User Token" href="/modules/users/scripts/authenticate_token">Validate a user token. Throws an error if the token is invalid.</Card><Card title="Fetch User" href="/modules/users/scripts/fetch"></Card></CardGroup>
 
 ### Internal
+
+These scripts can only be called by other OpenGB modules.
 
 <CardGroup><Card title="Create User" href="/modules/users/scripts/create"></Card><Card title="Create User Token" href="/modules/users/scripts/create_token">Create a token for a user to authenticate future requests.</Card></CardGroup>
 

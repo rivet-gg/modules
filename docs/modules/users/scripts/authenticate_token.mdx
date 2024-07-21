@@ -92,23 +92,35 @@ curl -X POST "https://localhost:6420/modules/users/scripts/authenticate_token/ca
 ## Request
 
 ```typescript
-export interface Request {
-  userToken?: string;
-  fetchUser?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type      |
+| :------------------- | :-------- |
+| **`userToken`** (\*) | `string`  |
+| `fetchUser`          | `boolean` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  userId?: string;
-  user?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type                                                                                                                                           |
+| :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`userId`** (\*) | `string`                                                                                                                                       |
+| `user`            | _Object with properties:_<ul><li>`id`: `string`</li><li>`username`: `string`</li><li>`createdAt`: `Date`</li><li>`updatedAt`: `Date`</li></ul> |
+
+_(\*) Required._
+
 ```

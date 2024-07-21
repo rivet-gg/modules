@@ -92,18 +92,34 @@ curl -X POST "https://localhost:6420/modules/currency/scripts/get_balance_by_tok
 ## Request
 
 ```typescript
-export interface Request {
-  userToken?: string;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type     |
+| :------------------- | :------- |
+| **`userToken`** (\*) | `string` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  userId?: string;
-  balance?: number;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type     |
+| :----------------- | :------- |
+| **`userId`** (\*)  | `string` |
+| **`balance`** (\*) | `number` |
+
+_(\*) Required._
+
 ```

@@ -20,20 +20,34 @@ const data = await ctx.modules.uploads.getPublicFileUrls({
 ## Request
 
 ```typescript
-export interface Request {
-  files?: any[];
-  expirySeconds?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                     |
+| :--------------- | :--------------------------------------------------------------------------------------- |
+| **`files`** (\*) | _Array of objects:_<br /><ul><li>`uploadId`: `string`</li><li>`path`: `string`</li></ul> |
+| `expirySeconds`  | `number`                                                                                 |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  files?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                                                                     |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`files`** (\*) | _Array of objects:_<br /><ul><li>`uploadId`: `string`</li><li>`url`: `string`</li><li>`path`: `string`</li><li>`mime`: `string` (_nullable_)</li><li>`contentLength`: `string`</li></ul> |
+
+_(\*) Required._
+
 ```

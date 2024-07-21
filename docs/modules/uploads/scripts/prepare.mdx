@@ -20,22 +20,34 @@ const data = await ctx.modules.uploads.prepare({
 ## Request
 
 ```typescript
-export interface Request {
-  metadata?: {
-    [k: string]: any;
-  };
-  files?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                                               |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadata`       | `any` (_nullable_)                                                                                                                                                 |
+| **`files`** (\*) | _Array of objects:_<br /><ul><li>`multipart`: `boolean`</li><li>`path`: `string`</li><li>`mime`: `string` (_nullable_)</li><li>`contentLength`: `string`</li></ul> |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  upload?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`upload`** (\*) | _Object with properties:_<ul><li>`files`: _Array of objects:_<br /><ul><li>`presignedChunks`: _Array of objects:_<br /><ul><li>`url`: `string`</li><li>`partNumber`: `number`</li><li>`contentLength`: `string`</li><li>`offset`: `string`</li></ul></li><li>`path`: `string`</li><li>`mime`: `string` (_nullable_)</li><li>`contentLength`: `string`</li></ul></li><li>`id`: `string`</li><li>`metadata`: `any` (_nullable_)</li><li>`bucket`: `string`</li><li>`contentLength`: `string`</li><li>`createdAt`: `string`</li><li>`updatedAt`: `string`</li><li>`completedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+
 ```

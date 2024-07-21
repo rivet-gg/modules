@@ -39,7 +39,7 @@ Add the following to your `backend.json`:
 "modules": {
 	"auth": {
 		"config": {
-			// Your config here. See below for more details.
+			// Your config here. See config docs for more details.
 		}
 	}
 }
@@ -49,24 +49,10 @@ Add the following to your `backend.json`:
 
 </Tabs>
 
+
 ## Config
 
-### Schema
-		
-```typescript
-export interface Config {
-  email?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
-```
-
-### Default
-
-```json
-{}
-```
+<Card title="View Config" icon="square-sliders" href="/modules/auth/config"></Card>
 
 
 
@@ -74,9 +60,13 @@ export interface Config {
 
 ### Public
 
+These scripts can be called publicly by your game.
+
 <CardGroup><Card title="Complete Email Verification" href="/modules/auth/scripts/complete_email_verification">Verify a user's email address with a one-time verification code.</Card><Card title="Send Email Verification" href="/modules/auth/scripts/send_email_verification">Send a one-time verification code to a user's email address to authenticate them.</Card></CardGroup>
 
 ### Internal
+
+These scripts can only be called by other OpenGB modules.
 
 <CardGroup>_No internal scripts._</CardGroup>
 

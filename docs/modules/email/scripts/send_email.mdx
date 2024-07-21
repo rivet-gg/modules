@@ -20,35 +20,39 @@ const data = await ctx.modules.email.sendEmail({
 ## Request
 
 ```typescript
-export interface Request {
-  from?: {
-    [k: string]: any;
-  };
-  to?: any[];
-  cc?: {
-    [k: string]: any;
-  };
-  bcc?: {
-    [k: string]: any;
-  };
-  replyTo?: {
-    [k: string]: any;
-  };
-  subject?: string;
-  html?: {
-    [k: string]: any;
-  };
-  text?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                  |
+| :----------------- | :------------------------------------------------------------------------------------ |
+| **`from`** (\*)    | _Object with properties:_<ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| **`to`** (\*)      | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| `cc`               | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| `bcc`              | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| `replyTo`          | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| **`subject`** (\*) | `string`                                                                              |
+| `html`             | `string`                                                                              |
+| `text`             | `string`                                                                              |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property | Type |
+| :------- | :--- |
+
+_All properties are optional._
+
 ```

@@ -24,13 +24,14 @@ export function convertSerializedSchemaToTypeScript(schema: AnySchemaElement, op
 	return sourceFile.getText();
 }
 
-export function convertSerializedSchemaToZodConstant(schema: AnySchemaElement, options: GenerateOptions) {
+export function convertSerializedSchemaToZodConstant(schema: AnySchemaElement, options: GenerateOptions & { export?: boolean }) {
 	const project = new Project();
 
 	const sourceFile = project.createSourceFile("main.ts");
 
 	sourceFile.addVariableStatement({
 		declarationKind: VariableDeclarationKind.Const,
+		isExported: options.export,
 		declarations: [{
 			name: options.name,
 			initializer: (writer) => writeZodSourceCode(writer, schema),

@@ -20,19 +20,33 @@ const data = await ctx.modules.tokens.revoke({
 ## Request
 
 ```typescript
-export interface Request {
-  tokenIds?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property            | Type            |
+| :------------------ | :-------------- |
+| **`tokenIds`** (\*) | `Array<string>` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  updates?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                               |
+| :----------------- | :--------------------------------- |
+| **`updates`** (\*) | _Object with properties:_<ul></ul> |
+
+_(\*) Required._
+
 ```

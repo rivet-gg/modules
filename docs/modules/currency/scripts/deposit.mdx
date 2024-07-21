@@ -20,18 +20,34 @@ const data = await ctx.modules.currency.deposit({
 ## Request
 
 ```typescript
-export interface Request {
-  userId?: string;
-  amount?: number;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type     |
+| :---------------- | :------- |
+| **`userId`** (\*) | `string` |
+| **`amount`** (\*) | `number` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  updatedBalance?: number;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                  | Type     |
+| :------------------------ | :------- |
+| **`updatedBalance`** (\*) | `number` |
+
+_(\*) Required._
+
 ```
