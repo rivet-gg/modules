@@ -1,0 +1,81 @@
+---
+title: "Config (backend.json)"
+icon: square-sliders
+---
+
+# Schema
+
+%%SCHEMA%%
+
+## Extending Configs
+
+Extending configs enables overriding settings from another backend config. This is useful in situations like:
+
+- Separating development & production configs
+- Separating staging & production configs
+
+This can be done by passing the path to another JSON file to `extend`.
+
+### Merge Strategy
+
+Configs are merged with:
+
+- `registries`: replace registry with same key
+- `modules`: replace module with same key
+- `runtime`: merge 1 level deep
+
+### Example
+
+This example will override the `lobbies` config with a development config in `backend.dev.json`.
+
+<CodeGroup>
+```json backend.dev.json
+{
+	"extends": "backend.json",
+	"modules": {
+		"lobbies": {
+			"config": {
+				"lobbies": {
+					"regions": ["local"],
+					"backend": {
+						"localDevelopment": {
+							"tags": { "test": "5" },
+							"ports": {
+								"game": { "protocol": "udp", "port": 7777 }
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+```
+
+```json backend.json
+{
+	"modules": {
+		"users": {},
+		"rate_limit": {},
+		"tokens": {},
+		"lobbies": {
+			"config": {
+				"lobbies": {
+					"regions": ["local"],
+					"backend": {
+						"localDevelopment": {
+							"tags": { "test": "5" },
+							"ports": {
+								"game": { "protocol": "udp", "port": 7777 }
+							}
+						}
+					}
+				}
+			}
+		},
+		"rivet": {}
+	}
+}
+```
+</CodeGroup>
+

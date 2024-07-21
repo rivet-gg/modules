@@ -78,6 +78,7 @@ const TEMPLATES = {
 	examplePublic: await Deno.readTextFile(
 		resolve(TEMPLATES_PATH, "example_public.mdx"),
 	),
+	projectConfig: await Deno.readTextFile(resolve(TEMPLATES_PATH, "project_config.mdx")),
 };
 
 // Sort modules
@@ -160,15 +161,7 @@ async function generateProjectConfig() {
 	);
 	await Deno.writeTextFile(
 		resolve(DOCS_ROOT, "docs", "project-config.mdx"),
-		`---
-title: "Config (backend.json)"
-icon: square-sliders
----
-
-# Schema
-
-${configSchema}
-`,
+		TEMPLATES.projectConfig.replace(/%%SCHEMA%%/g, configSchema)
 	);
 }
 
