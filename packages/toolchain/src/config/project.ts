@@ -1,6 +1,7 @@
-import { exists, resolve } from "../deps.ts";
+import { assert, exists, isAbsolute } from "../deps.ts";
 import { z } from "../build/schema/deps.ts";
 import { UserError, ValidationError } from "../error/mod.ts";
+import { loadProjectConfigPath } from "../project/mod.ts";
 
 const RegistryGitUrlConfigSchema = z.union([z.string(), z.object({ https: z.string(), ssh: z.string() })]).describe(
 	"The URL to the git repository. If both HTTPS and SSH URL are provided, they will both be tried and use the one that works",
@@ -60,8 +61,9 @@ const ProjectModuleConfigSchema = z.object({
 });
 
 export const ProjectConfigSchema = z.object({
-	registries: z.record(RegistryConfigSchema),
-	modules: z.record(ProjectModuleConfigSchema),
+	extends: z.string().optional().describe("Extends a different project config."),
+	registries: z.record(RegistryConfigSchema).default(() => ({})),
+	modules: z.record(ProjectModuleConfigSchema).default(() => ({})),
 	runtime: RuntimeConfigSchema.optional(),
 });
 
@@ -82,30 +84,52 @@ export type RuntimeConfig = z.infer<typeof RuntimeConfigSchema>;
 
 export type CorsConfig = z.infer<typeof CorsConfigSchema>;
 
-export async function readConfig(projectPath: string): Promise<ProjectConfig> {
+export async function readConfig(projectConfigPath: string, extendedFromPaths: string[] = []): Promise<ProjectConfig> {
+	// Resolve absolute path
+	assert(isAbsolute(projectConfigPath), "project config path is not absolute");
+
+	// Check for recursive path
+	if (extendedFromPaths.includes(projectConfigPath)) {
+		throw new UserError("Recursive extend path.", {
+			details: `${projectConfigPath} extends from itself.`,
+			suggest: "Check your `extends` parameters.",
+			path: projectConfigPath,
+		});
+	}
+
 	// Read config
-	const projectConfigPath = configPath(projectPath);
 	if (!await exists(projectConfigPath, { isFile: true })) {
 		throw new UserError("Backend project does not exist.", {
 			details: `${projectConfigPath} does not exist.`,
 			suggest: "Run `opengb init` to create a project.",
+			path: projectConfigPath,
 		});
 	}
 	const configRaw = await Deno.readTextFile(projectConfigPath);
-	const config = JSON.parse(configRaw);
+	const rawConfig: ProjectConfig = JSON.parse(configRaw);
 
 	// Validate config
-	const result = await ProjectConfigSchema.safeParseAsync(config);
+	const result = await ProjectConfigSchema.safeParseAsync(rawConfig);
 	if (!result.success) {
 		throw new ValidationError(`Invalid project configuration.`, {
 			validationError: result.error,
-			path: configPath(projectPath),
+			path: projectConfigPath,
 		});
 	}
+	const childConfig = result.data;
 
-	return result.data;
-}
+	// Merge extended configs
+	let config: ProjectConfig;
+	if (childConfig.extends) {
+		const baseConfig = await readConfig(loadProjectConfigPath({ path: childConfig.extends }), [projectConfigPath, ...extendedFromPaths]);
+		config = {
+			registries: Object.assign({}, baseConfig.registries ?? {}, childConfig.registries ?? {}),
+			modules: Object.assign({}, baseConfig.modules ?? {}, childConfig.modules ?? {}),
+			runtime: Object.assign({}, baseConfig.runtime ?? {}, childConfig.runtime ?? {}),
+		};
+	} else {
+		config = childConfig;
+	}
 
-export function configPath(root: string): string {
-	return resolve(root, "backend.json");
+	return config;
 }

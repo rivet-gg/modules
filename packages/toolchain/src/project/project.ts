@@ -1,6 +1,6 @@
 import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
 import { glob } from "./deps.ts";
-import { configPath as projectConfigPath, readConfig as readProjectConfig } from "../config/project.ts";
+import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
 import { loadRegistry, Registry } from "./registry.ts";
@@ -12,9 +12,11 @@ import { UnreachableError, UserError } from "../error/mod.ts";
 import { Runtime } from "../build/mod.ts";
 import { PathResolver, QualifiedPathPair } from "../../../path_resolver/src/mod.ts";
 import { RouteCollisionError } from "../error/mod.ts";
+import { dirname } from "../deps.ts";
 
 export interface Project {
 	path: string;
+	configPath: string;
 	config: ProjectConfig;
 	registries: Map<string, Registry>;
 	modules: Map<string, Module>;
@@ -24,16 +26,27 @@ export interface LoadProjectOpts {
 	path?: string;
 }
 
-export function loadProjectRoot(opts: LoadProjectOpts): string {
-	return resolve(Deno.cwd(), opts.path ?? ".");
+/**
+ * Resolves the input to the backend config path.
+ *
+ * The project directory path can be resolved from the dirname on this path.
+ */
+export function loadProjectConfigPath(opts: LoadProjectOpts): string {
+	const path = resolve(Deno.cwd(), opts.path ?? ".");
+	if (path.endsWith(".json")) {
+		return path;
+	} else {
+		return resolve(path, "backend.json");
+	}
 }
 
 export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): Promise<Project> {
-	const projectRoot = loadProjectRoot(opts);
+	const projectConfigPath = loadProjectConfigPath(opts);
+	const projectRoot = dirname(projectConfigPath);
 
 	// Read project config
 	const projectConfig = await readProjectConfig(
-		projectRoot,
+		projectConfigPath,
 	);
 
 	// Load registries
@@ -59,12 +72,12 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 	if (localRegistry) {
 		if (!("local" in localRegistry.config)) {
 			throw new UserError("Registry named `local` is special and must be configured as a local registry.", {
-				path: projectConfigPath(projectRoot),
+				path: projectConfigPath,
 			});
 		}
 		if (localRegistry.isExternal) {
 			throw new UserError("Registry named `local` is special and can't be external.", {
-				path: projectConfigPath(projectRoot),
+				path: projectConfigPath,
 			});
 		}
 	}
@@ -74,11 +87,12 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 	for (const [projectModuleName, projectModuleConfig] of Object.entries(projectConfig.modules)) {
 		const { path, registry } = await fetchAndResolveModule(
 			projectRoot,
+			projectConfigPath,
 			registries,
 			projectModuleName,
 			projectModuleConfig,
 		);
-		const module = await loadModule(projectRoot, path, projectModuleName, projectModuleConfig, registry, signal);
+		const module = await loadModule(projectConfigPath, path, projectModuleName, projectModuleConfig, registry, signal);
 		modules.set(projectModuleName, module);
 	}
 
@@ -88,13 +102,13 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 			if (moduleA.name != moduleB.name && moduleA.storageAlias == moduleB.storageAlias) {
 				throw new UserError("Duplicate module storage alias.", {
 					details: `Conflicting modules for alias ${moduleA.storageAlias}: ${moduleA.name}, ${moduleB.name}`,
-					path: projectConfigPath(projectRoot),
+					path: projectConfigPath,
 				});
 			}
 		}
 	}
 
-	// Verify existince of module dependencies
+	// Verify existence of module dependencies
 	const missingDepsByModule = new Map<string, string[]>();
 	for (const module of modules.values()) {
 		const missingDeps = [] as string[];
@@ -117,7 +131,7 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 		}
 		throw new UserError("Unresolved module dependencies.", {
 			details,
-			path: projectConfigPath(projectRoot),
+			path: projectConfigPath,
 		});
 	}
 
@@ -136,7 +150,7 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 		}
 		throw new UserError("Modules can't depend on themselves.", {
 			details,
-			path: projectConfigPath(projectRoot),
+			path: projectConfigPath,
 		});
 	}
 
@@ -157,7 +171,13 @@ export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): 
 	const collisions = new PathResolver(routes).collisions;
 	if (collisions.length > 0) throw new RouteCollisionError(collisions);
 
-	return { path: projectRoot, config: projectConfig, registries, modules };
+	return {
+		path: projectRoot,
+		configPath: projectConfigPath,
+		config: projectConfig,
+		registries,
+		modules,
+	};
 }
 
 interface FetchAndResolveModuleOutput {
@@ -178,10 +198,11 @@ interface FetchAndResolveModuleOutput {
 }
 
 /**
- * Clones a registry to a local machine and resovles the path to the module.
+ * Clones a registry to a local machine and resolves the path to the module.
  */
 export async function fetchAndResolveModule(
 	projectRoot: string,
+	projectConfigPath: string,
 	registries: Map<string, Registry>,
 	moduleName: string,
 	module: ProjectModuleConfig,
@@ -193,7 +214,7 @@ export async function fetchAndResolveModule(
 	const registry = registries.get(registryName);
 	if (!registry) {
 		throw new UserError(`Registry \`${registryName}\` not found for module \`${module}\`.`, {
-			path: projectConfigPath(projectRoot),
+			path: projectConfigPath,
 		});
 	}
 
@@ -205,13 +226,13 @@ export async function fetchAndResolveModule(
 			// Has alias
 			throw new UserError(
 				`Module \`${pathModuleName}\` (alias of \`${moduleName}\`) not found in registry \`${registryName}\`.`,
-				{ path: projectConfigPath(projectRoot) },
+				{ path: projectConfigPath },
 			);
 		} else {
 			// No alias
 			throw new UserError(
 				`Module \`${pathModuleName}\` not found in registry \`${registryName}\`.`,
-				{ path: projectConfigPath(projectRoot) },
+				{ path: projectConfigPath },
 			);
 		}
 	}

@@ -9,7 +9,7 @@ import { Project } from "./project.ts";
 import { Registry } from "./registry.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
-import { configPath as projectConfigPath, ProjectModuleConfig } from "../config/project.ts";
+import { ProjectModuleConfig } from "../config/project.ts";
 import { UserError } from "../error/mod.ts";
 import { AnySchemaElement } from "../build/schema/mod.ts";
 import { RouteConfig } from "../config/module.ts";
@@ -25,15 +25,15 @@ import { RouteConfig } from "../config/module.ts";
  * - IF they are a prefix, end with a forward slash
  * - IF they are an exact path, NOT end with a forward slash
  *
+ * @param configPath Where the (possibly) offending config file is located. This can be either the project config or module config.
  * @param path The user-provided http path
  * @param isPrefix Whether or not the path should be treated as a prefix
- * @param configPath Where the (possibly) offending config file is located
  * @throws {UserError} if the path is invalid
  */
 function validatePath(
+	configPath: string,
 	path: string,
 	isPrefix: boolean,
-	configPath: string,
 ): void {
 	// Ensure path starts with a forward slash
 	if (!path.startsWith("/")) {
@@ -122,7 +122,7 @@ export interface ModuleDatabase {
 }
 
 export async function loadModule(
-	projectRoot: string,
+	projectConfigPath: string,
 	modulePath: string,
 	name: string,
 	projectModuleConfig: ProjectModuleConfig,
@@ -134,13 +134,13 @@ export async function loadModule(
 	// Read config
 	const config = await readModuleConfig(modulePath);
 
-	// Deterine storage alias
+	// Determine storage alias
 	const storageAlias = projectModuleConfig.storageAlias ?? name;
 	validateIdentifier(storageAlias, Casing.Snake);
 
 	const scripts = await loadScripts(modulePath, config);
 	const actors = await loadActors(modulePath, config);
-	const routes = await loadRoutes(modulePath, config, name, projectRoot, projectModuleConfig);
+	const routes = await loadRoutes(projectConfigPath, modulePath, config, name, projectModuleConfig);
 
 	// Verify error names
 	for (const errorName in config.errors) {
@@ -302,10 +302,10 @@ async function loadActors(modulePath: string, config: ModuleConfig) {
 }
 
 async function loadRoutes(
+	projectConfigPath: string,
 	modulePath: string,
 	config: ModuleConfig,
 	moduleName: string,
-	projectRoot: string,
 	projectModuleConfig: ProjectModuleConfig,
 ) {
 	// Read routes
@@ -319,9 +319,9 @@ async function loadRoutes(
 		let rawPathPrefix: string;
 		if (projectModuleConfig.routes?.pathPrefix) {
 			validatePath(
+				projectConfigPath,
 				projectModuleConfig.routes.pathPrefix,
 				true,
-				projectConfigPath(projectRoot),
 			);
 
 			rawPathPrefix = projectModuleConfig.routes.pathPrefix;
@@ -329,9 +329,9 @@ async function loadRoutes(
 			// Default to /modules/{module}/route/ for the path prefix
 			const prefix = `/modules/${moduleName}/route/`;
 			validatePath(
+				projectConfigPath,
 				prefix,
 				true,
-				projectConfigPath(projectRoot),
 			);
 
 			rawPathPrefix = prefix;
@@ -362,18 +362,18 @@ async function loadRoutes(
 			let subpath: string;
 			if ("path" in relativeRouteConfig) {
 				validatePath(
+					moduleConfigPath(modulePath),
 					relativeRouteConfig.path,
 					false,
-					moduleConfigPath(modulePath),
 				);
 
 				// Remove leading slash
 				subpath = relativeRouteConfig.path.replace(/^\//, "");
 			} else {
 				validatePath(
+					moduleConfigPath(modulePath),
 					relativeRouteConfig.pathPrefix,
 					true,
-					moduleConfigPath(modulePath),
 				);
 
 				// Remove leading and trailing slashes
