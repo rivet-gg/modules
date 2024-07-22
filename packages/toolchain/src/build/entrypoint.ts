@@ -212,11 +212,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	}
 
 	// Write files
-	const distDir = resolve(project.path, "_gen");
 	const configPath = genPath(project, RUNTIME_CONFIG_PATH);
 	const entrypointPath = genPath(project, ENTRYPOINT_PATH);
 
-	await Deno.mkdir(distDir, { recursive: true });
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
 	await Deno.writeTextFile(

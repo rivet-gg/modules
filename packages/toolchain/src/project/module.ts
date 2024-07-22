@@ -5,7 +5,7 @@ import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
 import { Actor } from "./actor.ts";
 import { Route } from "./route.ts";
-import { Project } from "./project.ts";
+import { Project, genPath as projectGenPath } from "./project.ts";
 import { Registry } from "./registry.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
@@ -428,30 +428,36 @@ export function moduleHelperGen(
 	);
 }
 
+export function genPath(project: Project, module: Module, ...pathSegments: string[]): string {
+  return projectGenPath(project, "modules", module.name, ...pathSegments);
+
+}
+
+
 export function publicPath(module: Module): string {
 	return resolve(module.path, "public.ts");
 }
 
-export function testGenPath(_project: Project, module: Module): string {
-	return resolve(
-		module.path,
-		"_gen",
+export function testGenPath(project: Project, module: Module): string {
+	return genPath(
+    project,
+    module,
 		"test.ts",
 	);
 }
 
-export function typeGenPath(_project: Project, module: Module): string {
-	return resolve(
-		module.path,
-		"_gen",
+export function typeGenPath(project: Project, module: Module): string {
+	return genPath(
+    project,
+    module,
 		"registry.d.ts",
 	);
 }
 
-export function moduleGenRegistryMapPath(_project: Project, module: Module): string {
-	return resolve(
-		module.path,
-		"_gen",
+export function moduleGenRegistryMapPath(project: Project, module: Module): string {
+	return genPath(
+    project,
+    module,
 		"registryMap.ts",
 	);
 }
