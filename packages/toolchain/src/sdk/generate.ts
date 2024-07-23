@@ -5,7 +5,7 @@ import { genPath, SDK_PATH } from "../project/project.ts";
 import { progress, success } from "../term/status.ts";
 
 import { generateTypescriptAddons } from "./typescript/mod.ts";
-import { generateUnityAddons } from "./unity/mod.ts";
+import { DEFAULT_PACKAGE_NAME as UNITY_DEFAULT_PACKAGE_NAME, generateUnityAddons } from "./unity/mod.ts";
 import { generateGodot } from "./godot/mod.ts";
 
 export enum SdkTarget {
@@ -36,6 +36,7 @@ const GENERATORS: Record<SdkTarget, Generator> = {
 		options: {
 			apiName: "Backend",
 			library: "unityWebRequest",
+      packageName: UNITY_DEFAULT_PACKAGE_NAME,
 			// targetFramework: "netstandard2.1",
 		},
 	},
@@ -112,15 +113,17 @@ export async function generateSdk(
 		}
 	}
 
+  let sdkCopyPath = sdkGenPath;
 	if (target == SdkTarget.TypeScript) {
 		await generateTypescriptAddons(project, sdkGenPath);
 	} else if (target == SdkTarget.Unity) {
 		await generateUnityAddons(project, sdkGenPath);
+    sdkCopyPath = resolve(sdkGenPath, "src", UNITY_DEFAULT_PACKAGE_NAME);
 	} else if (target == SdkTarget.Godot) {
 		await generateGodot(project, sdkGenPath);
 	}
 
-	await move(sdkGenPath, output, { overwrite: true });
+	await move(sdkCopyPath, output, { overwrite: true });
 
 	success("Success");
 }
