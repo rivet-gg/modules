@@ -37,6 +37,7 @@ const GENERATORS: Record<SdkTarget, Generator> = {
 			apiName: "Backend",
 			library: "unityWebRequest",
       packageName: UNITY_DEFAULT_PACKAGE_NAME,
+      // disallowAdditionalPropertiesIfNotPresent: "false",
 			// targetFramework: "netstandard2.1",
 		},
 	},
