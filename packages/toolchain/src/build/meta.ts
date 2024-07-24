@@ -2,7 +2,7 @@ import { ModuleConfig, ScriptConfig } from "../config/module.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { hasUserConfigSchema, Project } from "../project/mod.ts";
-import { genPath, META_PATH } from "../project/project.ts";
+import { projectGenPath, META_PATH } from "../project/project.ts";
 import { camelify, pascalify } from "../../../case_conversion/src/mod.ts";
 import { AnySchemaElement } from "./schema/mod.ts";
 
@@ -96,7 +96,7 @@ export async function generateMeta(project: Project) {
 	};
 
 	await Deno.writeTextFile(
-		genPath(project, META_PATH),
+		projectGenPath(project, META_PATH),
 		JSON.stringify(meta, null, 4),
 	);
 }

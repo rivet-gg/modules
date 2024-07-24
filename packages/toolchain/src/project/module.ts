@@ -5,7 +5,7 @@ import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";
 import { Actor } from "./actor.ts";
 import { Route } from "./route.ts";
-import { Project, genPath as projectGenPath } from "./project.ts";
+import { Project, projectGenPath } from "./project.ts";
 import { Registry } from "./registry.ts";
 import { validateIdentifier } from "../types/identifiers/mod.ts";
 import { Casing } from "../types/identifiers/defs.ts";
@@ -428,7 +428,7 @@ export function moduleHelperGen(
 	);
 }
 
-export function genPath(project: Project, module: Module, ...pathSegments: string[]): string {
+export function moduleGenPath(project: Project, module: Module, ...pathSegments: string[]): string {
   return projectGenPath(project, "modules", module.name, ...pathSegments);
 
 }
@@ -439,7 +439,7 @@ export function publicPath(module: Module): string {
 }
 
 export function testGenPath(project: Project, module: Module): string {
-	return genPath(
+	return moduleGenPath(
     project,
     module,
 		"test.ts",
@@ -447,7 +447,7 @@ export function testGenPath(project: Project, module: Module): string {
 }
 
 export function typeGenPath(project: Project, module: Module): string {
-	return genPath(
+	return moduleGenPath(
     project,
     module,
 		"registry.d.ts",
@@ -455,7 +455,7 @@ export function typeGenPath(project: Project, module: Module): string {
 }
 
 export function moduleGenRegistryMapPath(project: Project, module: Module): string {
-	return genPath(
+	return moduleGenPath(
     project,
     module,
 		"registryMap.ts",

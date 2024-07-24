@@ -17,7 +17,7 @@ import { generateMeta } from "../meta.ts";
 import {
 	BUNDLE_PATH,
 	ENTRYPOINT_PATH,
-	genPath,
+	projectGenPath,
 	genPrismaOutputFolder,
 	MANIFEST_PATH,
 	RUNTIME_PATH,
@@ -69,7 +69,7 @@ export async function planProjectBuild(
 		description: "runtime/",
 		async build({ signal }) {
 			// Writes a copy of the OpenGB runtime bundled with the CLI to the project.
-			const inflateRuntimePath = genPath(project, RUNTIME_PATH);
+			const inflateRuntimePath = projectGenPath(project, RUNTIME_PATH);
 			await inflateArchive(runtimeArchive, inflateRuntimePath, "string", signal);
 		},
 	});
@@ -150,7 +150,7 @@ export async function planProjectBuild(
 			name: "Bundle",
 			description: "bundle.js",
 			async build({ signal }) {
-				const bundledFile = genPath(project, BUNDLE_PATH);
+				const bundledFile = projectGenPath(project, BUNDLE_PATH);
 
 				// See Cloudflare Wrangler implementation:
 				//
@@ -158,7 +158,7 @@ export async function planProjectBuild(
 				const analyzeResult = Deno.env.get("_OPENGB_ESBUILD_META") == "1";
 				const noMinify = Deno.env.get("_OPENGB_ESBUILD_NO_MINIFY") == "1";
 				const result = await esbuild.build({
-					entryPoints: [genPath(project, ENTRYPOINT_PATH)],
+					entryPoints: [projectGenPath(project, ENTRYPOINT_PATH)],
 					outfile: bundledFile,
 					platform: "browser",
 					format: "esm",
@@ -288,7 +288,7 @@ export async function planProjectBuild(
 					signal.throwIfAborted();
 
 					await Deno.writeTextFile(
-						genPath(project, MANIFEST_PATH),
+						projectGenPath(project, MANIFEST_PATH),
 						JSON.stringify(manifest),
 					);
 				}
