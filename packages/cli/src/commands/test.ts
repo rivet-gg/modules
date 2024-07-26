@@ -19,13 +19,12 @@ export const testCommand = new Command<GlobalOpts>()
 	.option("-w, --watch", "Automatically rerun tests on changes")
 	.action(
 		async (opts, ...modulesFilter: string[]) => {
-			const project = await initProject(opts);
-
-			await ensurePostgresRunning(project);
-
-			await watch(project, {
+			await watch({
+				loadProjectOpts: opts,
 				disableWatch: !opts.watch,
 				fn: async (project: Project, signal: AbortSignal) => {
+					await ensurePostgresRunning(project);
+
 					// Build project
 					if (opts.build) {
 						await build(project, {

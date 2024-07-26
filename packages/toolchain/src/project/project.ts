@@ -24,8 +24,12 @@ export interface LoadProjectOpts {
 	path?: string;
 }
 
+export function loadProjectRoot(opts: LoadProjectOpts): string {
+	return resolve(Deno.cwd(), opts.path ?? ".");
+}
+
 export async function loadProject(opts: LoadProjectOpts, signal?: AbortSignal): Promise<Project> {
-	const projectRoot = resolve(Deno.cwd(), opts.path ?? ".");
+	const projectRoot = loadProjectRoot(opts);
 
 	// Read project config
 	const projectConfig = await readProjectConfig(

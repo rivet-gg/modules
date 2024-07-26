@@ -1,13 +1,18 @@
 import { abortable } from "./deps.ts";
 import { resolve, SEP } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { loadProject } from "../project/project.ts";
+import { loadProject, LoadProjectOpts, loadProjectRoot } from "../project/project.ts";
 import { info, verbose } from "../term/status.ts";
 import { InternalError } from "../error/mod.ts";
 import { printError } from "../error/mod.ts";
 import { colors } from "../term/deps.ts";
 
 export interface WatchOpts {
+	/**
+	 * Options to pass to `loadProject`.
+	 */
+	loadProjectOpts: LoadProjectOpts;
+
 	/**
 	 * If true, don't watch for changes and just runs `fn` once.
 	 *
@@ -19,17 +24,30 @@ export interface WatchOpts {
 	fn: (project: Project, signal: AbortSignal) => Promise<void>;
 }
 
-export async function watch(initProject: Project, opts: WatchOpts) {
+export async function watch(opts: WatchOpts) {
 	// TODO: debounce
 	// TODO: catch errors
 
+	// Run without watching
 	if (opts.disableWatch) {
-		await opts.fn(initProject, new AbortController().signal);
+		const signal = new AbortController().signal;
+		const project = await loadProject(opts.loadProjectOpts, signal);
+		await opts.fn(project, signal);
 		return;
 	}
 
-	let project = initProject;
-	let loadProjectSuccess = true;
+	// Attempt to load project before starting watch loop.
+	//
+	// If this fails, we'll watch for the backend.json file and try loading the
+	// project again.
+	let project: Project | undefined = undefined;
+	try {
+		project = await loadProject(opts.loadProjectOpts);
+	} catch (err) {
+		printError(err);
+	}
+
+	// Start watch loop
 	while (true) {
 		const sttyOutput = await new Deno.Command("stty", {
 			args: ["sane"],
@@ -49,9 +67,9 @@ export async function watch(initProject: Project, opts: WatchOpts) {
 			console.log(`\n${colors.dim("─".repeat(8))}\n`);
 		}
 
-		// Run action
+		// Run action in background	in an abortable way
 		let fnAbortController: AbortController | undefined;
-		if (loadProjectSuccess) {
+		if (project != undefined) {
 			fnAbortController = new AbortController();
 			abortable(
 				wrapWatchFn(project, opts, fnAbortController.signal),
@@ -64,7 +82,7 @@ export async function watch(initProject: Project, opts: WatchOpts) {
 
 		// Wait for change that we care about
 		let foundEvent = false;
-		const watchPaths = getWatchPaths(project);
+		const watchPaths = getWatchPaths(opts.loadProjectOpts, project);
 		const watcher = Deno.watchFs(watchPaths);
 		verbose("Watching", watchPaths.join(", "));
 		for await (const event of watcher) {
@@ -91,11 +109,10 @@ export async function watch(initProject: Project, opts: WatchOpts) {
 		// If this fails, it means the project is in a bad state. This will skip the next
 		// action and wait for the next change.
 		try {
-			project = await loadProject({ path: project.path });
-			loadProjectSuccess = true;
+			project = await loadProject(opts.loadProjectOpts);
 		} catch (err) {
 			printError(err);
-			loadProjectSuccess = false;
+			project = undefined;
 		}
 	}
 }
@@ -113,18 +130,24 @@ async function wrapWatchFn(
 	}
 }
 
-function getWatchPaths(project: Project) {
-	const paths: string[] = [
-		resolve(project.path, "backend.json"),
-	];
-	for (const module of project.modules.values()) {
-		if (
-			!("local" in module.registry.config) ||
-			module.registry.config.local.isExternal
-		) continue;
-		paths.push(module.path);
+function getWatchPaths(loadProjectOpts: LoadProjectOpts, project?: Project) {
+	if (project) {
+		const paths: string[] = [
+			resolve(project.path, "backend.json"),
+		];
+		if (project) {
+			for (const module of project.modules.values()) {
+				if (
+					!("local" in module.registry.config) ||
+					module.registry.config.local.isExternal
+				) continue;
+				paths.push(module.path);
+			}
+		}
+		return paths;
+	} else {
+		return [loadProjectRoot(loadProjectOpts)];
 	}
-	return paths;
 }
 
 function shouldPathTriggerRebuild(path: string) {

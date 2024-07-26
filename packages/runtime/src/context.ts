@@ -35,9 +35,9 @@ export class Context<Params extends ContextParams> {
 		return new ContextRuntime(this.internalRuntime);
 	}
 
-  public get environment(): Environment {
-    return this.internalRuntime.env;
-  }
+	public get environment(): Environment {
+		return this.internalRuntime.env;
+	}
 
 	public constructor(
 		protected readonly internalRuntime: Runtime<Params>,
@@ -151,7 +151,7 @@ export class Context<Params extends ContextParams> {
 			);
 		}
 		return responseParseResult.data;
-	}
+	};
 
 	public get modules() {
 		return buildDependencyRegistryProxy<Params>(
@@ -203,15 +203,15 @@ export class Context<Params extends ContextParams> {
 		try {
 			return await fn();
 		} catch (cause) {
-      if (cause === undefined) {
-        this.log.warn('caught undefined error from task. this may be caused using by cross-request promises.')
-      }
-      
+			if (cause === undefined) {
+				this.log.warn("caught undefined error from task. this may be caused using by cross-request promises.");
+			}
+
 			if (cause instanceof RuntimeError) {
 				// Enrich error with more context
 				cause.enrich(this.internalRuntime, this);
 				throw cause;
-      } else {
+			} else {
 				// Convert to RuntimeError
 				const error = new RuntimeError(INTERNAL_ERROR_CODE, { cause });
 				error.enrich(this.internalRuntime, this);

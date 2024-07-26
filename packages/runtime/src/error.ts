@@ -17,13 +17,13 @@ const DEFAULT_ERROR_CONFIGS: Record<string, ErrorConfig> = {
 		description: "Unreachable.",
 	},
 	"validation": {
-		description: "The provided data does not match the required schema."
+		description: "The provided data does not match the required schema.",
 	},
-}
+};
 
 // MARK: Runtime Error
 export interface RuntimeErrorOptions extends ErrorOptions {
-	internal?: boolean,
+	internal?: boolean;
 	meta?: any;
 	statusCode?: number;
 }

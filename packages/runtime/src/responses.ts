@@ -84,24 +84,24 @@ export function serverOrRuntimeError<Ctx extends Context<any>>(ctx: Ctx, e: unkn
 
 		// Never return error details to the client in order to prevent reverse
 		// engineering & accidentally leaking secrets.
-    if (e.internal) {
-      output = {
-        code: INTERNAL_ERROR_CODE,
-        message: INTERNAL_ERROR_DESCRIPTION,
-      };
-    } else {
-      output = {
-        code: e.code,
-        message: e.message,
-        module: e.moduleName,
-        meta: e.meta,
-      };
-    }
+		if (e.internal) {
+			output = {
+				code: INTERNAL_ERROR_CODE,
+				message: INTERNAL_ERROR_DESCRIPTION,
+			};
+		} else {
+			output = {
+				code: e.code,
+				message: e.message,
+				module: e.moduleName,
+				meta: e.meta,
+			};
+		}
 	} else {
 		ctx.log.error("unknown error", ["error", JSON.stringify(e)]);
 		output = {
-      code: INTERNAL_ERROR_CODE,
-			message: INTERNAL_ERROR_DESCRIPTION
+			code: INTERNAL_ERROR_CODE,
+			message: INTERNAL_ERROR_DESCRIPTION,
 		};
 	}
 	return new Response(

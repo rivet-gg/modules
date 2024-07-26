@@ -11,5 +11,4 @@ export class MemoryInstance implements ActorInstanceDriver {
 	async forceSaveState(): Promise<void> {
 		// TODO:
 	}
-
 }
