@@ -1,7 +1,7 @@
 import { move, resolve } from "../deps.ts";
 import { CommandError, UnreachableError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
-import { genPath, SDK_PATH } from "../project/project.ts";
+import { projectGenPath, SDK_PATH } from "../project/project.ts";
 import { progress, success } from "../term/status.ts";
 
 import { generateTypescriptAddons } from "./typescript/mod.ts";
@@ -52,7 +52,7 @@ export async function generateSdk(
 	output: string,
 ) {
 	const targetString = targetToString(target);
-	const sdkGenPath = resolve(genPath(project, SDK_PATH), targetString);
+	const sdkGenPath = resolve(projectGenPath(project, SDK_PATH), targetString);
 
 	// Clear artifacts
 	try {

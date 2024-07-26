@@ -3,7 +3,7 @@ import { genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } fro
 import {
 	ENTRYPOINT_PATH,
 	genDependencyCaseConversionMapPath,
-	genPath,
+	projectGenPath,
 	genPrismaOutputBundle,
 	genRuntimeModPath,
 	GITIGNORE_PATH,
@@ -103,13 +103,13 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
 			import { handleRequest } from ${
-			JSON.stringify(genPath(project, RUNTIME_PATH, "packages", "runtime", "src", "server.ts"))
+			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "src", "server.ts"))
 		};
 			import { ActorDriver } from ${JSON.stringify(actorDriverPath)};
 			import { PathResolver } from ${
-			JSON.stringify(genPath(project, RUNTIME_PATH, "packages", "path_resolver", "src", "mod.ts"))
+			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "src", "mod.ts"))
 		};
-			import { log } from ${JSON.stringify(genPath(project, RUNTIME_PATH, "packages", "runtime", "src", "logger.ts"))};
+			import { log } from ${JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "src", "logger.ts"))};
 
 			const runtime = new Runtime<{
 				dependenciesSnake: DependenciesSnake,
@@ -151,7 +151,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			).finished;
 			`;
 	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
-		const runtimePath = genPath(project, RUNTIME_PATH);
+		const runtimePath = projectGenPath(project, RUNTIME_PATH);
 		const serverTsPath = resolve(runtimePath, "packages", "runtime", "src", "server.ts");
 		const errorTsPath = resolve(runtimePath, "packages", "runtime", "src", "error.ts");
 
@@ -212,13 +212,13 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	}
 
 	// Write files
-	const configPath = genPath(project, RUNTIME_CONFIG_PATH);
-	const entrypointPath = genPath(project, ENTRYPOINT_PATH);
+	const configPath = projectGenPath(project, RUNTIME_CONFIG_PATH);
+	const entrypointPath = projectGenPath(project, ENTRYPOINT_PATH);
 
 	await Deno.writeTextFile(configPath, configSource);
 	await Deno.writeTextFile(entrypointPath, entrypointSource);
 	await Deno.writeTextFile(
-		genPath(project, GITIGNORE_PATH),
+		projectGenPath(project, GITIGNORE_PATH),
 		".",
 	);
 

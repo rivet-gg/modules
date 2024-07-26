@@ -4,7 +4,7 @@ import { Module, Project } from "../project/mod.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { verbose } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "../utils/once.ts";
-import { genPath, PRISMA_WORKSPACE_PATH } from "../project/project.ts";
+import { projectGenPath, PRISMA_WORKSPACE_PATH } from "../project/project.ts";
 import prismaArchive from "../../../../artifacts/prisma_archive.json" with { type: "json" };
 import { inflateArchive } from "../build/util.ts";
 
@@ -28,7 +28,7 @@ const PRISMA_DEFAULT_ENV = {
 };
 
 function getPrismaDir(project: Project) {
-	return genPath(project, PRISMA_WORKSPACE_PATH);
+	return projectGenPath(project, PRISMA_WORKSPACE_PATH);
 }
 
 const PRISMA_INSTALLED_ONCE = createOnce<void>();

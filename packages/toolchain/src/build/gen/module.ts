@@ -13,7 +13,7 @@ import {
 	genDependencyCaseConversionMapPath,
 	genDependencyTypedefPath,
 	genModulePublicExternal,
-	genPath,
+	projectGenPath,
 	genPrismaOutputBundle,
 	genRuntimeModPath,
 	RUNTIME_CONFIG_PATH,
@@ -31,7 +31,7 @@ export async function compileModuleHelper(
 	const runtimePath = helper.relative(genRuntimeModPath(project));
 	const dependencyCaseConversionMapPath = helper.relative(genDependencyCaseConversionMapPath(project));
 	const actorCaseConversionMapPath = helper.relative(genActorCaseConversionMapPath(project));
-	const runtimeConfigPath = helper.relative(genPath(project, RUNTIME_CONFIG_PATH));
+	const runtimeConfigPath = helper.relative(projectGenPath(project, RUNTIME_CONFIG_PATH));
 
 	// Import block
 	const importBlock = helper.chunk.withNewlinesPerChunk(1)

@@ -5,7 +5,7 @@ import { ensurePostgresRunning } from "../../../toolchain/src/utils/postgres_dae
 import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
 import { InternalError } from "../../../toolchain/src/error/mod.ts";
-import { ENTRYPOINT_PATH, genPath } from "../../../toolchain/src/project/project.ts";
+import { ENTRYPOINT_PATH, projectGenPath } from "../../../toolchain/src/project/project.ts";
 
 export const devCommand = new Command<GlobalOpts>()
 	.description("Start the development server")
@@ -47,7 +47,7 @@ export const devCommand = new Command<GlobalOpts>()
 					if (opts.check) args.push("--check");
 
 					// Run entrypoint
-					const entrypointPath = genPath(project, ENTRYPOINT_PATH);
+					const entrypointPath = projectGenPath(project, ENTRYPOINT_PATH);
 					const cmd = await new Deno.Command("deno", {
 						args: [
 							"run",

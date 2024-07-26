@@ -303,16 +303,16 @@ export const RUNTIME_PATH = "runtime";
 export const PRISMA_WORKSPACE_PATH = "prisma_workspace";
 export const SDK_PATH = "sdk";
 
-export function genPath(project: Project, ...pathSegments: string[]): string {
+export function projectGenPath(project: Project, ...pathSegments: string[]): string {
 	return resolve(project.path, ".opengb", ...pathSegments);
 }
 
 export function genRuntimeModPath(project: Project): string {
-	return genPath(project, "runtime", "packages", "runtime", "src", "mod.ts");
+	return projectGenPath(project, "runtime", "packages", "runtime", "src", "mod.ts");
 }
 
 export function genRuntimeActorPath(project: Project): string {
-	return genPath(project, "runtime", "packages", "runtime", "src", "actor", "actor.ts");
+	return projectGenPath(project, "runtime", "packages", "runtime", "src", "actor", "actor.ts");
 }
 
 export function genRuntimeActorDriverPath(project: Project, runtime: Runtime): string {
@@ -325,25 +325,25 @@ export function genRuntimeActorDriverPath(project: Project, runtime: Runtime): s
 		throw new UnreachableError(runtime);
 	}
 
-	return genPath(project, "runtime", "packages", "runtime", "src", "actor", "drivers", actorDriverName, "driver.ts");
+	return projectGenPath(project, "runtime", "packages", "runtime", "src", "actor", "drivers", actorDriverName, "driver.ts");
 }
 
 export function genDependencyTypedefPath(project: Project): string {
-	return genPath(project, "dependencies.d.ts");
+	return projectGenPath(project, "dependencies.d.ts");
 }
 export function genDependencyCaseConversionMapPath(project: Project): string {
-	return genPath(project, "dependencyCaseConversion.ts");
+	return projectGenPath(project, "dependencyCaseConversion.ts");
 }
 
 export function genActorTypedefPath(project: Project): string {
-	return genPath(project, "actors.d.ts");
+	return projectGenPath(project, "actors.d.ts");
 }
 export function genActorCaseConversionMapPath(project: Project): string {
-	return genPath(project, "actorCaseConversion.ts");
+	return projectGenPath(project, "actorCaseConversion.ts");
 }
 
 function genPublicUtilsFolder(project: Project): string {
-	return genPath(project, "public");
+	return projectGenPath(project, "public");
 }
 
 /**
@@ -366,7 +366,7 @@ export function genModulePublicExternal(project: Project, module: Module): strin
 }
 
 function genDependenciesFolder(project: Project): string {
-	return genPath(project, "dependencies");
+	return projectGenPath(project, "dependencies");
 }
 
 export function genModuleDependenciesPath(project: Project, module: Module): string {
@@ -374,7 +374,7 @@ export function genModuleDependenciesPath(project: Project, module: Module): str
 }
 
 export function genPrismaOutputFolder(project: Project, module: Module): string {
-	return genPath(project, "prisma_output", module.name);
+	return projectGenPath(project, "prisma_output", module.name);
 }
 
 /**
@@ -413,7 +413,7 @@ export async function listSourceFiles(
 }
 
 export async function cleanProject(project: Project) {
-	await Deno.remove(genPath(project), { recursive: true });
+	await Deno.remove(projectGenPath(project), { recursive: true });
 }
 
 export function getDefaultRegistry(project: Project): Registry | undefined {
