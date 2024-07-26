@@ -4,6 +4,7 @@ import { resolve } from "../../../toolchain/src/deps.ts";
 import { fetchAndResolveModule } from "../../../toolchain/src/project/mod.ts";
 import { ProjectModuleConfig } from "../../../toolchain/src/config/project.ts";
 import { UserError } from "../../../toolchain/src/error/mod.ts";
+import { loadProjectConfigPath } from "../../../toolchain/src/project/project.ts";
 
 export const moduleCommand = new Command<GlobalOpts>()
 	.description("Manage modules");
@@ -26,7 +27,7 @@ moduleCommand
 			// Attempt to fetch module
 			const moduleConfig: ProjectModuleConfig = {};
 			if (opts.registry) moduleConfig.registry = opts.registry;
-			await fetchAndResolveModule(project.path, project.registries, moduleName, moduleConfig);
+			await fetchAndResolveModule(project.path, project.configPath, project.registries, moduleName, moduleConfig);
 
 			// Add to backend.json
 			const newConfig = structuredClone(project.config);

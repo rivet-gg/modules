@@ -1,5 +1,5 @@
 import { Command, ValidationError } from "../deps.ts";
-import { GlobalOpts, initProject } from "../common.ts";
+import { GlobalOpts } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../../toolchain/src/build/mod.ts";
 import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";

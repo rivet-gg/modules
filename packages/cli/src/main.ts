@@ -15,6 +15,7 @@ import { printError } from "../../toolchain/src/error/mod.ts";
 import { runShutdown } from "../../toolchain/src/utils/shutdown_handler.ts";
 import { internalCommand } from "./commands/internal.ts";
 import { info } from "../../toolchain/src/term/status.ts";
+import { configCommand } from "./commands/config.ts";
 
 // Add explicit shutdown handler in order to:
 // - Safely run `runShutdown`
@@ -41,6 +42,7 @@ command.action(() => command.showHelp())
 	.command("lint", lintCommand)
 	.command("build", buildCommand)
 	.command("clean", cleanCommand)
+	.command("config", configCommand)
 	.command("_internal", internalCommand)
 	.command("help", new HelpCommand().global())
 	.command("completions", new CompletionsCommand());

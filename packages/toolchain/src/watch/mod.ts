@@ -1,7 +1,7 @@
 import { abortable } from "./deps.ts";
-import { resolve, SEP } from "../deps.ts";
+import { dirname, resolve, SEP } from "../deps.ts";
 import { Project } from "../project/mod.ts";
-import { loadProject, LoadProjectOpts, loadProjectRoot } from "../project/project.ts";
+import { loadProject, loadProjectConfigPath, LoadProjectOpts } from "../project/project.ts";
 import { info, verbose } from "../term/status.ts";
 import { InternalError } from "../error/mod.ts";
 import { printError } from "../error/mod.ts";
@@ -146,7 +146,8 @@ function getWatchPaths(loadProjectOpts: LoadProjectOpts, project?: Project) {
 		}
 		return paths;
 	} else {
-		return [loadProjectRoot(loadProjectOpts)];
+		// Wait the entire directory to check for backend config
+		return [dirname(loadProjectConfigPath(loadProjectOpts))];
 	}
 }
 
