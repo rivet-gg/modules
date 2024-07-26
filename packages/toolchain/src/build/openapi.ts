@@ -19,6 +19,7 @@ export async function generateOpenApi(project: Project) {
 				method: "post",
 				path: `/modules/${mod.name}/scripts/${script.name}/call`,
 				description: `Call ${mod.name}.${script.name} script.`,
+        tags: ["Backend"],
 				request: {
 					body: {
 						required: true,

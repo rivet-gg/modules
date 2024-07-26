@@ -4,10 +4,13 @@ import { GeneratedCodeBuilder, Lang } from "../../build/gen/code_builder.ts";
 import { Project } from "../../project/mod.ts";
 import { dedent } from "../../build/deps.ts";
 
+// Can be nested, like Foo.Bar
+export const DEFAULT_PACKAGE_NAME = "Backend";
+
 export async function generateUnityAddons(project: Project, sdkGenPath: string) {
-	// Remove old backend
-	await Deno.remove(resolve(sdkGenPath, "src", "Org.OpenAPITools", "Api", "BackendApi.cs"));
-	await Deno.remove(resolve(sdkGenPath, "src", "Org.OpenAPITools.Test"), { recursive: true });
+	// Remove unused backend components
+	await Deno.remove(resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Api", "BackendApi.cs"));
+	await Deno.remove(resolve(sdkGenPath, "src", `${DEFAULT_PACKAGE_NAME}.Test`), { recursive: true });
 
 	await modifyApiClient(sdkGenPath);
 	await modifyModels(project, sdkGenPath);
@@ -16,7 +19,7 @@ export async function generateUnityAddons(project: Project, sdkGenPath: string) 
 }
 
 async function modifyApiClient(sdkGenPath: string) {
-	const path = resolve(sdkGenPath, "src", "Org.OpenAPITools", "Client", "ApiClient.cs");
+	const path = resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Client", "ApiClient.cs");
 
 	const content = await Deno.readTextFile(path);
 	const fixedContent = content.replace("using UnityEngine;", "using UnityEngine;\nusing Newtonsoft.Json.Linq;").replace(
@@ -34,28 +37,28 @@ async function modifyApiClient(sdkGenPath: string) {
 // Move module name from type name into namespace
 async function modifyModels(project: Project, sdkGenPath: string) {
 	for (const mod of project.modules.values()) {
+    // TODO: This will cause problems if one module name is a superset of
+    // another OR if a script name start with the end of another module name
+
 		const moduleNamePascal = pascalify(mod.name);
 
-		for (const script of mod.scripts.values()) {
-			const scriptNamePascal = pascalify(script.name);
-			const stub = `${moduleNamePascal}${scriptNamePascal}`;
+    const files = await glob.glob([`${moduleNamePascal}*.cs`], {
+      cwd: resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model"),
+      ignore: "AbstractOpenAPISchema.cs",
+      nodir: true,
+    });
 
-			const files = await glob.glob([`${stub}*.cs`], {
-				cwd: resolve(sdkGenPath, "src", "Org.OpenAPITools", "Model"),
-				ignore: "AbstractOpenAPISchema.cs",
-				nodir: true,
-			});
+    for (const file of files) {
+      const path = resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", file);
 
-			for (const file of files) {
-				const path = resolve(sdkGenPath, "src", "Org.OpenAPITools", "Model", file);
+      const content = await Deno.readTextFile(path);
+      const fixedContent = content
+        .replace(`${DEFAULT_PACKAGE_NAME}.Model\n`, `${DEFAULT_PACKAGE_NAME}.Model.${moduleNamePascal}\n`)
+        // Fix incorrectly generated class extensions
+        .replace(/partial class (\w+) : AbstractOpenAPISchema,\s*/gm, "partial class $1 : AbstractOpenAPISchema")
+        .replaceAll(new RegExp(`\\b${moduleNamePascal}(\\w+)`, "g"), "$1");
 
-				const content = await Deno.readTextFile(path);
-				const fixedContent = content
-					.replace("Org.OpenAPITools.Model\n", `Org.OpenAPITools.Model.${moduleNamePascal}\n`)
-					.replaceAll(stub, scriptNamePascal);
-
-				await Deno.writeTextFile(path, fixedContent);
-			}
+      await Deno.writeTextFile(path, fixedContent);
 		}
 	}
 }
@@ -63,7 +66,7 @@ async function modifyModels(project: Project, sdkGenPath: string) {
 async function generateApiClient(project: Project, sdkGenPath: string) {
 	// Update index to only export our custom api
 	const apiBuilder = new GeneratedCodeBuilder(
-		resolve(sdkGenPath, "src", "Org.OpenAPITools", "Api", "Backend.cs"),
+		resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Client.cs"),
 		2,
 		Lang.CSharp,
 	);
@@ -75,13 +78,13 @@ async function generateApiClient(project: Project, sdkGenPath: string) {
 		const apiName = `${moduleNamePascal}Api`;
 
 		modules.append`
-			private ${apiName} _${mod.name};
-			public ${apiName} ${moduleNamePascal} => _${mod.name} ??= new ${apiName}(this.AsynchronousClient, this.Configuration);
+			private Modules.${apiName} _${mod.name};
+			public Modules.${apiName} ${moduleNamePascal} => _${mod.name} ??= new Modules.${apiName}(this.AsynchronousClient, this.Configuration);
 		`;
 	}
 
 	GeneratedCodeBuilder.wrap(
-		apiClassTemplate("Backend"),
+		apiClassTemplate(DEFAULT_PACKAGE_NAME, "BackendClient"),
 		modules,
 		`
 			}
@@ -95,7 +98,7 @@ async function generateApiClient(project: Project, sdkGenPath: string) {
 async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 	// Create dir for module apis
 	try {
-		await Deno.mkdir(resolve(sdkGenPath, "src", "Org.OpenAPITools", "Api", "Modules"));
+		await Deno.mkdir(resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Api", "Modules"));
 	} catch (e) {
 		if (!(e instanceof Deno.errors.AlreadyExists)) {
 			throw e;
@@ -107,7 +110,7 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 
 		// Create module api class
 		const moduleApiBuilder = new GeneratedCodeBuilder(
-			resolve(sdkGenPath, "src", "Org.OpenAPITools", "Api", "Modules", `${moduleNamePascal}.cs`),
+			resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Modules", `${moduleNamePascal}.cs`),
 			2,
 			Lang.CSharp,
 		);
@@ -120,24 +123,24 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 
 			const requestName = `${moduleNamePascal}${scriptNamePascal}Request`;
 			const responseName = `${moduleNamePascal}${scriptNamePascal}Response`;
-			const nsRequestName = `Org.OpenAPITools.Model.${moduleNamePascal}.${scriptNamePascal}Request`;
-			const nsResponseName = `Org.OpenAPITools.Model.${moduleNamePascal}.${scriptNamePascal}Response`;
+			const nsRequestName = `${DEFAULT_PACKAGE_NAME}.Model.${moduleNamePascal}.${scriptNamePascal}Request`;
+			const nsResponseName = `${DEFAULT_PACKAGE_NAME}.Model.${moduleNamePascal}.${scriptNamePascal}Response`;
 
 			// Generate missing free-form objects
-			if (!await exists(resolve(sdkGenPath, "src", "Org.OpenAPITools", "Model", `${requestName}.cs`))) {
+			if (!await exists(resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", `${requestName}.cs`))) {
 				await generateFreeFormInterface(
 					moduleNamePascal,
 					`${scriptNamePascal}Request`,
 					`${mod.name}__${script.name}__Request`,
-					resolve(sdkGenPath, "src", "Org.OpenAPITools", "Model", `${requestName}.cs`),
+					resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", `${requestName}.cs`),
 				);
 			}
-			if (!await exists(resolve(sdkGenPath, "src", "Org.OpenAPITools", "Model", `${responseName}.cs`))) {
+			if (!await exists(resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", `${responseName}.cs`))) {
 				await generateFreeFormInterface(
 					moduleNamePascal,
 					`${scriptNamePascal}Response`,
 					`${mod.name}__${script.name}__Response`,
-					resolve(sdkGenPath, "src", "Org.OpenAPITools", "Model", `${responseName}.cs`),
+					resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", `${responseName}.cs`),
 				);
 			}
 
@@ -145,7 +148,7 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 				/// <summary>
 				///  Call ${mod.name}.${script.name} script.
 				/// </summary>
-				/// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+				/// <exception cref="${DEFAULT_PACKAGE_NAME}.Client.ApiException">Thrown when fails to make API call</exception>
 				/// <param name="body"> (optional)</param>
 				/// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
 				/// <returns>Task of ${nsResponseName}</returns>
@@ -155,9 +158,9 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 				{
 					var task = ${scriptNamePascal}WithHttpInfo(${camelify(requestName)}, cancellationToken);
 		#if UNITY_EDITOR || !UNITY_WEBGL
-					Org.OpenAPITools.Client.ApiResponse<${nsResponseName}> localVarResponse = await task.ConfigureAwait(false);
+					${DEFAULT_PACKAGE_NAME}.Client.ApiResponse<${nsResponseName}> localVarResponse = await task.ConfigureAwait(false);
 		#else
-					Org.OpenAPITools.Client.ApiResponse<${nsResponseName}> localVarResponse = await task;
+					${DEFAULT_PACKAGE_NAME}.Client.ApiResponse<${nsResponseName}> localVarResponse = await task;
 		#endif
 					return localVarResponse.Data;
 				}
@@ -165,16 +168,16 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 				/// <summary>
 				///  Call ${mod.name}.${script.name} script.
 				/// </summary>
-				/// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+				/// <exception cref="${DEFAULT_PACKAGE_NAME}.Client.ApiException">Thrown when fails to make API call</exception>
 				/// <param name="body"> (optional)</param>
 				/// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
 				/// <returns>Task of ApiResponse (${nsResponseName})</returns>
-				public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<${nsResponseName}>> ${scriptNamePascal}WithHttpInfo(${nsRequestName} ${
+				public async System.Threading.Tasks.Task<${DEFAULT_PACKAGE_NAME}.Client.ApiResponse<${nsResponseName}>> ${scriptNamePascal}WithHttpInfo(${nsRequestName} ${
 				camelify(requestName)
 			} = default(${nsRequestName}), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
 				{
 
-					Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
+					${DEFAULT_PACKAGE_NAME}.Client.RequestOptions localVarRequestOptions = new ${DEFAULT_PACKAGE_NAME}.Client.RequestOptions();
 
 					string[] _contentTypes = new string[] {
 						"application/json"
@@ -186,10 +189,10 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 					};
 
 
-					var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+					var localVarContentType = ${DEFAULT_PACKAGE_NAME}.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
 					if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
 
-					var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
+					var localVarAccept = ${DEFAULT_PACKAGE_NAME}.Client.ClientUtils.SelectHeaderAccept(_accepts);
 					if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
 					localVarRequestOptions.Data = ${camelify(requestName)};
@@ -217,7 +220,7 @@ async function generateModuleApiClients(project: Project, sdkGenPath: string) {
 		}
 
 		GeneratedCodeBuilder.wrap(
-			apiClassTemplate(`${moduleNamePascal}Api`),
+			apiClassTemplate(`${DEFAULT_PACKAGE_NAME}.Modules`, `${moduleNamePascal}Api`),
 			scripts,
 			`
 				}
@@ -245,9 +248,9 @@ async function generateFreeFormInterface(moduleName: string, interfaceName: stri
 		using Newtonsoft.Json;
 		using Newtonsoft.Json.Converters;
 		using Newtonsoft.Json.Linq;
-		using OpenAPIDateConverter = Org.OpenAPITools.Client.OpenAPIDateConverter;
+		using OpenAPIDateConverter = ${DEFAULT_PACKAGE_NAME}.Client.OpenAPIDateConverter;
 
-		namespace Org.OpenAPITools.Model.${moduleName}
+		namespace ${DEFAULT_PACKAGE_NAME}.Model.${moduleName}
 		{
 			/// <summary>
 			/// ${interfaceName}
@@ -289,7 +292,7 @@ async function generateFreeFormInterface(moduleName: string, interfaceName: stri
 	await schemaBuilder.write();
 }
 
-function apiClassTemplate(name: string) {
+function apiClassTemplate(namespace: string, name: string) {
 	return dedent`
 		using System;
 		using System.Collections.Generic;
@@ -297,10 +300,10 @@ function apiClassTemplate(name: string) {
 		using System.Linq;
 		using System.Net;
 		using System.Net.Mime;
-		using Org.OpenAPITools.Client;
-		using Org.OpenAPITools.Model;
+		using ${DEFAULT_PACKAGE_NAME}.Client;
+		using ${DEFAULT_PACKAGE_NAME}.Model;
 
-		namespace Org.OpenAPITools.Api
+		namespace ${namespace}
 		{
 			/// <summary>
 			/// Represents a collection of functions to interact with the API endpoints
@@ -327,13 +330,13 @@ function apiClassTemplate(name: string) {
 				/// <returns></returns>
 				public ${name}(string basePath)
 				{
-					this.Configuration = Org.OpenAPITools.Client.Configuration.MergeConfigurations(
-						Org.OpenAPITools.Client.GlobalConfiguration.Instance,
-						new Org.OpenAPITools.Client.Configuration { BasePath = basePath }
+					this.Configuration = ${DEFAULT_PACKAGE_NAME}.Client.Configuration.MergeConfigurations(
+						${DEFAULT_PACKAGE_NAME}.Client.GlobalConfiguration.Instance,
+						new ${DEFAULT_PACKAGE_NAME}.Client.Configuration { BasePath = basePath }
 					);
-					this.ApiClient = new Org.OpenAPITools.Client.ApiClient(this.Configuration.BasePath);
+					this.ApiClient = new ${DEFAULT_PACKAGE_NAME}.Client.ApiClient(this.Configuration.BasePath);
 					this.AsynchronousClient = this.ApiClient;
-					this.ExceptionFactory = Org.OpenAPITools.Client.Configuration.DefaultExceptionFactory;
+					this.ExceptionFactory = ${DEFAULT_PACKAGE_NAME}.Client.Configuration.DefaultExceptionFactory;
 				}
 
 				/// <summary>
@@ -344,17 +347,17 @@ function apiClassTemplate(name: string) {
 				/// <param name="configuration">An instance of Configuration.</param>
 				/// <exception cref="ArgumentNullException"></exception>
 				/// <returns></returns>
-				public ${name}(Org.OpenAPITools.Client.Configuration configuration)
+				public ${name}(${DEFAULT_PACKAGE_NAME}.Client.Configuration configuration)
 				{
 					if (configuration == null) throw new ArgumentNullException("configuration");
 
-					this.Configuration = Org.OpenAPITools.Client.Configuration.MergeConfigurations(
-						Org.OpenAPITools.Client.GlobalConfiguration.Instance,
+					this.Configuration = ${DEFAULT_PACKAGE_NAME}.Client.Configuration.MergeConfigurations(
+						${DEFAULT_PACKAGE_NAME}.Client.GlobalConfiguration.Instance,
 						configuration
 					);
-					this.ApiClient = new Org.OpenAPITools.Client.ApiClient(this.Configuration.BasePath);
+					this.ApiClient = new ${DEFAULT_PACKAGE_NAME}.Client.ApiClient(this.Configuration.BasePath);
 					this.AsynchronousClient = this.ApiClient;
-					ExceptionFactory = Org.OpenAPITools.Client.Configuration.DefaultExceptionFactory;
+					ExceptionFactory = ${DEFAULT_PACKAGE_NAME}.Client.Configuration.DefaultExceptionFactory;
 				}
 
 				/// <summary>
@@ -364,14 +367,14 @@ function apiClassTemplate(name: string) {
 				/// <param name="asyncClient">The client interface for asynchronous API access.</param>
 				/// <param name="configuration">The configuration object.</param>
 				/// <exception cref="ArgumentNullException"></exception>
-				public ${name}(Org.OpenAPITools.Client.IAsynchronousClient asyncClient, Org.OpenAPITools.Client.IReadableConfiguration configuration)
+				public ${name}(${DEFAULT_PACKAGE_NAME}.Client.IAsynchronousClient asyncClient, ${DEFAULT_PACKAGE_NAME}.Client.IReadableConfiguration configuration)
 				{
 					if (asyncClient == null) throw new ArgumentNullException("asyncClient");
 					if (configuration == null) throw new ArgumentNullException("configuration");
 
 					this.AsynchronousClient = asyncClient;
 					this.Configuration = configuration;
-					this.ExceptionFactory = Org.OpenAPITools.Client.Configuration.DefaultExceptionFactory;
+					this.ExceptionFactory = ${DEFAULT_PACKAGE_NAME}.Client.Configuration.DefaultExceptionFactory;
 				}
 
 				/// <summary>
@@ -385,12 +388,12 @@ function apiClassTemplate(name: string) {
 				/// <summary>
 				/// Holds the ApiClient if created
 				/// </summary>
-				public Org.OpenAPITools.Client.ApiClient ApiClient { get; set; } = null;
+				public ${DEFAULT_PACKAGE_NAME}.Client.ApiClient ApiClient { get; set; } = null;
 
 				/// <summary>
 				/// The client for accessing this underlying API asynchronously.
 				/// </summary>
-				public Org.OpenAPITools.Client.IAsynchronousClient AsynchronousClient { get; set; }
+				public ${DEFAULT_PACKAGE_NAME}.Client.IAsynchronousClient AsynchronousClient { get; set; }
 
 				/// <summary>
 				/// Gets the base path of the API client.
@@ -405,14 +408,14 @@ function apiClassTemplate(name: string) {
 				/// Gets or sets the configuration object
 				/// </summary>
 				/// <value>An instance of the Configuration</value>
-				public Org.OpenAPITools.Client.IReadableConfiguration Configuration { get; set; }
+				public ${DEFAULT_PACKAGE_NAME}.Client.IReadableConfiguration Configuration { get; set; }
 
-				private Org.OpenAPITools.Client.ExceptionFactory _exceptionFactory = (name, response) => null;
+				private ${DEFAULT_PACKAGE_NAME}.Client.ExceptionFactory _exceptionFactory = (name, response) => null;
 
 				/// <summary>
 				/// Provides a factory method hook for the creation of exceptions.
 				/// </summary>
-				public Org.OpenAPITools.Client.ExceptionFactory ExceptionFactory
+				public ${DEFAULT_PACKAGE_NAME}.Client.ExceptionFactory ExceptionFactory
 				{
 					get
 					{
@@ -426,3 +429,4 @@ function apiClassTemplate(name: string) {
 				}
 	`;
 }
+
