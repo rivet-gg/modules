@@ -16,12 +16,11 @@ export const devCommand = new Command<GlobalOpts>()
 	.option("--force-deploy-migrations", "Auto deploy migrations without using development prompt", { default: false })
 	.action(
 		async (opts) => {
-
 			await watch({
 				loadProjectOpts: opts,
 				disableWatch: !opts.watch,
 				async fn(project: Project, signal: AbortSignal) {
-          await ensurePostgresRunning(project);
+					await ensurePostgresRunning(project);
 
 					// Build project
 					if (opts.build) {
