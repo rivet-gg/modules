@@ -49,9 +49,13 @@ Add the following to your `backend.json`:
 
 ### Public
 
+These scripts can be called publicly by your game.
+
 <CardGroup>_No public scripts._</CardGroup>
 
 ### Internal
+
+These scripts can only be called by other OpenGB modules.
 
 <CardGroup><Card title="Create Token" href="/modules/tokens/scripts/create"></Card><Card title="Extend Token" href="/modules/tokens/scripts/extend">Extend or remove the expiration date of a token. (Only works on valid tokens.)</Card><Card title="Fetch by Token" href="/modules/tokens/scripts/fetch_by_token">Get a token by its secret token.</Card><Card title="Fetch Token" href="/modules/tokens/scripts/fetch">Get a token by its ID.</Card><Card title="Revoke Token" href="/modules/tokens/scripts/revoke">Revoke a token, preventing it from being used again.</Card><Card title="Validate Token" href="/modules/tokens/scripts/validate">Validate a token. Throws an error if the token is invalid.</Card></CardGroup>
 

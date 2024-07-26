@@ -92,17 +92,33 @@ curl -X POST "https://localhost:6420/modules/friends/scripts/list_friends/call" 
 ## Request
 
 ```typescript
-export interface Request {
-  userToken?: string;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type     |
+| :------------------- | :------- |
+| **`userToken`** (\*) | `string` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  friends?: any[];
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                                                     |
+| :----------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **`friends`** (\*) | _Array of objects:_<br /><ul><li>`userIdA`: `string`</li><li>`userIdB`: `string`</li><li>`createdAt`: `string`</li></ul> |
+
+_(\*) Required._
+
 ```

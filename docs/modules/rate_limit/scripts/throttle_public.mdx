@@ -20,21 +20,31 @@ const data = await ctx.modules.rateLimit.throttlePublic({
 ## Request
 
 ```typescript
-export interface Request {
-  requests?: {
-    [k: string]: any;
-  };
-  period?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property   | Type     |
+| :--------- | :------- |
+| `requests` | `number` |
+| `period`   | `number` |
+
+_All properties are optional._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object record with dynamic keys:_
+
+- _keys of type_ `string`
+- _values of type_ `never`
+
 ```

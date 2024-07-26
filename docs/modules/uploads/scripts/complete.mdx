@@ -20,19 +20,33 @@ const data = await ctx.modules.uploads.complete({
 ## Request
 
 ```typescript
-export interface Request {
-  uploadId?: string;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property            | Type     |
+| :------------------ | :------- |
+| **`uploadId`** (\*) | `string` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  upload?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`upload`** (\*) | _Object with properties:_<ul><li>`id`: `string`</li><li>`metadata`: `any` (_nullable_)</li><li>`bucket`: `string`</li><li>`contentLength`: `string`</li><li>`files`: _Array of objects:_<br /><ul><li>`path`: `string`</li><li>`mime`: `string` (_nullable_)</li><li>`contentLength`: `string`</li></ul></li><li>`createdAt`: `string`</li><li>`updatedAt`: `string`</li><li>`completedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+
 ```

@@ -1,0 +1,52 @@
+---
+title: "List Regions"
+description: "List available regions."
+sidebarTitle: "List Regions"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/lobbies/scripts/list_regions.ts) | `list_regions` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.lobbies.listRegions({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+```typescript
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property | Type                     |
+| :------- | :----------------------- |
+| `tags`   | `Record<string, string>` |
+
+_All properties are optional._
+
+```
+
+## Response
+
+```typescript
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                                                                                  |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`regions`** (\*) | _Array of objects:_<br /><ul><li>`id`: `string`</li><li>`display_name`: `string`</li><li>`latitude`: `number`</li><li>`longitude`: `number`</li></ul> |
+
+_(\*) Required._
+
+```

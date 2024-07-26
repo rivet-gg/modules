@@ -20,21 +20,33 @@ const data = await ctx.modules.users.create({
 ## Request
 
 ```typescript
-export interface Request {
-  username?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property   | Type     |
+| :--------- | :------- |
+| `username` | `string` |
+
+_All properties are optional._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  user?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property        | Type                                                                                                                                           |
+| :-------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`user`** (\*) | _Object with properties:_<ul><li>`id`: `string`</li><li>`username`: `string`</li><li>`createdAt`: `Date`</li><li>`updatedAt`: `Date`</li></ul> |
+
+_(\*) Required._
+
 ```

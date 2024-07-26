@@ -92,17 +92,31 @@ curl -X POST "https://localhost:6420/modules/friends/scripts/decline_request/cal
 ## Request
 
 ```typescript
-export interface Request {
-  userToken?: string;
-  friendRequestId?: string;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                   | Type     |
+| :------------------------- | :------- |
+| **`userToken`** (\*)       | `string` |
+| **`friendRequestId`** (\*) | `string` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object record with dynamic keys:_
+
+- _keys of type_ `string`
+- _values of type_ `never`
+
 ```

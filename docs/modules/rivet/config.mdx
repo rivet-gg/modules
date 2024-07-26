@@ -1,0 +1,46 @@
+---
+title: "Config"
+---
+
+This config can be modified by adding the following to your `backend.json`:
+
+```json
+{
+  "modules": {
+    "rivet": {
+      "config": {
+        // Your config here
+      }
+    }
+  }
+}
+```
+
+## Schema
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                        | Type     |
+| :------------------------------ | :------- |
+| **`apiEndpoint`** (\*)          | `string` |
+| **`serviceTokenVariable`** (\*) | `string` |
+
+_(\*) Required._
+
+
+## Default Value
+
+The provided user config will be merged with this config. If no user config is
+  provided, this config will be used.
+
+```json
+{
+    "apiEndpoint": "https://api.rivet.gg",
+    "serviceTokenVariable": "RIVET_SERVICE_TOKEN"
+}
+```
+

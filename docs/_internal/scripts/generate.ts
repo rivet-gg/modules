@@ -1,20 +1,19 @@
 #!/usr/bin/env deno run -A
 
 import { resolve } from "https://deno.land/std@0.214.0/path/mod.ts";
-import { ModuleMeta, ProjectMeta } from "../../../src/build/meta.ts";
 import { emptyDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
 import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { convertSerializedSchemaToTypeScript, convertZodToSerializedSchema } from "../../../src/build/schema/mod.ts";
-import { ProjectConfigSchema } from "../../../src/config/project.ts";
-import { ModuleSchema } from "../../../src/config/module.ts";
+import { zod2md } from "npm:zod2md";
+import { ModuleMeta, ProjectMeta } from "../../../packages/toolchain/src/build/meta.ts";
+import { convertSerializedSchemaToZodConstant } from "../../../packages/toolchain/src/build/schema/deserializer.ts";
 
-const PROJECT_ROOT = resolve(import.meta.dirname!, "..", "..");
-const OPENGB_PATH = resolve(
-	PROJECT_ROOT,
+const DOCS_ROOT = resolve(import.meta.dirname!, "..", "..");
+const OPENGB_ROOT = resolve(
+	DOCS_ROOT,
 	"..",
 );
 const TEST_PROJECT_PATH = resolve(
-	PROJECT_ROOT,
+	DOCS_ROOT,
 	"..",
 	"..",
 	"opengb-modules",
@@ -27,7 +26,7 @@ if (!Deno.env.get("SKIP_BUILD_MODULES")) {
 		console.log("Build OpenGB CLI");
 		const installOutput = await new Deno.Command("deno", {
 			args: ["task", "artifacts:build"],
-			cwd: OPENGB_PATH,
+			cwd: OPENGB_ROOT,
 			stdout: "inherit",
 			stderr: "inherit",
 		}).output();
@@ -39,7 +38,7 @@ if (!Deno.env.get("SKIP_BUILD_MODULES")) {
 		args: [
 			"run",
 			"-A",
-			resolve(OPENGB_PATH, "src", "cli", "main.ts"),
+			resolve(OPENGB_ROOT, "packages", "cli", "src", "main.ts"),
 			"--path",
 			TEST_PROJECT_PATH,
 			"build",
@@ -57,8 +56,8 @@ const metaRaw = await Deno.readTextFile(
 const meta = JSON.parse(metaRaw) as ProjectMeta;
 
 // Clear modules
-const TEMPLATES_PATH = resolve(PROJECT_ROOT, "_internal", "templates");
-const DOCS_MODULES_PATH = resolve(PROJECT_ROOT, "modules");
+const TEMPLATES_PATH = resolve(DOCS_ROOT, "_internal", "templates");
+const DOCS_MODULES_PATH = resolve(DOCS_ROOT, "modules");
 await emptyDir(DOCS_MODULES_PATH);
 
 // Load templates
@@ -69,6 +68,7 @@ const TEMPLATES = {
 	moduleOverview: await Deno.readTextFile(
 		resolve(TEMPLATES_PATH, "module_overview.mdx"),
 	),
+	moduleConfig: await Deno.readTextFile(resolve(TEMPLATES_PATH, "module_config.mdx")),
 	script: await Deno.readTextFile(
 		resolve(TEMPLATES_PATH, "script.mdx"),
 	),
@@ -111,12 +111,12 @@ for (const [moduleName, module] of modulesSorted) {
 // Write navigation
 const mintTemplate = JSON.parse(
 	await Deno.readTextFile(
-		resolve(PROJECT_ROOT, "mint.template.json"),
+		resolve(DOCS_ROOT, "mint.template.json"),
 	),
 );
 mintTemplate.navigation.push(modulesNav);
 await Deno.writeTextFile(
-	resolve(PROJECT_ROOT, "mint.json"),
+	resolve(DOCS_ROOT, "mint.json"),
 	JSON.stringify(mintTemplate, null, 2),
 );
 
@@ -142,50 +142,50 @@ async function generateModuleCards() {
 );
 `;
 	await Deno.writeTextFile(
-		resolve(PROJECT_ROOT, "snippets", "module-cards.mdx"),
+		resolve(DOCS_ROOT, "snippets", "module-cards.mdx"),
 		source,
 	);
 }
 
 async function generateModulesOverview() {
 	await Deno.writeTextFile(
-		resolve(PROJECT_ROOT, "modules", "overview.mdx"),
+		resolve(DOCS_ROOT, "modules", "overview.mdx"),
 		TEMPLATES.modulesOverview,
 	);
 }
 
 async function generateProjectConfig() {
-	const projectSchema = convertZodToSerializedSchema(ProjectConfigSchema);
-	const configTs = await schemaToTypeScript(projectSchema, "Config");
+	const configSchema = await genMarkdownDocsFromFile(
+		resolve(OPENGB_ROOT, "packages", "toolchain", "src", "config", "project.ts"),
+	);
 	await Deno.writeTextFile(
-		resolve(PROJECT_ROOT, "docs", "project-config.mdx"),
+		resolve(DOCS_ROOT, "docs", "project-config.mdx"),
 		`---
 title: "Config (backend.json)"
+icon: square-sliders
 ---
 
-<Note>This documentation page is a work in progress.</Note>
+# Schema
 
-\`\`\`typescript
-${configTs}
-\`\`\`
+${configSchema}
 `,
 	);
 }
 
 async function generateModuleConfig() {
-	const moduleConfigSchema = convertZodToSerializedSchema(ModuleSchema);
-	const configTs = await schemaToTypeScript(moduleConfigSchema, "Config");
+	const configSchema = await genMarkdownDocsFromFile(
+		resolve(OPENGB_ROOT, "packages", "toolchain", "src", "config", "module.ts"),
+	);
 	await Deno.writeTextFile(
-		resolve(PROJECT_ROOT, "docs", "build", "module-config.mdx"),
+		resolve(DOCS_ROOT, "docs", "build", "module-config.mdx"),
 		`---
 title: "Config (module.json)"
+icon: square-sliders
 ---
 
-<Note>This documentation page is a work in progress.</Note>
+# Schema
 
-\`\`\`typescript
-${configTs}
-\`\`\`
+${configSchema}
 `,
 	);
 }
@@ -233,6 +233,9 @@ async function generateModule(moduleName: string, module: ModuleMeta) {
 
 	// Add nav
 	let pages: any[] = [`modules/${moduleName}/overview`];
+	if (module.hasUserConfigSchema) {
+		pages.push(`modules/${moduleName}/config`);
+	}
 	if (publicScripts.length > 0) {
 		pages.push({
 			"group": "Scripts (Public)",
@@ -278,7 +281,7 @@ async function generateModule(moduleName: string, module: ModuleMeta) {
 		install = `"modules": {
 	"${moduleName}": {
 		"config": {
-			// Your config here. See below for more details.
+			// Your config here. See config docs for more details.
 		}
 	}
 }
@@ -322,24 +325,14 @@ async function generateModule(moduleName: string, module: ModuleMeta) {
 		errors = "_No errors_";
 	}
 
-	let configSchema = "";
+	let configSection = "";
 	if (module.hasUserConfigSchema) {
-		const schema = await schemaToTypeScript(module.userConfigSchema, "Config");
-		configSchema = `## Config
+		configSection += `
+## Config
 
-### Schema
-		
-\`\`\`typescript
-${schema}
-\`\`\`
+<Card title="View Config" icon="square-sliders" href="/modules/${moduleName}/config"></Card>
 
-### Default
-
-\`\`\`json
-${JSON.stringify(module.config.defaultConfig ?? {}, null, 4)}
-\`\`\`
-
-`;
+`
 	}
 
 	// Generate overview
@@ -352,7 +345,7 @@ ${JSON.stringify(module.config.defaultConfig ?? {}, null, 4)}
 		.replace(/%%DEPENDENCIES%%/g, dependencies)
 		.replace(/%%DESCRIPTION%%/g, module.config.description!)
 		.replace(/%%INSTALL_CONFIG%%/g, install)
-		.replace(/%%CONFIG_SCHEMA%%/g, configSchema)
+		.replace(/%%CONFIG%%/g, configSection)
 		.replace(/%%SCRIPTS_PUBLIC%%/g, publicScripts.length > 0 ? publicScriptCards.join("") : "_No public scripts._")
 		.replace(
 			/%%SCRIPTS_INTERNAL%%/g,
@@ -391,49 +384,45 @@ ${JSON.stringify(module.config.defaultConfig ?? {}, null, 4)}
 			.replace(/%%REQUEST_EXAMPLES%%/g, requestExamples)
 			.replace(
 				/%%REQUEST_SCHEMA%%/g,
-				await schemaToTypeScript(script.requestSchema, "Request"),
+				await genMarkdownDocsFromSchema(script.requestSchema, "Request"),
 			)
 			.replace(
 				/%%RESPONSE_SCHEMA%%/g,
-				await schemaToTypeScript(script.responseSchema, "Response"),
+				await genMarkdownDocsFromSchema(script.responseSchema, "Response"),
 			);
 		await Deno.writeTextFile(
 			resolve(modulePath, "scripts", `${scriptName}.mdx`),
 			scriptContent,
 		);
+
+		// MARK: Config
+		if (module.hasUserConfigSchema) {
+			const defaultValue = JSON.stringify(module.config.defaultConfig ?? {}, null, 4);
+			const configContent = TEMPLATES.moduleConfig
+				.replace(/%%MODULE_NAME%%/g, moduleName)
+				.replace(/%%SCHEMA%%/g, await genMarkdownDocsFromSchema(module.userConfigSchema!, "Config"))
+				.replace(/%%DEFAULT_VALUE%%/g, defaultValue);
+			await Deno.writeTextFile(resolve(modulePath, "config.mdx"), configContent);
+		}
 	}
 }
 
-async function schemaToTypeScript(schema: any, name: string): Promise<string> {
-	const sourceCode = convertSerializedSchemaToTypeScript(schema, { name });
-
-	// using the same formatter as the Deno itself
-	// https://github.com/denoland/deno/blob/v1.41.0/tools/format.js
-	const cmd = new Deno.Command("deno", {
-		args: [
-			"run",
-			"-A",
-			"--no-config",
-			"npm:dprint@0.45.0",
-			"fmt",
-			"--stdin",
-			"tsx",
-			"--config",
-			resolve(Deno.cwd(), "docs/_internal/scripts/.dprint.json"),
-		],
-		stdin: "piped",
-		stdout: "piped",
-		stderr: "inherit",
+async function genMarkdownDocsFromFile(entry: string) {
+	let markdown = await zod2md({
+		entry,
+		title: "",
 	});
-
-	const process = cmd.spawn();
-
-	const writter = process.stdin.getWriter();
-	await writter.write(new TextEncoder().encode(`${sourceCode}\n`));
-	await writter.ready;
-	await writter.close();
-
-	const raw = await process.output();
-	const formatted = new TextDecoder().decode(raw.stdout);
-	return formatted;
+	markdown = markdown.replace(/^#\s.*$/gm, "").replace(/^(#+)\s/gm, "#$1 ");
+	return markdown;
 }
+
+async function genMarkdownDocsFromSchema(schema: any, name: string) {
+	let schemaTs = `import { z } from "npm:zod@3.23.8";\n`;
+	schemaTs += convertSerializedSchemaToZodConstant(schema, { name: "Config", export: true });
+
+	const tempFilePath = await Deno.makeTempFile({ suffix: ".ts" });
+	await Deno.writeTextFile(tempFilePath, schemaTs);
+
+	return await genMarkdownDocsFromFile(tempFilePath);
+}
+

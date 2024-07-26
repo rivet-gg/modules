@@ -1,6 +1,6 @@
 ---
 title: "Lobbies"
-description: "Lobby & player management. Create & join lobbies instantly."
+description: "Lobby & player management."
 sidebarTitle: Overview
 ---
 
@@ -37,7 +37,7 @@ Add the following to your `backend.json`:
 "modules": {
 	"lobbies": {
 		"config": {
-			// Your config here. See below for more details.
+			// Your config here. See config docs for more details.
 		}
 	}
 }
@@ -47,79 +47,10 @@ Add the following to your `backend.json`:
 
 </Tabs>
 
+
 ## Config
 
-### Schema
-		
-```typescript
-export interface Config {
-  lobbies?: {
-    destroyOnEmptyAfter?: {
-      [k: string]: any;
-    };
-    unreadyExpireAfter?: number;
-    maxPlayers?: number;
-    maxPlayersDirect?: number;
-    enableDynamicMaxPlayers?: {
-      [k: string]: any;
-    };
-    enableDynamicMaxPlayersDirect?: {
-      [k: string]: any;
-    };
-    enableCreate?: boolean;
-    enableDestroy?: boolean;
-    enableFind?: boolean;
-    enableFindOrCreate?: boolean;
-    enableJoin?: boolean;
-    enableList?: boolean;
-    backend?: {
-      [k: string]: any;
-    };
-    [k: string]: any;
-  };
-  lobbyRules?: any[];
-  players?: {
-    maxPerIp?: {
-      [k: string]: any;
-    };
-    maxUnconnected?: {
-      [k: string]: any;
-    };
-    unconnectedExpireAfter?: number;
-    autoDestroyAfter?: {
-      [k: string]: any;
-    };
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
-```
-
-### Default
-
-```json
-{
-    "lobbies": {
-        "destroyOnEmptyAfter": 60000,
-        "unreadyExpireAfter": 300000,
-        "maxPlayers": 16,
-        "maxPlayersDirect": 16,
-        "enableCreate": false,
-        "enableDestroy": false,
-        "enableFind": true,
-        "enableFindOrCreate": true,
-        "enableJoin": true,
-        "enableList": true
-    },
-    "lobbyRules": [],
-    "players": {
-        "maxPerIp": 8,
-        "maxUnconnected": 128,
-        "unconnectedExpireAfter": 60000,
-        "autoDestroyAfter": 4147200000
-    }
-}
-```
+<Card title="View Config" icon="square-sliders" href="/modules/lobbies/config"></Card>
 
 
 
@@ -127,20 +58,28 @@ export interface Config {
 
 ### Public
 
+These scripts can be called publicly by your game.
+
 <CardGroup><Card title="Create Lobby" href="/modules/lobbies/scripts/create">Creates a new lobby on-demand.</Card><Card title="Destroy Lobby" href="/modules/lobbies/scripts/destroy">Destroys an existing lobby.</Card><Card title="Find Lobby" href="/modules/lobbies/scripts/find">Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.</Card><Card title="Find Or Create Lobby" href="/modules/lobbies/scripts/find_or_create">Finds a lobby or creates one if there are no available spots for players.</Card><Card title="Join Lobby" href="/modules/lobbies/scripts/join">Add a player to an existing lobby.</Card><Card title="List Lobbies" href="/modules/lobbies/scripts/list">List & query all lobbies.</Card><Card title="Set Lobby Ready" href="/modules/lobbies/scripts/set_lobby_ready">Called on lobby startup after initiation to notify it can start accepting player. This should be called after operations like loading maps are complete.</Card><Card title="Set Player Connected" href="/modules/lobbies/scripts/set_player_connected">Called when a player connects to the lobby.</Card><Card title="Set Player Disconnected" href="/modules/lobbies/scripts/set_player_disconnected">Called when a player disconnects from the lobby.</Card></CardGroup>
 
 ### Internal
 
-<CardGroup><Card title="Force Garbage Collection" href="/modules/lobbies/scripts/force_gc">Rarely used. Forces the matchmaker to purge lobbies & players.</Card></CardGroup>
+These scripts can only be called by other OpenGB modules.
+
+<CardGroup><Card title="Force Garbage Collection" href="/modules/lobbies/scripts/force_gc">Rarely used. Forces the matchmaker to purge lobbies & players.</Card><Card title="List Regions" href="/modules/lobbies/scripts/list_regions">List available regions.</Card></CardGroup>
 
 ## Errors
 
+- **Cannot Mutate Lobbies** (`cannot_mutate_lobbies`) This backend doesn't let you create or destroy lobbies.
 - **Lobby Already Ready** (`lobby_already_ready`) Lobby already set as ready.
+- **Lobby Cancelled** (`lobby_cancelled`) Lobby stopped while attempting to join.
 - **Lobby Create Missing Players** (`lobby_create_missing_players`) When creating a lobby with `config.lobbies.autoDestroyWhenEmpty`, a lobby must be created with players in order to avoid creating an empty lobby.
 - **Lobby Full** (`lobby_full`) No more players can join this lobby.
 - **Lobby Not Found** (`lobby_not_found`) Lobby not found.
+- **Lobby Token Required** (`lobby_token_required`) A lobby token was not provided when required for authentication.
 - **More Players Than Max** (`more_players_than_max`) More players were passed to the create lobby than the number of max players in a lobby.
 - **No Matching Lobbies** (`no_matching_lobbies`) No lobbies matched the given query.
 - **Player Already Connected** (`player_already_connected`) The player has already connected to this server. This error helps mitigate botting attacks by only allowing one scoket to connect to a game server for every player.
 - **Player Disconnected** (`player_disconnected`) The player has already disconnected from the server. Create a new player for the specified lobby using the `join` script.
+- **Region Not Found** (`region_not_found`) Region not found.
 - **Too Many Players For IP** (`too_many_players_for_ip`) The player has too many existing players for the given IP.

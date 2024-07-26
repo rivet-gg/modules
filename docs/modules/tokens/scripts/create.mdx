@@ -20,25 +20,35 @@ const data = await ctx.modules.tokens.create({
 ## Request
 
 ```typescript
-export interface Request {
-  type?: string;
-  meta?: {
-    [k: string]: any;
-  };
-  expireAt?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property        | Type                     |
+| :-------------- | :----------------------- |
+| **`type`** (\*) | `string`                 |
+| **`meta`** (\*) | `Record<string, string>` |
+| `expireAt`      | `string`                 |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  token?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                                                                                                                                               |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`token`** (\*) | _Object with properties:_<ul><li>`token`: `string`</li><li>`id`: `string`</li><li>`type`: `string`</li><li>`meta`: `any` (_nullable_)</li><li>`createdAt`: `string`</li><li>`expireAt`: `string` (_nullable_)</li><li>`revokedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+
 ```

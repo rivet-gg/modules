@@ -92,22 +92,34 @@ curl -X POST "https://localhost:6420/modules/auth/scripts/send_email_verificatio
 ## Request
 
 ```typescript
-export interface Request {
-  email?: string;
-  userToken?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type     |
+| :--------------- | :------- |
+| **`email`** (\*) | `string` |
+| `userToken`      | `string` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  verification?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                | Type                                                      |
+| :---------------------- | :-------------------------------------------------------- |
+| **`verification`** (\*) | _Object with properties:_<ul><li>`id`: `string`</li></ul> |
+
+_(\*) Required._
+
 ```

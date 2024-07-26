@@ -92,20 +92,34 @@ curl -X POST "https://localhost:6420/modules/friends/scripts/send_request/call" 
 ## Request
 
 ```typescript
-export interface Request {
-  userToken?: string;
-  targetUserId?: string;
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                | Type     |
+| :---------------------- | :------- |
+| **`userToken`** (\*)    | `string` |
+| **`targetUserId`** (\*) | `string` |
+
+_(\*) Required._
+
 ```
 
 ## Response
 
 ```typescript
-export interface Response {
-  friendRequest?: {
-    [k: string]: any;
-  };
-  [k: string]: any;
-}
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                 | Type                                                                                                                                                                                                                                              |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`friendRequest`** (\*) | _Object with properties:_<ul><li>`id`: `string`</li><li>`senderUserId`: `string`</li><li>`targetUserId`: `string`</li><li>`createdAt`: `string`</li><li>`declinedAt`: `string` (_nullable_)</li><li>`acceptedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+
 ```
