@@ -22,13 +22,39 @@ async function modifyApiClient(sdkGenPath: string) {
 	const path = resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Client", "ApiClient.cs");
 
 	const content = await Deno.readTextFile(path);
-	const fixedContent = content.replace("using UnityEngine;", "using UnityEngine;\nusing Newtonsoft.Json.Linq;").replace(
-		"throw new ApiException((int)request.responseCode, request.error, text);",
-		`
-		var jsonBody = JObject.Parse(text);
-		throw new ApiException((int)request.responseCode, request.error + " (" + jsonBody["message"] + ")", jsonBody);
-		`,
-	);
+	const fixedContent = content
+		.replace("using UnityEngine;", "using UnityEngine;\nusing Newtonsoft.Json.Linq;")
+		.replace(
+			"throw new ApiException((int)request.responseCode, request.error, text);",
+			dedent`
+        var jsonBody = JObject.Parse(text);
+        throw new ApiException((int)request.responseCode, request.error + " (" + jsonBody["message"] + ")", jsonBody);
+      `,
+		)
+    // HACK: Allow creating requests from background threads by running request
+    // constructor on main thread.
+    .replace(
+      /request = UnityWebRequest\.(\w+)\(uri, jsonData\);/g,
+      // TODO: Run FromCurrentSynchronizationContext once
+      dedent`
+        await Task.Factory.StartNew(() =>
+        {
+          request = UnityWebRequest.$1(uri, jsonData);
+        }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+      `
+    )
+    // HACK: Make `NewRequest` async so we can create the Unity request on the main thread.
+    .replace("private UnityWebRequest NewRequest<T>", "private async Task<UnityWebRequest> NewRequest<T>")
+    .replace(/public Task<ApiResponse<T>> (\w+Async)/g, "public async Task<ApiResponse<T>> $1")
+    .replace(
+      /var config = configuration \?\? GlobalConfiguration\.Instance;\s*return ExecAsync<T>\(NewRequest<T>\("(\w+)", path, options, config\), path, options, config, cancellationToken\);/gs,
+      dedent`
+        var config = configuration ?? GlobalConfiguration.Instance;
+        var request = await NewRequest<T>("$1", path, options, config);
+        return await ExecAsync<T>(request, path, options, config, cancellationToken);
+      `
+    );
+
 
 	// Write new runtime
 	await Deno.writeTextFile(path, fixedContent);
@@ -37,28 +63,28 @@ async function modifyApiClient(sdkGenPath: string) {
 // Move module name from type name into namespace
 async function modifyModels(project: Project, sdkGenPath: string) {
 	for (const mod of project.modules.values()) {
-    // TODO: This will cause problems if one module name is a superset of
-    // another OR if a script name start with the end of another module name
+		// TODO: This will cause problems if one module name is a superset of
+		// another OR if a script name start with the end of another module name
 
 		const moduleNamePascal = pascalify(mod.name);
 
-    const files = await glob.glob([`${moduleNamePascal}*.cs`], {
-      cwd: resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model"),
-      ignore: "AbstractOpenAPISchema.cs",
-      nodir: true,
-    });
+		const files = await glob.glob([`${moduleNamePascal}*.cs`], {
+			cwd: resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model"),
+			ignore: "AbstractOpenAPISchema.cs",
+			nodir: true,
+		});
 
-    for (const file of files) {
-      const path = resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", file);
+		for (const file of files) {
+			const path = resolve(sdkGenPath, "src", DEFAULT_PACKAGE_NAME, "Model", file);
 
-      const content = await Deno.readTextFile(path);
-      const fixedContent = content
-        .replace(`${DEFAULT_PACKAGE_NAME}.Model\n`, `${DEFAULT_PACKAGE_NAME}.Model.${moduleNamePascal}\n`)
-        // Fix incorrectly generated class extensions
-        .replace(/partial class (\w+) : AbstractOpenAPISchema,\s*/gm, "partial class $1 : AbstractOpenAPISchema")
-        .replaceAll(new RegExp(`\\b${moduleNamePascal}(\\w+)`, "g"), "$1");
+			const content = await Deno.readTextFile(path);
+			const fixedContent = content
+				.replace(`${DEFAULT_PACKAGE_NAME}.Model\n`, `${DEFAULT_PACKAGE_NAME}.Model.${moduleNamePascal}\n`)
+				// Fix incorrectly generated class extensions
+				.replace(/partial class (\w+) : AbstractOpenAPISchema,\s*/gm, "partial class $1 : AbstractOpenAPISchema")
+				.replaceAll(new RegExp(`\\b${moduleNamePascal}(\\w+)`, "g"), "$1");
 
-      await Deno.writeTextFile(path, fixedContent);
+			await Deno.writeTextFile(path, fixedContent);
 		}
 	}
 }
@@ -429,4 +455,3 @@ function apiClassTemplate(namespace: string, name: string) {
 				}
 	`;
 }
-

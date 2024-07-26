@@ -1,5 +1,5 @@
 import { Project } from "../project/mod.ts";
-import { projectGenPath, OPEN_API_PATH } from "../project/project.ts";
+import { OPEN_API_PATH, projectGenPath } from "../project/project.ts";
 import { OpenApiGeneratorV31, OpenAPIRegistry } from "./schema/deps.ts";
 import { convertSerializedSchemaToZod } from "./schema/mod.ts";
 
@@ -66,9 +66,9 @@ export async function generateOpenApi(project: Project) {
 		],
 	});
 
-  // Remove uses of complex OpenAPI types that are usually buggy in OpenAPI
-  // generators.
-  document = flattenOpenAPIConfig(document);
+	// Remove uses of complex OpenAPI types that are usually buggy in OpenAPI
+	// generators.
+	document = flattenOpenAPIConfig(document);
 
 	await Deno.writeTextFile(
 		projectGenPath(project, OPEN_API_PATH),
@@ -78,116 +78,160 @@ export async function generateOpenApi(project: Project) {
 
 // MARK: Flatten OpenAPI Config
 function isReferenceObject(obj: any): boolean {
-  return obj && typeof obj === 'object' && '$ref' in obj;
+	return obj && typeof obj === "object" && "$ref" in obj;
 }
 
 function flattenAnyOf(schema: any): any {
-  if (isReferenceObject(schema)) {
-    return {};
-  }
+	if (isReferenceObject(schema)) {
+		return {};
+	}
 
-  if (Array.isArray(schema.anyOf)) {
-    const flattenedSchema: any = {
-      type: 'object',
-      properties: {},
-    };
+	if (Array.isArray(schema.anyOf)) {
+		// Special handling for anyOf with enum values
+		// This combines multiple enums into one enum with all unique values
+		if (schema.anyOf.every((subSchema: any) => subSchema.type === "string" && Array.isArray(subSchema.enum))) {
+			// Comment: We combine multiple enums into one enum with all unique values.
+			// This is common in OpenAPI specs where different options are represented as separate enum schemas.
+			// Example input:
+			// "protocol": {
+			//     "anyOf": [
+			//         { "type": "string", "enum": ["http", "https"] },
+			//         { "type": "string", "enum": ["tcp", "udp"] },
+			//         { "type": "string", "enum": ["tcp_tls"] }
+			//     ]
+			// }
+			// Example output:
+			// "protocol": {
+			//     "type": "string",
+			//     "enum": ["http", "https", "tcp", "udp", "tcp_tls"]
+			// }
+			const allEnumValues = schema.anyOf.flatMap((subSchema: any) => subSchema.enum);
+			const uniqueEnumValues = [...new Set(allEnumValues)];
+			return {
+				type: "string",
+				enum: uniqueEnumValues,
+			};
+		}
 
-    for (const subSchema of schema.anyOf) {
-      const flattened = flattenAnyOf(subSchema);
-      if (flattened.properties) {
-        Object.assign(flattenedSchema.properties, flattened.properties);
-      }
-      if (Array.isArray(flattened.required)) {
-        for (const prop of flattened.required) {
-          if (flattenedSchema.properties && flattenedSchema.properties[prop]) {
-            flattenedSchema.properties[prop] = {
-              ...flattenedSchema.properties[prop],
-              nullable: true,
-            };
-          }
-        }
-      }
-    }
+		const flattenedSchema: any = {
+			type: "object",
+			properties: {},
+		};
 
-    return flattenedSchema;
-  }
+		for (const subSchema of schema.anyOf) {
+			const flattened = flattenAnyOf(subSchema);
+			if (flattened.properties) {
+				Object.assign(flattenedSchema.properties, flattened.properties);
+			}
+			if (Array.isArray(flattened.required)) {
+				for (const prop of flattened.required) {
+					if (flattenedSchema.properties && flattenedSchema.properties[prop]) {
+						flattenedSchema.properties[prop] = {
+							...flattenedSchema.properties[prop],
+							nullable: true,
+						};
+					}
+				}
+			}
+			// Handle additionalProperties
+			if (flattened.additionalProperties !== undefined) {
+				flattenedSchema.additionalProperties = flattened.additionalProperties;
+			}
+		}
 
-  if (schema.properties && typeof schema.properties === 'object') {
-    const flattenedProperties: Record<string, any> = {};
-    for (const [key, value] of Object.entries(schema.properties)) {
-      flattenedProperties[key] = flattenAnyOf(value);
-    }
-    return {
-      ...schema,
-      properties: flattenedProperties,
-    };
-  }
+		return flattenedSchema;
+	}
 
-  return schema;
+	if (schema.properties && typeof schema.properties === "object") {
+		const flattenedProperties: Record<string, any> = {};
+		for (const [key, value] of Object.entries(schema.properties)) {
+			flattenedProperties[key] = flattenAnyOf(value);
+		}
+		const result = {
+			...schema,
+			properties: flattenedProperties,
+		};
+		// Handle additionalProperties
+		if (schema.additionalProperties !== undefined) {
+			result.additionalProperties = flattenAnyOf(schema.additionalProperties);
+		}
+		return result;
+	}
+
+	// Handle additionalProperties when it's the only property
+	if (schema.additionalProperties !== undefined) {
+		return {
+			...schema,
+			additionalProperties: flattenAnyOf(schema.additionalProperties),
+		};
+	}
+
+	return schema;
 }
 
 function flattenOpenAPIConfig(config: any): any {
-  const flattenedPaths: Record<string, any> = {};
-  const flattenedComponents: Record<string, any> = { schemas: {} };
+	const flattenedPaths: Record<string, any> = {};
+	const flattenedComponents: Record<string, any> = { schemas: {} };
 
-  // Flatten paths
-  if (typeof config.paths === 'object') {
-    for (const [path, pathItem] of Object.entries(config.paths)) {
-      if (pathItem == null) continue;
-      flattenedPaths[path] = {};
-      if (typeof pathItem === 'object') {
-        for (const [method, operation] of Object.entries(pathItem)) {
-          if (operation == null) continue;
-          if (method === 'parameters' || method === '$ref') continue;
-          if (typeof operation === 'object') {
-            flattenedPaths[path][method] = {
-              ...operation,
-              parameters: Array.isArray(operation.parameters)
-                ? operation.parameters.map((param: any) => {
-                    if (isReferenceObject(param)) return param;
-                    return {
-                      ...param,
-                      schema: param.schema ? flattenAnyOf(param.schema) : undefined,
-                    };
-                  })
-                : undefined,
-              requestBody: operation.requestBody && !isReferenceObject(operation.requestBody)
-                ? {
-                    ...operation.requestBody,
-                    content: typeof operation.requestBody.content === 'object'
-                      ? Object.fromEntries(
-                          Object.entries(operation.requestBody.content).map(([mediaType, mediaTypeObject]: [string, any]) => [
-                            mediaType,
-                            {
-                              ...mediaTypeObject,
-                              schema: mediaTypeObject.schema ? flattenAnyOf(mediaTypeObject.schema) : undefined,
-                            },
-                          ])
-                        )
-                      : undefined,
-                  }
-                : operation.requestBody,
-            };
-          }
-        }
-      }
-    }
-  }
+	// Flatten paths
+	if (typeof config.paths === "object") {
+		for (const [path, pathItem] of Object.entries(config.paths)) {
+			if (pathItem == null) continue;
+			flattenedPaths[path] = {};
+			if (typeof pathItem === "object") {
+				for (const [method, operation] of Object.entries(pathItem)) {
+					if (operation == null) continue;
+					if (method === "parameters" || method === "$ref") continue;
+					if (typeof operation === "object") {
+						flattenedPaths[path][method] = {
+							...operation,
+							parameters: Array.isArray(operation.parameters)
+								? operation.parameters.map((param: any) => {
+									if (isReferenceObject(param)) return param;
+									return {
+										...param,
+										schema: param.schema ? flattenAnyOf(param.schema) : undefined,
+									};
+								})
+								: undefined,
+							requestBody: operation.requestBody && !isReferenceObject(operation.requestBody)
+								? {
+									...operation.requestBody,
+									content: typeof operation.requestBody.content === "object"
+										? Object.fromEntries(
+											Object.entries(operation.requestBody.content).map((
+												[mediaType, mediaTypeObject]: [string, any],
+											) => [
+												mediaType,
+												{
+													...mediaTypeObject,
+													schema: mediaTypeObject.schema ? flattenAnyOf(mediaTypeObject.schema) : undefined,
+												},
+											]),
+										)
+										: undefined,
+								}
+								: operation.requestBody,
+						};
+					}
+				}
+			}
+		}
+	}
 
-  // Flatten components schemas
-  if (config.components && typeof config.components.schemas === 'object') {
-    for (const [schemaName, schema] of Object.entries(config.components.schemas)) {
-      flattenedComponents.schemas[schemaName] = flattenAnyOf(schema);
-    }
-  }
+	// Flatten components schemas
+	if (config.components && typeof config.components.schemas === "object") {
+		for (const [schemaName, schema] of Object.entries(config.components.schemas)) {
+			flattenedComponents.schemas[schemaName] = flattenAnyOf(schema);
+		}
+	}
 
-  return {
-    ...config,
-    paths: flattenedPaths,
-    components: {
-      ...config.components,
-      schemas: flattenedComponents.schemas,
-    },
-  };
+	return {
+		...config,
+		paths: flattenedPaths,
+		components: {
+			...config.components,
+			schemas: flattenedComponents.schemas,
+		},
+	};
 }
-
