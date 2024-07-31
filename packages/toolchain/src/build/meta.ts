@@ -2,7 +2,7 @@ import { ModuleConfig, ScriptConfig } from "../config/module.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { hasUserConfigSchema, Project } from "../project/mod.ts";
-import { projectGenPath, META_PATH } from "../project/project.ts";
+import { META_PATH, projectGenPath } from "../project/project.ts";
 import { camelify, pascalify } from "../../../case_conversion/src/mod.ts";
 import { AnySchemaElement } from "./schema/mod.ts";
 

@@ -325,7 +325,17 @@ export function genRuntimeActorDriverPath(project: Project, runtime: Runtime): s
 		throw new UnreachableError(runtime);
 	}
 
-	return projectGenPath(project, "runtime", "packages", "runtime", "src", "actor", "drivers", actorDriverName, "driver.ts");
+	return projectGenPath(
+		project,
+		"runtime",
+		"packages",
+		"runtime",
+		"src",
+		"actor",
+		"drivers",
+		actorDriverName,
+		"driver.ts",
+	);
 }
 
 export function genDependencyTypedefPath(project: Project): string {

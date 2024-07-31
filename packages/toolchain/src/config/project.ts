@@ -121,7 +121,10 @@ export async function readConfig(projectConfigPath: string, extendedFromPaths: s
 	// Merge extended configs
 	let config: ProjectConfig;
 	if (childConfig.extends) {
-		const baseConfig = await readConfig(loadProjectConfigPath({ path: childConfig.extends }), [projectConfigPath, ...extendedFromPaths]);
+		const baseConfig = await readConfig(loadProjectConfigPath({ path: childConfig.extends }), [
+			projectConfigPath,
+			...extendedFromPaths,
+		]);
 		config = {
 			registries: Object.assign({}, baseConfig.registries ?? {}, childConfig.registries ?? {}),
 			modules: Object.assign({}, baseConfig.modules ?? {}, childConfig.modules ?? {}),

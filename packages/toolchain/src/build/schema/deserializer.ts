@@ -24,7 +24,10 @@ export function convertSerializedSchemaToTypeScript(schema: AnySchemaElement, op
 	return sourceFile.getText();
 }
 
-export function convertSerializedSchemaToZodConstant(schema: AnySchemaElement, options: GenerateOptions & { export?: boolean }) {
+export function convertSerializedSchemaToZodConstant(
+	schema: AnySchemaElement,
+	options: GenerateOptions & { export?: boolean },
+) {
 	const project = new Project();
 
 	const sourceFile = project.createSourceFile("main.ts");

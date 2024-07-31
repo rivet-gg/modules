@@ -36,8 +36,8 @@ const GENERATORS: Record<SdkTarget, Generator> = {
 		options: {
 			apiName: "Backend",
 			library: "unityWebRequest",
-      packageName: UNITY_DEFAULT_PACKAGE_NAME,
-      // disallowAdditionalPropertiesIfNotPresent: "false",
+			packageName: UNITY_DEFAULT_PACKAGE_NAME,
+			// disallowAdditionalPropertiesIfNotPresent: "false",
 			// targetFramework: "netstandard2.1",
 		},
 	},
@@ -114,12 +114,12 @@ export async function generateSdk(
 		}
 	}
 
-  let sdkCopyPath = sdkGenPath;
+	let sdkCopyPath = sdkGenPath;
 	if (target == SdkTarget.TypeScript) {
 		await generateTypescriptAddons(project, sdkGenPath);
 	} else if (target == SdkTarget.Unity) {
 		await generateUnityAddons(project, sdkGenPath);
-    sdkCopyPath = resolve(sdkGenPath, "src", UNITY_DEFAULT_PACKAGE_NAME);
+		sdkCopyPath = resolve(sdkGenPath, "src", UNITY_DEFAULT_PACKAGE_NAME);
 	} else if (target == SdkTarget.Godot) {
 		await generateGodot(project, sdkGenPath);
 	}

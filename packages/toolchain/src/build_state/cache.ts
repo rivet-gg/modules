@@ -1,7 +1,7 @@
 import { AnySchemaElement } from "../build/schema/mod.ts";
 import { exists } from "../deps.ts";
 import { UnreachableError } from "../error/mod.ts";
-import { CACHE_PATH, projectGenPath, Project } from "../project/project.ts";
+import { CACHE_PATH, Project, projectGenPath } from "../project/project.ts";
 import { verbose } from "../term/status.ts";
 import { crypto, encodeHex } from "./deps.ts";
 
