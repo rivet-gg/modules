@@ -155,6 +155,20 @@
       "pages": [
         "modules/overview",
         {
+          "icon": "medal",
+          "group": "Achievements",
+          "pages": [
+            "modules/achievements/overview"
+          ]
+        },
+        {
+          "icon": "chart-line",
+          "group": "Analytics",
+          "pages": [
+            "modules/analytics/overview"
+          ]
+        },
+        {
           "icon": "key",
           "group": "Authentication",
           "pages": [
@@ -167,6 +181,13 @@
                 "modules/auth/scripts/send_email_verification"
               ]
             }
+          ]
+        },
+        {
+          "icon": "messages",
+          "group": "Chat",
+          "pages": [
+            "modules/chat/overview"
           ]
         },
         {
@@ -225,6 +246,27 @@
           ]
         },
         {
+          "icon": "floppy-disk",
+          "group": "Game Saves",
+          "pages": [
+            "modules/game_saves/overview"
+          ]
+        },
+        {
+          "icon": "user-group",
+          "group": "Groups",
+          "pages": [
+            "modules/groups/overview"
+          ]
+        },
+        {
+          "icon": "ranking-star",
+          "group": "Leaderboards",
+          "pages": [
+            "modules/leaderboards/overview"
+          ]
+        },
+        {
           "icon": "game-board",
           "group": "Lobbies",
           "pages": [
@@ -251,6 +293,20 @@
                 "modules/lobbies/scripts/list_regions"
               ]
             }
+          ]
+        },
+        {
+          "icon": "chess-knight",
+          "group": "Matchmaker",
+          "pages": [
+            "modules/matchmaker/overview"
+          ]
+        },
+        {
+          "icon": "party-horn",
+          "group": "Parties",
+          "pages": [
+            "modules/parties/overview"
           ]
         },
         {
