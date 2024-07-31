@@ -3,10 +3,10 @@ import { genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } fro
 import {
 	ENTRYPOINT_PATH,
 	genDependencyCaseConversionMapPath,
-	projectGenPath,
 	genPrismaOutputBundle,
 	genRuntimeModPath,
 	GITIGNORE_PATH,
+	projectGenPath,
 	RUNTIME_CONFIG_PATH,
 	RUNTIME_PATH,
 } from "../project/project.ts";
@@ -109,7 +109,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import { PathResolver } from ${
 			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "src", "mod.ts"))
 		};
-			import { log } from ${JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "src", "logger.ts"))};
+			import { log } from ${
+			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "src", "logger.ts"))
+		};
 
 			const runtime = new Runtime<{
 				dependenciesSnake: DependenciesSnake,
@@ -123,6 +125,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 				dependencyCaseConversionMap,
 				actorCaseConversionMap,
 			);
+
 
 			const resolver = new PathResolver(runtime.routePaths());
 
@@ -167,6 +170,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			import config from "./runtime_config.ts";
 			import { handleRequest } from ${JSON.stringify(serverTsPath)};
 			import { ActorDriver, buildGlobalDurableObjectClass } from ${JSON.stringify(actorDriverPath)};
+			import { PathResolver } from ${
+			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "src", "mod.ts"))
+		};
 
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
@@ -183,6 +189,8 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 					const runtime = new Runtime<{
 						dependenciesSnake: DependenciesSnake,
 						dependenciesCamel: DependenciesCamel,
+						actorsSnake: ActorsSnake,
+						actorsCamel: ActorsCamel,
 					}>(
 						envAdapter,
 						config,
@@ -190,6 +198,8 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 						dependencyCaseConversionMap,
 						actorCaseConversionMap,
 					);
+
+					const resolver = new PathResolver(runtime.routePaths());
 
 					const ip = req.headers.get("CF-Connecting-IP");
 					if (!ip) {
@@ -199,9 +209,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 						);
 					}
 
-					return await handleRequest(runtime, req, {
-						remoteAddress: ip,
-					});
+					return await handleRequest(
+						runtime,
+						req,
+						{ remoteAddress: ip, },
+						resolver,
+					);
 				}
 			}
 
