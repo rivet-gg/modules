@@ -16,9 +16,9 @@ export function actorGenPath(
 	actor: Actor,
 ): string {
 	return projectGenPath(
-    project,
+		project,
 		"modules",
-    module.name,
+		module.name,
 		"actors",
 		actor.name + ".ts",
 	);

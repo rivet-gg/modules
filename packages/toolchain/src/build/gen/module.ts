@@ -13,9 +13,9 @@ import {
 	genDependencyCaseConversionMapPath,
 	genDependencyTypedefPath,
 	genModulePublicExternal,
-	projectGenPath,
 	genPrismaOutputBundle,
 	genRuntimeModPath,
+	projectGenPath,
 	RUNTIME_CONFIG_PATH,
 } from "../../project/project.ts";
 import { camelify } from "../../../../case_conversion/src/mod.ts";

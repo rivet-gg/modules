@@ -31,30 +31,29 @@ async function modifyApiClient(sdkGenPath: string) {
         throw new ApiException((int)request.responseCode, request.error + " (" + jsonBody["message"] + ")", jsonBody);
       `,
 		)
-    // HACK: Allow creating requests from background threads by running request
-    // constructor on main thread.
-    .replace(
-      /request = UnityWebRequest\.(\w+)\(uri, jsonData\);/g,
-      // TODO: Run FromCurrentSynchronizationContext once
-      dedent`
+		// HACK: Allow creating requests from background threads by running request
+		// constructor on main thread.
+		.replace(
+			/request = UnityWebRequest\.(\w+)\(uri, jsonData\);/g,
+			// TODO: Run FromCurrentSynchronizationContext once
+			dedent`
         await Task.Factory.StartNew(() =>
         {
           request = UnityWebRequest.$1(uri, jsonData);
         }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
-      `
-    )
-    // HACK: Make `NewRequest` async so we can create the Unity request on the main thread.
-    .replace("private UnityWebRequest NewRequest<T>", "private async Task<UnityWebRequest> NewRequest<T>")
-    .replace(/public Task<ApiResponse<T>> (\w+Async)/g, "public async Task<ApiResponse<T>> $1")
-    .replace(
-      /var config = configuration \?\? GlobalConfiguration\.Instance;\s*return ExecAsync<T>\(NewRequest<T>\("(\w+)", path, options, config\), path, options, config, cancellationToken\);/gs,
-      dedent`
+      `,
+		)
+		// HACK: Make `NewRequest` async so we can create the Unity request on the main thread.
+		.replace("private UnityWebRequest NewRequest<T>", "private async Task<UnityWebRequest> NewRequest<T>")
+		.replace(/public Task<ApiResponse<T>> (\w+Async)/g, "public async Task<ApiResponse<T>> $1")
+		.replace(
+			/var config = configuration \?\? GlobalConfiguration\.Instance;\s*return ExecAsync<T>\(NewRequest<T>\("(\w+)", path, options, config\), path, options, config, cancellationToken\);/gs,
+			dedent`
         var config = configuration ?? GlobalConfiguration.Instance;
         var request = await NewRequest<T>("$1", path, options, config);
         return await ExecAsync<T>(request, path, options, config, cancellationToken);
-      `
-    );
-
+      `,
+		);
 
 	// Write new runtime
 	await Deno.writeTextFile(path, fixedContent);

@@ -17,9 +17,9 @@ import { generateMeta } from "../meta.ts";
 import {
 	BUNDLE_PATH,
 	ENTRYPOINT_PATH,
-	projectGenPath,
 	genPrismaOutputFolder,
 	MANIFEST_PATH,
+	projectGenPath,
 	RUNTIME_PATH,
 } from "../../project/project.ts";
 import { compileActorTypeHelpers } from "../gen/mod.ts";

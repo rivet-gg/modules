@@ -429,10 +429,8 @@ export function moduleHelperGen(
 }
 
 export function moduleGenPath(project: Project, module: Module, ...pathSegments: string[]): string {
-  return projectGenPath(project, "modules", module.name, ...pathSegments);
-
+	return projectGenPath(project, "modules", module.name, ...pathSegments);
 }
-
 
 export function publicPath(module: Module): string {
 	return resolve(module.path, "public.ts");
@@ -440,24 +438,24 @@ export function publicPath(module: Module): string {
 
 export function testGenPath(project: Project, module: Module): string {
 	return moduleGenPath(
-    project,
-    module,
+		project,
+		module,
 		"test.ts",
 	);
 }
 
 export function typeGenPath(project: Project, module: Module): string {
 	return moduleGenPath(
-    project,
-    module,
+		project,
+		module,
 		"registry.d.ts",
 	);
 }
 
 export function moduleGenRegistryMapPath(project: Project, module: Module): string {
 	return moduleGenPath(
-    project,
-    module,
+		project,
+		module,
 		"registryMap.ts",
 	);
 }
