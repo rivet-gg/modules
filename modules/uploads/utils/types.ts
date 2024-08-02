@@ -15,7 +15,7 @@ export interface Upload {
 
 	/**
 	 * The total size of all files in the upload in bytes.
-	 * 
+	 *
 	 * *(This is a string instead of a bigint because JSON doesn't support
 	 * serializing/deserializing bigints, and we want to be able to represent
 	 * very large file sizes.)*
@@ -35,7 +35,7 @@ export interface UploadFile {
 
 	/**
 	 * The size of the file in bytes.
-	 * 
+	 *
 	 * *(This is a string instead of a bigint because JSON doesn't support
 	 * serializing/deserializing bigints, and we want to be able to represent
 	 * very large file sizes.)*
@@ -75,7 +75,7 @@ export interface PresignedChunk {
 	 * This is ***not*** the total size of the file.
 	 * This is also ***not*** guaranteed to be the same as the `contentLength`
 	 * of all other chunks.
-	 * 
+	 *
 	 * *(This is a string instead of a bigint because JSON doesn't support
 	 * serializing/deserializing bigints, and we want to be able to represent
 	 * very large file sizes.)*
@@ -84,10 +84,10 @@ export interface PresignedChunk {
 
 	/**
 	 * The offset of this chunk in the file.
-	 * 
+	 *
 	 * Essentially, this chunk expects to represent the data from byte `offset`
 	 * to byte `offset + contentLength - 1` inclusive.
-	 * 
+	 *
 	 * *(This is a string instead of a bigint because JSON doesn't support
 	 * serializing/deserializing bigints, and we want to be able to represent
 	 * very large file sizes.)*
@@ -98,15 +98,19 @@ export interface PresignedChunk {
 type UploadWithoutFiles = Omit<Upload, "files">;
 type PrismaUploadWithoutFiles = Omit<PrismaUpload, "files">;
 
-export type UploadWithOptionalFiles = UploadWithoutFiles & { files?: UploadFile[] };
-export type PrismaUploadWithOptionalFiles = PrismaUploadWithoutFiles & { files?: PrismaFiles[] };
+export type UploadWithOptionalFiles = UploadWithoutFiles & {
+	files?: UploadFile[];
+};
+export type PrismaUploadWithOptionalFiles = PrismaUploadWithoutFiles & {
+	files?: PrismaFiles[];
+};
 
 export function prismaToOutput(
 	upload: PrismaUploadWithOptionalFiles,
 ): UploadWithOptionalFiles {
 	return {
 		id: upload.id,
-    metadata: upload.metadata,
+		metadata: upload.metadata,
 
 		bucket: upload.bucket,
 		contentLength: upload.contentLength.toString(),

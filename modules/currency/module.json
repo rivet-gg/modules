@@ -1,45 +1,45 @@
 {
-    "name": "Currency",
-    "description": "Track user balances and allow them to deposit and withdraw.",
-    "icon": "coin",
-    "tags": [
-        "economy"
-    ],
-    "authors": [
-        "ABCxFF"
-    ],
-    "status": "preview",
-    "dependencies": {
-        "rate_limit": {},
-        "users": {}
-    },
-    "scripts": {
-        "deposit": {
-            "name": "Deposit"
-        },
-        "withdraw": {
-            "name": "Withdraw"
-        },
-        "get_balance": {
-            "name": "Get Balance"
-        },
-        "set_balance": {
-            "name": "Set Balance"
-        },
-        "get_balance_by_token": {
-            "name": "Get Balance by Token",
-            "public": true
-        }
-    },
-    "errors": {
-        "invalid_user": {
-            "name": "Invalid User"
-        },
-        "invalid_amount": {
-            "name": "Invalid Amount"
-        },
-        "not_enough_funds": {
-            "name": "Not Enough Funds"
-        }
-    }
+	"name": "Currency",
+	"description": "Track user balances and allow them to deposit and withdraw.",
+	"icon": "coin",
+	"tags": [
+		"economy"
+	],
+	"authors": [
+		"ABCxFF"
+	],
+	"status": "preview",
+	"dependencies": {
+		"rate_limit": {},
+		"users": {}
+	},
+	"scripts": {
+		"deposit": {
+			"name": "Deposit"
+		},
+		"withdraw": {
+			"name": "Withdraw"
+		},
+		"get_balance": {
+			"name": "Get Balance"
+		},
+		"set_balance": {
+			"name": "Set Balance"
+		},
+		"get_balance_by_token": {
+			"name": "Get Balance by Token",
+			"public": true
+		}
+	},
+	"errors": {
+		"invalid_user": {
+			"name": "Invalid User"
+		},
+		"invalid_amount": {
+			"name": "Invalid Amount"
+		},
+		"not_enough_funds": {
+			"name": "Not Enough Funds"
+		}
+	}
 }

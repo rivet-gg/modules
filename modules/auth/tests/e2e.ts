@@ -9,7 +9,7 @@ test("e2e", async (ctx: TestContext) => {
 	const { user } = await ctx.modules.users.create({});
 
 	const { token: session } = await ctx.modules.users.createToken({
-		userId: user.id
+		userId: user.id,
 	});
 
 	const fakeEmail = faker.internet.email();
@@ -18,15 +18,16 @@ test("e2e", async (ctx: TestContext) => {
 	{
 		const authRes = await ctx.modules.auth.sendEmailVerification({
 			email: fakeEmail,
-			userToken: session.token
+			userToken: session.token,
 		});
 
 		// Look up correct code
-		const { code } = await ctx.db.emailPasswordlessVerification.findFirstOrThrow({
-			where: {
-				id: authRes.verification.id,
-			},
-		});
+		const { code } = await ctx.db.emailPasswordlessVerification
+			.findFirstOrThrow({
+				where: {
+					id: authRes.verification.id,
+				},
+			});
 
 		// Now by verifying the email, we register, and can also use
 		// this to verify the token
@@ -37,10 +38,9 @@ test("e2e", async (ctx: TestContext) => {
 
 		assertEquals(verifyRes.token.type, "user");
 
-
 		// Make sure we end up with the same user we started with
 		const verifyRes2 = await ctx.modules.users.authenticateToken({
-			userToken: verifyRes.token.token
+			userToken: verifyRes.token.token,
 		});
 
 		assertEquals(verifyRes2.userId, user.id);
@@ -50,15 +50,16 @@ test("e2e", async (ctx: TestContext) => {
 	// but without a token, expecting the same user
 	{
 		const authRes = await ctx.modules.auth.sendEmailVerification({
-			email: fakeEmail
+			email: fakeEmail,
 		});
 
 		// Look up correct code
-		const { code: code } = await ctx.db.emailPasswordlessVerification.findFirstOrThrow({
-			where: {
-				id: authRes.verification.id,
-			},
-		});
+		const { code: code } = await ctx.db.emailPasswordlessVerification
+			.findFirstOrThrow({
+				where: {
+					id: authRes.verification.id,
+				},
+			});
 
 		const verifyRes = await ctx.modules.auth.completeEmailVerification({
 			verificationId: authRes.verification.id,
@@ -66,10 +67,9 @@ test("e2e", async (ctx: TestContext) => {
 		});
 
 		const verifyRes2 = await ctx.modules.users.authenticateToken({
-			userToken: verifyRes.token.token
+			userToken: verifyRes.token.token,
 		});
 
-		assertEquals(verifyRes2.userId, user.id);	
+		assertEquals(verifyRes2.userId, user.id);
 	}
 });
-

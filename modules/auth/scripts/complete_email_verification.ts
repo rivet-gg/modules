@@ -1,8 +1,5 @@
 import { assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import {
-	RuntimeError,
-	ScriptContext,
-} from "../module.gen.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 import { TokenWithSecret } from "../../tokens/utils/types.ts";
 
 export interface Request {

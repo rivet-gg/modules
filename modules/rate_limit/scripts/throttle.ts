@@ -30,19 +30,23 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-  assert(req.requests > 0);
-  assert(req.period > 0);
+	assert(req.requests > 0);
+	assert(req.period > 0);
 
-  // Create key
-  const key = `${JSON.stringify(req.type)}.${JSON.stringify(req.key)}`;
+	// Create key
+	const key = `${JSON.stringify(req.type)}.${JSON.stringify(req.key)}`;
 
-  // Throttle request
-  const res = await ctx.actors.limiter.getOrCreateAndCall<undefined, ThrottleRequest, ThrottleResponse>(key, undefined, "throttle", {
-    requests: req.requests,
-    period: req.period,
-  });
+	// Throttle request
+	const res = await ctx.actors.limiter.getOrCreateAndCall<
+		undefined,
+		ThrottleRequest,
+		ThrottleResponse
+	>(key, undefined, "throttle", {
+		requests: req.requests,
+		period: req.period,
+	});
 
-  // Check if allowed
+	// Check if allowed
 	if (!res.success) {
 		throw new RuntimeError("RATE_LIMIT_EXCEEDED", {
 			meta: {

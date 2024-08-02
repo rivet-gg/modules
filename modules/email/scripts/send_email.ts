@@ -37,9 +37,9 @@ export async function run(
 }
 
 async function useSendGrid(config: ProviderSendGrid, req: Request) {
-  const apiKeyVariable = config.apiKeyVariable ?? "SENDGRID_API_KEY";
-  const apiKey = Deno.env.get(apiKeyVariable);
-  assertExists(apiKey, `Missing environment variable: ${apiKeyVariable}`);
+	const apiKeyVariable = config.apiKeyVariable ?? "SENDGRID_API_KEY";
+	const apiKey = Deno.env.get(apiKeyVariable);
+	assertExists(apiKey, `Missing environment variable: ${apiKeyVariable}`);
 
 	const content = [];
 	if (req.text) {

@@ -84,7 +84,9 @@ export async function getPresignedMultipartUploadUrls(
 	file: UploadFile,
 	chunkSize: bigint,
 	expirySeconds = 60 * 60 * 6,
-): Promise<{ key: string; chunks: PresignedChunk[]; multipartUploadId: string }> {
+): Promise<
+	{ key: string; chunks: PresignedChunk[]; multipartUploadId: string }
+> {
 	const client = getClient(config);
 
 	const key = getKey(uploadId, file.path);

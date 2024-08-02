@@ -19,10 +19,10 @@ function randomBuffer(size: number): Uint8Array {
 }
 
 test("multipart uploads", async (ctx: TestContext) => {
-  if (!getS3EnvConfig()) {
-    ctx.log.warn("s3 not configured");
-    return;
-  }
+	if (!getS3EnvConfig()) {
+		ctx.log.warn("s3 not configured");
+		return;
+	}
 
 	const path = faker.system.fileName();
 	const contentLength = 20_000_000; // 20MB

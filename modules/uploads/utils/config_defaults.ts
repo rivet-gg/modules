@@ -1,9 +1,9 @@
 import { RuntimeError } from "../module.gen.ts";
 import { Config as UserConfig } from "../config.ts";
-import { S3Config, getS3EnvConfig } from "./env.ts";
+import { getS3EnvConfig, S3Config } from "./env.ts";
 
 import * as defaults from "../config.ts";
-import { UploadSize, confirmAwsChunkCount } from "./data_size.ts";
+import { confirmAwsChunkCount, UploadSize } from "./data_size.ts";
 
 interface Config {
 	maxUploadSize: UploadSize;

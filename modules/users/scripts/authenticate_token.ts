@@ -4,12 +4,12 @@ import { User } from "../utils/types.ts";
 
 export interface Request {
 	userToken: string;
-  fetchUser?: boolean;
+	fetchUser?: boolean;
 }
 
 export interface Response {
-  userId: string;
-  user?: User;
+	userId: string;
+	user?: User;
 }
 
 export async function run(
@@ -24,13 +24,12 @@ export async function run(
 	if (token.type !== "user") throw new RuntimeError("token_not_user_token");
 	const userId = token.meta.userId;
 
-  let user;
-  if (req.fetchUser) {
-    user = await ctx.db.user.findFirstOrThrow({
-      where: { id: userId },
-    });
-
-  }
+	let user;
+	if (req.fetchUser) {
+		user = await ctx.db.user.findFirstOrThrow({
+			where: { id: userId },
+		});
+	}
 
 	return { userId, user };
 }

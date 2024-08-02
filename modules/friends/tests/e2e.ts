@@ -6,12 +6,16 @@ test("e2e accept", async (ctx: TestContext) => {
 	const { user: userA } = await ctx.modules.users.create({
 		username: faker.internet.userName(),
 	});
-	const { token: tokenA } = await ctx.modules.users.createToken({ userId: userA.id });
+	const { token: tokenA } = await ctx.modules.users.createToken({
+		userId: userA.id,
+	});
 
 	const { user: userB } = await ctx.modules.users.create({
 		username: faker.internet.userName(),
 	});
-	const { token: tokenB } = await ctx.modules.users.createToken({ userId: userB.id });
+	const { token: tokenB } = await ctx.modules.users.createToken({
+		userId: userB.id,
+	});
 
 	const { friendRequest } = await ctx.modules.friends.sendRequest({
 		userToken: tokenA.token,
@@ -60,12 +64,16 @@ test("e2e reject", async (ctx: TestContext) => {
 	const { user: userA } = await ctx.modules.users.create({
 		username: faker.internet.userName(),
 	});
-	const { token: tokenA } = await ctx.modules.users.createToken({ userId: userA.id });
+	const { token: tokenA } = await ctx.modules.users.createToken({
+		userId: userA.id,
+	});
 
 	const { user: userB } = await ctx.modules.users.create({
 		username: faker.internet.userName(),
 	});
-	const { token: tokenB } = await ctx.modules.users.createToken({ userId: userB.id });
+	const { token: tokenB } = await ctx.modules.users.createToken({
+		userId: userB.id,
+	});
 
 	const { friendRequest } = await ctx.modules.friends.sendRequest({
 		userToken: tokenA.token,
