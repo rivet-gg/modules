@@ -4,9 +4,7 @@ export interface Config {
 
 export type Provider = { test: ProviderTest } | { sendGrid: ProviderSendGrid };
 
-export interface ProviderTest {
-	// No configuration
-}
+export type ProviderTest = Record<never, never>;
 
 export interface ProviderSendGrid {
 	apiKeyVariable?: string;

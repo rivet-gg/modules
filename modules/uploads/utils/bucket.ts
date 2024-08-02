@@ -235,7 +235,7 @@ export async function keyExists(
 		await client.send(command);
 		return true;
 	} catch (error) {
-		if (error.name === "NotFound") {
+		if (error instanceof Error && error.name === "NotFound") {
 			return false;
 		}
 		throw error;

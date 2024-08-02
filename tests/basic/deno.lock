@@ -4,7 +4,9 @@
     "specifiers": {
       "npm:@prisma/adapter-pg@^5.12.0": "npm:@prisma/adapter-pg@5.15.0_pg@8.12.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
-      "npm:pg@^8.11.3": "npm:pg@8.12.0"
+      "npm:pg@^8.11.3": "npm:pg@8.12.0",
+      "npm:zod-validation-error@3.3.0": "npm:zod-validation-error@3.3.0_zod@3.23.8",
+      "npm:zod@3.23.8": "npm:zod@3.23.8"
     },
     "npm": {
       "@prisma/adapter-pg@5.15.0_pg@8.12.0": {
@@ -106,6 +108,16 @@
       },
       "xtend@4.0.2": {
         "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==",
+        "dependencies": {}
+      },
+      "zod-validation-error@3.3.0_zod@3.23.8": {
+        "integrity": "sha512-Syib9oumw1NTqEv4LT0e6U83Td9aVRk9iTXPUQr1otyV1PuXQKOvOwhMNqZIq5hluzHP2pMgnOmHEo7kPdI2mw==",
+        "dependencies": {
+          "zod": "zod@3.23.8"
+        }
+      },
+      "zod@3.23.8": {
+        "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==",
         "dependencies": {}
       }
     }

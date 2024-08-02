@@ -1,0 +1,46 @@
+{
+  "tasks": {
+		// Format
+		"format": "deno fmt modules/",
+		"format:check": "deno fmt --check modules/",
+
+		// Check
+		"check": "deno check modules/**/*.ts",
+
+		// Lint
+		"lint": "deno lint modules/",
+		"lint:fix": "deno lint --fix modules/"
+  },
+	"lint": {
+		"include": ["src/"],
+		"exclude": ["tests/"],
+		"rules": {
+			"exclude": ["no-empty-interface", "no-explicit-any", "require-await"]
+		}
+	},
+  "fmt": {
+    "useTabs": true
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    // "noPropertyAccessFromIndexSignature": true,
+    "allowUnusedLabels": true,
+    "allowUnreachableCode": true,
+    "noImplicitAny": true
+  }
+}

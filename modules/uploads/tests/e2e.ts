@@ -34,7 +34,7 @@ test("e2e", async (ctx: TestContext) => {
 
 	// Upload the data using the presigned URL(s) returned
 	const uploadPutReq = await fetch(
-		presigned.files[0].presignedChunks[0].url,
+		presigned.files[0]!.presignedChunks[0]!.url,
 		{
 			method: "PUT",
 			body: fileData,
@@ -77,10 +77,11 @@ test("e2e", async (ctx: TestContext) => {
 	assertEquals(completed, retrieved);
 
 	// Get presigned URLs to download the files from
-	const { files: [{ url: fileDownloadUrl }] } = await ctx.modules.uploads
+	const { files } = await ctx.modules.uploads
 		.getPublicFileUrls({
 			files: [{ uploadId: completed.id, path: path }],
 		});
+	const fileDownloadUrl = files[0]!.url;
 
 	// Download the files, and make sure the data matches
 	const fileDownloadReq = await fetch(fileDownloadUrl);

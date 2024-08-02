@@ -14,8 +14,7 @@ export interface Request {
 	text?: string;
 }
 
-export interface Response {
-}
+export type Response = Record<never, never>;
 
 export async function run(
 	ctx: ScriptContext,
