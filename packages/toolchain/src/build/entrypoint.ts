@@ -175,7 +175,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		};
 
 			export default {
-				async fetch(req: IncomingRequestCf, env: Record<string, unknown>) {
+				async fetch(req: IncomingRequestCf, env: Record<string, unknown>, ctx) {
 					${hyperdriveAdapter(opts)}
 
 					// Environment adapter
@@ -209,12 +209,19 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 						);
 					}
 
-					return await handleRequest(
+					const responsePromise = await handleRequest(
 						runtime,
 						req,
 						{ remoteAddress: ip, },
 						resolver,
 					);
+
+					// Don't shut down the request until it finishes. This way,
+					// write operations can't be interrupted mid-promise if the
+					// user cancels the request.
+					ctx.waitUntil(responsePromise);
+
+					return await responsePromise;
 				}
 			}
 
