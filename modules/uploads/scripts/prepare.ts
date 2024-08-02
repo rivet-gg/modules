@@ -24,7 +24,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const config = getConfig(ctx.config);
+	const config = getConfig(ctx);
 
 	// Ensure there are files in the upload
 	if (req.files.length === 0) {
