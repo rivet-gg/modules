@@ -37,6 +37,14 @@ _Experimental_
 
 Set to `1` to enable logging the full JavaScript stack trace for errors. This is different than `trace`.
 
+### `_OPENGB_LOG_SCRIPT_BODY`
+
+_Experimental_
+
+Set to `1` to enable logging the body for the script request & response.
+Intended primarily for debugging, since this may unintentionally expose
+sensitive data.
+
 ### `DATABASE_URL`
 
 Default: `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable`
