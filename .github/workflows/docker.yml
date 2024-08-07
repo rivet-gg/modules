@@ -22,4 +22,3 @@ jobs:
           build_tags: |
             ghcr.io/rivet-gg/opengb:${{ github.sha }}
             ghcr.io/rivet-gg/opengb:${{ github.ref_name || '' }}
-

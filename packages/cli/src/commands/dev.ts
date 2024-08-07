@@ -1,5 +1,5 @@
 import { Command } from "../deps.ts";
-import { GlobalOpts, initProject } from "../common.ts";
+import { GlobalOpts } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../../toolchain/src/build/mod.ts";
 import { ensurePostgresRunning } from "../../../toolchain/src/utils/postgres_daemon.ts";
 import { watch } from "../../../toolchain/src/watch/mod.ts";

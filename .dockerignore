@@ -3,3 +3,5 @@
 !deno.lock
 !packages/
 !vendor/prisma
+!scripts/
+!dynamic/
