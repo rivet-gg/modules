@@ -107,6 +107,7 @@
             "docs/build/conventions",
             "docs/build/ide",
             "docs/build/public",
+            "docs/build/logging",
             "docs/build/raw-sql"
           ]
         }
