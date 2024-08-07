@@ -1,5 +1,136 @@
 # Changelog
 
+## [1.0.0-rc.1](https://github.com/rivet-gg/opengb/compare/v0.1.5...v1.0.0-rc.1) (2024-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **runtime:** update default HOST and PORT environment variables ([#445](https://github.com/rivet-gg/opengb/issues/445))
+* **runtime:** rename `ModuleContext.userConfig` -> `ModuleContext.config` ([#397](https://github.com/rivet-gg/opengb/issues/397))
+
+### Features
+
+* **actors:** add create command ([#419](https://github.com/rivet-gg/opengb/issues/419)) ([a66d7d3](https://github.com/rivet-gg/opengb/commit/a66d7d35dd91042d6bdd8be99c34ddb9b40f763a))
+* **actors:** expose `ActorContext` to actor RPCs & init ([#425](https://github.com/rivet-gg/opengb/issues/425)) ([fcb8a92](https://github.com/rivet-gg/opengb/commit/fcb8a928cacfe3e15baf68a987bf382acbf116f2))
+* add coming soon module status ([#422](https://github.com/rivet-gg/opengb/issues/422)) ([1e00a5b](https://github.com/rivet-gg/opengb/commit/1e00a5ba24a4932b59d2fc25b06d83399549859a))
+* add godot sdk gen ([#391](https://github.com/rivet-gg/opengb/issues/391)) ([f2c027f](https://github.com/rivet-gg/opengb/commit/f2c027f4e31c6813f13d6dc9960b14d603f00d9b))
+* add stroage ID to modules & actors ([#420](https://github.com/rivet-gg/opengb/issues/420)) ([14145ff](https://github.com/rivet-gg/opengb/commit/14145ff8068eeacb194ac0c2d4dd6b2246d09df2))
+* **build:** improve config validation errors ([#437](https://github.com/rivet-gg/opengb/issues/437)) ([ac322be](https://github.com/rivet-gg/opengb/commit/ac322be8681689ea5213fcda472e874f72d95850))
+* **cli:** add shorthand -w for --watch ([#432](https://github.com/rivet-gg/opengb/issues/432)) ([a503b0d](https://github.com/rivet-gg/opengb/commit/a503b0dea51377514c18bce254d941b9d8536e3a))
+* **cli:** add version flag ([#490](https://github.com/rivet-gg/opengb/issues/490)) ([841b503](https://github.com/rivet-gg/opengb/commit/841b503a869e8a8135086b6b38194291bf6afe38))
+* **cli:** allow running dev with force deploy migrations ([#456](https://github.com/rivet-gg/opengb/issues/456)) ([7ec76e3](https://github.com/rivet-gg/opengb/commit/7ec76e3591636e17c8ace8c1e38b672fbd239ae5))
+* config merging ([#474](https://github.com/rivet-gg/opengb/issues/474)) ([134df4d](https://github.com/rivet-gg/opengb/commit/134df4de10361894f80cc813270fffb202f927e7))
+* disable logging script bodies by default ([#496](https://github.com/rivet-gg/opengb/issues/496)) ([05e0716](https://github.com/rivet-gg/opengb/commit/05e071646e8cd713296b14f3651dbcb5b8a81a09))
+* **runtime:** allow configuring external endpoint ([#447](https://github.com/rivet-gg/opengb/issues/447)) ([ebed9d5](https://github.com/rivet-gg/opengb/commit/ebed9d50230248789ca4f65089cf8812933bd691))
+* **runtime:** enable toggling stack trace logging ([#471](https://github.com/rivet-gg/opengb/issues/471)) ([d7617e5](https://github.com/rivet-gg/opengb/commit/d7617e535ac7de1b662b27a43716e1d04a5f9bb3))
+* **runtime:** expose `UnreachableError` ([#443](https://github.com/rivet-gg/opengb/issues/443)) ([3234342](https://github.com/rivet-gg/opengb/commit/32343423ac28430cddfd537cbf0a097002fcf24c))
+* **runtime:** expose environment to context ([#469](https://github.com/rivet-gg/opengb/issues/469)) ([c0de977](https://github.com/rivet-gg/opengb/commit/c0de977278c896e2a8e1ecc7b1795c609f4c33d0))
+* **runtime:** implement logfmt logging ([#431](https://github.com/rivet-gg/opengb/issues/431)) ([4f5bde2](https://github.com/rivet-gg/opengb/commit/4f5bde23843ea6a022addd4c4a0a71c4cf6d5031))
+* **runtime:** log all http requests ([#435](https://github.com/rivet-gg/opengb/issues/435)) ([161a841](https://github.com/rivet-gg/opengb/commit/161a8419e2ea1a32f4dd79b1ccfa82a9563b9c69))
+* script API route configuration options ([#266](https://github.com/rivet-gg/opengb/issues/266)) ([11773f8](https://github.com/rivet-gg/opengb/commit/11773f8b1c44b7b649fe311961a1b42879bcb683))
+* typescript sdk gen ([#379](https://github.com/rivet-gg/opengb/issues/379)) ([4cb9d17](https://github.com/rivet-gg/opengb/commit/4cb9d1736888c35e5d983def3d4683cbca18318c))
+* unity sdk gen ([#388](https://github.com/rivet-gg/opengb/issues/388)) ([1293fef](https://github.com/rivet-gg/opengb/commit/1293fefa769f650e27925e6b3bc17b6f5a197c3b))
+
+
+### Bug Fixes
+
+* **actor:** fix varargs for ActorProxy ([#392](https://github.com/rivet-gg/opengb/issues/392)) ([83757fc](https://github.com/rivet-gg/opengb/commit/83757fc93520c14b5aec620d0f4b73538a7967db))
+* add waitUntil for request promise on cf ([#488](https://github.com/rivet-gg/opengb/issues/488)) ([23c29fa](https://github.com/rivet-gg/opengb/commit/23c29face7f871da02c7440beec2f3148b14b9e7))
+* **build:** remove uses of old _gen path ([#478](https://github.com/rivet-gg/opengb/issues/478)) ([a741482](https://github.com/rivet-gg/opengb/commit/a741482f4e4dc54e71737d0ba77bd1e0c7d6fa65))
+* **cli:** correctly handle nocolor in term status ([#454](https://github.com/rivet-gg/opengb/issues/454)) ([76fc37a](https://github.com/rivet-gg/opengb/commit/76fc37a4500e4c92358b324058a67c2b9c00be28))
+* **cli:** error when running dev without tty ([#457](https://github.com/rivet-gg/opengb/issues/457)) ([6ed1e69](https://github.com/rivet-gg/opengb/commit/6ed1e69b23ebc056175f5f4c674eef47620f894a))
+* create unity request on main thread ([#483](https://github.com/rivet-gg/opengb/issues/483)) ([d643cb1](https://github.com/rivet-gg/opengb/commit/d643cb186baf705bbc8ee270666c4280ae123650))
+* dont generate openapi spec for private scripts ([#396](https://github.com/rivet-gg/opengb/issues/396)) ([fc9f186](https://github.com/rivet-gg/opengb/commit/fc9f186ac749b7767b143d0e9dcba018415bac7a))
+* fix unit tests ([#438](https://github.com/rivet-gg/opengb/issues/438)) ([dad3d80](https://github.com/rivet-gg/opengb/commit/dad3d800bc5945c514a70c1182a1f56a9ecd48af))
+* **migrate:** force install prisma as fallback ([#389](https://github.com/rivet-gg/opengb/issues/389)) ([0c4e4ed](https://github.com/rivet-gg/opengb/commit/0c4e4edd603158f9358bb1158df4f9b673f9dc3e))
+* move trace to body ([#380](https://github.com/rivet-gg/opengb/issues/380)) ([1cbc1a0](https://github.com/rivet-gg/opengb/commit/1cbc1a07aaa4cc815b6d0261ee93d2c2d3a733a6))
+* one db per env ([#395](https://github.com/rivet-gg/opengb/issues/395)) ([6e51eb5](https://github.com/rivet-gg/opengb/commit/6e51eb513094918a2bd7450d68cfe51e1ae91e8c))
+* **openapi:** hash type names if contains special character ([#444](https://github.com/rivet-gg/opengb/issues/444)) ([2f1a71f](https://github.com/rivet-gg/opengb/commit/2f1a71f2684b6bab7f608d3b2d7a841e95e89fc4))
+* opengb dev now can watch an uninitiated project ([#472](https://github.com/rivet-gg/opengb/issues/472)) ([7195b31](https://github.com/rivet-gg/opengb/commit/7195b31e029f12bd94257dc0e2424c9db1ab25d5))
+* path resolver on cloudflare ([#484](https://github.com/rivet-gg/opengb/issues/484)) ([43f7854](https://github.com/rivet-gg/opengb/commit/43f78548ebf85abfcf64f46e42c55c7aa767c712))
+* remove mdx version comment ([#493](https://github.com/rivet-gg/opengb/issues/493)) ([e7cb85d](https://github.com/rivet-gg/opengb/commit/e7cb85de8f20f1adfbf3e2525399db867b98bf50))
+* run openapi generator with deno when in docker ([#390](https://github.com/rivet-gg/opengb/issues/390)) ([0af54b3](https://github.com/rivet-gg/opengb/commit/0af54b36930deede78d0c0aee721f6a435e93723))
+* **runtime:** building do & term for cf workers ([#459](https://github.com/rivet-gg/opengb/issues/459)) ([dd07d37](https://github.com/rivet-gg/opengb/commit/dd07d37c5eae0ab3c2d30384325314fe9bd5b4f7))
+* **runtime:** fix dep map for actors ([#467](https://github.com/rivet-gg/opengb/issues/467)) ([1062c6b](https://github.com/rivet-gg/opengb/commit/1062c6b83ad5022a95a66a20b6bd7385a4048d7a))
+* **runtime:** log error message instead of returning in error ([#412](https://github.com/rivet-gg/opengb/issues/412)) ([39f64fe](https://github.com/rivet-gg/opengb/commit/39f64fe67f26d86ab3e857c761fcae595690b472))
+* **runtime:** only look up error config if not already configured ([#433](https://github.com/rivet-gg/opengb/issues/433)) ([c4a77b4](https://github.com/rivet-gg/opengb/commit/c4a77b482b9b0d3a68729eb1011b755bcea9f150))
+* **runtime:** prevent cross-request resource sharing for pg pools ([#403](https://github.com/rivet-gg/opengb/issues/403)) ([cd31b76](https://github.com/rivet-gg/opengb/commit/cd31b763ef18ceec7c3d8a7cd7faffc30683734f))
+* **runtime:** remove uses of Deno in runtime ([#463](https://github.com/rivet-gg/opengb/issues/463)) ([e1db259](https://github.com/rivet-gg/opengb/commit/e1db2599af2a940eb66ab3980743643d7737ff74))
+* **runtime:** switch to prisma ws to support transactions ([#393](https://github.com/rivet-gg/opengb/issues/393)) ([353fcb9](https://github.com/rivet-gg/opengb/commit/353fcb962b301422aee22dc1bab2c6b08f592550))
+* **runtime:** version conflict with neon serverless & prisma ([#464](https://github.com/rivet-gg/opengb/issues/464)) ([7c5b07b](https://github.com/rivet-gg/opengb/commit/7c5b07b0bb623f36cbbf5810b3ec9a930a0076e0))
+* set search path in db sh ([#406](https://github.com/rivet-gg/opengb/issues/406)) ([aaf11f1](https://github.com/rivet-gg/opengb/commit/aaf11f105229778127c8dcb889c87e899c84f78b))
+* specify search path correctly for pg pool ([#405](https://github.com/rivet-gg/opengb/issues/405)) ([5b22806](https://github.com/rivet-gg/opengb/commit/5b22806192cb570f677ffa631092922ce2759033))
+* **unity:** correctly rename all symbols by module namespace ([#479](https://github.com/rivet-gg/opengb/issues/479)) ([67bee51](https://github.com/rivet-gg/opengb/commit/67bee516041288eb4e7f74187d97d86c46ca31c2))
+* updat esbuild support for cloudflare hyperdrive ([#413](https://github.com/rivet-gg/opengb/issues/413)) ([54a5331](https://github.com/rivet-gg/opengb/commit/54a5331eab1261621a9e37d410c61c6b162fe6af))
+* use schemas instead of dbs ([#400](https://github.com/rivet-gg/opengb/issues/400)) ([0863b7a](https://github.com/rivet-gg/opengb/commit/0863b7a3bd4b0cd95309c0cfdc80fb2185f25fcd))
+
+
+### Documentation
+
+* add logging docs ([#497](https://github.com/rivet-gg/opengb/issues/497)) ([e53406c](https://github.com/rivet-gg/opengb/commit/e53406c0ab998530e08d6fa0de8ec903eec86b9b))
+* add wide mode on intro ([#387](https://github.com/rivet-gg/opengb/issues/387)) ([e213daf](https://github.com/rivet-gg/opengb/commit/e213daf779f520364bd560893ec6cef0fe5ff077))
+* clean up landing css ([#452](https://github.com/rivet-gg/opengb/issues/452)) ([06a98fd](https://github.com/rivet-gg/opengb/commit/06a98fd65d2593aa5ebaabc5df0a240aa02b9e2c))
+* document core modules ([#453](https://github.com/rivet-gg/opengb/issues/453)) ([4d2fed5](https://github.com/rivet-gg/opengb/commit/4d2fed58a9427d0cd2cc5af30bf353979ae34b02))
+* fix script schema ([#486](https://github.com/rivet-gg/opengb/issues/486)) ([63cfea9](https://github.com/rivet-gg/opengb/commit/63cfea9d81df1f87b6b2208f23dc2b1d725fb5b9))
+* improve comparison ([#384](https://github.com/rivet-gg/opengb/issues/384)) ([5d39eff](https://github.com/rivet-gg/opengb/commit/5d39eff797c45d6c18439a7479a866ff4ab49ef1))
+* raw sql queries ([#415](https://github.com/rivet-gg/opengb/issues/415)) ([722e814](https://github.com/rivet-gg/opengb/commit/722e8145991e43d01499fc5a0dee7d244162431f))
+* split up public & internal scripts for clarity ([#399](https://github.com/rivet-gg/opengb/issues/399)) ([5fdbed8](https://github.com/rivet-gg/opengb/commit/5fdbed8aafa551fa6c3070aad6d032af86b37e45))
+* tweak colors ([106d028](https://github.com/rivet-gg/opengb/commit/106d02894d2ac86738cf3ebaa23cf9fbfbcefd05))
+* update landing page ([106d028](https://github.com/rivet-gg/opengb/commit/106d02894d2ac86738cf3ebaa23cf9fbfbcefd05))
+* update nav & landing page ([#449](https://github.com/rivet-gg/opengb/issues/449)) ([106d028](https://github.com/rivet-gg/opengb/commit/106d02894d2ac86738cf3ebaa23cf9fbfbcefd05))
+
+
+### Code Refactoring
+
+* **core:** use zod to validate schemas ([#448](https://github.com/rivet-gg/opengb/issues/448)) ([ba7c304](https://github.com/rivet-gg/opengb/commit/ba7c3043287dc05b2470a5dfa2f2cd8833fb8629))
+* move from pool-per-module to singleton pool with PgAdapter-per-module ([#411](https://github.com/rivet-gg/opengb/issues/411)) ([5347475](https://github.com/rivet-gg/opengb/commit/5347475d74a7b3c34ad12ce8ffe6be0eaa2baa1c))
+* **runtime:** create monolithic `ContextParams` and `ModuleContextParams` types ([#424](https://github.com/rivet-gg/opengb/issues/424)) ([65b23cb](https://github.com/rivet-gg/opengb/commit/65b23cb5fa3a477e011eb6af2dfacd4b81019cad))
+* split up cil, toolchain, and runtime packages ([#462](https://github.com/rivet-gg/opengb/issues/462)) ([7e649e8](https://github.com/rivet-gg/opengb/commit/7e649e84c0a9500f5b78e7972424751f58b165ac))
+
+
+### Continuous Integration
+
+* add deno check ([#439](https://github.com/rivet-gg/opengb/issues/439)) ([f820a53](https://github.com/rivet-gg/opengb/commit/f820a539c809cb8606f5739bd2d23b26c85e1f05))
+
+
+### Chores
+
+* **actor:** keep actor in memory for actor driver ([#450](https://github.com/rivet-gg/opengb/issues/450)) ([c947da9](https://github.com/rivet-gg/opengb/commit/c947da9ae1e6f3eb589bde8d89105c88203ee209))
+* **actors:** cleanup drivers & do types ([#421](https://github.com/rivet-gg/opengb/issues/421)) ([79e508d](https://github.com/rivet-gg/opengb/commit/79e508d8ee750e024f360732be00690105634f44))
+* **actors:** finalize actor drivers & only alow calling actors local to module ([#417](https://github.com/rivet-gg/opengb/issues/417)) ([5f29a11](https://github.com/rivet-gg/opengb/commit/5f29a11c2cd534d09e1d8f5e4a950f15f074903e))
+* add `defaultConfig` to `module.json` so users can pass partial configs ([#398](https://github.com/rivet-gg/opengb/issues/398)) ([7373176](https://github.com/rivet-gg/opengb/commit/73731764b86f1ca13fed7396c2e3e08549eec501))
+* add coming soon modules to docs ([#423](https://github.com/rivet-gg/opengb/issues/423)) ([059809d](https://github.com/rivet-gg/opengb/commit/059809d29c00e366f45c3c522efcb7f3a0d1660e))
+* add destroy actor ([#461](https://github.com/rivet-gg/opengb/issues/461)) ([e1c6e33](https://github.com/rivet-gg/opengb/commit/e1c6e3303fa8412eb1b1dcf93793674ad814bbb2))
+* add in-memory actor instance for cf workers ([#470](https://github.com/rivet-gg/opengb/issues/470)) ([0060b91](https://github.com/rivet-gg/opengb/commit/0060b910efacbc998aea542fa24b57867ffca3ef))
+* add link to auto-gen header ([#455](https://github.com/rivet-gg/opengb/issues/455)) ([fb0d38f](https://github.com/rivet-gg/opengb/commit/fb0d38facf6b35cca7efba6e8c3dfcc3928ecff7))
+* add runtime-agnostic env interface ([#460](https://github.com/rivet-gg/opengb/issues/460)) ([63feace](https://github.com/rivet-gg/opengb/commit/63feacec70884cad9817c2c655977f31018e3418))
+* add stricter compiler options ([#451](https://github.com/rivet-gg/opengb/issues/451)) ([5b84bbc](https://github.com/rivet-gg/opengb/commit/5b84bbc3e016c6414f6897a324da62a61a989650))
+* bump docs ([#408](https://github.com/rivet-gg/opengb/issues/408)) ([b14c32a](https://github.com/rivet-gg/opengb/commit/b14c32aa8439cf15e0f5e671d7f5205e5b6dc2d0))
+* **cli:** add target enum ([#442](https://github.com/rivet-gg/opengb/issues/442)) ([914267f](https://github.com/rivet-gg/opengb/commit/914267ff7b0e6ac6c4a2daad03ab305414d8cfa0))
+* doc extending registries ([#477](https://github.com/rivet-gg/opengb/issues/477)) ([04d70b8](https://github.com/rivet-gg/opengb/commit/04d70b8ce93ca4c5cc4f754ad0b81eea948a00f1))
+* fix groups typo ([b57c5d2](https://github.com/rivet-gg/opengb/commit/b57c5d255bab4c4813d2ca5f08b98ebfafd10ddd))
+* fix lints ([#407](https://github.com/rivet-gg/opengb/issues/407)) ([b7b3b4d](https://github.com/rivet-gg/opengb/commit/b7b3b4dd92b757ba6a604d38e375798e293e686d))
+* fix lints ([#441](https://github.com/rivet-gg/opengb/issues/441)) ([0e1af8d](https://github.com/rivet-gg/opengb/commit/0e1af8d893b261961ff0e0ecff403b28b412a06e))
+* fmt ([#485](https://github.com/rivet-gg/opengb/issues/485)) ([03c9767](https://github.com/rivet-gg/opengb/commit/03c9767d2a7e744196aaea57f479f3e398fc3a52))
+* format ([#440](https://github.com/rivet-gg/opengb/issues/440)) ([680b450](https://github.com/rivet-gg/opengb/commit/680b45045fbcca34b6e39d7ab8723570fa64117e))
+* improve error outputs for http ([#468](https://github.com/rivet-gg/opengb/issues/468)) ([532c923](https://github.com/rivet-gg/opengb/commit/532c9231faf892a056f6384cf2b5be4e1dc5be09))
+* log internal errors ([#382](https://github.com/rivet-gg/opengb/issues/382)) ([e427dd5](https://github.com/rivet-gg/opengb/commit/e427dd54aa3b15b6c3dd0743c80da4e1f4cc22dd))
+* move reexported types to single file ([#495](https://github.com/rivet-gg/opengb/issues/495)) ([4a53498](https://github.com/rivet-gg/opengb/commit/4a53498b58f40b20779050559b6ba3454472966a))
+* release 1.0.0-rc.1 ([82de6be](https://github.com/rivet-gg/opengb/commit/82de6be19e108981e7a53b69e9d1cd4b546bd6c8))
+* remove anyof type from generated openapi ([#482](https://github.com/rivet-gg/opengb/issues/482)) ([7a542f1](https://github.com/rivet-gg/opengb/commit/7a542f1337054a357fbbb14a0436d8bdb7ae1915))
+* remove use of tjs ([#473](https://github.com/rivet-gg/opengb/issues/473)) ([468ba4d](https://github.com/rivet-gg/opengb/commit/468ba4da2be4eb6675f48410f8a48330eb7c61ff))
+* rename genPath to moduleGenPath and projectGenPath ([#481](https://github.com/rivet-gg/opengb/issues/481)) ([2d5c52d](https://github.com/rivet-gg/opengb/commit/2d5c52d190a2dd7fefcabcf2ac5904ed427678f5))
+* rename global --path flag to --project ([#492](https://github.com/rivet-gg/opengb/issues/492)) ([1ec5ceb](https://github.com/rivet-gg/opengb/commit/1ec5cebd10819317f4b7a85491d201db7f3ff529))
+* **runtime:** correctly propegate errors & logs for actors ([#466](https://github.com/rivet-gg/opengb/issues/466)) ([9b17cf4](https://github.com/rivet-gg/opengb/commit/9b17cf4fe8c3b235cebedf603dc87a66571fdc03))
+* **runtime:** remove trace from error message ([#434](https://github.com/rivet-gg/opengb/issues/434)) ([b6026d9](https://github.com/rivet-gg/opengb/commit/b6026d94dd25aefe6bcd84ec234dac8ae1bab96f))
+* **runtime:** rename `ModuleContext.userConfig` -&gt; `ModuleContext.config` ([#397](https://github.com/rivet-gg/opengb/issues/397)) ([80bf5ac](https://github.com/rivet-gg/opengb/commit/80bf5ac2c9e5cb13878754113454543476f1f9a9))
+* **runtime:** update default HOST and PORT environment variables ([#445](https://github.com/rivet-gg/opengb/issues/445)) ([a9ff160](https://github.com/rivet-gg/opengb/commit/a9ff160927a64fcf6b78267d8a808f2744b22efb))
+* typo ([#383](https://github.com/rivet-gg/opengb/issues/383)) ([7fa2410](https://github.com/rivet-gg/opengb/commit/7fa241098fbfbbad75aff12b2de09a2dff131cd7))
+* typo ([#386](https://github.com/rivet-gg/opengb/issues/386)) ([f1a73af](https://github.com/rivet-gg/opengb/commit/f1a73afb4a3d63034510c229ccf9a28dc8d4a893))
+* update doc gen to use markdown tables ([#476](https://github.com/rivet-gg/opengb/issues/476)) ([dd9160b](https://github.com/rivet-gg/opengb/commit/dd9160bb31eb460e70f298028399273bc41eab36))
+* update ph token ([9a06d0a](https://github.com/rivet-gg/opengb/commit/9a06d0a25de68c4f1da4b461aeb4fb40ad2bc62b))
+* update types in actor files ([#414](https://github.com/rivet-gg/opengb/issues/414)) ([f464e86](https://github.com/rivet-gg/opengb/commit/f464e86b3b29fa52da7bc86217f61965b365efef))
+
 ## [0.1.5](https://github.com/rivet-gg/opengb/compare/v0.1.4...v0.1.5) (2024-06-11)
 
 
