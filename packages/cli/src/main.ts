@@ -16,6 +16,7 @@ import { runShutdown } from "../../toolchain/src/utils/shutdown_handler.ts";
 import { internalCommand } from "./commands/internal.ts";
 import { info } from "../../toolchain/src/term/status.ts";
 import { configCommand } from "./commands/config.ts";
+import { VERSION } from "./version.ts";
 
 // Add explicit shutdown handler in order to:
 // - Safely run `runShutdown`
@@ -29,6 +30,9 @@ Deno.addSignalListener("SIGINT", async () => {
 // Run command
 const command = new Command();
 command.action(() => command.showHelp())
+	.name("opengb")
+	.version(VERSION)
+	.description("Open Game Backend CLI")
 	.globalOption("-p, --path <path>", "Path to project root")
 	.throwErrors()
 	.command("init", initCommand)

@@ -1,0 +1,8 @@
+export const Version = () => {
+	{` x-release-please-start-version `}
+  const version = "0.1.5";
+	{` x-release-please-end `}
+  return (
+    <CodeBlock>{`deno install -n opengb -fgA https://raw.githubusercontent.com/rivet-gg/opengb/v${version}/src/cli/main.ts`}</CodeBlock>
+  )
+};
