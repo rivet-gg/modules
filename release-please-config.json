@@ -1,7 +1,11 @@
 {
 	"packages": {
 		".": {
-			"release-type": "simple"
+			"release-type": "simple",
+			"extra-files": [
+				"docs/snippets/version.mdx",
+				"packages/cli/src/version.ts"
+			]
 		}
 	},
 	"changelog-sections": [
