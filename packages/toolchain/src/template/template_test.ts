@@ -20,7 +20,7 @@ Deno.test({
 
 		await templateProject(path);
 
-		await templateModule(await loadProject({ path }), "module_a");
+		await templateModule(await loadProject({ project: path }), "module_a");
 
 		// Append test model to schema
 		const schemaPath = resolve(path, "modules", "module_a", "db", "schema.prisma");
@@ -35,10 +35,10 @@ Deno.test({
 		`;
 		await Deno.writeTextFile(schemaPath, schema);
 
-		await templateScript(await loadProject({ path }), "module_a", "script_a");
+		await templateScript(await loadProject({ project: path }), "module_a", "script_a");
 
 		try {
-			await build(await loadProject({ path }), {
+			await build(await loadProject({ project: path }), {
 				format: Format.Native,
 				runtime: Runtime.Deno,
 				dbDriver: DbDriver.NodePostgres,

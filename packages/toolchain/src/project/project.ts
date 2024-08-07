@@ -23,7 +23,8 @@ export interface Project {
 }
 
 export interface LoadProjectOpts {
-	path?: string;
+	/** Path to the project root or project config. */
+	project?: string;
 }
 
 /**
@@ -32,7 +33,7 @@ export interface LoadProjectOpts {
  * The project directory path can be resolved from the dirname on this path.
  */
 export function loadProjectConfigPath(opts: LoadProjectOpts): string {
-	const path = resolve(Deno.cwd(), opts.path ?? ".");
+	const path = resolve(Deno.cwd(), opts.project ?? ".");
 	if (path.endsWith(".json")) {
 		return path;
 	} else {
