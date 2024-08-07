@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0-rc.1](https://github.com/rivet-gg/opengb-modules/compare/v0.1.1...v1.0.0-rc.1) (2024-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename scripts get -> fetch ([#113](https://github.com/rivet-gg/opengb-modules/issues/113))
+
+### Features
+
+* **users:** optionally return `user` in `authenticate_token` ([01d9791](https://github.com/rivet-gg/opengb-modules/commit/01d9791b4a1955b373e7aef933b2ea67bf3ecf54))
+
+
+### Code Refactoring
+
+* **rate_limit:** migrate to actors ([#116](https://github.com/rivet-gg/opengb-modules/issues/116)) ([8c83495](https://github.com/rivet-gg/opengb-modules/commit/8c83495bcb29011121eddd56540cbb11054a7530))
+
+
+### Chores
+
+* add strict compiler options ([#129](https://github.com/rivet-gg/opengb-modules/issues/129)) ([7bb4e9e](https://github.com/rivet-gg/opengb-modules/commit/7bb4e9e48874bb103a2f789f46709e9034cd72c6))
+* format ([#128](https://github.com/rivet-gg/opengb-modules/issues/128)) ([6b2d0e3](https://github.com/rivet-gg/opengb-modules/commit/6b2d0e31a7e553c1d37d6872d339312b02e964be))
+* release 1.0.0-rc.1 ([8c8c34f](https://github.com/rivet-gg/opengb-modules/commit/8c8c34fb6b7ae5c05f135501da586fa76b24097f))
+* rename scripts get -&gt; fetch ([#113](https://github.com/rivet-gg/opengb-modules/issues/113)) ([01d9791](https://github.com/rivet-gg/opengb-modules/commit/01d9791b4a1955b373e7aef933b2ea67bf3ecf54))
+* update `ctx.userConfig` -&gt; `ctx.config` ([#111](https://github.com/rivet-gg/opengb-modules/issues/111)) ([c9e0f72](https://github.com/rivet-gg/opengb-modules/commit/c9e0f72c950b267a654980de4fe0308495769a00))
+* update logging ([#126](https://github.com/rivet-gg/opengb-modules/issues/126)) ([12a5cf1](https://github.com/rivet-gg/opengb-modules/commit/12a5cf19e9ae27719c5a5639a3593db3d15e97e4))
+* update raw queries to use explicit schemas for OpenGB 0.2 ([#115](https://github.com/rivet-gg/opengb-modules/issues/115)) ([28f260f](https://github.com/rivet-gg/opengb-modules/commit/28f260f776111841da3240a286c2d0f1a36ed8f5))
+* update uploads to read from correct env ([#130](https://github.com/rivet-gg/opengb-modules/issues/130)) ([6a7b08e](https://github.com/rivet-gg/opengb-modules/commit/6a7b08ee32f7478ec89f7c7ca531e0cd78eb7326))
+
 ## [0.1.1](https://github.com/rivet-gg/opengb-modules/compare/v0.1.0...v0.1.1) (2024-06-10)
 
 
