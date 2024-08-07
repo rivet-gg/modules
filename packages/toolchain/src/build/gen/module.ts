@@ -2,7 +2,6 @@ import {
 	genActorCaseConversionMapPath,
 	genActorTypedefPath,
 	genRuntimeActorDriverPath,
-	genRuntimeActorPath,
 	hasUserConfigSchema,
 	Module,
 	moduleHelperGen,
@@ -29,6 +28,9 @@ export async function compileModuleHelper(
 	const helper = new GeneratedCodeBuilder(moduleHelperGen(project, module), 3);
 
 	const runtimePath = helper.relative(genRuntimeModPath(project));
+	const reexportPath = helper.relative(
+		projectGenPath(project, "runtime", "packages", "runtime", "src", "export_to_module.ts"),
+	);
 	const dependencyCaseConversionMapPath = helper.relative(genDependencyCaseConversionMapPath(project));
 	const actorCaseConversionMapPath = helper.relative(genActorCaseConversionMapPath(project));
 	const runtimeConfigPath = helper.relative(projectGenPath(project, RUNTIME_CONFIG_PATH));
@@ -37,8 +39,6 @@ export async function compileModuleHelper(
 	const importBlock = helper.chunk.withNewlinesPerChunk(1)
 		.append`
 			import {
-				RuntimeError,
-        UnreachableError,
 				ModuleContextParams as ModuleContextParamsInner,
 				ModuleContext as ModuleContextInner,
 				TestContext as TestContextInner,
@@ -50,25 +50,8 @@ export async function compileModuleHelper(
 			import config from "${runtimeConfigPath}";
 			import { dependencyCaseConversionMap } from "${dependencyCaseConversionMapPath}";
 			import { actorCaseConversionMap } from "${actorCaseConversionMapPath}";
-      import { ActorBase } from ${JSON.stringify(genRuntimeActorPath(project))};
 			import { ActorDriver } from ${JSON.stringify(genRuntimeActorDriverPath(project, opts.runtime))};
-		`;
-
-	// Type helpers
-	helper.chunk.append`
-			/**
-			 * Empty Request/Response type.
-			 * 
-			 * This only exists because of some quirks of empty interfaces in
-			 * typescript that can be read more about here:
-			 * https://www.totaltypescript.com/the-empty-object-type-in-typescript
-			 */
-			export type Empty = Record<string, never>;
-		`;
-
-	// Common exports
-	helper.chunk.append`
-			export { RuntimeError, UnreachableError, ActorBase };
+			export * from ${JSON.stringify(reexportPath)};
 		`;
 
 	// Gen blocks
