@@ -1,40 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>OpenGB E2E Test</title>
-	</head>
-	<body>
-		<h1>OpenGB E2E Test</h1>
-
-		<div>
-			<label for="environmentToggle">Environment:</label>
-			<select id="environmentToggle" onchange="updateEnvironment()">
-				<option value="local">Local</option>
-				<option value="remote">Remote</option>
-			</select>
-		</div>
-
-		<script type="module" src="./index.js"></script>
-
-		<button onclick="findOrCreateLobby()">Find Or Create Lobby</button>
-
-		<script>
-			window.addEventListener('load', function() {
-				const urlParams = new URLSearchParams(window.location.search);
-				const environment = urlParams.get('env');
-				if (environment === 'local' || environment === 'remote') {
-					document.getElementById('environmentToggle').value = environment;
-				}
-			});
-
-			function updateEnvironment() {
-				const environment = document.getElementById('environmentToggle').value;
-				const url = new URL(window.location);
-				url.searchParams.set('env', environment);
-				window.location.href = url.toString();
-			}
-		</script>
-	</body>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenGB · Sandbox</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="application/json" id="RIVET_CONFIG">
+      {
+        "assetsUrl": "%VITE_APP_ASSETS_URL%",
+        "apiUrl": "%VITE_APP_API_URL%",
+        "identityToken": "%VITE_APP_IDENTITY_TOKEN%"
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

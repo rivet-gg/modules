@@ -1,0 +1,33 @@
+{
+  "name": "@rivet-gg/sandbox",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lint": "^6.8.0",
+    "@codemirror/view": "^6.28.4",
+    "@rivet-gg/api": "^24.1.2",
+    "@rivet-gg/components": "workspace:^",
+    "@tanstack/react-query": "^5.32.0",
+    "@tanstack/react-query-devtools": "^5.32.0",
+    "@uiw/codemirror-extensions-basic-setup": "^4.22.1",
+    "@uiw/codemirror-theme-github": "^4.22.1",
+    "@uiw/react-codemirror": "^4.22.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "simple-statistics": "^7.8.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0"
+  }
+}
