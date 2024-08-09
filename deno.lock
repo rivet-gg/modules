@@ -11,6 +11,7 @@
       "jsr:@std/path@0.213": "jsr:@std/path@0.213.1",
       "npm:@asteasolutions/zod-to-openapi@7.1.1": "npm:@asteasolutions/zod-to-openapi@7.1.1_zod@3.23.8",
       "npm:@cloudflare/workers-types": "npm:@cloudflare/workers-types@4.20240712.0",
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:esbuild-plugins-node-modules-polyfill@1.6.4": "npm:esbuild-plugins-node-modules-polyfill@1.6.4_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:typescript-json-schema@0.62.0": "npm:typescript-json-schema@0.62.0_typescript@5.1.6",
