@@ -21,6 +21,21 @@ export interface WatchOpts {
 	 */
 	disableWatch?: boolean;
 
+	/**
+	 * Called when an error occurs during the watch loop.
+	 */
+	onError?: (error: unknown) => void;
+
+	/**
+	 * Called when a file changes.
+	 */
+	onFileChange?: () => void;
+
+	/**
+	 * Called when the project changes.
+	 */
+	onProjectChange?: (project: Project) => void;
+
 	fn: (project: Project, signal: AbortSignal) => Promise<void>;
 }
 
@@ -43,7 +58,9 @@ export async function watch(opts: WatchOpts) {
 	let project: Project | undefined = undefined;
 	try {
 		project = await loadProject(opts.loadProjectOpts);
+		opts.onProjectChange?.(project);
 	} catch (err) {
+		opts?.onError?.(err);
 		printError(err);
 	}
 
@@ -56,7 +73,9 @@ export async function watch(opts: WatchOpts) {
 			stderr: "inherit",
 		}).output();
 		if (!sttyOutput.success) {
-			console.warn("Failed to run `stty sane`. This may cause terminal issues.");
+			console.warn(
+				"Failed to run `stty sane`. This may cause terminal issues.",
+			);
 		}
 
 		// Try to print horizontal line if has TTY
@@ -89,7 +108,10 @@ export async function watch(opts: WatchOpts) {
 			const relevantPaths = event.paths.filter(shouldPathTriggerRebuild);
 			if (relevantPaths.length > 0) {
 				foundEvent = true;
-				info("Change detected", `${event.kind}: ${relevantPaths.join(", ")}`);
+				info(
+					"Change detected",
+					`${event.kind}: ${relevantPaths.join(", ")}`,
+				);
 				break;
 			}
 		}
@@ -100,6 +122,7 @@ export async function watch(opts: WatchOpts) {
 		// Abort previous build. Ignore if it's already aborted.
 		try {
 			fnAbortController?.abort("Rebuilding project due to file change.");
+			opts.onFileChange?.();
 		} catch (err) {
 			if (err instanceof Error && err.name != "AbortError") throw err;
 		}
@@ -110,8 +133,10 @@ export async function watch(opts: WatchOpts) {
 		// action and wait for the next change.
 		try {
 			project = await loadProject(opts.loadProjectOpts);
+			opts.onProjectChange?.(project);
 		} catch (err) {
 			printError(err);
+			opts?.onError?.(err);
 			project = undefined;
 		}
 	}
@@ -126,6 +151,7 @@ async function wrapWatchFn(
 	try {
 		await opts.fn(project, signal);
 	} catch (err) {
+		opts?.onError?.(err);
 		printError(err);
 	}
 }

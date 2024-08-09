@@ -51,7 +51,7 @@ const ProjectRouteConfigSchema = z.object({
 const ProjectModuleConfigSchema = z.object({
 	registry: z.string().optional().describe("The name of the registry to fetch the module from."),
 	module: z.string().optional().describe("Overrides the name of the module to fetch inside the registry."),
-	config: z.record(z.any()).optional().describe(
+	config: z.object({}).passthrough().optional().describe(
 		"The config that configures how this module is ran at runtime.",
 	),
 	storageAlias: z.string().optional().describe(
