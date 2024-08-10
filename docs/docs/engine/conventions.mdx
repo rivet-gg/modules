@@ -1,0 +1,19 @@
+---
+title: "Conventions"
+---
+
+<Note>
+    This page is a work in progress.
+</Note>
+
+## Only use classes for developer-facing APIs
+
+We don't expect the user to use pure interfaces & functions; consuming well
+designed OOP interfaces can be cleaner.
+
+Examples of using classes: `Context` and `Runtime` are classes designed to have
+a clean interface for the user.
+
+Examples of using interfaces: `Trace` is a simple data container that can be
+easily serialized & deserialized. There are standalone functions that can
+operate on a trace.

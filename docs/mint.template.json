@@ -129,6 +129,7 @@
 					"group": "Engine Internals",
 					"pages": [
 						"docs/engine/introduction",
+            "docs/engine/conventions",
 						{
 							"group": "Design Decisions",
 							"pages": [
