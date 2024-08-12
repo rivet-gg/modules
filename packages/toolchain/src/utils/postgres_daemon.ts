@@ -2,6 +2,7 @@ import { exists } from "../deps.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
 import { info, verbose, warn } from "../term/status.ts";
+import { DATABASE_IMAGE } from "./db.ts";
 import { createOnce, getOrInitOnce } from "./once.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
@@ -108,7 +109,7 @@ async function ensurePostgresRunningDocker() {
 			"5432:5432",
 			"-e",
 			"POSTGRES_PASSWORD=postgres",
-			"postgres:16",
+			DATABASE_IMAGE,
 		],
 	}).output();
 	if (!runOutput.success) {

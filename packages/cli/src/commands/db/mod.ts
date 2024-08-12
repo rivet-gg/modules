@@ -2,12 +2,12 @@ import { Command } from "../../deps.ts";
 import { GlobalOpts, initProject } from "../../common.ts";
 import { UserError } from "../../../../toolchain/src/error/mod.ts";
 import { verbose, warn } from "../../../../toolchain/src/term/status.ts";
-import { getDatabaseUrl } from "../../../../toolchain/src/utils/db.ts";
+import { DATABASE_IMAGE, getDatabaseUrl } from "../../../../toolchain/src/utils/db.ts";
 import { migrateCommand } from "./migrate.ts";
 import { dbReset } from "../../../../toolchain/src/migrate/reset.ts";
 import { resolveModules } from "../../util.ts";
 
-export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
+export const POSTGRES_IMAGE = DATABASE_IMAGE;
 // Unique container name for this runtime so we can run multiple instances in
 // parallel
 export const POSTGRES_CONTAINER_NAME = `opengb-postgres-${Deno.pid}`;
