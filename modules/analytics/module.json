@@ -1,12 +1,15 @@
 {
-  "name": "Analytics",
-  "description": "Track and visualize user behavior data. (Coming mid-2024)",
-  "icon": "chart-line",
-  "tags": [
-    "game"
-  ],
-  "authors": [],
-  "status": "coming_soon",
-	"scripts": {},
-	"errors": {}
+	"status": "stable",
+	"name": "Analytics",
+	"description": "Track and visualize user behavior data",
+	"icon": "chart-line",
+	"tags": [],
+	"authors": [
+		"rivet-gg",
+		"ABCxFF"
+	],
+	"scripts": {
+	},
+	"errors": {},
+	"dependencies": {}
 }

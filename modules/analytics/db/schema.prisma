@@ -1,0 +1,17 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+    
+}
+
+model Event {
+    id           String @db.Uuid @default(uuid()) @unique
+    timestamp    DateTime @db.Timestamptz
+    name         String
+    metadata   Json?
+
+    // in the init migration, we add the timescale extension and call create_hypertable().
+
+    @@index(fields: [name, timestamp(sort: Desc)], map: "event_name_time_idx")
+    @@map("event")
+}
