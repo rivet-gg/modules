@@ -9,6 +9,9 @@
 		"ABCxFF"
 	],
 	"scripts": {
+		"push_event": {
+			"public": true
+		}
 	},
 	"errors": {},
 	"dependencies": {}
