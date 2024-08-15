@@ -75,6 +75,8 @@ const ErrorConfigSchema = z.object({
 	 * A short description of the error.
 	 */
 	description: z.string().optional().describe("A short description of the error."),
+
+	internal: z.boolean().optional().default(false).describe("If the error should only be shown internally."),
 });
 
 const DependencyConfigSchema = z.object({}).passthrough();

@@ -12,12 +12,15 @@ export const INTERNAL_ERROR_DESCRIPTION = "Internal error. Read the backend logs
 const DEFAULT_ERROR_CONFIGS: Record<string, ErrorConfig> = {
 	[INTERNAL_ERROR_CODE]: {
 		description: INTERNAL_ERROR_DESCRIPTION,
+		internal: false,
 	},
 	"unreachable": {
 		description: "Unreachable.",
+		internal: true,
 	},
 	"validation": {
 		description: "The provided data does not match the required schema.",
+		internal: false,
 	},
 };
 
@@ -32,7 +35,6 @@ export class RuntimeError extends Error {
 	public moduleName?: string;
 	public trace?: Trace;
 	public errorConfig?: ErrorConfig;
-	public internal: boolean;
 	public meta?: any;
 	public statusCode: number;
 
@@ -41,7 +43,6 @@ export class RuntimeError extends Error {
 		options?: RuntimeErrorOptions,
 	) {
 		super(code, options);
-		this.internal = options?.internal ?? false;
 		this.meta = options?.meta;
 		this.statusCode = options?.statusCode ?? 500;
 	}
@@ -152,7 +153,7 @@ export interface RuntimeErrorSerialized extends ErrorSerialized {
 // MARK: Unreachable Error
 export class UnreachableError extends RuntimeError {
 	constructor(public readonly value: never) {
-		super("unreachable", { internal: true, meta: { value } });
+		super("unreachable", { meta: { value } });
 	}
 
 	public override serialize(): SerializedErrorType {

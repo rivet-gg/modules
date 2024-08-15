@@ -127,6 +127,7 @@ export type RouteRun<UserConfigT, DatabaseT, DatabaseSchemaT> = (
 
 export interface ErrorConfig {
 	description?: string;
+	internal: boolean;
 }
 
 export class Runtime<Params extends ContextParams> {

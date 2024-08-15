@@ -84,7 +84,7 @@ export function serverOrRuntimeError<Ctx extends Context<any>>(ctx: Ctx, e: unkn
 
 		// Never return error details to the client in order to prevent reverse
 		// engineering & accidentally leaking secrets.
-		if (e.internal) {
+		if (e.errorConfig == undefined || e.errorConfig.internal) {
 			output = {
 				code: INTERNAL_ERROR_CODE,
 				message: INTERNAL_ERROR_DESCRIPTION,
