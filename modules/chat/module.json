@@ -1,0 +1,12 @@
+{
+  "name": "Chat",
+  "description": "In-game player-to-player messaging. (Coming late-2024)",
+  "icon": "messages",
+  "tags": [
+    "game"
+  ],
+  "authors": [],
+  "status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}

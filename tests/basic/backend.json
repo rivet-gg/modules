@@ -52,6 +52,30 @@
 		},
 		"rivet": {
 			"registry": "local"
+		},
+		"achievements": {
+			"registry": "local"
+		},
+		"leaderboards": {
+			"registry": "local"
+		},
+		"analytics": {
+			"registry": "local"
+		},
+		"chat": {
+			"registry": "local"
+		},
+		"game_saves": {
+			"registry": "local"
+		},
+		"parties": {
+			"registry": "local"
+		},
+		"groups": {
+			"registry": "local"
+		},
+		"matchmaker": {
+			"registry": "local"
 		}
 	}
 }

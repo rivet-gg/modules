@@ -1,0 +1,12 @@
+{
+  "name": "Groups",
+  "description": "Group users in groups/clans/guilds. (Coming late-2024)",
+  "icon": "user-group",
+  "tags": [
+    "game"
+  ],
+  "authors": [],
+  "status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}
