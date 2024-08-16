@@ -81,5 +81,18 @@ export const REGIONS: Region[] = [
     latitude: 1.3521,
     longitude: 103.8198,
   },
+
+  {
+    id: "lnd-atl",
+    name: "Atlanta",
+    latitude: 33.7490,
+    longitude: -84.3880,
+  },
+  {
+    id: "lnd-fra",
+    name: "Frankfurt",
+    latitude: 50.1109,
+    longitude: 8.6821,
+  },
 ];
 
