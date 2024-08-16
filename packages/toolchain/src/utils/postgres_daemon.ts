@@ -1,6 +1,7 @@
+import { exists } from "../deps.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
-import { verbose, warn } from "../term/status.ts";
+import { error, verbose, warn } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "./once.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
@@ -19,11 +20,30 @@ export async function ensurePostgresRunning(project: Project) {
 
 async function ensurePostgresRunningInner(_project: Project) {
 	// Don't start Postgres if points to existing database
-	if (Deno.env.has("DATABASE_URL") || Deno.env.has("OPENGB_DONT_START_POSTGRES")) return;
+	if (
+		Deno.env.has("DATABASE_URL") || Deno.env.has("OPENGB_DONT_START_POSTGRES")
+	) return;
 
-	// Warn if tyring to run inside of Docker
+	const driver = Deno.env.get("_OPENGB_POSTGRES_DAEMON_DRIVER") ?? "docker";
+
+	switch (driver) {
+		case "docker":
+			await ensurePostgresRunningDocker();
+			break;
+		case "native":
+			await ensurePostgresRunningNative();
+			break;
+		default:
+			throw new UserError(`Invalid Postgres daemon driver: ${driver}`);
+	}
+}
+
+async function ensurePostgresRunningDocker() {
 	if (Deno.env.has("RUNNING_IN_DOCKER")) {
-		warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
+		warn(
+			"Skipping Postgres Dev Server",
+			"Cannot start Postgres dev server when running OpenGB inside of Docker",
+		);
 		return;
 	}
 
@@ -56,7 +76,9 @@ async function ensurePostgresRunningInner(_project: Project) {
 			args: ["volume", "create", VOLUME_NAME],
 		}).output();
 		if (!volumeCreateOutput.success) {
-			throw new CommandError("Failed to create Postgres volume.", { commandOutput: volumeCreateOutput });
+			throw new CommandError("Failed to create Postgres volume.", {
+				commandOutput: volumeCreateOutput,
+			});
 		}
 	}
 
@@ -66,7 +88,10 @@ async function ensurePostgresRunningInner(_project: Project) {
 		args: ["rm", "-f", CONTAINER_NAME],
 	}).output();
 	if (!rmOutput.success) {
-		throw new CommandError("Failed to remove the existing Postgres container.", { commandOutput: rmOutput });
+		throw new CommandError(
+			"Failed to remove the existing Postgres container.",
+			{ commandOutput: rmOutput },
+		);
 	}
 
 	// Start the container
@@ -86,7 +111,9 @@ async function ensurePostgresRunningInner(_project: Project) {
 		],
 	}).output();
 	if (!runOutput.success) {
-		throw new CommandError("Failed to start the Postgres container.", { commandOutput: runOutput });
+		throw new CommandError("Failed to start the Postgres container.", {
+			commandOutput: runOutput,
+		});
 	}
 
 	verbose("Waiting for pg_isready");
@@ -101,6 +128,84 @@ async function ensurePostgresRunningInner(_project: Project) {
 	}
 
 	await new Promise((resolve) => setTimeout(resolve, 2000));
+
+	// HACK: https://github.com/rivet-gg/opengb/issues/200
+	// Needs more time to be able to connect to the server since pg_isready isn't always accurate for some reason
+	await new Promise((r) => setTimeout(r, 1000));
+
+	verbose("Ready");
+}
+
+async function ensurePostgresRunningNative() {
+	if (!Deno.env.has("RUNNING_IN_DOCKER")) {
+		warn(
+			"Running Native Postgres Outside of Docker",
+			"Currently poorly supported, use at your own risk",
+		);
+	}
+
+	verbose("Starting native Postgres server...");
+
+	const postgresDataDir = "/var/lib/postgresql/data";
+	const postgresConfPath = `${postgresDataDir}/postgresql.conf`;
+
+	// Update Postgres permissions
+	const chownOutput = await new Deno.Command("sudo", {
+		args: ["chown", "-R", "postgres:postgres", postgresDataDir],
+		stdout: "piped",
+		stderr: "piped",
+	}).output();
+	if (!chownOutput.success) {
+		throw new CommandError("Failed to update permissions of Postgres data directory.", {
+			commandOutput: chownOutput,
+		});
+	}
+
+	// Init database if needed
+	if (!await exists(postgresConfPath)) {
+		const initdbOutput = await new Deno.Command("sudo", {
+			args: ["-u", "postgres", "/usr/lib/postgresql/15/bin/initdb", "-D", postgresDataDir],
+			stdout: "piped",
+			stderr: "piped",
+		}).output();
+		if (!initdbOutput.success) {
+			throw new CommandError("Failed to initialize Postgres data directory.", {
+				commandOutput: initdbOutput,
+			});
+		}
+	}
+
+	// Start Postgres server
+	const postgresProcess = new Deno.Command("sudo", {
+		args: ["-u", "postgres", "/usr/lib/postgresql/15/bin/postgres", "-D", postgresDataDir],
+		stdout: "piped",
+		stderr: "piped",
+	}).spawn();
+	let exited = false;
+	postgresProcess.output().then((output) => {
+		exited = true;
+		warn("Postgres exited early", `Exit code: ${output.code}`);
+		console.log(
+			"Output",
+			new TextDecoder().decode(output.stdout),
+			new TextDecoder().decode(output.stderr),
+		);
+	});
+	// postgresProcess.status.then(status => {
+	//   exited = true;
+	//   warn("Postgres exited early", `Exit code: ${status.code}`);
+	// });
+
+	// Wait for Postgres to start
+	while (true) {
+		if (exited) {
+			error(("Could not start Postgres", "Exited before pg_isready is true"));
+			return;
+		}
+		const checkOutput = await new Deno.Command("pg_isready").output();
+		if (checkOutput.success) break;
+		await new Promise((r) => setTimeout(r, 50));
+	}
 
 	// HACK: https://github.com/rivet-gg/opengb/issues/200
 	// Needs more time to be able to connect to the server since pg_isready isn't always accurate for some reason
