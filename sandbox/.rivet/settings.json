@@ -1,0 +1,1 @@
+{"game_server": {"deploy": {"dockerfile_path": "game_server.Dockerfile"}}}

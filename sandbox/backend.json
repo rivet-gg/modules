@@ -1,0 +1,61 @@
+{
+	"runtime": {
+		"cors": {
+			"origins": [
+				"http://localhost:8080"
+			]
+		}
+	},
+	"registries": {
+		"local": {
+			"local": {
+				"directory": "../modules"
+			}
+		}
+	},
+	"modules": {
+		"rate_limit": {
+			"registry": "local"
+		},
+		"tokens": {
+			"registry": "local"
+		},
+		"lobbies": {
+      "registry": "local",
+			"config": {
+				"lobbies": {
+					"regions": [
+						"atl"
+					],
+					"backend": {
+						"server": {
+							"environment": {
+								"SERVER_HOSTNAME": "0.0.0.0"
+							},
+							"tags": {
+
+							},
+							"ports": {
+								"game": {
+									"protocol": "http",
+									"internalPort": 7777
+								}
+							},
+							"resources": {
+								"cpu": 250,
+								"memory": 250
+							}
+						}
+					}
+				}
+			}
+		},
+		"rivet": {
+			"registry": "local",
+			"config": {
+				"apiEndpoint": "https://api.nathan16.gameinc.io",
+				"serviceTokenVariable": "RIVET_SERVICE_TOKEN"
+			}
+		}
+	}
+}
