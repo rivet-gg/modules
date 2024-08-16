@@ -52,7 +52,9 @@ Deno.test("error", async () => {
 					routes: {},
 					actors: {},
 					errors: {
-						"TEST_ERROR": {},
+						"TEST_ERROR": {
+							internal: false,
+						},
 					},
 					dependencies: new Set(["test_module"]),
 					userConfig: null,
