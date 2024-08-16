@@ -1,0 +1,49 @@
+---
+title: "Get Config"
+description: "Provides Rivet-related config paramteres from the environment."
+sidebarTitle: "Get Config"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rivet/scripts/get_config.ts) | `get_config` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.rivet.getConfig({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property | Type |
+| :------- | :--- |
+
+_All properties are optional._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                 | Type     |
+| :----------------------- | :------- |
+| **`apiEndpoint`** (\*)   | `string` |
+| **`gameId`** (\*)        | `string` |
+| **`environmentId`** (\*) | `string` |
+
+_(\*) Required._
+

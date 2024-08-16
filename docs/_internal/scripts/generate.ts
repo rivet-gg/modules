@@ -39,7 +39,7 @@ if (!Deno.env.get("SKIP_BUILD_MODULES")) {
 			"run",
 			"-A",
 			resolve(OPENGB_ROOT, "packages", "cli", "src", "main.ts"),
-			"--path",
+			"--project",
 			TEST_PROJECT_PATH,
 			"build",
 		],

@@ -171,80 +171,10 @@
           ]
         },
         {
-          "icon": "key",
-          "group": "Authentication",
-          "pages": [
-            "modules/auth/overview",
-            "modules/auth/config",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/auth/scripts/complete_email_verification",
-                "modules/auth/scripts/send_email_verification"
-              ]
-            }
-          ]
-        },
-        {
           "icon": "messages",
           "group": "Chat",
           "pages": [
             "modules/chat/overview"
-          ]
-        },
-        {
-          "icon": "coin",
-          "group": "Currency",
-          "pages": [
-            "modules/currency/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/currency/scripts/get_balance_by_token"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/currency/scripts/deposit",
-                "modules/currency/scripts/get_balance",
-                "modules/currency/scripts/set_balance",
-                "modules/currency/scripts/withdraw"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "envelope",
-          "group": "Email",
-          "pages": [
-            "modules/email/overview",
-            "modules/email/config",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/email/scripts/send_email"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "user-group",
-          "group": "Friends",
-          "pages": [
-            "modules/friends/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/friends/scripts/accept_request",
-                "modules/friends/scripts/decline_request",
-                "modules/friends/scripts/list_friends",
-                "modules/friends/scripts/list_incoming_friend_requests",
-                "modules/friends/scripts/list_outgoing_friend_requests",
-                "modules/friends/scripts/remove_friend",
-                "modules/friends/scripts/send_request"
-              ]
-            }
           ]
         },
         {
@@ -279,10 +209,12 @@
               "pages": [
                 "modules/lobbies/scripts/create",
                 "modules/lobbies/scripts/destroy",
+                "modules/lobbies/scripts/fetch_lobby_manager_state",
                 "modules/lobbies/scripts/find",
                 "modules/lobbies/scripts/find_or_create",
                 "modules/lobbies/scripts/join",
                 "modules/lobbies/scripts/list",
+                "modules/lobbies/scripts/reset_lobby_manager_state",
                 "modules/lobbies/scripts/set_lobby_ready",
                 "modules/lobbies/scripts/set_player_connected",
                 "modules/lobbies/scripts/set_player_disconnected"
@@ -334,7 +266,8 @@
             {
               "group": "Scripts (Internal)",
               "pages": [
-                "modules/rivet/scripts/call"
+                "modules/rivet/scripts/call",
+                "modules/rivet/scripts/get_config"
               ]
             }
           ]
@@ -353,45 +286,6 @@
                 "modules/tokens/scripts/fetch",
                 "modules/tokens/scripts/revoke",
                 "modules/tokens/scripts/validate"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "file-arrow-up",
-          "group": "Uploads",
-          "pages": [
-            "modules/uploads/overview",
-            "modules/uploads/config",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/uploads/scripts/complete",
-                "modules/uploads/scripts/delete",
-                "modules/uploads/scripts/get_public_file_urls",
-                "modules/uploads/scripts/get",
-                "modules/uploads/scripts/prepare"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "user",
-          "group": "Users",
-          "pages": [
-            "modules/users/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/users/scripts/authenticate_token",
-                "modules/users/scripts/fetch"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/users/scripts/create",
-                "modules/users/scripts/create_token"
               ]
             }
           ]

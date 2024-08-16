@@ -24,10 +24,13 @@ This config can be modified by adding the following to your `backend.json`:
 
 _Object containing the following properties:_
 
-| Property                        | Type     |
-| :------------------------------ | :------- |
-| **`apiEndpoint`** (\*)          | `string` |
-| **`serviceTokenVariable`** (\*) | `string` |
+| Property                         | Type     |
+| :------------------------------- | :------- |
+| **`apiEndpoint`** (\*)           | `string` |
+| **`apiEndpointVariable`** (\*)   | `string` |
+| **`serviceTokenVariable`** (\*)  | `string` |
+| **`gameIdVariable`** (\*)        | `string` |
+| **`environmentIdVariable`** (\*) | `string` |
 
 _(\*) Required._
 
@@ -40,7 +43,10 @@ The provided user config will be merged with this config. If no user config is
 ```json
 {
     "apiEndpoint": "https://api.rivet.gg",
-    "serviceTokenVariable": "RIVET_SERVICE_TOKEN"
+    "apiEndpointVariable": "RIVET_API_ENDPOINT",
+    "serviceTokenVariable": "RIVET_SERVICE_TOKEN",
+    "gameIdVariable": "RIVET_GAME_ID",
+    "environmentIdVariable": "RIVET_ENVIRONMENT_ID"
 }
 ```
 

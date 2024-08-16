@@ -60,7 +60,7 @@ Add the following to your `backend.json`:
 
 These scripts can be called publicly by your game.
 
-<CardGroup><Card title="Create Lobby" href="/modules/lobbies/scripts/create">Creates a new lobby on-demand.</Card><Card title="Destroy Lobby" href="/modules/lobbies/scripts/destroy">Destroys an existing lobby.</Card><Card title="Find Lobby" href="/modules/lobbies/scripts/find">Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.</Card><Card title="Find Or Create Lobby" href="/modules/lobbies/scripts/find_or_create">Finds a lobby or creates one if there are no available spots for players.</Card><Card title="Join Lobby" href="/modules/lobbies/scripts/join">Add a player to an existing lobby.</Card><Card title="List Lobbies" href="/modules/lobbies/scripts/list">List & query all lobbies.</Card><Card title="Set Lobby Ready" href="/modules/lobbies/scripts/set_lobby_ready">Called on lobby startup after initiation to notify it can start accepting player. This should be called after operations like loading maps are complete.</Card><Card title="Set Player Connected" href="/modules/lobbies/scripts/set_player_connected">Called when a player connects to the lobby.</Card><Card title="Set Player Disconnected" href="/modules/lobbies/scripts/set_player_disconnected">Called when a player disconnects from the lobby.</Card></CardGroup>
+<CardGroup><Card title="Create Lobby" href="/modules/lobbies/scripts/create">Creates a new lobby on-demand.</Card><Card title="Destroy Lobby" href="/modules/lobbies/scripts/destroy">Destroys an existing lobby.</Card><Card title="Fetch Lobby Manager State" href="/modules/lobbies/scripts/fetch_lobby_manager_state">See full state of the lobby manager for debugging.</Card><Card title="Find Lobby" href="/modules/lobbies/scripts/find">Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.</Card><Card title="Find Or Create Lobby" href="/modules/lobbies/scripts/find_or_create">Finds a lobby or creates one if there are no available spots for players.</Card><Card title="Join Lobby" href="/modules/lobbies/scripts/join">Add a player to an existing lobby.</Card><Card title="List Lobbies" href="/modules/lobbies/scripts/list">List & query all lobbies.</Card><Card title="Reset Lobby Manager State" href="/modules/lobbies/scripts/reset_lobby_manager_state">Reset lobby manager state. For debugging only.</Card><Card title="Set Lobby Ready" href="/modules/lobbies/scripts/set_lobby_ready">Called on lobby startup after initiation to notify it can start accepting player. This should be called after operations like loading maps are complete.</Card><Card title="Set Player Connected" href="/modules/lobbies/scripts/set_player_connected">Called when a player connects to the lobby.</Card><Card title="Set Player Disconnected" href="/modules/lobbies/scripts/set_player_disconnected">Called when a player disconnects from the lobby.</Card></CardGroup>
 
 ### Internal
 
@@ -70,9 +70,10 @@ These scripts can only be called by other OpenGB modules.
 
 ## Errors
 
+- **Build Not Found** (`build_not_found`) Build not found. Check that there is a build with the provided version & that the bulid is enabled.
 - **Cannot Mutate Lobbies** (`cannot_mutate_lobbies`) This backend doesn't let you create or destroy lobbies.
+- **Lobby Aborted** (`lobby_aborted`) Lobby stopped while attempting to join.
 - **Lobby Already Ready** (`lobby_already_ready`) Lobby already set as ready.
-- **Lobby Cancelled** (`lobby_cancelled`) Lobby stopped while attempting to join.
 - **Lobby Create Missing Players** (`lobby_create_missing_players`) When creating a lobby with `config.lobbies.autoDestroyWhenEmpty`, a lobby must be created with players in order to avoid creating an empty lobby.
 - **Lobby Full** (`lobby_full`) No more players can join this lobby.
 - **Lobby Not Found** (`lobby_not_found`) Lobby not found.

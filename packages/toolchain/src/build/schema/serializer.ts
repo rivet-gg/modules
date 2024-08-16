@@ -185,7 +185,7 @@ export function createSchemaSerializer(
 	// This is to avoid serializing the entire typescript lib which
 	// is huge and contains a lot of types we don't need.
 	// const tsLib = Deno.readTextFileSync(import.meta.dirname + "/schema_ts_lib.ts");
-  const tsLib = `
+	const tsLib = `
 // deno-lint-ignore-file
 // This file is used only for internal purposes and is not intended to be used by the end user.
 // Types defined here are used to generate JSON schema for TypeScript types.
