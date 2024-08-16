@@ -23,7 +23,7 @@ const KEYS = {
 	META: {
 		MODULE: "meta:module",
 		ACTOR: "meta:actor",
-		CREATED_AT: "__meta:created_at",
+		CREATED_AT: "meta:created_at",
 	},
 	SCHEDULE: {
 		SCHEDULE: "schedule:schedule",
@@ -123,6 +123,9 @@ export function buildGlobalDurableObjectClass(
 
 		private actorInstance?: ActorBase<unknown, unknown>;
 
+		/** This will be incremented on destroy. Useful for checking if there was a race condition between a task & destroy. */
+		private generation: number = 0;
+
 		constructor(ctx: DurableObjectState, env: unknown) {
 			super(ctx, env);
 
@@ -166,6 +169,8 @@ export function buildGlobalDurableObjectClass(
 			context: ActorContext<ModuleContextParams>,
 			meta: ActorMeta,
 		): Promise<ActorBase<unknown, unknown>> {
+			const generation = this.generation;
+
 			// Actor already running
 			if (this.actorInstance) return this.actorInstance;
 
@@ -179,6 +184,7 @@ export function buildGlobalDurableObjectClass(
 
 			// Read state
 			const state = await this.ctx.storage.get<string>(KEYS.STATE);
+			this.assertGeneration(generation);
 
 			// TODO: use ctx.waitUntil for all calls
 			// Construct actor
@@ -189,7 +195,7 @@ export function buildGlobalDurableObjectClass(
 					new CloudflareDurableObjectsSchedule(this),
 				);
 			});
-			actor.state = state;
+			actor.state = state != undefined ? JSON.parse(state) : undefined;
 			this.actorInstance = actor;
 
 			return actor;
@@ -224,10 +230,19 @@ export function buildGlobalDurableObjectClass(
 		}
 
 		async initInner(context: ActorContext<ModuleContextParams>, opts: InitOpts): Promise<{ meta: ActorMeta }> {
+			const generation = this.generation;
+
 			// Check if already initialized
 			if (await this.initialized()) {
-				if (!opts.ignoreAlreadyInitialized) throw new Error("already initialized");
+				if (opts.ignoreAlreadyInitialized) {
+					return {
+						meta: await this.getMeta(),
+					};
+				} else {
+					throw new Error("already initialized");
+				}
 			}
+			this.assertGeneration(generation);
 
 			// Store metadata
 			await this.ctx.storage.put({
@@ -235,18 +250,23 @@ export function buildGlobalDurableObjectClass(
 				[KEYS.META.ACTOR]: opts.actor,
 				[KEYS.META.CREATED_AT]: Date.now(),
 			});
+			this.assertGeneration(generation);
 
 			// Build initial state
 			const actor = await this.constructActor(context, {
 				moduleName: opts.module,
 				actorName: opts.actor,
 			});
+			this.assertGeneration(generation);
 			const state = await context.runBlock(async () => {
 				let state = actor.initialize(context, opts.input);
 				if (state instanceof Promise) state = await state;
 				return state;
 			});
-			await this.ctx.storage.put(KEYS.STATE, state);
+			this.assertGeneration(generation);
+			actor.state = state;
+			await this.ctx.storage.put(KEYS.STATE, JSON.stringify(state));
+			this.assertGeneration(generation);
 
 			return {
 				meta: {
@@ -261,6 +281,8 @@ export function buildGlobalDurableObjectClass(
 		}
 
 		async destroy(): Promise<void> {
+			this.generation++;
+			this.actorInstance = undefined;
 			await this.ctx.storage.deleteAll();
 			await this.ctx.storage.deleteAlarm();
 			await this.ctx.storage.sync();
@@ -283,10 +305,13 @@ export function buildGlobalDurableObjectClass(
 			context: ActorContext<ModuleContextParams>,
 			opts: GetOrCreateAndCallOpts,
 		): Promise<any> {
+			const generation = this.generation;
+
 			const { meta } = await this.initInner(context, {
 				...opts.init,
 				ignoreAlreadyInitialized: true,
 			});
+			this.assertGeneration(generation);
 
 			return await this.callRpcInner(context, meta, { fn: opts.fn, request: opts.request, trace: opts.trace });
 		}
@@ -306,7 +331,10 @@ export function buildGlobalDurableObjectClass(
 		}
 
 		async callRpcInner(context: ActorContext<ModuleContextParams>, meta: ActorMeta, opts: CallRpcOpts): Promise<any> {
+			const generation = this.generation;
+
 			const actor = await this.constructActor(context, meta);
+			this.assertGeneration(generation);
 
 			try {
 				// Call fn
@@ -317,12 +345,17 @@ export function buildGlobalDurableObjectClass(
 				});
 				return callRes;
 			} finally {
+				this.assertGeneration(generation);
+
 				// Update state
-				await this.ctx.storage.put(KEYS.STATE, actor.state);
+				await this.ctx.storage.put(KEYS.STATE, JSON.stringify(actor.state));
+				this.assertGeneration(generation);
 			}
 		}
 
 		async scheduleEvent(timestamp: number, fn: string, request: unknown): Promise<void> {
+			const generation = this.generation;
+
 			// Save event
 			const eventId = crypto.randomUUID();
 			await this.ctx.storage.put<ScheduleEvent>(KEYS.SCHEDULE.event(eventId), {
@@ -330,9 +363,11 @@ export function buildGlobalDurableObjectClass(
 				fn,
 				request,
 			});
+			this.assertGeneration(generation);
 
 			// Read index
 			const schedule: ScheduleState = await this.ctx.storage.get(KEYS.SCHEDULE.SCHEDULE) ?? { events: [] };
+			this.assertGeneration(generation);
 
 			// Insert event in to index
 			const newEvent: ScheduleIndexEvent = { timestamp, eventId };
@@ -345,6 +380,7 @@ export function buildGlobalDurableObjectClass(
 
 			// Write new index
 			await this.ctx.storage.put(KEYS.SCHEDULE.SCHEDULE, schedule);
+			this.assertGeneration(generation);
 
 			// Update alarm if:
 			// - this is the newest event (i.e. at beginning of array) or
@@ -355,26 +391,32 @@ export function buildGlobalDurableObjectClass(
 		}
 
 		override async alarm(): Promise<void> {
+			const generation = this.generation;
 			const now = Date.now();
 
 			// Read index
 			const scheduleIndex: ScheduleState = await this.ctx.storage.get(KEYS.SCHEDULE.SCHEDULE) ?? { events: [] };
+			this.assertGeneration(generation);
 
 			// Remove events from schedule
-			const runIndex = scheduleIndex.events.findIndex((x) => x.timestamp > now);
+			const runIndex = scheduleIndex.events.findIndex((x) => x.timestamp < now);
 			const scheduleIndexEvents = scheduleIndex.events.splice(0, runIndex + 1);
 
 			// Find events to trigger
 			const eventKeys = scheduleIndexEvents.map((x) => KEYS.SCHEDULE.event(x.eventId));
 			const scheduleEvents = await this.ctx.storage.get<ScheduleEvent>(eventKeys);
+			this.assertGeneration(generation);
 			await this.ctx.storage.delete(eventKeys);
+			this.assertGeneration(generation);
 
 			// Write new schedule
 			await this.ctx.storage.put(KEYS.SCHEDULE.SCHEDULE, scheduleIndex);
+			this.assertGeneration(generation);
 
 			// Set alarm for next event
 			if (scheduleIndex.events.length > 0) {
 				await this.ctx.storage.setAlarm(scheduleIndex.events[0]!.timestamp);
+				this.assertGeneration(generation);
 			}
 
 			// Iterate by event key in order to ensure we call the events in order
@@ -387,6 +429,7 @@ export function buildGlobalDurableObjectClass(
 				} catch (err) {
 					log("error", "failed to run scheduled event", ["fn", event.fn], ...errorToLogEntries("error", err));
 				}
+				this.assertGeneration(generation);
 			}
 		}
 
@@ -401,6 +444,15 @@ export function buildGlobalDurableObjectClass(
 			if (this.actorInstance) {
 				await this.ctx.storage.put(KEYS.STATE, this.actorInstance.state);
 			}
+		}
+
+		/**
+		 * Checks if the actor was destroyed by comparing the previous generation.
+		 *
+		 * Should be called after any async call.
+		 */
+		private assertGeneration(generation: number) {
+			if (this.generation != generation) throw new Error("actor destroyed");
 		}
 	}
 

@@ -61,4 +61,5 @@ export interface StorageDriver {
 export interface ScheduleDriver {
 	after(duration: number, fn: string, request: unknown): void;
 	at(timestamp: number, fn: string, request: unknown): void;
+	__inspect(): Promise<any>;
 }
