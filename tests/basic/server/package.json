@@ -1,0 +1,18 @@
+{
+	"scripts": {
+		"start": "npx ts-node src/server.ts",
+		"build": "tsc --project tsconfig.json"
+	},
+	"dependencies": {
+		"dotenv": "^16.0.0",
+		"express": "^4.18.2",
+		"node-fetch": "2",
+		"opengb-sdk": "../sdk/",
+		"ws": "^7.5.4"
+	},
+	"packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
+	"devDependencies": {
+		"@types/node": "^20.14.10",
+		"typescript": "^5.5.3"
+	}
+}

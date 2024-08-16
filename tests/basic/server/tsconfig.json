@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "es2022",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "downlevelIteration": true,
+    "outDir": "dist/"
+  },
+  "include": ["src/index.ts"]
+}

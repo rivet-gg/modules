@@ -4,7 +4,7 @@ import { tokenFromRow } from "../utils/types.ts";
 
 export interface Request {
 	type: string;
-	meta: { [key: string]: any };
+	meta: Record<string, string>,
 	expireAt?: string;
 }
 

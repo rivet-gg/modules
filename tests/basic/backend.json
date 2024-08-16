@@ -1,50 +1,69 @@
 {
-    "registries": {
-        "local": {
-            "local": {
-                "directory": "../../modules"
-            }
+	"runtime": {
+		"cors": {
+			"origins": ["http://localhost:8010"]
+		}
+	},
+	"registries": {
+		"local": {
+			"local": {
+				"directory": "../../modules"
+			}
+		}
+	},
+	"modules": {
+		"currency": {
+			"registry": "local"
+		},
+		"friends": {
+			"registry": "local"
+		},
+		"rate_limit": {
+			"registry": "local"
+		},
+		"tokens": {
+			"registry": "local"
+		},
+		"users": {
+			"registry": "local"
+		},
+		"uploads": {
+			"registry": "local",
+			"config": {
+				"maxFilesPerUpload": 16,
+				"maxUploadSize": "100mib",
+				"maxMultipartUploadSize": "10gib"
+			}
+		},
+		"auth": {
+			"registry": "local",
+			"config": {
+				"email": {
+					"fromEmail": "hello@rivet.gg"
+				}
+			}
+		},
+		"email": {
+			"registry": "local",
+			"config": {
+				"provider": {
+					"test": {}
+				}
+			}
+		},
+		"lobbies": {
+			"registry": "local",
+      "config": {
+        "lobbies": {
+          "regions": ["test"],
+          "backend": {
+            "test": {}
+          }
         }
-    },
-    "modules": {
-        "currency": {
-            "registry": "local"
-        },
-        "friends": {
-            "registry": "local"
-        },
-        "rate_limit": {
-            "registry": "local"
-        },
-        "tokens": {
-            "registry": "local"
-        },
-        "users": {
-            "registry": "local"
-        },
-        "uploads": {
-            "registry": "local",
-            "config": {
-                "maxFilesPerUpload": 16,
-                "maxUploadSize": "100mib",
-                "maxMultipartUploadSize": "10gib"
-            }
-        },
-        "auth": {
-            "registry": "local",
-            "config": {
-                "email": {
-                    "fromEmail": "hello@rivet.gg"
-                }
-            }
-        },
-        "email": {
-            "registry": "local",
-            "config": {
-                "provider": {
-                    "test": {}
-                }
-            }
-        }
-    }
+      }
+		},
+		"rivet": {
+			"registry": "local"
+		}
+	}
 }

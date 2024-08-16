@@ -1,0 +1,6 @@
+            "server": {
+              "resources": { "cpu": 50, "memory": 50 },
+              "ports": {
+                "game": { "protocol": "http", "serverPort": 8080 }
+              }
+            }

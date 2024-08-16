@@ -1,0 +1,176 @@
+{
+	"status": "stable",
+	"name": "Lobbies",
+	"description": "Lobby & player management.",
+	"icon": "game-board",
+	"tags": [
+		"core",
+		"multiplayer"
+	],
+	"authors": [
+		"NathanFlurry"
+	],
+	"scripts": {
+		"create": {
+			"name": "Create Lobby",
+			"description": "Creates a new lobby on-demand.",
+			"public": true
+		},
+		"destroy": {
+			"name": "Destroy Lobby",
+			"description": "Destroys an existing lobby.",
+			"public": true
+		},
+		"find_or_create": {
+			"name": "Find Or Create Lobby",
+			"description": "Finds a lobby or creates one if there are no available spots for players.",
+			"public": true
+		},
+		"join": {
+			"name": "Join Lobby",
+			"description": "Add a player to an existing lobby.",
+			"public": true
+		},
+		"list": {
+			"name": "List Lobbies",
+			"description": "List & query all lobbies.",
+			"public": true
+		},
+		"set_lobby_ready": {
+			"name": "Set Lobby Ready",
+			"description": "Called on lobby startup after initiation to notify it can start accepting player. This should be called after operations like loading maps are complete.",
+			"public": true
+		},
+		"set_player_connected": {
+			"name": "Set Player Connected",
+			"description": "Called when a player connects to the lobby.",
+			"public": true
+		},
+		"set_player_disconnected": {
+			"name": "Set Player Disconnected",
+			"description": "Called when a player disconnects from the lobby.",
+			"public": true
+		},
+		"find": {
+			"name": "Find Lobby",
+			"description": "Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.",
+			"public": true
+		},
+		"force_gc": {
+			"name": "Force Garbage Collection",
+			"description": "Rarely used. Forces the matchmaker to purge lobbies & players.",
+			"public": false
+		},
+		"list_regions": {
+			"name": "List Regions",
+			"description": "List available regions.",
+			"public": false
+		},
+		"fetch_lobby_manager_state": {
+			"public": true
+		},
+		"reset_lobby_manager_state": {
+			"public": true
+		}
+	},
+	"actors": {
+		"lobby_manager": {}
+	},
+	"errors": {
+		"lobby_not_found": {
+			"name": "Lobby Not Found",
+			"description": "Lobby not found.",
+			"internal": false
+		},
+		"lobby_aborted": {
+			"name": "Lobby Aborted",
+			"description": "Lobby stopped while attempting to join.",
+			"internal": false
+		},
+		"lobby_create_missing_players": {
+			"name": "Lobby Create Missing Players",
+			"description": "When creating a lobby with `config.lobbies.autoDestroyWhenEmpty`, a lobby must be created with players in order to avoid creating an empty lobby.",
+			"internal": false
+		},
+		"lobby_full": {
+			"name": "Lobby Full",
+			"description": "No more players can join this lobby.",
+			"internal": false
+		},
+		"more_players_than_max": {
+			"name": "More Players Than Max",
+			"description": "More players were passed to the create lobby than the number of max players in a lobby.",
+			"internal": false
+		},
+		"lobby_already_ready": {
+			"name": "Lobby Already Ready",
+			"description": "Lobby already set as ready.",
+			"internal": false
+		},
+		"player_already_connected": {
+			"name": "Player Already Connected",
+			"description": "The player has already connected to this server. This error helps mitigate botting attacks by only allowing one scoket to connect to a game server for every player.",
+			"internal": false
+		},
+		"player_disconnected": {
+			"name": "Player Disconnected",
+			"description": "The player has already disconnected from the server. Create a new player for the specified lobby using the `join` script.",
+			"internal": false
+		},
+		"no_matching_lobbies": {
+			"name": "No Matching Lobbies",
+			"description": "No lobbies matched the given query.",
+			"internal": false
+		},
+		"too_many_players_for_ip": {
+			"name": "Too Many Players For IP",
+			"description": "The player has too many existing players for the given IP.",
+			"internal": false
+		},
+		"cannot_mutate_lobbies": {
+			"name": "Cannot Mutate Lobbies",
+			"description": "This backend doesn't let you create or destroy lobbies.",
+			"internal": false
+		},
+		"lobby_token_required": {
+			"name": "Lobby Token Required",
+			"description": "A lobby token was not provided when required for authentication.",
+			"internal": false
+		},
+		"region_not_found": {
+			"name": "Region Not Found",
+			"description": "Region not found.",
+			"internal": false
+		},
+		"build_not_found": {
+			"name": "Build Not Found",
+			"description": "Build not found. Check that there is a build with the provided version & that the bulid is enabled.",
+			"internal": false
+		}
+	},
+	"dependencies": {
+		"tokens": {},
+		"rivet": {}
+	},
+	"defaultConfig": {
+		"lobbies": {
+			"destroyOnEmptyAfter": 60000,
+			"unreadyExpireAfter": 300000,
+			"maxPlayers": 16,
+			"maxPlayersDirect": 16,
+			"enableCreate": false,
+			"enableDestroy": false,
+			"enableFind": true,
+			"enableFindOrCreate": true,
+			"enableJoin": true,
+			"enableList": true
+		},
+		"lobbyRules": [],
+		"players": {
+			"maxPerIp": 8,
+			"maxUnconnected": 128,
+			"unconnectedExpireAfter": 60000,
+			"autoDestroyAfter": 4147200000
+		}
+	}
+}

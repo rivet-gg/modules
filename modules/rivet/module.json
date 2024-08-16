@@ -1,0 +1,39 @@
+{
+	"status": "stable",
+	"name": "Rivet API",
+	"description": "Helper for calling the Rivet API.",
+	"icon": "r",
+	"tags": [
+		"core",
+		"api"
+	],
+	"authors": [
+		"NathanFlurry"
+	],
+	"scripts": {
+		"call": {
+			"name": "Call",
+			"description": "Call a Rivet REST endpoint.",
+			"public": false
+		},
+		"get_config": {
+      "name": "Get Config",
+      "description": "Provides Rivet-related config paramteres from the environment.",
+			"public": false
+		}
+	},
+	"errors": {
+		"rivet_api_error": {
+			"name": "Rivet API Error",
+			"description": "An error from the Rivet API.",
+      "internal": true
+		}
+	},
+	"defaultConfig": {
+		"apiEndpoint": "https://api.rivet.gg",
+		"apiEndpointVariable": "RIVET_API_ENDPOINT",
+		"serviceTokenVariable": "RIVET_SERVICE_TOKEN",
+		"gameIdVariable": "RIVET_GAME_ID",
+		"environmentIdVariable": "RIVET_ENVIRONMENT_ID"
+	}
+}
