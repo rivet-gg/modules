@@ -1,7 +1,7 @@
 import { exists } from "../deps.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
-import { error, verbose, warn } from "../term/status.ts";
+import { verbose, warn } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "./once.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
@@ -181,27 +181,20 @@ async function ensurePostgresRunningNative() {
 		stdout: "piped",
 		stderr: "piped",
 	}).spawn();
-	let exited = false;
+	let postgresOutput = null;
 	postgresProcess.output().then((output) => {
-		exited = true;
+    postgresOutput = output;
 		warn("Postgres exited early", `Exit code: ${output.code}`);
-		console.log(
-			"Output",
-			new TextDecoder().decode(output.stdout),
-			new TextDecoder().decode(output.stderr),
-		);
 	});
-	// postgresProcess.status.then(status => {
-	//   exited = true;
-	//   warn("Postgres exited early", `Exit code: ${status.code}`);
-	// });
 
 	// Wait for Postgres to start
 	while (true) {
-		if (exited) {
-			error(("Could not start Postgres", "Exited before pg_isready is true"));
-			return;
+		if (postgresOutput) {
+			throw new CommandError("Failed to start Postgres server.", {
+				commandOutput: postgresOutput,
+			});
 		}
+
 		const checkOutput = await new Deno.Command("pg_isready").output();
 		if (checkOutput.success) break;
 		await new Promise((r) => setTimeout(r, 50));

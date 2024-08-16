@@ -15,7 +15,8 @@ FROM denoland/deno:debian-1.44.1
 # Required for Git dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git default-jre postgresql-15 postgresql-contrib sudo \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/lib/postgresql/data
 COPY --from=build --chown=opengb:opengb /app/dist/cli /usr/bin/opengb
 ENV RUNNING_IN_DOCKER=1
 ENV _OPENGB_POSTGRES_DAEMON_DRIVER=native
