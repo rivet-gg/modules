@@ -20,5 +20,5 @@ jobs:
           file: cli.Dockerfile
           platforms: linux/amd64,linux/arm64
           build_tags: |
-            ghcr.io/rivet-gg/opengb:${{ github.sha }}
-            ghcr.io/rivet-gg/opengb:${{ github.ref_name || '' }}
+            rivetgg/opengb:${{ github.sha }}
+            rivetgg/opengb:${{ github.ref_name || '' }}

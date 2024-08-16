@@ -44,6 +44,6 @@ jobs:
           file: cli.Dockerfile
           platforms: linux/amd64,linux/arm64
           build_tags: |
-            ghcr.io/rivet-gg/opengb:${{ needs.release-please.outputs.release_sha }}
-            ghcr.io/rivet-gg/opengb:${{ needs.release-please.outputs.tag_name }}
+            rivetgg/opengb:${{ needs.release-please.outputs.release_sha }}
+            rivetgg/opengb:${{ needs.release-please.outputs.tag_name }}
 
