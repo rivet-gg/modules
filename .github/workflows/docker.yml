@@ -15,10 +15,11 @@ jobs:
       - name: Docker Build Push
         uses: ./.github/actions/docker-build-push
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_pat: ${{ secrets.DOCKER_PAT }}
           context: .
           file: cli.Dockerfile
           platforms: linux/amd64,linux/arm64
           build_tags: |
-            ghcr.io/rivet-gg/opengb:${{ github.sha }}
-            ghcr.io/rivet-gg/opengb:${{ github.ref_name || '' }}
+            rivetgg/opengb:${{ github.sha }}
+            rivetgg/opengb:${{ github.ref_name || '' }}
