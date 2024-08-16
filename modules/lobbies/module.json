@@ -67,9 +67,13 @@
 			"public": false
 		},
 		"fetch_lobby_manager_state": {
+      "name": "Fetch Lobby Manager State",
+      "description": "See full state of the lobby manager for debugging.",
 			"public": true
 		},
 		"reset_lobby_manager_state": {
+      "name": "Reset Lobby Manager State",
+      "description": "Reset lobby manager state. For debugging only.",
 			"public": true
 		}
 	},
