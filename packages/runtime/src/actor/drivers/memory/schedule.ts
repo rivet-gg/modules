@@ -30,4 +30,8 @@ export class MemorySchedule implements ScheduleDriver {
 			});
 		}, timestamp - Date.now());
 	}
+
+	async __inspect(): Promise<any> {
+		return {};
+	}
 }
