@@ -1,6 +1,6 @@
 import { ModuleContextParams, ScriptContext } from "./context.ts";
 import { Context, RouteContext, TestContext } from "./context.ts";
-import { PgPoolDummy, Postgres, PrismaClientDummy } from "./postgres.ts";
+import { DatabaseSchema, PgPoolDummy, Postgres } from "./postgres.ts";
 import { TraceEntryType } from "./trace.ts";
 import { newTrace } from "./trace.ts";
 import { RegistryCallMap } from "./proxy.ts";
@@ -56,8 +56,9 @@ export interface Module {
 	errors: Record<string, ErrorConfig>;
 	db?: {
 		/** Name of the Postgres schema the tables live in. */
-		schema: string;
-		createPrismaClient: (pool: PgPoolDummy, schema: string) => PrismaClientDummy;
+		schemaName: string;
+		/** Schema types from Drizzle. */
+		drizzleSchema: DatabaseSchema;
 	};
 	dependencies: Set<string>;
 	userConfig: unknown;
@@ -69,7 +70,7 @@ export interface CorsConfig {
 
 export interface Script {
 	// deno-lint-ignore no-explicit-any
-	run: ScriptRun<any, any, any, any, any>;
+	run: ScriptRun<any, any, any, any>;
 	requestSchema: ValidationSchema;
 	responseSchema: ValidationSchema;
 	public: boolean;
@@ -77,7 +78,7 @@ export interface Script {
 
 export interface RouteBase {
 	// deno-lint-ignore no-explicit-any
-	run: RouteRun<any, any, any>;
+	run: RouteRun<any, any>;
 	methods: Set<string>;
 }
 
@@ -91,14 +92,13 @@ export interface ExactRoute extends RouteBase {
 
 export type Route = ExactRoute | PrefixRoute;
 
-export type ScriptRun<Req, Res, UserConfigT, DatabaseT, DatabaseSchemaT> = (
+export type ScriptRun<Req, Res, UserConfigT, DatabaseSchemaT> = (
 	ctx: ScriptContext<{
 		dependenciesSnake: any;
 		dependenciesCamel: any;
 		actorsSnake: any;
 		actorsCamel: any;
 		userConfig: UserConfigT;
-		database: DatabaseT;
 		databaseSchema: DatabaseSchemaT;
 	}>,
 	req: Req,
@@ -112,14 +112,13 @@ export interface Actor {
 	storageAlias: string;
 }
 
-export type RouteRun<UserConfigT, DatabaseT, DatabaseSchemaT> = (
+export type RouteRun<UserConfigT, DatabaseSchemaT> = (
 	ctx: RouteContext<{
 		dependenciesSnake: any;
 		dependenciesCamel: any;
 		actorsSnake: any;
 		actorsCamel: any;
 		userConfig: UserConfigT;
-		database: DatabaseT;
 		databaseSchema: DatabaseSchemaT;
 	}>,
 	req: Request,
@@ -208,7 +207,6 @@ export class Runtime<Params extends ContextParams> {
 		"actorsSnake": Params["actorsSnake"];
 		"actorsCamel": Params["actorsCamel"];
 		"userConfig": any;
-		"database": PrismaClientDummy | undefined;
 		"databaseSchema": any;
 	}> {
 		const module = this.config.modules[moduleName];
@@ -218,8 +216,7 @@ export class Runtime<Params extends ContextParams> {
 			this,
 			newTrace(traceEntryType),
 			moduleName,
-			this.postgres.getOrCreatePrismaClient(this.env, this.config, module),
-			module.db?.schema,
+			module.db?.schemaName,
 			routeName,
 			this.dependencyCaseConversionMap,
 			this.actorCaseConversionMap,
@@ -264,8 +261,7 @@ export class Runtime<Params extends ContextParams> {
 						test: { module: moduleName, name: testName },
 					}),
 					moduleName,
-					runtime.postgres.getOrCreatePrismaClient(runtime.env, runtime.config, module),
-					module.db?.schema,
+					module.db?.schemaName,
 					dependencyCaseConversionMap,
 					actorDependencyCaseConversionMap,
 				);

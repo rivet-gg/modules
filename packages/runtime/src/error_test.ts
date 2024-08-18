@@ -74,7 +74,6 @@ Deno.test("error", async () => {
 		newTrace({ internalTest: {} }),
 		"test_module",
 		undefined,
-		undefined,
 		dependencyCaseConversionMap,
 		actorCaseConversionMap,
 	);

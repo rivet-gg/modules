@@ -2,6 +2,9 @@ import { Module } from "./runtime.ts";
 import { Config } from "./mod.ts";
 import { Environment } from "./environment.ts";
 
+// See also packages/toolchain/src/drizzle_consts.ts (DRIZZLE_ORM_PACKAGE)
+import { drizzle, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
+
 const DEFAULT_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable";
 
 export function getDatabaseUrl(env: Environment): URL {
@@ -15,26 +18,31 @@ export interface PgPoolDummy {
 	end?: () => Promise<void>;
 }
 
+// TODO:
 /**
- * We don't have access to the generated Prisma type, so we create an interface with only what we need to interact with.
+ * This type represents the module exported from `db/schema.ts`.
  *
- * This will be converted to the full Prisma type when passed to the context.
+ * Required by NodePgDatabase.
  */
-export interface PrismaClientDummy {
-	$disconnect(): Promise<void>;
-}
+export type DatabaseSchema = Record<string, unknown>;
+
+/**
+ * Represents a generic Drizzle client.
+ */
+export type Database<T extends DatabaseSchema> = NodePgDatabase<T>;
 
 /** Manages Postgres connections. */
 export class Postgres {
 	private isShutDown = false;
 
 	private pgPool?: PgPoolDummy;
-	public prismaClients = new Map<string, PrismaClientDummy>();
+	public drizzleClients = new Map<string, Database<any>>();
 
 	public async shutdown() {
 		this.isShutDown = true;
-		for (const client of this.prismaClients.values()) {
-			await client.$disconnect();
+		for (const client of this.drizzleClients.values()) {
+			// TODO:
+			// await client.$disconnect();
 		}
 		if (this.pgPool?.end) await this.pgPool.end();
 	}
@@ -54,21 +62,27 @@ export class Postgres {
 		}
 	}
 
-	public getOrCreatePrismaClient(env: Environment, config: Config, module: Module): PrismaClientDummy | undefined {
-		if (!module.db) return undefined;
+	public getOrCreateDrizzleClient<T extends DatabaseSchema>(
+		env: Environment,
+		config: Config,
+		module: Module,
+	): Database<T> {
+		if (!module.db) {
+			throw new Error("Cannot create Drizzle client for module without database");
+		}
+
 		if (this.isShutDown) throw new Error("Postgres is shutting down");
 
-		if (this.prismaClients.has(module.db.schema)) {
-			return this.prismaClients.get(module.db.schema)!;
+		if (this.drizzleClients.has(module.db.schemaName)) {
+			return this.drizzleClients.get(module.db.schemaName) as Database<T>;
 		} else {
 			// Create & insert pool
 			const pool = this.getOrCreatePgPool(env, config);
-			const client = module.db.createPrismaClient(pool, module.db.schema);
-			this.prismaClients.set(module.db.schema, client);
-			return client;
+			const drizzleInstance = drizzle(pool, {
+				schema: module.db.drizzleSchema,
+			});
+			this.drizzleClients.set(module.db.schemaName, drizzleInstance);
+			return drizzleInstance as Database<T>;
 		}
 	}
 }
-
-/** Dummy type to represent places where we reference a specific database. */
-export type PostgresWrapped<T> = T;

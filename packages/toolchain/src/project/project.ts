@@ -301,8 +301,8 @@ export const META_PATH = "meta.json";
 export const OPEN_API_PATH = "openapi.json";
 export const CACHE_PATH = "cache.json";
 export const RUNTIME_PATH = "runtime";
-export const PRISMA_WORKSPACE_PATH = "prisma_workspace";
 export const SDK_PATH = "sdk";
+export const DRIZZLE_ORM_REEXPORT = "drizzle_orm_reexport.ts";
 
 export function projectGenPath(project: Project, ...pathSegments: string[]): string {
 	return resolve(project.path, ".opengb", ...pathSegments);
@@ -310,6 +310,10 @@ export function projectGenPath(project: Project, ...pathSegments: string[]): str
 
 export function genRuntimeModPath(project: Project): string {
 	return projectGenPath(project, "runtime", "packages", "runtime", "src", "mod.ts");
+}
+
+export function genRuntimePostgresPath(project: Project): string {
+	return projectGenPath(project, "runtime", "packages", "runtime", "src", "postgres.ts");
 }
 
 export function genRuntimeActorPath(project: Project): string {
@@ -382,17 +386,6 @@ function genDependenciesFolder(project: Project): string {
 
 export function genModuleDependenciesPath(project: Project, module: Module): string {
 	return resolve(genDependenciesFolder(project), `dependencies_${module.name}.ts`);
-}
-
-export function genPrismaOutputFolder(project: Project, module: Module): string {
-	return projectGenPath(project, "prisma_output", module.name);
-}
-
-/**
- * Final processed JavaScript bundle that can be used to interact with the database.
- */
-export function genPrismaOutputBundle(project: Project, module: Module): string {
-	return resolve(genPrismaOutputFolder(project, module), "esm.js");
 }
 
 export interface ListSourceFileOpts {

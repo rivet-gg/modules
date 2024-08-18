@@ -6,6 +6,7 @@ import { compileModuleConfigSchema } from "../module_config_schema.ts";
 import { planScriptBuild } from "./script.ts";
 import { BuildOpts } from "../mod.ts";
 import { publicPath } from "../../project/module.ts";
+import { compileDbSchemaHelper } from "../gen/db_schema.ts";
 
 export async function planModuleBuild(
 	buildState: BuildState,
@@ -61,6 +62,24 @@ export async function planModuleBuild(
 			await compileModuleHelper(project, module, opts);
 		},
 	});
+
+	if (module.db) {
+		buildStep(buildState, {
+			id: `module.${module.name}.db_schema.generate`,
+			name: "Generate",
+			description: `schema.gen.ts`,
+			module,
+			condition: {
+				files: [resolve(module.path, "module.json")],
+				expressions: {
+					db: !!module.db,
+				},
+			},
+			async build() {
+				await compileDbSchemaHelper(project, module, {});
+			},
+		});
+	}
 
 	for (const script of module.scripts.values()) {
 		await planScriptBuild(buildState, project, module, script, opts);

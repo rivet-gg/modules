@@ -1,7 +1,7 @@
 import { exists } from "../deps.ts";
 import { CommandError, UserError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
-import { verbose, warn } from "../term/status.ts";
+import { info, verbose, warn } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "./once.ts";
 
 const CONTAINER_NAME = "opengb-postgres";
@@ -47,7 +47,8 @@ async function ensurePostgresRunningDocker() {
 		return;
 	}
 
-	verbose("Starting Postgres server...");
+	info("Starting Database");
+	verbose("Starting database in Docker");
 
 	// Validate Docker is installed
 	const versionOutput = await new Deno.Command("docker", {
@@ -144,7 +145,8 @@ async function ensurePostgresRunningNative() {
 		);
 	}
 
-	verbose("Starting native Postgres server...");
+	info("Starting Database");
+	verbose("Starting database natively");
 
 	const postgresDataDir = "/var/lib/postgresql/data";
 	const postgresConfPath = `${postgresDataDir}/postgresql.conf`;

@@ -1,21 +1,20 @@
-// Generates SQL migrations & generates client library.
-//
-// Wrapper around `prisma migrate dev`
-
 import { Module, Project } from "../project/mod.ts";
-import { forEachDatabase } from "./mod.ts";
-import { runPrismaCommand } from "./prisma.ts";
+import { forEachDatabase, getDefaultClient } from "./mod.ts";
+import { info } from "../term/status.ts";
+import { assertValidString } from "./mod.ts";
 
-export async function migrateReset(project: Project, modules: Module[], signal?: AbortSignal) {
-	await forEachDatabase(project, modules, async ({ databaseUrl, module }) => {
-		await runPrismaCommand(project, module, {
-			args: ["migrate", "reset", "--skip-generate"],
-			env: {
-				DATABASE_URL: databaseUrl,
-			},
-			interactive: true,
-			output: true,
-			signal,
-		});
-	});
+export async function dbReset(
+	project: Project,
+	modules: Module[],
+	_signal?: AbortSignal,
+) {
+	await forEachDatabase(
+		project,
+		modules,
+		async ({ module, db }) => {
+			const client = await getDefaultClient(project);
+			info("Resetting", module.name);
+			await client.queryObject(`DROP SCHEMA IF EXISTS ${assertValidString(db.schema)} CASCADE`);
+		},
+	);
 }

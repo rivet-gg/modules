@@ -7,15 +7,22 @@ import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
 import { UserError } from "../../../toolchain/src/error/mod.ts";
 import { info } from "../../../toolchain/src/term/status.ts";
+import { convertMigrateMode, migrateMode } from "./../util.ts";
 
 // TODO: https://github.com/rivet-gg/opengb-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()
 	.description("Run tests")
+	.type("migrate-mode", migrateMode)
 	.arguments("[modules...:string]")
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")
 	.option("--strict-schemas", "Strictly validate schemas", { default: false })
-	.option("--force-deploy-migrations", "Auto deploy migrations without using development prompt", { default: false })
+	.option("--no-migrate", "Disable migrations")
+	.option(
+		"--migrate-mode <mode:migrate-mode>",
+		"Configure how migrations are ran",
+		{ default: "dev" },
+	)
 	.option("-w, --watch", "Automatically rerun tests on changes")
 	.action(
 		async (opts, ...modulesFilter: string[]) => {
@@ -34,9 +41,11 @@ export const testCommand = new Command<GlobalOpts>()
 							strictSchemas: opts.strictSchemas,
 							// This gets ran on `deno test`
 							skipDenoCheck: true,
-							migrate: {
-								forceDeploy: opts.forceDeployMigrations,
-							},
+							migrate: opts.migrate
+								? {
+									mode: convertMigrateMode(opts.migrateMode),
+								}
+								: undefined,
 							signal,
 						});
 					}

@@ -2,7 +2,7 @@ import { runDrizzleCommand } from "../drizzle.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachDatabase } from "./mod.ts";
 
-export async function migrateGenerate(
+export async function migrateApply(
 	project: Project,
 	modules: Module[],
 	signal?: AbortSignal,
@@ -12,9 +12,9 @@ export async function migrateGenerate(
 		modules,
 		async ({ module }) => {
 			await runDrizzleCommand(project, module, {
-				args: ["generate"],
-				interactive: true,
-				output: true,
+				args: ["migrate"],
+				interactive: false,
+				output: Deno.env.get("VERBOSE") == "1",
 				signal,
 			});
 		},

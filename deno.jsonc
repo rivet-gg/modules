@@ -2,7 +2,7 @@
 	"tasks": {
 		// Runs the CLI
 		"cli:run": "deno task artifacts:build && deno task cli:run:dirty",
-		"cli:run:dirty": "deno run -A --check packages/cli/src/main.ts --path tests/basic",
+		"cli:run:dirty": "deno run -A --check packages/cli/src/main.ts --project tests/basic",
 
 		// Specific CLI tasks
 		"cli:run:build": "deno task cli:run build",
@@ -18,10 +18,10 @@
 		"docker:build": "docker build -t opengb -f cli.Dockerfile .",
 
 		// Generates schema
-		"artifacts:build": "deno task format && deno task artifacts:build:runtime && deno task artifacts:build:dynamic && deno task artifacts:build:prisma",
+		"artifacts:build": "deno task format && deno task artifacts:build:runtime && deno task artifacts:build:dynamic && deno task artifacts:build:drizzle",
 		"artifacts:build:runtime": "deno run --allow-env --allow-read --allow-write scripts/artifacts/build_runtime_archive.ts",
 		"artifacts:build:dynamic": "deno run --allow-env --allow-read --allow-write scripts/artifacts/build_dynamic_archive.ts",
-		"artifacts:build:prisma": "deno run --allow-env --allow-read --allow-write --allow-run scripts/artifacts/build_prisma_archive.ts",
+		"artifacts:build:drizzle": "deno run --node-modules-dir --allow-env --allow-read --allow-write scripts/artifacts/build_drizzle.ts",
 
 		// Format
 		"format": "deno fmt packages/",

@@ -3,7 +3,7 @@ import { colors } from "../../toolchain/src/term/deps.ts";
 import { devCommand } from "./commands/dev.ts";
 import { moduleCommand } from "./commands/module.ts";
 import { buildCommand } from "./commands/build.ts";
-import { dbCommand } from "./commands/db.ts";
+import { dbCommand } from "./commands/db/mod.ts";
 import { testCommand } from "./commands/test.ts";
 import { sdkCommand } from "./commands/sdk.ts";
 import { createCommand } from "./commands/create.ts";
@@ -44,7 +44,8 @@ command.action(() => command.showHelp())
 	.command("sdk", sdkCommand)
 	.command("format, fmt", formatCommand)
 	.command("lint", lintCommand)
-	.command("build", buildCommand)
+	// HACK: `as any` prevents infinite recursion TypeScript bug
+	.command("build", buildCommand as any)
 	.command("clean", cleanCommand)
 	.command("config", configCommand)
 	.command("_internal", internalCommand)
