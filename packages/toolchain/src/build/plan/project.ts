@@ -1,37 +1,25 @@
 import { BuildState, buildStep, waitForBuildPromises } from "../../build_state/mod.ts";
-import { exists, relative, resolve } from "../../deps.ts";
+import { relative, resolve } from "../../deps.ts";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, Runtime } from "../mod.ts";
-import { generateClient } from "../../migrate/generate.ts";
 import { planModuleBuild } from "./module.ts";
 import { compileTypeHelpers } from "../gen/mod.ts";
 import { generateDenoConfig } from "../deno_config.ts";
 import { generateEntrypoint } from "../entrypoint.ts";
 import { generateOpenApi } from "../openapi.ts";
-import { InternalError } from "../../error/mod.ts";
 import { UserError } from "../../error/mod.ts";
-import { glob } from "../../project/deps.ts";
-import { migrateDeploy } from "../../migrate/deploy.ts";
-import { migrateDev } from "../../migrate/dev.ts";
 import { generateMeta } from "../meta.ts";
-import {
-	BUNDLE_PATH,
-	ENTRYPOINT_PATH,
-	genPrismaOutputFolder,
-	MANIFEST_PATH,
-	projectGenPath,
-	RUNTIME_PATH,
-} from "../../project/project.ts";
+import { BUNDLE_PATH, ENTRYPOINT_PATH, MANIFEST_PATH, projectGenPath, RUNTIME_PATH } from "../../project/project.ts";
 import { compileActorTypeHelpers } from "../gen/mod.ts";
 import { inflateArchive } from "../util.ts";
 import runtimeArchive from "../../../../../artifacts/runtime_archive.json" with { type: "json" };
 import { nodeModulesPolyfillPlugin } from "npm:esbuild-plugins-node-modules-polyfill@1.6.4";
 
 // Must match version in `esbuild_deno_loader`
-//
-// See also Prisma esbuild in `src/migrate/deps.ts`
 import * as esbuild from "npm:esbuild@0.20.2";
 import { denoPlugins } from "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2";
+import { migratePush } from "../../migrate/push.ts";
+import { migrateApply } from "../../migrate/apply.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -39,28 +27,6 @@ export async function planProjectBuild(
 	opts: BuildOpts,
 ) {
 	const signal = buildState.signal;
-
-	// Generate Prisma clients
-	for (const module of project.modules.values()) {
-		if (module.db) {
-			buildStep(buildState, {
-				id: `module.${module.name}.generate.prisma`,
-				name: "Generate",
-				description: `prisma_output/`,
-				module,
-				condition: {
-					files: [resolve(module.path, "db", "schema.prisma")],
-					expressions: {
-						runtime: opts.runtime,
-					},
-				},
-				async build({ signal }) {
-					// Generate client
-					await generateClient(project, [module], opts.runtime, signal);
-				},
-			});
-		}
-	}
 
 	// TODO: Add way to compare runtime artifacts (or let this be handled by the cache version and never rerun?)
 	buildStep(buildState, {
@@ -247,30 +213,31 @@ export async function planProjectBuild(
 				if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 					let bundleStr = await Deno.readTextFile(bundledFile);
 
-					// Find any `query-engine.wasm`
-					let wasmPath;
-					for (const module of project.modules.values()) {
-						const moduleWasmPath = resolve(
-							genPrismaOutputFolder(project, module),
-							"query_engine_bg.wasm",
-						);
-
-						if (await exists(moduleWasmPath)) {
-							wasmPath = moduleWasmPath;
-							break;
-						}
-					}
-
-					// Check if wasm is actually required
-					if (wasmPath) {
-						// Make wasm import relative
-						bundleStr = bundleStr.replaceAll(
-							/file:[\w\\/\.\-]+query_engine_bg\.wasm/g,
-							"query-engine.wasm",
-						);
-					} else if (/file:[\w\\/\.\-]+query_engine_bg\.wasm/.test(bundleStr)) {
-						throw new InternalError("Failed to find required query_engine_bg.wasm", { path: bundledFile });
-					}
+					// TODO: Add ability for injecting WASM modules
+					// // Find any `query-engine.wasm`
+					// let wasmPath;
+					// for (const module of project.modules.values()) {
+					// 	const moduleWasmPath = resolve(
+					// 		genPrismaOutputFolder(project, module),
+					// 		"query_engine_bg.wasm",
+					// 	);
+					//
+					// 	if (await exists(moduleWasmPath)) {
+					// 		wasmPath = moduleWasmPath;
+					// 		break;
+					// 	}
+					// }
+					//
+					// // Check if wasm is actually required
+					// if (wasmPath) {
+					// 	// Make wasm import relative
+					// 	bundleStr = bundleStr.replaceAll(
+					// 		/file:[\w\\/\.\-]+query_engine_bg\.wasm/g,
+					// 		"query-engine.wasm",
+					// 	);
+					// } else if (/file:[\w\\/\.\-]+query_engine_bg\.wasm/.test(bundleStr)) {
+					// 	throw new InternalError("Failed to find required query_engine_bg.wasm", { path: bundledFile });
+					// }
 
 					signal.throwIfAborted();
 
@@ -282,7 +249,8 @@ export async function planProjectBuild(
 					// generated from a Docker container.
 					const manifest = {
 						bundle: relative(project.path, bundledFile),
-						wasm: wasmPath ? relative(project.path, wasmPath) : undefined,
+						wasm: undefined,
+						// wasm: wasmPath ? relative(project.path, wasmPath) : undefined,
 					};
 
 					signal.throwIfAborted();
@@ -322,42 +290,47 @@ export async function planProjectBuild(
 
 	await waitForBuildPromises(buildState);
 
+	// Run migrations
+	//
+	// For external modules, we apply the migrations as you would in production.
+	//
+	// For local modules, we force push the schema changes in order to allow
+	// developers to iterate quickly. This has a risk of data loss, but we
+	// assume that this is fine in development.
+	//
+	// Migrations will be generated on `deploy` or `build`.
 	if (opts.migrate) {
-		// Deploy external migrations in parallel
 		for (const module of project.modules.values()) {
-			if (module.db && (opts.migrate.forceDeploy || module.registry.isExternal)) {
-				const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
+			if (!module.db) continue;
+
+			const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
+
+			if (module.registry.isExternal || opts.migrate.forceDeploy) {
+				// Migrate external modules
 				buildStep(buildState, {
-					id: `module.${module.name}.migrate.deploy`,
+					id: `module.${module.name}.migrate.apply`,
 					name: "Migrate Database",
 					module,
-					description: "deploy",
+					description: "apply",
 					condition: {
 						files: migrations,
 					},
 					async build({ signal }) {
-						await migrateDeploy(project, [module], signal);
+						await migrateApply(project, [module], signal);
 					},
 				});
-			}
-		}
-
-		await waitForBuildPromises(buildState);
-
-		// Deploy dev migrations one at a time
-		for (const module of project.modules.values()) {
-			if (module.db && !opts.migrate.forceDeploy && !module.registry.isExternal) {
-				const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
+			} else {
+				// Force push internal migrations
 				buildStep(buildState, {
-					id: `module.${module.name}.migrate.dev`,
+					id: `module.${module.name}.migrate.push`,
 					name: "Migrate Database",
 					module,
-					description: "develop",
+					description: "push",
 					condition: {
-						files: [resolve(module.path, "db", "schema.prisma"), ...migrations],
+						files: [resolve(module.path, "db", "schema.ts"), ...migrations],
 					},
 					async build({ signal }) {
-						await migrateDev(project, [module], {
+						await migratePush(project, [module], {
 							createOnly: false,
 							// HACK: Disable lock since running this command in watch does not clear the lock correctly
 							disableSchemaLock: true,
@@ -365,9 +338,9 @@ export async function planProjectBuild(
 						});
 					},
 				});
-
-				await waitForBuildPromises(buildState);
 			}
+
+			await waitForBuildPromises(buildState);
 		}
 	}
 }

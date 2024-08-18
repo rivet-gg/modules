@@ -432,6 +432,29 @@ export function moduleGenPath(project: Project, module: Module, ...pathSegments:
 	return projectGenPath(project, "modules", module.name, ...pathSegments);
 }
 
+export function dbSchemaHelperPath(
+	_project: Project,
+	module: Module,
+): string {
+	return resolve(
+		module.path,
+		"db",
+		"schema.gen.ts",
+	);
+}
+
+export function dbPath(module: Module): string {
+	return resolve(module.path, "db");
+}
+
+export function dbSchemaPath(module: Module): string {
+	return resolve(dbPath(module), "schema.ts");
+}
+
+export function dbMigrationsPath(module: Module): string {
+	return resolve(dbPath(module), "migrations");
+}
+
 export function publicPath(module: Module): string {
 	return resolve(module.path, "public.ts");
 }

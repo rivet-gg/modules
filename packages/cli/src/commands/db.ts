@@ -1,13 +1,12 @@
 import { Command } from "../deps.ts";
 import { GlobalOpts, initProject } from "../common.ts";
-import { migrateDev } from "../../../toolchain/src/migrate/dev.ts";
-import { migrateStatus } from "../../../toolchain/src/migrate/status.ts";
-import { migrateDeploy } from "../../../toolchain/src/migrate/deploy.ts";
-import { migrateReset } from "../../../toolchain/src/migrate/reset.ts";
 import { UserError } from "../../../toolchain/src/error/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
 import { verbose, warn } from "../../../toolchain/src/term/status.ts";
 import { getDatabaseUrl } from "../../../toolchain/src/utils/db.ts";
+import { migrateGenerate } from "../../../toolchain/src/migrate/generate.ts";
+import { migratePush } from "../../../toolchain/src/migrate/push.ts";
+import { migrateApply } from "../../../toolchain/src/migrate/apply.ts";
 
 export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
 // Unique container name for this runtime so we can run multiple instances in
@@ -27,11 +26,8 @@ if (Deno.env.get("RIVET_CLI_PASSTHROUGH") != undefined) {
 }
 
 dbCommand
-	.command("dev")
+	.command("generate")
 	.arguments("[...modules:string]")
-	.option("-c, --create-only", "Create only", {
-		default: false,
-	})
 	.action(async (opts, ...moduleNames: string[]) => {
 		const project = await initProject(opts);
 		const modules = resolveModules(project, moduleNames);
@@ -43,40 +39,33 @@ dbCommand
 			}
 		}
 
-		await migrateDev(project, modules, { createOnly: opts.createOnly });
+		await migrateGenerate(project, modules);
 	});
 
 dbCommand
-	.command("status")
+	.command("apply")
 	.arguments("[...modules:string]")
 	.action(async (opts, ...moduleNames: string[]) => {
 		const project = await initProject(opts);
 		const modules = resolveModules(project, moduleNames);
-		await migrateStatus(project, modules);
+
+		await migrateApply(project, modules);
 	});
 
+// TODO: drop entire database
 dbCommand
-	.command("reset")
+	.command("push")
 	.arguments("[...modules:string]")
 	.action(async (opts, ...moduleNames: string[]) => {
 		const project = await initProject(opts);
 		const modules = resolveModules(project, moduleNames);
-		await migrateReset(project, modules);
-	});
 
-dbCommand
-	.command("deploy")
-	.arguments("[...modules:string]")
-	.action(async (opts, ...moduleNames: string[]) => {
-		const project = await initProject(opts);
-		const modules = resolveModules(project, moduleNames);
-		await migrateDeploy(project, modules);
+		await migratePush(project, modules);
 	});
 
 dbCommand
 	.command("sh")
-	.arguments("<module>")
-	.action(async (opts, moduleName: string) => {
+	.action(async (opts) => {
 		// Validate terminal
 		if (!Deno.stdin.isTerminal()) {
 			throw new UserError("Cannot run this command without a terminal.", {
@@ -92,9 +81,6 @@ dbCommand
 		}
 
 		const project = await initProject(opts);
-		const module = resolveModules(project, [moduleName])[0]!;
-
-		if (!module.db) throw new UserError(`Module does not have a database configured: ${name}`);
 
 		const dbUrl = getDatabaseUrl();
 		if (dbUrl.hostname == "localhost" || dbUrl.hostname == "0.0.0.0" || dbUrl.hostname == "127.0.0.1") {
@@ -114,12 +100,6 @@ dbCommand
 				// ===
 				"psql",
 				dbUrl.toString(),
-				// Update schema
-				"-c",
-				`SET search_path TO "${module.db.schema}";`,
-				// Continue REPL
-				"-f",
-				"-",
 			],
 			stdin: "inherit",
 			stdout: "inherit",
@@ -147,16 +127,3 @@ function resolveModules(project: Project, moduleNames: string[]) {
 		return Array.from(project.modules.values());
 	}
 }
-
-// TODO: https://github.com/rivet-gg/opengb-engine/issues/84
-// TODO: https://github.com/rivet-gg/opengb-engine/issues/85
-// dbCommand.command("sh").action(async () => {
-// 	const cmd = await new Deno.Command("docker-compose", {
-// 		args: ["exec", "-it", "postgres", "psql", "--username", "postgres"],
-// 		stdin: "inherit",
-// 		stdout: "inherit",
-// 		stderr: "inherit",
-// 	})
-// 		.output();
-// 	if (!cmd.success) throw new Error("Failed to sh in to database");
-// });

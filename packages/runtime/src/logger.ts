@@ -128,7 +128,12 @@ function castToLogValue(v: unknown): LogValue {
 	if (typeof v === "string" || typeof v === "number" || typeof v === "boolean" || v === null || v === undefined) {
 		return v;
 	}
-	return JSON.stringify(v);
+	try {
+		return JSON.stringify(v);
+	} catch (err) {
+		log("warn", "cannot cast object to log value", ["err", `${err}`]);
+		return "[cannot stringify]";
+	}
 }
 
 // Patch console methods

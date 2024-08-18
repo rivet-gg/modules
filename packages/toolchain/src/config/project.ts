@@ -16,7 +16,7 @@ const RegistryLocalConfigSchema = z.object({
 	local: z.object({
 		directory: z.string(),
 		isExternal: z.boolean().optional().describe(
-			"If true, this will be treated like an external registry. This is important if multiple projects are using the same registry locally. Modules from this directory will not be tested, formatted, linted, and generate Prisma migrations.",
+			"If true, this will be treated like an external registry. This is important if multiple projects are using the same registry locally. Modules from this directory will not be tested, formatted, linted, and generate database migrations.",
 		),
 	}),
 });

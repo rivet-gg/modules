@@ -23,8 +23,7 @@ export class ActorProxy {
 			this.runtime,
 			trace,
 			this.moduleName,
-			this.runtime.postgres.getOrCreatePrismaClient(this.runtime.env, this.runtime.config, module),
-			module.db?.schema,
+			module.db?.schemaName,
 			this.actorName,
 			// These aren't used so we don't need to provide them
 			{},

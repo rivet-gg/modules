@@ -32,16 +32,10 @@ export async function templateModule(project: Project, moduleName: string) {
 
 	// Write default migration
 	const defaultSchema = dedent`
-		// Do not modify this \`datasource\` block
-		datasource db {
-			provider = "postgresql"
-			url      = env("DATABASE_URL")
-		}
-
-		// Add your database schema here
+    // TODO:
 	`;
 	await Deno.writeTextFile(
-		resolve(modulePath, "db", "schema.prisma"),
+		resolve(modulePath, "db", "schema.ts"),
 		defaultSchema,
 	);
 

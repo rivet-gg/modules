@@ -14,7 +14,9 @@ export async function run(
 ): Promise<Response> {
 	let id = req.id ?? "me";
 
-  let pongs = await ctx.actors.ponger.getOrCreateAndCall<{}, number, number>(id, {}, "addPong", 5);
+  return { pongs: 1 };
 
-	return { pongs };
+ //  let pongs = await ctx.actors.ponger.getOrCreateAndCall<{}, number, number>(id, {}, "addPong", 5);
+	//
+	// return { pongs };
 }

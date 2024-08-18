@@ -17,9 +17,6 @@
 			"public": true
 		}
 	},
-	"actors": {
-		"ponger": {}
-	},
 	"errors": {
 		"db_error": {}
 	}

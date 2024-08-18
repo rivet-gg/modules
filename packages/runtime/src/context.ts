@@ -9,6 +9,8 @@ import { buildLogEntries, LogEntry, logRaw, spreadObjectToLogEntries } from "./l
 import { LogLevel } from "./logger.ts";
 import { INTERNAL_ERROR_CODE, stringifyTrace } from "./mod.ts";
 import { Environment } from "./environment.ts";
+import { Database } from "./postgres.ts";
+import { assertExists } from "./deps.ts";
 
 export interface ContextParams {
 	dependenciesSnake: any;
@@ -48,25 +50,23 @@ export class Context<Params extends ContextParams> {
 		this.log = new ContextLog(this);
 	}
 
-	protected getRouteContext(moduleName: string, routeName: string) {
+	protected getRouteContext<Params extends ModuleContextParams>(
+		moduleName: string,
+		routeName: string,
+	): RouteContext<Params> {
 		const module = this.internalRuntime.config.modules[moduleName];
 		if (!module) throw new Error(`Module not found: ${moduleName}`);
 
 		const route = module.routes[routeName];
 		if (!route) throw new Error(`Route not found: ${routeName}`);
 
-		return new RouteContext(
+		return new RouteContext<Params>(
 			this.internalRuntime,
 			appendTraceEntry(this.trace, {
 				route: { module: moduleName, route: routeName },
 			}),
 			moduleName,
-			this.internalRuntime.postgres.getOrCreatePrismaClient(
-				this.internalRuntime.env,
-				this.internalRuntime.config,
-				module,
-			),
-			module.db?.schema,
+			module.db?.schemaName,
 			routeName,
 			this.dependencyCaseConversionMap,
 			this.actorCaseConversionMap,
@@ -105,12 +105,7 @@ export class Context<Params extends ContextParams> {
 				script: { module: moduleName, script: scriptName },
 			}),
 			moduleName,
-			this.internalRuntime.postgres.getOrCreatePrismaClient(
-				this.internalRuntime.env,
-				this.internalRuntime.config,
-				module,
-			),
-			module.db?.schema,
+			module.db?.schemaName,
 			scriptName,
 			this.dependencyCaseConversionMap,
 			this.actorCaseConversionMap,
@@ -303,7 +298,6 @@ export interface ModuleContextParams extends ContextParams {
 	actorsSnake: any;
 	actorsCamel: any;
 	userConfig: any;
-	database: any;
 	databaseSchema: any;
 }
 
@@ -311,16 +305,29 @@ export interface ModuleContextParams extends ContextParams {
  * Context for a module.
  */
 export class ModuleContext<Params extends ModuleContextParams> extends Context<Params> {
+	public readonly db: Params["databaseSchema"] extends undefined ? undefined : Database<Params["databaseSchema"]>;
+
 	public constructor(
 		runtime: Runtime<Params>,
 		trace: Trace,
 		public readonly moduleName: string,
-		public readonly db: Params["database"],
 		public readonly dbSchema: Params["databaseSchema"],
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorCaseConversionMap: RegistryCallMap,
 	) {
 		super(runtime, trace, dependencyCaseConversionMap, actorCaseConversionMap);
+
+		const module = runtime.config.modules[moduleName]!;
+		if (module.db) {
+			assertExists(dbSchema);
+			this.db = runtime.postgres.getOrCreateDrizzleClient<Params["databaseSchema"]>(
+				runtime.env,
+				runtime.config,
+				module,
+			) as any;
+		} else {
+			this.db = undefined as any;
+		}
 	}
 
 	protected override isAllowedModuleName(targetModuleName: string): boolean {
@@ -353,13 +360,12 @@ export class ScriptContext<Params extends ModuleContextParams> extends ModuleCon
 		runtime: Runtime<Params>,
 		trace: Trace,
 		moduleName: string,
-		db: Params["database"],
 		dbSchema: Params["databaseSchema"],
 		public readonly scriptName: string,
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorCaseConversionMap: RegistryCallMap,
 	) {
-		super(runtime, trace, moduleName, db, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
+		super(runtime, trace, moduleName, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
 	}
 }
 
@@ -371,13 +377,12 @@ export class ActorContext<Params extends ModuleContextParams> extends ModuleCont
 		runtime: Runtime<Params>,
 		trace: Trace,
 		moduleName: string,
-		db: Params["database"],
 		dbSchema: Params["databaseSchema"],
 		public readonly actorName: string,
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorCaseConversionMap: RegistryCallMap,
 	) {
-		super(runtime, trace, moduleName, db, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
+		super(runtime, trace, moduleName, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
 	}
 }
 
@@ -389,13 +394,12 @@ export class RouteContext<Params extends ModuleContextParams> extends ModuleCont
 		runtime: Runtime<Params>,
 		trace: Trace,
 		moduleName: string,
-		db: Params["database"],
 		dbSchema: Params["databaseSchema"],
 		public readonly routeName: string,
 		dependencyCaseConversionMap: RegistryCallMap,
 		actorCaseConversionMap: RegistryCallMap,
 	) {
-		super(runtime, trace, moduleName, db, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
+		super(runtime, trace, moduleName, dbSchema, dependencyCaseConversionMap, actorCaseConversionMap);
 	}
 
 	public static fromContext<Params extends ModuleContextParams>(

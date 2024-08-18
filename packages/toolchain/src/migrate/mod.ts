@@ -1,24 +1,15 @@
 import { PostgresClient } from "./deps.ts";
 import { Module, ModuleDatabase, Project } from "../project/mod.ts";
-import { assertValidString } from "./validate.ts";
 import { addShutdownHandler } from "../utils/shutdown_handler.ts";
 import { verbose } from "../term/status.ts";
 import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createOnce, Once } from "../utils/once.ts";
 import { getOrInitOnce } from "../utils/once.ts";
-import { getDatabaseUrl, getPrismaDatabaseUrlWithSchema } from "../utils/db.ts";
+import { getDatabaseUrl } from "../utils/db.ts";
+import { assertValidString } from "./validate.ts";
 
 export type ForEachDatabaseCallback = (
 	opts: { databaseUrl: string; module: Module; db: ModuleDatabase },
-) => Promise<void>;
-export type ForEachPrismaSchemaCallback = (
-	opts: {
-		databaseUrl: string;
-		module: Module;
-		db: ModuleDatabase;
-		tempDir: string;
-		generatedClientDir: string;
-	},
 ) => Promise<void>;
 
 interface DbState {
@@ -69,7 +60,7 @@ export async function forEachDatabase(
 		// Create database
 		await createSchema(defaultClient, mod.db);
 
-		const databaseUrl = getPrismaDatabaseUrlWithSchema(mod.db.schema).toString();
+		const databaseUrl = getDatabaseUrl().toString();
 
 		// Callback
 		await callback({ databaseUrl, module: mod, db: mod.db });
@@ -84,12 +75,12 @@ async function createSchema(client: PostgresClient, db: ModuleDatabase) {
 	if (DB_STATE.createdSchemas.has(db.schema)) return;
 
 	// Create database
-	const existsQuery = await client.queryObject<
-		{ exists: boolean }
-	>`SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ${db.schema})`;
-	if (!(existsQuery.rows[0]!.exists)) {
-		await client.queryObject(`CREATE SCHEMA ${assertValidString(db.schema)}`);
-	}
+	// const existsQuery = await client.queryObject<
+	// 	{ exists: boolean }
+	// >`SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = ${db.schema})`;
+	// if (!(existsQuery.rows[0]!.exists)) {
+	// 	await client.queryObject(`CREATE SCHEMA ${assertValidString(db.schema)}`);
+	// }
 
 	// Save as created
 	DB_STATE.createdSchemas.add(db.schema);

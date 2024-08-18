@@ -13,6 +13,8 @@
       "npm:@cloudflare/workers-types": "npm:@cloudflare/workers-types@4.20240712.0",
       "npm:@prisma/adapter-pg@^5.12.0": "npm:@prisma/adapter-pg@5.17.0_pg@8.12.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
+      "npm:drizzle-orm": "npm:drizzle-orm@0.33.0_@cloudflare+workers-types@4.20240712.0_pg@8.12.0",
+      "npm:drizzle-orm@0.33.0": "npm:drizzle-orm@0.33.0_@cloudflare+workers-types@4.20240712.0_pg@8.12.0",
       "npm:esbuild-plugins-node-modules-polyfill@1.6.4": "npm:esbuild-plugins-node-modules-polyfill@1.6.4_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:pg@^8.11.3": "npm:pg@8.12.0",
@@ -413,6 +415,13 @@
       "diff@4.0.2": {
         "integrity": "sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==",
         "dependencies": {}
+      },
+      "drizzle-orm@0.33.0_@cloudflare+workers-types@4.20240712.0_pg@8.12.0": {
+        "integrity": "sha512-SHy72R2Rdkz0LEq0PSG/IdvnT3nGiWuRk+2tXZQ90GVq/XQhpCzu/EFT3V2rox+w8MlkBQxifF8pCStNYnERfA==",
+        "dependencies": {
+          "@cloudflare/workers-types": "@cloudflare/workers-types@4.20240712.0",
+          "pg": "pg@8.12.0"
+        }
       },
       "emoji-regex@8.0.0": {
         "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==",
