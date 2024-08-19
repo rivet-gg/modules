@@ -1,5 +1,5 @@
 import { ScriptContext } from "../module.gen.ts";
-import { createHypertable } from "../utils/hypertable_init.ts";
+import { checkHypertable } from "../utils/hypertable_init.ts";
 
 export interface Request {
     name: string,
@@ -16,7 +16,7 @@ export async function run(
     ctx: ScriptContext,
     req: Request,
 ): Promise<Response> {
-	createHypertable(ctx);
+    checkHypertable(ctx);
     const timestamp = req.timestampOverride ? new Date(req.timestampOverride) : new Date();
     const event = await ctx.db.event.create({
         data: {

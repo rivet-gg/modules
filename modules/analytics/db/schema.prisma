@@ -12,6 +12,5 @@ model Event {
 
     // in the init migration, we add the timescale extension and call create_hypertable().
 
-    @@index(fields: [name, timestamp(sort: Desc)], map: "event_name_time_idx")
-    @@map("event")
+    @@index(fields: [name, timestamp(sort: Desc)], map: "Event_name_time_idx")
 }

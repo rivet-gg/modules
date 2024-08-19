@@ -11,6 +11,9 @@
 	"scripts": {
 		"push_event": {
 			"public": true
+		},
+		"query_instant": {
+			"public": true
 		}
 	},
 	"errors": {},
