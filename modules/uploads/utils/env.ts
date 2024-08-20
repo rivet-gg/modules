@@ -1,4 +1,4 @@
-import { ModuleContext, ScriptContext } from "../module.gen.ts";
+import { TestContext, ScriptContext } from "../module.gen.ts";
 
 export interface S3EnvConfig {
 	S3_ENDPOINT: string;
@@ -16,7 +16,7 @@ export interface S3Config {
 	secretAccessKey: string;
 }
 
-export function getS3EnvConfig(ctx: ScriptContext): S3Config | null {
+export function getS3EnvConfig(ctx: ScriptContext | TestContext): S3Config | null {
 	const endpoint = ctx.environment.get("S3_ENDPOINT");
 	const region = ctx.environment.get("S3_REGION");
 	const bucket = ctx.environment.get("S3_BUCKET");

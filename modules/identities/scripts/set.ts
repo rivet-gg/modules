@@ -1,5 +1,4 @@
-import { ScriptContext, Empty, RuntimeError } from "../module.gen.ts";
-import { getData } from "../utils/db.ts";
+import { ScriptContext, Empty, RuntimeError, Database, Query } from "../module.gen.ts";
 import { IdentityDataInput, IdentityProviderInfo } from "../utils/types.ts";
 
 export interface Request {
@@ -18,26 +17,34 @@ export async function run(
     // Ensure the user token is valid and get the user ID
     const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
 
-    await ctx.db.$transaction(async tx => {
+    await ctx.db.transaction(async (tx) => {
         // Ensure the identity provider is associated with the user
-        if (!await getData(tx, userId, req.info.identityType, req.info.identityId)) {
+        const identity = await ctx.db.query.userIdentities.findFirst({
+            where: Query.and(
+                Query.eq(Database.userIdentities.userId, userId),
+                Query.eq(Database.userIdentities.identityType, req.info.identityType),
+                Query.eq(Database.userIdentities.identityId, req.info.identityId)
+            ),
+            columns: {
+                uniqueData: true,
+                additionalData: true,
+            },
+        });
+        if (!identity) {
             throw new RuntimeError("identity_provider_not_found");
         }
 
         // Update the associated data
-        await tx.userIdentities.update({
-            where: {
-                userId_identityType_identityId: {
-                    userId,
-                    identityType: req.info.identityType,
-                    identityId: req.info.identityId,
-                }
-            },
-            data: {
+        await tx.update(Database.userIdentities)
+            .set({
                 uniqueData: req.uniqueData,
                 additionalData: req.additionalData,
-            },
-        });
+            })
+            .where(Query.and(
+                Query.eq(Database.userIdentities.userId, userId),
+                Query.eq(Database.userIdentities.identityType, req.info.identityType),
+                Query.eq(Database.userIdentities.identityId, req.info.identityId)
+            ));
     });
 
     return {};

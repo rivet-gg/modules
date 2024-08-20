@@ -1,11 +1,11 @@
 import { RuntimeError, test, TestContext } from "../module.gen.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
-import { getVerification } from "../utils/tests.ts";
+import { getVerification } from "./common.ts";
 import {
 	assertEquals,
 	assertRejects,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { checkLogin } from "../utils/tests.ts";
+import { checkLogin } from "./common.ts";
 
 async function signUpEmailPass(
 	ctx: TestContext,

@@ -16,8 +16,8 @@
 			"description": "Call a Rivet REST endpoint.",
 			"public": false
 		},
-		"get_config": {
-      "name": "Get Config",
+		"fetch_config": {
+      "name": "Fetch Config",
       "description": "Provides Rivet-related config paramteres from the environment.",
 			"public": false
 		}

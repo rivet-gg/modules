@@ -1,10 +1,9 @@
-import { ScriptContext } from "../module.gen.ts";
-import { TokenWithSecret } from "../utils/types.ts";
-import { tokenFromRow } from "../utils/types.ts";
+import { ScriptContext, Database, Query } from "../module.gen.ts";
+import { TokenWithSecret, tokenFromRow } from "../utils/types.ts";
 
 export interface Request {
 	type: string;
-	meta: Record<string, string>,
+	meta: Record<string, string>;
 	expireAt?: string;
 }
 
@@ -18,18 +17,18 @@ export async function run(
 ): Promise<Response> {
 	const tokenStr = generateToken(req.type);
 
-	const token = await ctx.db.token.create({
-		data: {
-			token: tokenStr,
-			type: req.type,
-			meta: req.meta,
-			trace: ctx.trace,
-			expireAt: req.expireAt,
-		},
-	});
+	const rows = await ctx.db.insert(Database.tokens)
+    .values({
+      token: tokenStr,
+      type: req.type,
+      meta: req.meta,
+      trace: ctx.trace,
+      expireAt: req.expireAt ? new Date(req.expireAt) : undefined,
+    })
+    .returning();
 
 	return {
-		token: tokenFromRow(token),
+		token: tokenFromRow(rows[0]!),
 	};
 }
 

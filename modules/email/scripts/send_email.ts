@@ -70,7 +70,7 @@ async function useSendGrid(ctx: ScriptContext, config: ProviderSendGrid, req: Re
 		}),
 	});
 	if (!response.ok) {
-		throw new RuntimeError("SENDGRID_ERROR", {
+		throw new RuntimeError("sendgrid_error", {
 			meta: {
 				status: response.status,
 				text: await response.text(),

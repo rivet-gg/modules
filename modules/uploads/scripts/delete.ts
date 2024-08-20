@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 import { getKey } from "../utils/types.ts";
 import { deleteKeys } from "../utils/bucket.ts";
 import { getConfig } from "../utils/config_defaults.ts";
@@ -17,23 +17,17 @@ export async function run(
 ): Promise<Response> {
 	const config = getConfig(ctx);
 
-	const bytesDeleted = await ctx.db.$transaction(async (db) => {
-		const upload = await db.upload.findFirst({
-			where: {
-				id: req.uploadId,
-				completedAt: { not: null },
-				deletedAt: null,
-			},
-			select: {
-				id: true,
-				metadata: true,
-				bucket: true,
-				contentLength: true,
-				files: true,
-				createdAt: true,
-				updatedAt: true,
-				completedAt: true,
-			},
+	const bytesDeleted = await ctx.db.transaction(async tx => {
+		// Find upload
+		const upload = await tx.query.uploads.findFirst({
+			where: Query.and(
+				Query.eq(Database.uploads.id, req.uploadId),
+				Query.isNotNull(Database.uploads.completedAt),
+				Query.isNull(Database.uploads.deletedAt)
+			),
+			with: {
+				files: true
+			}
 		});
 		if (!upload) {
 			throw new RuntimeError(
@@ -47,6 +41,7 @@ export async function run(
 			);
 		}
 
+		// Delete files from S3
 		const filesToDelete = upload.files.map((file) =>
 			getKey(file.uploadId, file.path)
 		);
@@ -70,14 +65,10 @@ export async function run(
 			);
 		}
 
-		await db.upload.update({
-			where: {
-				id: req.uploadId,
-			},
-			data: {
-				deletedAt: new Date().toISOString(),
-			},
-		});
+		// Update upload
+		tx.update(Database.uploads)
+			.set({ deletedAt: new Date() })
+			.where(Query.eq(Database.uploads.id, req.uploadId))
 
 		return upload.contentLength.toString();
 	});

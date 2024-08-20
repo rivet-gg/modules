@@ -1,4 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
+import { ScriptContext, Database, Query } from "../module.gen.ts";
 import { Friend, friendFromRow } from "../utils/types.ts";
 
 export interface Request {
@@ -19,22 +19,18 @@ export async function run(
 		userToken: req.userToken,
 	});
 
-	const rows = await ctx.db.friend.findMany({
-		where: {
-			AND: [
-				{
-					OR: [
-						{ userIdA: userId },
-						{ userIdB: userId },
-					],
-				},
-				{ removedAt: null },
-			],
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 100,
+	const rows = await ctx.db.query.friends.findMany({
+    where: Query.and(
+      // Find all friends for this user
+      Query.or(
+        Query.eq(Database.friends.userIdA, userId),
+        Query.eq(Database.friends.userIdB, userId),
+      ),
+      // Ensure not deleted
+      Query.isNull(Database.friends.removedAt)
+    ),
+    orderBy: Query.desc(Database.friends.createdAt),
+    limit: 100,
 	});
 
 	const friends = rows.map(friendFromRow);

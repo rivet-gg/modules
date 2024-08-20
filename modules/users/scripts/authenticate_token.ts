@@ -1,5 +1,5 @@
-import { RuntimeError } from "../module.gen.ts";
-import { ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
+import { } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
 
 export interface Request {
@@ -24,11 +24,11 @@ export async function run(
 	if (token.type !== "user") throw new RuntimeError("token_not_user_token");
 	const userId = token.meta.userId;
 
-	let user;
+	let user: typeof Database.users.$inferSelect | undefined = undefined;
 	if (req.fetchUser) {
-		user = await ctx.db.user.findFirstOrThrow({
-			where: { id: userId },
-		});
+    user = await ctx.db.query.users.findFirst({
+      where: Query.eq(Database.users.id, userId)
+    });
 	}
 
 	return { userId, user };

@@ -23,9 +23,9 @@
             "description": "List all identities the user is associated with.",
             "public": true
         },
-        "get": {
-            "name": "Get Identity Data",
-            "description": "Get the data associated with a specific identity for a user."
+        "fetch": {
+            "name": "Fetch Identity Data",
+            "description": "Fetch the data associated with a specific identity for a user."
         },
         "set": {
             "name": "Set Identity Data",

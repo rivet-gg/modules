@@ -1,4 +1,4 @@
-import { prisma } from "../module.gen.ts";
+import { Database } from "../module.gen.ts";
 
 export interface Token {
 	id: string;
@@ -14,7 +14,7 @@ export interface TokenWithSecret extends Token {
 }
 
 export function tokenFromRow(
-	row: prisma.Prisma.TokenGetPayload<any>,
+	row: typeof Database.tokens.$inferSelect
 ): TokenWithSecret {
 	return {
 		...row,

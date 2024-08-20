@@ -1,4 +1,3 @@
-import { CreateLobbyRequest, CreateLobbyResponse } from "../actors/lobby_manager.ts";
 import { RuntimeError, test, TestContext } from "../module.gen.ts";
 import {
 	assertArrayIncludes,
@@ -6,23 +5,27 @@ import {
 	assertRejects,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
-const VERSION = "TODO";
+const VERSION = "test";
+const REGION = "test";
 
 test("e2e", async (ctx: TestContext) => {
 	// MARK: Create lobby
 	const { lobby, players } = await ctx.modules.lobbies.create({
 		version: VERSION,
+		region: REGION,
 		tags: {},
 		players: [{}, {}],
 		maxPlayers: 8,
 		maxPlayersDirect: 8,
 		noWait: true,
 	});
-  const { lobbyToken } = await setLobbyReady(ctx, lobby.id);
+	const { lobbyToken } = await setLobbyReady(ctx, lobby.id);
 
 	// MARK: List lobbies
 	{
-		const { lobbies } = await ctx.modules.lobbies.list({});
+		const { lobbies } = await ctx.modules.lobbies.list({
+			version: VERSION
+		});
 		assertEquals(lobbies.length, 1);
 		assertEquals(lobbies[0]!.id, lobby.id);
 	}
@@ -61,7 +64,9 @@ test("e2e", async (ctx: TestContext) => {
 	});
 
 	{
-		const { lobbies } = await ctx.modules.lobbies.list({});
+		const { lobbies } = await ctx.modules.lobbies.list({
+			version: VERSION
+		});
 		assertEquals(lobbies.length, 0);
 	}
 
@@ -76,6 +81,7 @@ test("lobby tags", async (ctx: TestContext) => {
 	const { lobby: lobby1 } = await ctx.modules.lobbies.create(
 		{
 			version: VERSION,
+			region: REGION,
 			tags: { gameMode: "a", region: "atl" },
 			players: [{}],
 			maxPlayers: 8,
@@ -87,7 +93,8 @@ test("lobby tags", async (ctx: TestContext) => {
 	const { lobby: lobby2 } = await ctx.modules.lobbies.create(
 		{
 			version: VERSION,
-			tags: { gameMode: "a", region: "fra" },
+			region: REGION,
+			tags: { gameMode: "a" },
 			players: [{}],
 			maxPlayers: 8,
 			maxPlayersDirect: 8,
@@ -98,7 +105,8 @@ test("lobby tags", async (ctx: TestContext) => {
 	const { lobby: lobby3 } = await ctx.modules.lobbies.create(
 		{
 			version: VERSION,
-			tags: { gameMode: "b", region: "fra" },
+			region: REGION,
+			tags: { gameMode: "b" },
 			players: [{}],
 			maxPlayers: 8,
 			maxPlayersDirect: 8,
@@ -124,7 +132,8 @@ test("lobby tags", async (ctx: TestContext) => {
 
 	const { lobby: lobby6 } = await ctx.modules.lobbies.find({
 		version: VERSION,
-		tags: { gameMode: "a", region: "fra" },
+		regions: [REGION],
+		tags: { gameMode: "a" },
 		players: [{}],
 	});
 	assertEquals(lobby6.id, lobby2.id);

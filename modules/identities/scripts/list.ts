@@ -1,5 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
-import { listIdentities } from "../utils/db.ts";
+import { ScriptContext, Database, Query } from "../module.gen.ts";
 import { IdentityProviderInfo } from "../utils/types.ts";
 
 export interface Request {
@@ -19,5 +18,13 @@ export async function run(
     // Ensure the user token is valid and get the user ID
     const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
 
-    return { identityProviders: await listIdentities(ctx.db, userId) };
+    const identityProviders = await ctx.db.query.userIdentities.findMany({
+        where: Query.eq(Database.userIdentities.userId, userId),
+        columns: {
+            identityType: true,
+            identityId: true,
+        }
+    });
+
+    return { identityProviders };
 }

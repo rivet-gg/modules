@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 import { IdentityDataInput, IdentityProviderInfo } from "../utils/types.ts";
 
 export interface Request {
@@ -16,13 +16,13 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
     // Get user the provider is associated with
-    const identity = await ctx.db.userIdentities.findFirst({
-        where: {
-            identityType: req.info.identityType,
-            identityId: req.info.identityId,
-            uniqueData: { equals: req.uniqueData },
-        },
-        select: {
+    const identity = await ctx.db.query.userIdentities.findFirst({
+        where: Query.and(
+            Query.eq(Database.userIdentities.identityType, req.info.identityType),
+            Query.eq(Database.userIdentities.identityId, req.info.identityId),
+            Query.eq(Database.userIdentities.uniqueData, req.uniqueData)
+        ),
+        columns: {
             userId: true,
         },
     });

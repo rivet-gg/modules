@@ -1,4 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
+import { ScriptContext, Query, Database } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
 
 export interface Request {
@@ -15,10 +15,10 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	const users = await ctx.db.user.findMany({
-		where: { id: { in: req.userIds } },
-		orderBy: { username: "desc" },
-	});
+  const users = await ctx.db.query.users.findMany({
+    where: Query.inArray(Database.users.id, req.userIds),
+    orderBy: Query.desc(Database.users.username),
+  });
 
 	return { users };
 }
