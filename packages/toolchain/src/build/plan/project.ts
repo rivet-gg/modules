@@ -1,5 +1,5 @@
 import { BuildState, buildStep, waitForBuildPromises } from "../../build_state/mod.ts";
-import { relative, resolve } from "../../deps.ts";
+import { glob, relative, resolve } from "../../deps.ts";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, Runtime } from "../mod.ts";
 import { planModuleBuild } from "./module.ts";
@@ -18,8 +18,7 @@ import { nodeModulesPolyfillPlugin } from "npm:esbuild-plugins-node-modules-poly
 // Must match version in `esbuild_deno_loader`
 import * as esbuild from "npm:esbuild@0.20.2";
 import { denoPlugins } from "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2";
-import { migratePush } from "../../migrate/push.ts";
-import { migrateApply } from "../../migrate/apply.ts";
+import { migrateApplyEmbedded } from "../../migrate/apply_embedded.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -300,8 +299,24 @@ export async function planProjectBuild(
 	//
 	// Migrations will be generated on `deploy` or `build`.
 	if (opts.migrate) {
+		// Deploy external migrations in parallel
 		for (const module of project.modules.values()) {
-			if (!module.db) continue;
+			if (module.db && (opts.migrate.forceDeploy || module.registry.isExternal)) {
+				const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
+				buildStep(buildState, {
+					id: `module.${module.name}.migrate.deploy`,
+					name: "Migrate Database",
+					module,
+					description: "deploy",
+					condition: {
+						files: migrations,
+					},
+					async build({ signal }) {
+						await migrateApplyEmbedded(project, [module], signal);
+					},
+				});
+			}
+		}
 
 			const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
 

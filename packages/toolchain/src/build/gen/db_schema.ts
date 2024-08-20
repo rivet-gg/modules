@@ -26,6 +26,7 @@ export async function compileDbSchemaHelper(
 	// Build schema helper
 	const helper = new GeneratedCodeBuilder(opts.overridePath ?? dbSchemaHelperPath(project, module), 3);
 
+	// TODO: Pin version here but it doesn't work with drizzle gen
 	// Export the schema that the tables need to go in. The schema can vary based on the baceknd.json config.
 	helper.append`
   import { pgSchema } from ${

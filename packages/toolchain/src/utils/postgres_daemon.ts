@@ -19,6 +19,8 @@ export async function ensurePostgresRunning(project: Project) {
 }
 
 async function ensurePostgresRunningInner(_project: Project) {
+	return;
+
 	// Don't start Postgres if points to existing database
 	if (
 		Deno.env.has("DATABASE_URL") || Deno.env.has("OPENGB_DONT_START_POSTGRES")

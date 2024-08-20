@@ -3,7 +3,9 @@ import { Config } from "./mod.ts";
 import { Environment } from "./environment.ts";
 
 // See also packages/toolchain/src/drizzle.ts (DRIZZLE_ORM_PACKAGE)
-import { drizzle, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
+import { drizzle as drizzleNodePg, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
+import { drizzle as drizzlePglite } from "npm:drizzle-orm@0.33.0/pglite";
+import { PGlite } from "npm:@electric-sql/pglite";
 
 const DEFAULT_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable";
 
@@ -77,11 +79,17 @@ export class Postgres {
 			return this.drizzleClients.get(module.db.schemaName) as Database<T>;
 		} else {
 			// Create & insert pool
-			const pool = this.getOrCreatePgPool(env, config);
-			const drizzleInstance = drizzle(pool, {
+			// const pool = this.getOrCreatePgPool(env, config);
+			// const drizzleInstance = drizzleNodePg(pool, {
+			// 	schema: module.db.drizzleSchema,
+			// });
+
+			const client = new PGlite(`${Deno.cwd()}/.opengb/pglite`);
+			const drizzleInstance = drizzlePglite(client, {
 				schema: module.db.drizzleSchema,
 			});
 			this.drizzleClients.set(module.db.schemaName, drizzleInstance);
+
 			return drizzleInstance as Database<T>;
 		}
 	}

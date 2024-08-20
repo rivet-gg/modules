@@ -46,6 +46,9 @@ export const testCommand = new Command<GlobalOpts>()
 						"--allow-env",
 						"--allow-net",
 						"--allow-read",
+
+            // TODO: enable for pglite
+            "--allow-write",
 					];
 					if (opts.check) args.push("--check");
 
