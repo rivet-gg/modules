@@ -183,8 +183,11 @@ export function buildGlobalDurableObjectClass(
 			const actorConfig = moduleConfig.actors[meta.actorName]!;
 
 			// Read state
-			const state = await this.ctx.storage.get<string>(KEYS.STATE);
+			let state = await this.ctx.storage.get<string>(KEYS.STATE);
 			this.assertGeneration(generation);
+			if (state != undefined && typeof state != "string") {
+				throw new Error("actor state corrupt, actor state is not a string. this actor needs to be manually reset.");
+			}
 
 			// TODO: use ctx.waitUntil for all calls
 			// Construct actor

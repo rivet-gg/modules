@@ -183,7 +183,7 @@ async function ensurePostgresRunningNative() {
 	}).spawn();
 	let postgresOutput = null;
 	postgresProcess.output().then((output) => {
-    postgresOutput = output;
+		postgresOutput = output;
 		warn("Postgres exited early", `Exit code: ${output.code}`);
 	});
 
