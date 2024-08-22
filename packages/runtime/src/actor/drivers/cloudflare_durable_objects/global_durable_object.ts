@@ -186,7 +186,7 @@ export function buildGlobalDurableObjectClass(
 			let state = await this.ctx.storage.get<string>(KEYS.STATE);
 			this.assertGeneration(generation);
 			if (state != undefined && typeof state != "string") {
-				throw new Error("actor state corrupt, actor state is not a string. this actor needs to be manually reset.");
+				throw new Error(`actor state corrupt, actor state is of type string (found ${typeof state}. this actor needs to be manually reset.`);
 			}
 
 			// TODO: use ctx.waitUntil for all calls
@@ -445,7 +445,7 @@ export function buildGlobalDurableObjectClass(
 
 		async forceSaveState(): Promise<void> {
 			if (this.actorInstance) {
-				await this.ctx.storage.put(KEYS.STATE, this.actorInstance.state);
+				await this.ctx.storage.put(KEYS.STATE, JSON.stringify(this.actorInstance.state));
 			}
 		}
 
