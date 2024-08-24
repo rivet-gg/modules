@@ -4,6 +4,9 @@ import { Environment } from "./environment.ts";
 
 // See also packages/toolchain/src/drizzle_consts.ts (DRIZZLE_ORM_PACKAGE)
 import { drizzle, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
+import { Logger } from "npm:drizzle-orm@0.33.0/logger";
+import { log } from "./logger.ts";
+import { LogEntry } from "./logger.ts";
 
 const DEFAULT_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable";
 
@@ -76,13 +79,23 @@ export class Postgres {
 		if (this.drizzleClients.has(module.db.schemaName)) {
 			return this.drizzleClients.get(module.db.schemaName) as Database<T>;
 		} else {
+			// Create logger
+
 			// Create & insert pool
 			const pool = this.getOrCreatePgPool(env, config);
 			const drizzleInstance = drizzle(pool, {
 				schema: module.db.drizzleSchema,
+				logger: Deno.env.get("_OPENGB_LOG_SQL_QUERIES") == "1" ? new DrizzleLogger() : undefined,
 			});
 			this.drizzleClients.set(module.db.schemaName, drizzleInstance);
 			return drizzleInstance as Database<T>;
 		}
+	}
+}
+
+class DrizzleLogger implements Logger {
+	logQuery(query: string, params: unknown[]): void {
+		const logParams = params.map((x, i) => [`params.${i}`, JSON.stringify(x)] as LogEntry);
+		log("info", "sql query", ["query", query], ...logParams);
 	}
 }
