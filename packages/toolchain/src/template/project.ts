@@ -14,7 +14,6 @@ export async function templateProject(rootPath: string) {
 			},
 		},
 		modules: {
-			users: {},
 			rate_limit: {},
 			tokens: {},
 		},
