@@ -16,7 +16,7 @@ export interface Registry {
 	 * If true, modules will be copied to the .opengb dir and will be read-only.
 	 *
 	 * If this is true, the module should be treated as read-only and should not
-	 * be tested, formatted, linted, and generate Prisma migrations.
+	 * be tested, formatted, linted, and generate migrations.
 	 */
 	isExternal: boolean;
 }

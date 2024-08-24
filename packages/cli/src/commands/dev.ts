@@ -6,14 +6,21 @@ import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
 import { InternalError } from "../../../toolchain/src/error/mod.ts";
 import { ENTRYPOINT_PATH, projectGenPath } from "../../../toolchain/src/project/project.ts";
+import { convertMigrateMode, migrateMode } from "./../util.ts";
 
 export const devCommand = new Command<GlobalOpts>()
 	.description("Start the development server")
+	.type("migrate-mode", migrateMode)
 	.option("--no-build", "Don't build source files")
 	.option("--no-check", "Don't check source files before running")
 	.option("--strict-schemas", "Strictly validate schemas", { default: true })
 	.option("--no-watch", "Automatically restart server on changes")
-	.option("--force-deploy-migrations", "Auto deploy migrations without using development prompt", { default: false })
+	.option("--no-migrate", "Disable migrations")
+	.option(
+		"--migrate-mode <mode:migrate-mode>",
+		"Configure how migrations are ran",
+		{ default: "dev" },
+	)
 	.action(
 		async (opts) => {
 			await watch({
@@ -31,9 +38,11 @@ export const devCommand = new Command<GlobalOpts>()
 							strictSchemas: opts.strictSchemas,
 							// This gets ran on `deno run`
 							skipDenoCheck: true,
-							migrate: {
-								forceDeploy: opts.forceDeployMigrations,
-							},
+							migrate: opts.migrate
+								? {
+									mode: convertMigrateMode(opts.migrateMode),
+								}
+								: undefined,
 							signal,
 						});
 					}

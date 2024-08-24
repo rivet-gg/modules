@@ -3,9 +3,11 @@ import { GlobalOpts } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../../toolchain/src/build/mod.ts";
 import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
+import { convertMigrateMode, migrateMode } from "../util.ts";
 
 export const buildCommand = new Command<GlobalOpts>()
 	.description("Build the project")
+	.type("migrate-mode", migrateMode)
 	.option("-w, --watch", "Automatically rebuild on changes", { default: false })
 	.option(
 		"-r, --runtime <runtime:string>",
@@ -63,12 +65,12 @@ export const buildCommand = new Command<GlobalOpts>()
 			},
 		},
 	)
+	.option("--no-migrate", "Disable migrations")
 	.option(
-		"--auto-migrate",
-		"Automatically migrate the database",
-		{ default: false },
+		"--migrate-mode <mode:migrate-mode>",
+		"Configure how migrations are ran",
+		{ default: "generate" },
 	)
-	.option("--force-deploy-migrations", "Auto deploy migrations without using development prompt", { default: false })
 	.option(
 		"--no-strict-schemas",
 		"Disable strict schema validation",
@@ -114,9 +116,9 @@ export const buildCommand = new Command<GlobalOpts>()
 					dbDriver: opts.dbDriver!,
 					strictSchemas: opts.strictSchemas,
 					skipDenoCheck: false,
-					migrate: opts.autoMigrate
+					migrate: opts.migrate
 						? {
-							forceDeploy: opts.forceDeployMigrations,
+							mode: convertMigrateMode(opts.migrateMode),
 						}
 						: undefined,
 					signal,

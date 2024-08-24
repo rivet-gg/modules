@@ -30,6 +30,13 @@ export enum DbDriver {
 	CloudflareHyperdrive,
 }
 
+export enum MigrateMode {
+	Dev,
+	Generate,
+	GenerateAndApply,
+	Apply,
+}
+
 /**
  * Stores options used in the build command.
  */
@@ -43,8 +50,7 @@ export interface BuildOpts {
 	skipDenoCheck: boolean;
 	/** If exists, run database migrations. */
 	migrate?: {
-		/** If true, run migrations automatically without dev mode. */
-		forceDeploy: boolean;
+		mode: MigrateMode;
 	};
 	signal?: AbortSignal;
 }

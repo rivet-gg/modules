@@ -9,10 +9,10 @@ import {
 } from "../../project/mod.ts";
 import { GeneratedCodeBuilder } from "./mod.ts";
 import {
+	DRIZZLE_ORM_REEXPORT,
 	genDependencyCaseConversionMapPath,
 	genDependencyTypedefPath,
 	genModulePublicExternal,
-	genPrismaOutputBundle,
 	genRuntimeModPath,
 	projectGenPath,
 	RUNTIME_CONFIG_PATH,
@@ -168,12 +168,14 @@ function genModule(
 ) {
 	// Database
 	if (module.db) {
-		const prismaBundlePath = helper.relative(genPrismaOutputBundle(project, module));
-		importBlock.append`
-			import prisma from ${JSON.stringify(prismaBundlePath)};
-			export { prisma };
-			export const Prisma = prisma.Prisma;
-		`;
+		helper.append`
+    export * as Query from ${JSON.stringify(projectGenPath(project, DRIZZLE_ORM_REEXPORT))};
+    export * as Database from "./db/schema.ts";
+    `;
+		helper.append`
+    import type * as databaseSchema from "./db/schema.ts"
+    type ModuleDatabaseSchema = typeof databaseSchema;
+    `;
 	}
 
 	// Export block
@@ -185,8 +187,7 @@ function genModule(
         actorsSnake: ActorsSnake;
         actorsCamel: ActorsCamel;
         userConfig: ${userConfigType};
-        database: ${module.db ? "prisma.PrismaClient" : "undefined"};
-        databaseSchema: ${module.db ? "prisma.PrismaClient" : "undefined"};
+        databaseSchema: ${module.db ? "ModuleDatabaseSchema" : "undefined"};
       }
     `
 		.append`

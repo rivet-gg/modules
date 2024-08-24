@@ -14,9 +14,10 @@ export { assert, assertEquals, assertExists } from "https://deno.land/std@0.208.
 export { fromError as fromValidationError, isZodErrorLike as isValidationError } from "npm:zod-validation-error@3.3.0";
 
 // Must match version in `esbuild_deno_loader`
-//
-// See also Prisma esbuild in `src/migrate/deps.ts`
 export * as esbuild from "https://deno.land/x/esbuild@v0.20.2/mod.js";
 export { denoPlugins } from "jsr:@luca/esbuild-deno-loader@^0.10.3";
 
 export * as glob from "https://esm.sh/glob@^10.3.10";
+
+import dedent from "https://esm.sh/dedent@^1.5.1";
+export { dedent };

@@ -1,8 +1,8 @@
-import { runDrizzleCommand } from "../drizzle.ts";
 import { Module, Project } from "../project/mod.ts";
 import { forEachDatabase } from "./mod.ts";
+import { runDrizzleCommand } from "../drizzle.ts";
 
-export async function migrateGenerate(
+export async function migrateDrop(
 	project: Project,
 	modules: Module[],
 	signal?: AbortSignal,
@@ -12,7 +12,7 @@ export async function migrateGenerate(
 		modules,
 		async ({ module }) => {
 			await runDrizzleCommand(project, module, {
-				args: ["generate"],
+				args: ["drop"],
 				interactive: true,
 				output: true,
 				signal,

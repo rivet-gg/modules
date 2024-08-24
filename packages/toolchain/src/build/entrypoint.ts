@@ -3,13 +3,13 @@ import { genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } fro
 import {
 	ENTRYPOINT_PATH,
 	genDependencyCaseConversionMapPath,
-	genPrismaOutputBundle,
 	genRuntimeModPath,
 	GITIGNORE_PATH,
 	projectGenPath,
 	RUNTIME_CONFIG_PATH,
 	RUNTIME_PATH,
 } from "../project/project.ts";
+import { dbSchemaPath } from "../project/module.ts";
 import { CommandError, UnreachableError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
@@ -321,14 +321,13 @@ function generateModImports(project: Project, opts: BuildOpts) {
 
 		// Generate db config
 		if (mod.db) {
-			const prismaImportName = `prisma$$${mod.name}`;
-			const prismaImportPath = genPrismaOutputBundle(project, mod);
-			modImports += `import ${prismaImportName} from ${JSON.stringify(prismaImportPath)};\n`;
+			const drizzleSchemaImportName = `drizzleSchema$$${mod.name}`;
+			const drizzleSchemaImportPath = dbSchemaPath(mod);
+			modImports += `import * as ${drizzleSchemaImportName} from ${JSON.stringify(drizzleSchemaImportPath)};\n`;
 
 			modConfig += `db: {`;
-			modConfig += `schema: ${JSON.stringify(mod.db.schema)},`;
-			modConfig += `createPrismaClient: ${generateCreatePrismaClient(opts, prismaImportName)},`;
-			modConfig += `},`;
+			modConfig += `schemaName: ${JSON.stringify(mod.db.schema)},`;
+			modConfig += `drizzleSchema: ${drizzleSchemaImportName},`, modConfig += `},`;
 		} else {
 			modConfig += `db: undefined,`;
 		}
@@ -370,34 +369,6 @@ function generateCreatePgPool(opts: BuildOpts) {
 					// https://github.com/prisma/prisma/issues/23367#issuecomment-1981340554
 					max: 2,
 				});
-			}
-		`;
-	} else {
-		throw new UnreachableError(opts.dbDriver);
-	}
-}
-
-function generateCreatePrismaClient(opts: BuildOpts, prismaImportName: string) {
-	if (opts.dbDriver == DbDriver.NodePostgres || opts.dbDriver == DbDriver.CloudflareHyperdrive) {
-		return dedent`
-			(pgPool: pg.Pool, schema: string) => {
-				const adapter = new PrismaPg(pgPool, { schema });
-				const prisma = new ${prismaImportName}.PrismaClient({
-					adapter,
-					log: ['query', 'info', 'warn', 'error'],
-				});
-				return prisma;
-			}
-		`;
-	} else if (opts.dbDriver == DbDriver.NeonServerless) {
-		return dedent`
-			(pgPool: neon.Pool, schema: string) => {
-				const adapter = new PrismaNeon(pgPool, { schema });
-				const prisma = new ${prismaImportName}.PrismaClient({
-					adapter,
-					log: ['query', 'info', 'warn', 'error'],
-				});
-				return prisma;
 			}
 		`;
 	} else {
