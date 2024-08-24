@@ -23,15 +23,13 @@ Deno.test({
 		await templateModule(await loadProject({ project: path }), "module_a");
 
 		// Append test model to schema
-		const schemaPath = resolve(path, "modules", "module_a", "db", "schema.prisma");
+		const schemaPath = resolve(path, "modules", "module_a", "db", "schema.ts");
 		let schema = await Deno.readTextFile(schemaPath);
 		schema += "\n";
 		schema += dedent`
-			model User {
-				id    String   @id @default(uuid()) @db.Uuid
-				email String   @unique
-				name  String?
-			}
+			export const testTable = schema.table("test_table", {
+				id: Query.uuid("id").primaryKey().defaultRandom(),
+			});
 		`;
 		await Deno.writeTextFile(schemaPath, schema);
 

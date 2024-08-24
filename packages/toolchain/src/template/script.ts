@@ -1,5 +1,5 @@
 import { UserError } from "../error/mod.ts";
-import { resolve } from "../deps.ts";
+import { dedent, resolve } from "../deps.ts";
 import { getLocalRegistry, Project } from "../project/mod.ts";
 
 export async function templateScript(
@@ -42,23 +42,20 @@ export async function templateScript(
 	);
 
 	// Write default config
-	const scriptTs = `import { ScriptContext } from "../module.gen.ts";
+	const scriptTs = dedent`
+		import { ScriptContext, Query, Database } from "../module.gen.ts";
 
-export interface Request {
-    
-}
+		export interface Request {
+			foo: string;
+		}
 
-export interface Response {
-    
-}
+		export interface Response {
+			bar: string;
+		}
 
-export async function run(
-	ctx: ScriptContext,
-	req: Request,
-): Promise<Response> {
-    throw new Error("Unimplemented: ${moduleName}.${scriptName}");
-}
-
-`;
+		export async function run(ctx: ScriptContext, req: Request): Promise<Response> {
+			throw new Error("Unimplemented: ${moduleName}.${scriptName}");
+		}
+	`;
 	await Deno.writeTextFile(scriptPath, scriptTs);
 }

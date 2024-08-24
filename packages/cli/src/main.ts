@@ -13,7 +13,6 @@ import { initCommand } from "./commands/init.ts";
 import { cleanCommand } from "./commands/clean.ts";
 import { printError } from "../../toolchain/src/error/mod.ts";
 import { runShutdown } from "../../toolchain/src/utils/shutdown_handler.ts";
-import { internalCommand } from "./commands/internal.ts";
 import { info } from "../../toolchain/src/term/status.ts";
 import { configCommand } from "./commands/config.ts";
 import { VERSION } from "./version.ts";
@@ -48,7 +47,6 @@ command.action(() => command.showHelp())
 	.command("build", buildCommand as any)
 	.command("clean", cleanCommand)
 	.command("config", configCommand)
-	.command("_internal", internalCommand)
 	.command("help", new HelpCommand().global())
 	.command("completions", new CompletionsCommand());
 
