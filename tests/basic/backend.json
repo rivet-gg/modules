@@ -1,11 +1,4 @@
 {
-	"runtime": {
-		"cors": {
-			"origins": [
-				"http://localhost:8010"
-			]
-		}
-	},
 	"registries": {
 		"local": {
 			"local": {
@@ -14,71 +7,76 @@
 		}
 	},
 	"modules": {
-    "identities": {
-        "registry": "local"
-    },
+		"currency": {
+			"registry": "local"
+		},
+		"friends": {
+			"registry": "local"
+		},
 		"rate_limit": {
 			"registry": "local"
 		},
 		"tokens": {
 			"registry": "local"
 		},
-		"lobbies": {
+		"users": {
+			"registry": "local"
+		},
+		"uploads": {
 			"registry": "local",
 			"config": {
-				"lobbies": {
-					"regions": [
-						"test"
-					],
-					"destroyOnEmptyAfter": 60000,
-					"unreadyExpireAfter": 300000,
-					"maxPlayers": 16,
-					"maxPlayersDirect": 16,
-					"enableCreate": false,
-					"enableDestroy": false,
-					"enableFind": true,
-					"enableFindOrCreate": true,
-					"enableJoin": true,
-					"enableList": true,
-					"backend": {
-						"test": {}
-					}
-				},
-				"lobbyRules": [],
-				"players": {
-					"maxPerIp": 8,
-					"maxUnconnected": 128,
-					"unconnectedExpireAfter": 60000,
-					"autoDestroyAfter": 4147200000
+				"maxFilesPerUpload": 16,
+				"maxUploadSize": "100mib",
+				"maxMultipartUploadSize": "10gib"
+			}
+		},
+		"auth_email": {
+			"registry": "local"
+		},
+		"auth_email_password": {
+			"registry": "local"
+		},
+		"auth_email_passwordless": {
+			"registry": "local"
+		},
+		"auth_email_link": {
+			"registry": "local"
+		},
+		"auth_username_password": {
+			"registry": "local",
+			"config": {
+				"enable": true
+			}
+		},
+		"identities": {
+			"registry": "local"
+		},
+		"user_passwords": {
+			"registry": "local"
+		},
+		"email": {
+			"registry": "local",
+			"config": {
+				"provider": {
+					"test": {}
 				}
 			}
 		},
-		"rivet": {
-			"registry": "local"
-		},
-		"achievements": {
-			"registry": "local"
-		},
-		"leaderboards": {
-			"registry": "local"
-		},
-		"analytics": {
-			"registry": "local"
-		},
-		"chat": {
-			"registry": "local"
-		},
-		"game_saves": {
-			"registry": "local"
-		},
-		"parties": {
-			"registry": "local"
-		},
-		"groups": {
-			"registry": "local"
-		},
-		"matchmaker": {
-			"registry": "local"
+		"auth_oauth2": {
+			"registry": "local",
+			"config": {
+				"providers": {
+					"google": "https://accounts.google.com/.well-known/openid-configuration",
+					"microsoft": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+					"github": {
+						"authorization": "https://github.com/login/oauth/authorize",
+						"token": "https://github.com/login/oauth/access_token",
+						"userinfo": "https://api.github.com/user",
+						"scopes": "read:user",
+						"userinfoKey": "id"
+					}
+				}
+			}
 		}
 	}
 }
