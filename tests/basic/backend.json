@@ -14,6 +14,9 @@
 		}
 	},
 	"modules": {
+    "identities": {
+        "registry": "local"
+    },
 		"rate_limit": {
 			"registry": "local"
 		},
