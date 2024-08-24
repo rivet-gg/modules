@@ -1,0 +1,77 @@
+{
+  "id": "1281500a-8ab9-4f79-855a-c8321822b7da",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "module_identities.user_identities": {
+      "name": "user_identities",
+      "schema": "module_identities",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "identity_type": {
+          "name": "identity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "identity_id": {
+          "name": "identity_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unique_data": {
+          "name": "unique_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "additional_data": {
+          "name": "additional_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "user_identities_user_id_identity_type_identity_id_pk": {
+          "name": "user_identities_user_id_identity_type_identity_id_pk",
+          "columns": [
+            "user_id",
+            "identity_type",
+            "identity_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "user_identities_identity_type_identity_id_unique_data_unique": {
+          "name": "user_identities_identity_type_identity_id_unique_data_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "identity_type",
+            "identity_id",
+            "unique_data"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "module_identities": "module_identities"
+  },
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

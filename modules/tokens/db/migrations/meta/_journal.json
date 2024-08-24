@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1724526795131,
+      "tag": "1724526795_natural_puma",
+      "breakpoints": true
+    }
+  ]
+}
