@@ -72,5 +72,8 @@
 		"email_already_used": {
 			"name": "Email Already Used"
 		}
-	}
+	},
+  "enableConfig": {
+    "enable": true
+  }
 }

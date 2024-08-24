@@ -17,8 +17,6 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	if (!ctx.config.enable) throw new RuntimeError("provider_disabled");
-
 	const { users: [existing] } = await ctx.modules.users.fetchByUsername({
 		usernames: [req.username],
 	});

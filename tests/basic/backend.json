@@ -7,76 +7,29 @@
 		}
 	},
 	"modules": {
-		"currency": {
-			"registry": "local"
-		},
-		"friends": {
-			"registry": "local"
-		},
-		"rate_limit": {
-			"registry": "local"
-		},
-		"tokens": {
-			"registry": "local"
-		},
-		"users": {
-			"registry": "local"
-		},
-		"uploads": {
-			"registry": "local",
-			"config": {
-				"maxFilesPerUpload": 16,
-				"maxUploadSize": "100mib",
-				"maxMultipartUploadSize": "10gib"
-			}
-		},
-		"auth_email": {
-			"registry": "local"
-		},
-		"auth_email_password": {
-			"registry": "local"
-		},
-		"auth_email_passwordless": {
-			"registry": "local"
-		},
-		"auth_email_link": {
-			"registry": "local"
-		},
-		"auth_username_password": {
-			"registry": "local",
-			"config": {
-				"enable": true
-			}
-		},
-		"identities": {
-			"registry": "local"
-		},
-		"user_passwords": {
-			"registry": "local"
-		},
-		"email": {
-			"registry": "local",
-			"config": {
-				"provider": {
-					"test": {}
-				}
-			}
-		},
-		"auth_oauth2": {
-			"registry": "local",
-			"config": {
-				"providers": {
-					"google": "https://accounts.google.com/.well-known/openid-configuration",
-					"microsoft": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
-					"github": {
-						"authorization": "https://github.com/login/oauth/authorize",
-						"token": "https://github.com/login/oauth/access_token",
-						"userinfo": "https://api.github.com/user",
-						"scopes": "read:user",
-						"userinfoKey": "id"
-					}
-				}
-			}
-		}
+		"achievements": { "registry": "local" },
+		"analytics": { "registry": "local" },
+		"auth_email": { "registry": "local" },
+		"auth_email_link": { "registry": "local" },
+		"auth_email_password": { "registry": "local" },
+		"auth_email_passwordless": { "registry": "local" },
+		"auth_username_password": { "registry": "local" },
+		"chat": { "registry": "local" },
+		"currency": { "registry": "local" },
+		"email": { "registry": "local", "config": { "provider": { "test": {} } } },
+		"friends": { "registry": "local" },
+		"game_saves": { "registry": "local" },
+		"groups": { "registry": "local" },
+		"identities": { "registry": "local" },
+		"leaderboards": { "registry": "local" },
+		"lobbies": { "registry": "local", "config": { "lobbies": { "backend": { "test": {} } } } },
+		"matchmaker": { "registry": "local" },
+		"parties": { "registry": "local" },
+		"rate_limit": { "registry": "local" },
+		"rivet": { "registry": "local" },
+		"tokens": { "registry": "local" },
+		"uploads": { "registry": "local" },
+		"user_passwords": { "registry": "local" },
+		"users": { "registry": "local" }
 	}
 }

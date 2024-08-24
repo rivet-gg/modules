@@ -158,6 +158,7 @@
 	},
 	"defaultConfig": {
 		"lobbies": {
+      "regions": ["atl", "fra"],
 			"destroyOnEmptyAfter": 60000,
 			"unreadyExpireAfter": 300000,
 			"maxPlayers": 16,
