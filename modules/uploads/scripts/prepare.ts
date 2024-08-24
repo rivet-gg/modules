@@ -1,8 +1,8 @@
-import { prisma, RuntimeError, ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 import {
 	MultipartUploadFile,
 	PresignedUpload,
-	prismaToOutput,
+	dbToOutput,
 } from "../utils/types.ts";
 import {
 	getPresignedMultipartUploadUrls,
@@ -12,7 +12,7 @@ import { getBytes } from "../utils/data_size.ts";
 import { getConfig } from "../utils/config_defaults.ts";
 
 export interface Request {
-	metadata?: prisma.Prisma.InputJsonValue;
+	metadata?: unknown;
 	files: MultipartUploadFile[];
 }
 
@@ -126,42 +126,37 @@ export async function run(
 	});
 	const presignedInputFiles = await Promise.all(presignedInputFilePromises);
 
-	// Format the input files for prisma
-	const inputFiles = presignedInputFiles.map((file) => ({
-		path: file.path,
-		mime: file.mime,
-		contentLength: BigInt(file.contentLength),
-		multipartUploadId: file.multipartUploadId,
-	}));
+	// TODO: Convert this to a CTE to prevent extra RTT
+	const upload = await ctx.db.transaction(async tx => {
+		// Create the upload in the database
+		const uploads = await tx.insert(Database.uploads)
+			.values({
+				id: uploadId,
+				metadata: req.metadata,
+				bucket: config.s3.bucket,
+				contentLength: uploadContentLength,
+			})
+			.returning();
+		const upload = uploads[0]!;
 
-	// Create the upload in the database
-	const upload = await ctx.db.upload.create({
-		data: {
-			id: uploadId,
-			metadata: req.metadata,
-			bucket: config.s3.bucket,
-			contentLength: uploadContentLength,
-			files: {
-				create: inputFiles,
-			},
-		},
-		select: {
-			id: true,
-			metadata: true,
-			bucket: true,
-			contentLength: true,
+		// Insert the files
+		const insertFiles = presignedInputFiles.map((file) => ({
+			uploadId: uploadId,
+			path: file.path,
+			mime: file.mime,
+			contentLength: BigInt(file.contentLength),
+			multipartUploadId: file.multipartUploadId,
+		}));
+		await tx.insert(Database.files)
+			.values(insertFiles)
+			.execute();
 
-			files: true,
-
-			createdAt: true,
-			updatedAt: true,
-			completedAt: true,
-		},
+		return upload;
 	});
 
 	return {
 		upload: {
-			...prismaToOutput(upload),
+			...dbToOutput(upload),
 			files: presignedInputFiles,
 		},
 	};

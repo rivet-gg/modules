@@ -58,7 +58,7 @@ test("Sign Up and Sign In", async (ctx: TestContext) => {
 
     // Validate the identity data
     {
-        const { data } = await ctx.modules.identities.get({
+        const { data } = await ctx.modules.identities.fetch({
             userToken: signUpRes.userToken,
             info: {
                 identityType: "test",

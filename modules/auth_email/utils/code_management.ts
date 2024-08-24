@@ -1,25 +1,22 @@
-import { RuntimeError, ScriptContext, Module } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Module, Database, Query } from "../module.gen.ts";
 
 const MAX_ATTEMPT_COUNT = 3;
 const EXPIRATION_TIME = 60 * 60 * 1000;
 
-
-
 export async function createVerification(ctx: ScriptContext, email: string) {
 	// Create verification
 	const code = Module.tokens.generateRandomCodeSecure("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 8);
-	const verification = await ctx.db.verifications.create({
-		data: {
+	const verification = await ctx.db.insert(Database.verifications)
+		.values({
 			token: Module.tokens.genSecureId(),
 			email,
 			code,
 			maxAttemptCount: MAX_ATTEMPT_COUNT,
 			expireAt: new Date(Date.now() + EXPIRATION_TIME),
-		},
-		select: { token: true },
-	});
+		})
+		.returning();
 
-	return { verification, code };
+	return { verification: verification[0]!, code };
 }
 
 export async function verifyCode(
@@ -31,61 +28,48 @@ export async function verifyCode(
 
 	const code = codeInput.toUpperCase();
 
-	return await ctx.db.$transaction(async (tx) => {
-		const verification = await tx.verifications.update({
-			where: {
-				token: verificationToken,
-			},
-			data: {
-				attemptCount: {
-					increment: 1,
-				},
-			},
-			select: {
-				email: true,
-				code: true,
-				expireAt: true,
-				completedAt: true,
-				attemptCount: true,
-				maxAttemptCount: true,
-			},
-		});
-		if (!verification) {
+	return await ctx.db.transaction(async (tx) => {
+		const verification = await tx.update(Database.verifications)
+			.set({
+				attemptCount: Query.sql`${Database.verifications.attemptCount} + 1`,
+			})
+			.where(Query.eq(Database.verifications.token, verificationToken))
+			.returning();
+		if (!verification[0]) {
 			throw new RuntimeError("verification_code_invalid");
 		}
-		if (verification.attemptCount >= verification.maxAttemptCount) {
+		if (verification[0]!.attemptCount >= verification[0]!.maxAttemptCount) {
 			throw new RuntimeError("verification_code_attempt_limit");
 		}
-		if (verification.completedAt !== null) {
+		if (verification[0]!.completedAt !== null) {
 			throw new RuntimeError("verification_code_already_used");
 		}
-		if (verification.code !== code) {
+		if (verification[0]!.code !== code) {
 			// Same error as above to prevent exploitation
 			throw new RuntimeError("verification_code_invalid");
 		}
-		if (verification.expireAt < new Date()) {
+		if (verification[0]!.expireAt < new Date()) {
 			throw new RuntimeError("verification_code_expired");
 		}
 
 		const completedAt = new Date();
 
 		// Mark as used
-		const verificationConfirmation = await tx.verifications
-			.update({
-				where: {
-					token: verificationToken,
-					completedAt: null,
-				},
-				data: {
-					completedAt,
-				},
-			});
-		if (verificationConfirmation === null) {
+		const verificationConfirmation = await tx.update(Database.verifications)
+			.set({
+				completedAt,
+			})
+			.where(Query.and(
+				Query.eq(Database.verifications.token, verificationToken),
+				Query.isNull(Database.verifications.completedAt)
+			))
+			.returning();
+		if (verificationConfirmation.length === 0) {
 			throw new RuntimeError("verification_code_already_used");
 		}
 
 		return {
-			email: verificationConfirmation.email,
+			email: verificationConfirmation[0]!.email,
 			completedAt,
 		};
 	});

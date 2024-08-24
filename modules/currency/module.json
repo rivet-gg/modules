@@ -14,20 +14,17 @@
 		"users": {}
 	},
 	"scripts": {
-		"deposit": {
-			"name": "Deposit"
+		"adjust_balance": {
+			"name": "Adjust Balance"
 		},
-		"withdraw": {
-			"name": "Withdraw"
-		},
-		"get_balance": {
-			"name": "Get Balance"
+		"fetch_balance": {
+			"name": "Fetch Balance"
 		},
 		"set_balance": {
 			"name": "Set Balance"
 		},
-		"get_balance_by_token": {
-			"name": "Get Balance by Token",
+		"fetch_balance_by_token": {
+			"name": "Fetch Balance by Token",
 			"public": true
 		}
 	},

@@ -1,4 +1,4 @@
-import { Empty, RuntimeError, ScriptContext } from "../module.gen.ts";
+import { Empty, RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 import { ALGORITHM_DEFAULT, Algorithm, hash } from "../utils/common.ts";
 
 export interface Request {
@@ -15,10 +15,8 @@ export async function run(
 ): Promise<Response> {
     // Check if the user exists before hashing the password to save compute
     // resources
-    const user = await ctx.db.passwords.findFirst({
-        where: {
-            userId: req.userId,
-        },
+    const user = await ctx.db.query.passwords.findFirst({
+        where: Query.eq(Database.passwords.userId, req.userId),
     });
     if (user) {
         throw new RuntimeError("user_already_has_password");
@@ -29,12 +27,10 @@ export async function run(
     const passwordHash = await hash(req.password, algo);
 
     // Create an entry for the user's password
-    await ctx.db.passwords.create({
-        data: {
-            userId: req.userId,
-            passwordHash,
-            algo,
-        },
+    await ctx.db.insert(Database.passwords).values({
+        userId: req.userId,
+        passwordHash,
+        algo,
     });
 
     return {};

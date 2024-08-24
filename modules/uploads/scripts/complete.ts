@@ -1,18 +1,23 @@
-import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { Database, Query, RuntimeError, ScriptContext } from "../module.gen.ts";
 import {
 	completeMultipartUpload,
 	getMultipartUploadParts,
 	keyExists,
 } from "../utils/bucket.ts";
 import { getConfig } from "../utils/config_defaults.ts";
-import { getKey, prismaToOutputWithFiles, Upload } from "../utils/types.ts";
+import {
+	dbToOutput,
+	getKey,
+	UploadWithOptionalFiles,
+	UploadWithoutFiles,
+} from "../utils/types.ts";
 
 export interface Request {
 	uploadId: string;
 }
 
 export interface Response {
-	upload: Upload;
+	upload: UploadWithoutFiles;
 }
 
 export async function run(
@@ -21,25 +26,14 @@ export async function run(
 ): Promise<Response> {
 	const config = getConfig(ctx);
 
-	const newUpload = await ctx.db.$transaction(async (db) => {
+	const newUpload = await ctx.db.transaction(async (tx) => {
 		// Find the upload by ID
-		const upload = await db.upload.findFirst({
-			where: {
-				id: req.uploadId,
-			},
-			select: {
-				id: true,
-				metadata: true,
-				bucket: true,
-				contentLength: true,
+		const upload = await tx.query.uploads.findFirst({
+			where: Query.eq(Database.uploads.id, req.uploadId),
+			with: {
 				files: true,
-				createdAt: true,
-				updatedAt: true,
-				completedAt: true,
 			},
 		});
-
-		// Error if the upload wasn't prepared
 		if (!upload) {
 			throw new RuntimeError(
 				"upload_not_found",
@@ -108,29 +102,15 @@ export async function run(
 		}
 
 		// Update the upload to mark it as completed
-		const completedUpload = await db.upload.update({
-			where: {
-				id: req.uploadId,
-			},
-			data: {
-				completedAt: new Date(),
-			},
-			select: {
-				id: true,
-				metadata: true,
-				bucket: true,
-				contentLength: true,
-				files: true,
-				createdAt: true,
-				updatedAt: true,
-				completedAt: true,
-			},
-		});
+		const completedUploads = await tx.update(Database.uploads)
+			.set({ completedAt: new Date() })
+			.where(Query.eq(Database.uploads.id, req.uploadId))
+			.returning();
 
-		return completedUpload;
+		return completedUploads[0]!;
 	});
 
 	return {
-		upload: prismaToOutputWithFiles(newUpload),
+		upload: dbToOutput(newUpload),
 	};
 }

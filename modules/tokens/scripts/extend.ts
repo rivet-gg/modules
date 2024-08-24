@@ -1,4 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
+import { ScriptContext, Query, Database } from "../module.gen.ts";
 import { tokenFromRow, TokenWithSecret } from "../utils/types.ts";
 
 export interface Request {
@@ -20,17 +20,13 @@ export async function run(
 	});
 
 	// Update the token's expiration date
-	const newToken = await ctx.db.token.update({
-		where: {
-			id: token.id,
-		},
-		data: {
-			expireAt: req.newExpiration,
-		},
-	});
+  const rows = await ctx.db.update(Database.tokens)
+    .set({ expireAt: req.newExpiration ? new Date(req.newExpiration) : null })
+    .where(Query.eq(Database.tokens.id, token.id))
+    .returning();
 
 	// Return the updated token
 	return {
-		token: tokenFromRow(newToken),
+		token: tokenFromRow(rows[0]!),
 	};
 }

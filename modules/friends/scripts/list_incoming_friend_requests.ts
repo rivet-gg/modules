@@ -1,4 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
+import { ScriptContext,Database,Query } from "../module.gen.ts";
 import { FriendRequest, friendRequestFromRow } from "../utils/types.ts";
 
 export interface Request {
@@ -19,16 +19,14 @@ export async function run(
 		userToken: req.userToken,
 	});
 
-	const rows = await ctx.db.friendRequest.findMany({
-		where: {
-			targetUserId: userId,
-			acceptedAt: null,
-			declinedAt: null,
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 100,
+	const rows = await ctx.db.query.friendRequests.findMany({
+    where: Query.and(
+      Query.eq(Database.friendRequests.targetUserId, userId),
+      Query.isNull(Database.friendRequests.acceptedAt),
+      Query.isNull(Database.friendRequests.declinedAt),
+    ),
+    orderBy: Query.desc(Database.friendRequests.createdAt),
+		limit: 100,
 	});
 
 	const friendRequests = rows.map(friendRequestFromRow);

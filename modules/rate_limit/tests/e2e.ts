@@ -28,7 +28,7 @@ test("e2e", async (ctx: TestContext) => {
 	// Should be rate limited for all future requests
 	for (let i = 0; i < 3; i++) {
 		const error = await assertRejects(() => makeRequest(), RuntimeError);
-		assertEquals("RATE_LIMIT_EXCEEDED", error.code);
+		assertEquals("rate_limit_exceeded", error.code);
 	}
 
 	// Wait for the rate limit to reset

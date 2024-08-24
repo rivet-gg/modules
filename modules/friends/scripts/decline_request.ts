@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 
 export interface Request {
 	userToken: string;
@@ -17,54 +17,50 @@ export async function run(
 		userToken: req.userToken,
 	});
 
-	await ctx.db.$transaction(async (tx) => {
+	await ctx.db.transaction(async tx => {
 		// Lock & validate friend request
 		interface FriendRequestRow {
-			senderUserId: string;
-			targetUserId: string;
-			acceptedAt: Date | null;
-			declinedAt: Date | null;
+			sender_user_id: string;
+			target_user_id: string;
+			accepted_at: Date | null;
+			declined_at: Date | null;
 		}
-		const friendRequests = await tx.$queryRawUnsafe<FriendRequestRow[]>(
-			`
-      SELECT "senderUserId", "targetUserId", "acceptedAt", "declinedAt"
-      FROM "${ctx.dbSchema}"."FriendRequest"
-      WHERE "id" = $1
+
+		const { rows: friendRequests }: { rows: FriendRequestRow[] } = await tx.execute(
+			Query.sql`
+      SELECT ${Database.friendRequests.senderUserId}, ${Database.friendRequests.targetUserId}, ${Database.friendRequests.acceptedAt}, ${Database.friendRequests.declinedAt}
+      FROM ${Database.friendRequests}
+      WHERE ${Database.friendRequests.id} = ${req.friendRequestId}
       FOR UPDATE
-      `,
-			req.friendRequestId,
+      `
 		);
 		const friendRequest = friendRequests[0];
 		if (!friendRequest) {
-			throw new RuntimeError("FRIEND_REQUEST_NOT_FOUND", {
+			throw new RuntimeError("friend_request_not_found", {
 				meta: { friendRequestId: req.friendRequestId },
 			});
 		}
-		if (friendRequest.targetUserId !== userId) {
-			throw new RuntimeError("NOT_FRIEND_REQUEST_RECIPIENT", {
+		if (friendRequest.target_user_id !== userId) {
+			throw new RuntimeError("not_friend_request_recipient", {
 				meta: { friendRequestId: req.friendRequestId },
 			});
 		}
-		if (friendRequest.acceptedAt) {
-			throw new RuntimeError("FRIEND_REQUEST_ALREADY_ACCEPTED", {
+		if (friendRequest.accepted_at) {
+			throw new RuntimeError("friend_request_already_accepted", {
 				meta: { friendRequestId: req.friendRequestId },
 			});
 		}
-		if (friendRequest.declinedAt) {
-			throw new RuntimeError("FRIEND_REQUEST_ALREADY_DECLINED", {
+		if (friendRequest.declined_at) {
+			throw new RuntimeError("friend_request_already_declined", {
 				meta: { friendRequestId: req.friendRequestId },
 			});
 		}
 
 		// Decline the friend request
-		await tx.friendRequest.update({
-			where: {
-				id: req.friendRequestId,
-			},
-			data: {
-				declinedAt: new Date(),
-			},
-		});
+    await tx.update(Database.friendRequests)
+      .set({ declinedAt: new Date() })
+      .where(Query.eq(Database.friendRequests.id, req.friendRequestId))
+      .execute();
 	});
 
 	return {};

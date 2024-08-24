@@ -8,7 +8,7 @@ import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 test(
 	"get balance for nonexistent user",
 	async (ctx: TestContext) => {
-		const { balance } = await ctx.modules.currency.getBalance({
+		const { balance } = await ctx.modules.currency.fetchBalance({
 			userId: "00000000-0000-0000-0000-000000000000",
 		});
 
@@ -23,100 +23,41 @@ test(
 			username: faker.internet.userName(),
 		});
 
-		const { updatedBalance: _ } = await ctx.modules.currency.deposit({
+		const { updatedBalance: _ } = await ctx.modules.currency.adjustBalance({
 			userId: user.id,
 			amount: 100,
 		});
 
 		const error = await assertRejects(async () => {
-			await ctx.modules.currency.withdraw({ userId: user.id, amount: 150 });
+			await ctx.modules.currency.adjustBalance({ userId: user.id, amount: -150 });
 		}, RuntimeError);
 		assertEquals(error.code, "not_enough_funds");
 	},
 );
 
 test(
-	"withdraw negative amount",
+	"adjust NaN",
 	async (ctx: TestContext) => {
 		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
 		const error = await assertRejects(async () => {
-			await ctx.modules.currency.withdraw({ userId: user.id, amount: -100 });
+			await ctx.modules.currency.adjustBalance({ userId: user.id, amount: NaN });
 		}, RuntimeError);
 		assertEquals(error.code, "invalid_amount");
 	},
 );
 
 test(
-	"withdraw Infinity",
+	"adjust Infinity",
 	async (ctx: TestContext) => {
 		const { user: user } = await ctx.modules.users.create({
 			username: faker.internet.userName(),
 		});
 
 		const error = await assertRejects(async () => {
-			await ctx.modules.currency.withdraw({
-				userId: user.id,
-				amount: Infinity,
-			});
-		}, RuntimeError);
-		assertEquals(error.code, "invalid_amount");
-	},
-);
-
-test(
-	"withdraw NaN",
-	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.create({
-			username: faker.internet.userName(),
-		});
-
-		const error = await assertRejects(async () => {
-			await ctx.modules.currency.withdraw({ userId: user.id, amount: NaN });
-		}, RuntimeError);
-		assertEquals(error.code, "invalid_amount");
-	},
-);
-
-test(
-	"deposit Infinity",
-	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.create({
-			username: faker.internet.userName(),
-		});
-
-		const error = await assertRejects(async () => {
-			await ctx.modules.currency.deposit({ userId: user.id, amount: Infinity });
-		}, RuntimeError);
-		assertEquals(error.code, "invalid_amount");
-	},
-);
-
-test(
-	"deposit NaN",
-	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.create({
-			username: faker.internet.userName(),
-		});
-
-		const error = await assertRejects(async () => {
-			await ctx.modules.currency.deposit({ userId: user.id, amount: NaN });
-		}, RuntimeError);
-		assertEquals(error.code, "invalid_amount");
-	},
-);
-
-test(
-	"deposit negative amount",
-	async (ctx: TestContext) => {
-		const { user: user } = await ctx.modules.users.create({
-			username: faker.internet.userName(),
-		});
-
-		const error = await assertRejects(async () => {
-			await ctx.modules.currency.deposit({ userId: user.id, amount: -100 });
+			await ctx.modules.currency.adjustBalance({ userId: user.id, amount: Infinity });
 		}, RuntimeError);
 		assertEquals(error.code, "invalid_amount");
 	},

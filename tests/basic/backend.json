@@ -22,7 +22,7 @@
 		"groups": { "registry": "local" },
 		"identities": { "registry": "local" },
 		"leaderboards": { "registry": "local" },
-		"lobbies": { "registry": "local", "config": { "lobbies": { "backend": { "test": {} } } } },
+		"lobbies": { "registry": "local", "config": { "lobbies": { "backend": { "regions": ["test"], "test": {} } } } },
 		"matchmaker": { "registry": "local" },
 		"parties": { "registry": "local" },
 		"rate_limit": { "registry": "local" },

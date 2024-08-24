@@ -1,4 +1,4 @@
-import { prisma } from "../module.gen.ts";
+import { Database } from "../module.gen.ts";
 
 export interface Friend {
 	userIdA: string;
@@ -16,7 +16,7 @@ export interface FriendRequest {
 }
 
 export function friendFromRow(
-	row: prisma.Prisma.FriendGetPayload<any>,
+	row: typeof Database.friends.$inferSelect
 ): Friend {
 	return {
 		...row,
@@ -25,7 +25,7 @@ export function friendFromRow(
 }
 
 export function friendRequestFromRow(
-	row: prisma.Prisma.FriendRequestGetPayload<any>,
+	row: typeof Database.friendRequests.$inferSelect
 ): FriendRequest {
 	return {
 		...row,

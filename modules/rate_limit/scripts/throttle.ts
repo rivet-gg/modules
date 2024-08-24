@@ -48,7 +48,7 @@ export async function run(
 
 	// Check if allowed
 	if (!res.success) {
-		throw new RuntimeError("RATE_LIMIT_EXCEEDED", {
+		throw new RuntimeError("rate_limit_exceeded", {
 			meta: {
 				retryAfter: new Date(res.refillAt).toUTCString(),
 			},

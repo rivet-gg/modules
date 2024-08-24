@@ -2,6 +2,7 @@ import { test, TestContext } from "../module.gen.ts";
 import {
 	assert,
 	assertEquals,
+	assertExists
 } from "https://deno.land/std@0.220.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 import { getS3EnvConfig } from "../utils/env.ts";
@@ -59,9 +60,15 @@ test("multipart uploads", async (ctx: TestContext) => {
 	}
 
 	// Tell the module that the module had completed uploading.
-	const { upload: completed } = await ctx.modules.uploads.complete({
+	await ctx.modules.uploads.complete({
 		uploadId: presigned.id,
 	});
+	const { uploads: [completed] } = await ctx.modules.uploads.fetch({
+		uploadIds: [presigned.id],
+		includeFiles: true,
+	});
+	assertExists(completed);
+	assertExists(completed.files);
 
 	// Ensure the presigned and completed uploads are the same, except for
 	// expected timestamp differences
@@ -86,7 +93,7 @@ test("multipart uploads", async (ctx: TestContext) => {
 	});
 
 	// Lookup the completed upload
-	const { uploads: [retrieved] } = await ctx.modules.uploads.get({
+	const { uploads: [retrieved] } = await ctx.modules.uploads.fetch({
 		uploadIds: [completed.id],
 		includeFiles: true,
 	});
@@ -94,8 +101,9 @@ test("multipart uploads", async (ctx: TestContext) => {
 
 	// Get presigned URLs to download the files from
 	const { files } = await ctx.modules.uploads
-		.getPublicFileUrls({
-			files: [{ uploadId: completed.id, path: path }],
+		.fetchPublicFileUrls({
+			uploadId: completed.id,
+			filePaths: [path],
 		});
 	const fileDownloadUrl = files[0]!.url;
 
@@ -121,7 +129,7 @@ test("multipart uploads", async (ctx: TestContext) => {
 	assertEquals(parseInt(bytesDeleted), fileData.byteLength);
 
 	// Check that the upload can't still be retrieved
-	const { uploads: uploadList } = await ctx.modules.uploads.get({
+	const { uploads: uploadList } = await ctx.modules.uploads.fetch({
 		uploadIds: [completed.id],
 	});
 	assertEquals(uploadList, []);

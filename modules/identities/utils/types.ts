@@ -1,7 +1,5 @@
-import { prisma } from "../module.gen.ts";
-
-export type IdentityData = Record<string, unknown>;
-export type IdentityDataInput = IdentityData & prisma.Prisma.InputJsonValue;
+export type IdentityData = unknown;
+export type IdentityDataInput = unknown;
 
 export interface IdentityProviderInfo {
     identityType: string;

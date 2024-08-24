@@ -1,4 +1,4 @@
-import { Empty, RuntimeError, ScriptContext } from "../module.gen.ts";
+import { Empty, RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 import { Algorithm, hashMatches } from "../utils/common.ts";
 
 export interface Request {
@@ -13,11 +13,9 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
     // Look up the user password hash
-    const user = await ctx.db.passwords.findFirst({
-        where: {
-            userId: req.userId,
-        },
-        select: {
+    const user = await ctx.db.query.passwords.findFirst({
+        where: Query.eq(Database.passwords.userId, req.userId),
+        columns: {
             algo: true,
             passwordHash: true,
         }

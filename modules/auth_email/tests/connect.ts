@@ -5,7 +5,7 @@ import {
 	IDENTITY_INFO_PASSWORD,
 	IDENTITY_INFO_PASSWORDLESS,
 } from "../utils/provider.ts";
-import { checkLogin, getVerification, verifyProvider } from "../utils/tests.ts";
+import { checkLogin, getVerification, verifyProvider } from "./common.ts";
 
 // MARK: Test Email/No Pass
 test("connect_email_and_login_passwordless", async (ctx: TestContext) => {

@@ -18,7 +18,7 @@ test("Link a new identity to an existing user", async (ctx: TestContext) => {
 
     // Validate the identity data
     {
-        const { data } = await ctx.modules.identities.get({
+        const { data } = await ctx.modules.identities.fetch({
             userToken: signUpRes.userToken,
             info: {
                 identityType: "test",
@@ -51,7 +51,7 @@ test("Link a new identity to an existing user", async (ctx: TestContext) => {
 
     // Validate the new identity data
     {
-        const { data } = await ctx.modules.identities.get({
+        const { data } = await ctx.modules.identities.fetch({
             userToken: signUpRes.userToken,
             info: {
                 identityType: "test2",

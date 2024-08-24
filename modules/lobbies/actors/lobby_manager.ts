@@ -526,7 +526,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 			};
 		}
 
-		const { gameId, environmentId } = await ctx.modules.rivet.getConfig({});
+		const { gameId, environmentId } = await ctx.modules.rivet.fetchConfig({});
 
 		// TODO: Optimize this to only fetch regions once
 		// Lookup datacenter
@@ -745,7 +745,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 		}
 
 		// Destroy server
-		const { gameId, environmentId } = await ctx.modules.rivet.getConfig({});
+		const { gameId, environmentId } = await ctx.modules.rivet.fetchConfig({});
 		await ctx.modules.rivet.call({
 			method: "DELETE",
 			path:
@@ -1060,7 +1060,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 		const serverTags = {
 			[MANAGER_SERVER_TAG]: MANAGER_SERVER_TAG_VALUE,
 		};
-		const { gameId, environmentId } = await ctx.modules.rivet.getConfig({});
+		const { gameId, environmentId } = await ctx.modules.rivet.fetchConfig({});
 		const { body: { servers: rivetServers } } = await ctx.modules.rivet.call(
 			{
 				method: "GET",

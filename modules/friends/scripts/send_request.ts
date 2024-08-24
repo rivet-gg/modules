@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext } from "../module.gen.ts";
+import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
 import { FriendRequest, friendRequestFromRow } from "../utils/types.ts";
 
 export interface Request {
@@ -27,48 +27,45 @@ export async function run(
 	// Sort the user IDs to ensure consistency
 	const [userIdA, userIdB] = [userId, req.targetUserId].sort();
 
-	const row = await ctx.db.$transaction(async (tx) => {
+	const row = await ctx.db.transaction(async tx => {
 		// Validate that the users are not already friends
 		// TODO: Remove this `any` and replace with a proper type
-		const existingFriendRows = await tx.$queryRawUnsafe<any[]>(
-			`
+		const { rows: existingFriendRows } = await tx.execute(
+			Query.sql`
 			SELECT 1
-			FROM "${ctx.dbSchema}"."Friend"
-			WHERE "userIdA" = $1 OR "userIdB" = $2
+			FROM ${Database.friends}
+			WHERE ${Database.friends.userIdA} = ${userIdA} OR ${Database.friends.userIdB} = ${userIdB}
 			FOR UPDATE
-      `,
-			userIdA,
-			userIdB,
+      `
 		);
 		if (existingFriendRows.length > 0) {
-			throw new RuntimeError("ALREADY_FRIENDS", { meta: { userIdA, userIdB } });
+			throw new RuntimeError("already_friends", { meta: { userIdA, userIdB } });
 		}
 
 		// Validate that the users do not already have a pending friend request
-		const existingRequest = await tx.friendRequest.findFirst({
-			where: {
-				senderUserId: userId,
-				targetUserId: req.targetUserId,
-				acceptedAt: null,
-				declinedAt: null,
-			},
-			select: { senderUserId: true, targetUserId: true },
+		const existingRequest = await tx.query.friendRequests.findFirst({
+      where: Query.and(
+        Query.eq(Database.friendRequests.senderUserId, userId),
+        Query.eq(Database.friendRequests.targetUserId, req.targetUserId),
+        Query.isNull(Database.friendRequests.acceptedAt),
+        Query.isNull(Database.friendRequests.declinedAt),
+      )
 		});
 		if (existingRequest) {
-			throw new RuntimeError("FRIEND_REQUEST_ALREADY_EXISTS", {
+			throw new RuntimeError("friend_request_already_exists", {
 				meta: { userId, targetUserId: req.targetUserId },
 			});
 		}
 
 		// Create friend request
-		const friendRequest = await tx.friendRequest.create({
-			data: {
-				senderUserId: userId,
-				targetUserId: req.targetUserId,
-			},
-		});
+    const friendRequests = await tx.insert(Database.friendRequests)
+      .values({
+        senderUserId: userId,
+        targetUserId: req.targetUserId,
+      })
+      .returning();
 
-		return friendRequest;
+		return friendRequests[0]!;
 	});
 
 	return {

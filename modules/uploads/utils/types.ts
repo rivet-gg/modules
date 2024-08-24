@@ -1,15 +1,14 @@
-import { prisma } from "../module.gen.ts";
+import { Database } from "../module.gen.ts";
 
-type PrismaFiles = prisma.Files;
-type _PrismaUpload = prisma.Upload;
+type DatabaseFiles = typeof Database.files.$inferSelect;
 
-interface PrismaUpload extends Omit<_PrismaUpload, "deletedAt"> {
-	files: PrismaFiles[];
+interface DatabaseUpload extends Omit<typeof Database.uploads.$inferSelect, "deletedAt"> {
+	files: DatabaseFiles[];
 }
 
 export interface Upload {
 	id: string;
-	metadata?: prisma.Prisma.JsonValue;
+	metadata?: unknown;
 
 	bucket: string;
 
@@ -41,11 +40,6 @@ export interface UploadFile {
 	 * very large file sizes.)*
 	 */
 	contentLength: string;
-}
-
-export interface FileIdentifier {
-	uploadId: string;
-	path: string;
 }
 
 export interface DownloadableFile extends UploadFile {
@@ -95,18 +89,18 @@ export interface PresignedChunk {
 	offset: string;
 }
 
-type UploadWithoutFiles = Omit<Upload, "files">;
-type PrismaUploadWithoutFiles = Omit<PrismaUpload, "files">;
+export type UploadWithoutFiles = Omit<Upload, "files">;
+export type DatabaseUploadWithoutFiles = Omit<DatabaseUpload, "files">;
 
 export type UploadWithOptionalFiles = UploadWithoutFiles & {
 	files?: UploadFile[];
 };
-export type PrismaUploadWithOptionalFiles = PrismaUploadWithoutFiles & {
-	files?: PrismaFiles[];
+export type DatabaseUploadWithOptionalFiles = DatabaseUploadWithoutFiles & {
+	files?: DatabaseFiles[];
 };
 
-export function prismaToOutput(
-	upload: PrismaUploadWithOptionalFiles,
+export function dbToOutput(
+	upload: DatabaseUploadWithOptionalFiles,
 ): UploadWithOptionalFiles {
 	return {
 		id: upload.id,
@@ -127,9 +121,9 @@ export function prismaToOutput(
 	};
 }
 
-export function prismaToOutputWithFiles(upload: PrismaUpload): Upload {
+export function dbToOutputWithFiles(upload: DatabaseUpload): Upload {
 	return {
-		...prismaToOutput(upload),
+		...dbToOutput(upload),
 		files: upload.files?.map((file) => ({
 			path: file.path,
 			mime: file.mime,

@@ -1,5 +1,4 @@
-import { ScriptContext } from "../module.gen.ts";
-import { getUserId } from "../utils/db.ts";
+import { ScriptContext, Query, Database } from "../module.gen.ts";
 import { IdentityDataInput, IdentityProviderInfo } from "../utils/types.ts";
 
 export interface Request {
@@ -19,8 +18,18 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-    return await ctx.db.$transaction(async tx => {
-        const userId = await getUserId(tx, req.info.identityType, req.info.identityId, req.uniqueData);
+    return await ctx.db.transaction(async (tx) => {
+        const identity = await ctx.db.query.userIdentities.findFirst({
+            where: Query.and(
+                Query.eq(Database.userIdentities.identityType, req.info.identityType),
+                Query.eq(Database.userIdentities.identityId, req.info.identityId),
+                Query.eq(Database.userIdentities.uniqueData, req.uniqueData)
+            ),
+            columns: {
+                userId: true,
+            },
+        });
+        const userId = identity?.userId;
 
         // If the identity provider is associated with a user, sign in
         if (userId) {
@@ -35,14 +44,12 @@ export async function run(
             const { user } = await ctx.modules.users.create({ username: req.username });
 
             // Insert the identity data with the newly-created user
-            await tx.userIdentities.create({
-                data: {
-                    userId: user.id,
-                    identityType: req.info.identityType,
-                    identityId: req.info.identityId,
-                    uniqueData: req.uniqueData,
-                    additionalData: req.additionalData,
-                },
+            await tx.insert(Database.userIdentities).values({
+                userId: user.id,
+                identityType: req.info.identityType,
+                identityId: req.info.identityId,
+                uniqueData: req.uniqueData,
+                additionalData: req.additionalData,
             });
         
             // Generate a user token and return it
