@@ -58,7 +58,7 @@ async function generateSchemaHelper(module: Module, path: string, ormPackage: st
 
 	// Re-export indexing abilities
 	helper.append`
-  export { index } from ${JSON.stringify(`${ormPackage}/pg-core`)};
+  export { index, uniqueIndex } from ${JSON.stringify(`${ormPackage}/pg-core`)};
   `;
 
 	// Re-export database types
