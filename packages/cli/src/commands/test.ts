@@ -2,12 +2,12 @@ import { resolve } from "../../../toolchain/src/deps.ts";
 import { Command, glob } from "../deps.ts";
 import { GlobalOpts } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../../toolchain/src/build/mod.ts";
-import { ensurePostgresRunning } from "../../../toolchain/src/utils/postgres_daemon.ts";
 import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
 import { UserError } from "../../../toolchain/src/error/mod.ts";
 import { info } from "../../../toolchain/src/term/status.ts";
 import { convertMigrateMode, migrateMode } from "./../util.ts";
+import { ensurePostgresRunning } from "../../../toolchain/src/postgres/mod.ts";
 
 // TODO: https://github.com/rivet-gg/opengb-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()

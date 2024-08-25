@@ -1,12 +1,12 @@
 import { Command } from "../deps.ts";
 import { GlobalOpts } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../../toolchain/src/build/mod.ts";
-import { ensurePostgresRunning } from "../../../toolchain/src/utils/postgres_daemon.ts";
 import { watch } from "../../../toolchain/src/watch/mod.ts";
 import { Project } from "../../../toolchain/src/project/mod.ts";
 import { InternalError } from "../../../toolchain/src/error/mod.ts";
 import { ENTRYPOINT_PATH, projectGenPath } from "../../../toolchain/src/project/project.ts";
 import { convertMigrateMode, migrateMode } from "./../util.ts";
+import { ensurePostgresRunning } from "../../../toolchain/src/postgres/mod.ts";
 
 export const devCommand = new Command<GlobalOpts>()
 	.description("Start the development server")

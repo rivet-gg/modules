@@ -1,9 +1,9 @@
 import { Project } from "../project/project.ts";
-import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createBuildState, waitForBuildPromises } from "../build_state/mod.ts";
 import { success } from "../term/status.ts";
 import { planProjectBuild } from "./plan/project.ts";
 import { UnreachableError } from "../error/mod.ts";
+import { ensurePostgresRunning } from "../postgres/mod.ts";
 
 /**
  * Which format to use for building.
