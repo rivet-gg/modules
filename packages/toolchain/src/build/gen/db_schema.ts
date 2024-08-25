@@ -56,6 +56,11 @@ async function generateSchemaHelper(module: Module, path: string, ormPackage: st
   export const schema = pgSchema(${JSON.stringify(module.db?.schema)});
   `;
 
+	// Re-export indexing abilities
+	helper.append`
+  export { index } from ${JSON.stringify(`${ormPackage}/pg-core`)};
+  `;
+
 	// Re-export database types
 	helper.append`
   export * as Query from ${JSON.stringify(helper.relative(ormReexportPath))};
