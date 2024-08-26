@@ -1,0 +1,66 @@
+---
+title: "Currency"
+description: "Track user balances and allow them to deposit and withdraw."
+sidebarTitle: Overview
+---
+
+| Source                                                                           | Name       | Status     | Database     |
+| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/currency) | `currency` | preview | Yes |
+
+**Authors**
+
+- [ABCxFF](https://github.com/ABCxFF)
+
+**Dependencies**
+
+- [Rate Limit](/modules/rate_limit/overview)
+- [Users](/modules/users/overview)
+
+## Installation
+
+<Tabs>
+
+<Tab title="CLI">
+
+```sh CLI
+opengb module add currency
+```
+
+</Tab>
+
+<Tab title="backend.json">
+
+Add the following to your `backend.json`:
+
+```json backend.json
+"modules": {
+	"currency": {}
+}
+
+```
+</Tab>
+
+</Tabs>
+
+
+
+## Scripts
+
+### Public
+
+These scripts can be called publicly by your game.
+
+<CardGroup><Card title="Fetch Balance by Token" href="/modules/currency/scripts/fetch_balance_by_token"></Card></CardGroup>
+
+### Internal
+
+These scripts can only be called by other OpenGB modules.
+
+<CardGroup><Card title="Adjust Balance" href="/modules/currency/scripts/adjust_balance"></Card><Card title="Fetch Balance" href="/modules/currency/scripts/fetch_balance"></Card><Card title="Set Balance" href="/modules/currency/scripts/set_balance"></Card></CardGroup>
+
+## Errors
+
+- **Invalid Amount** (`invalid_amount`) 
+- **Invalid User** (`invalid_user`) 
+- **Not Enough Funds** (`not_enough_funds`) 

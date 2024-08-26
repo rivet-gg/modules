@@ -1,0 +1,54 @@
+---
+title: "Send Email"
+description: ""
+sidebarTitle: "Send Email"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/email/scripts/send_email.ts) | `send_email` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.email.sendEmail({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                  |
+| :----------------- | :------------------------------------------------------------------------------------ |
+| **`from`** (\*)    | _Object with properties:_<ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| **`to`** (\*)      | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| `cc`               | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| `bcc`              | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| `replyTo`          | _Array of objects:_<br /><ul><li>`email`: `string`</li><li>`name`: `string`</li></ul> |
+| **`subject`** (\*) | `string`                                                                              |
+| `html`             | `string`                                                                              |
+| `text`             | `string`                                                                              |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property | Type |
+| :------- | :--- |
+
+_All properties are optional._
+

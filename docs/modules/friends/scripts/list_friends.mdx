@@ -1,0 +1,120 @@
+---
+title: "List Friends"
+description: "List all friends of a user."
+sidebarTitle: "List Friends"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/friends/scripts/list_friends.ts) | `list_friends` | Yes |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.friends.listFriends({
+  // Request body
+});
+```
+```javascript JavaScript
+import { Backend } from "opengb-sdk";
+const backend = new Backend({ endpoint: "http://localhost:6420" });
+const data = await backend.friends.listFriends({
+  // Request body
+});
+```
+
+```gdscript Godot
+var data = backend.friends.list_friends({
+  # Request body
+})
+```
+
+```csharp Unity
+var data = Backend.Friends.ListFriends();
+```
+
+```cpp Unreal Engine
+// IMPORTANT: Auto-generated SDK coming soon
+
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Misc/DefaultValueHelper.h"
+
+void UYourClassName::PostRequest()
+{
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
+    Request->SetURL(TEXT("https://localhost:6420/modules/friends/scripts/list_friends/call"));
+    Request->SetVerb(TEXT("POST"));
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+    FString Payload = TEXT("{\"key\":\"value\"}");
+    Request->SetContentAsString(Payload);
+    Request->ProcessRequest();
+}
+
+void UYourClassName::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    if(!bWasSuccessful || !Response.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Request Failed"));
+        return
+    }
+
+    FString data = Response->GetContentAsString();
+
+    // Success
+}
+```
+
+```rust Rust
+// IMPORTANT: Auto-generated SDK coming soon
+
+let data = reqwest::Client::new()
+    .post("https://localhost:6420/modules/friends/scripts/list_friends/call")
+    .json(&body) // Make sure `body` is defined
+    .send()
+    .await?
+    .error_for_status()?
+    .json::<serde_json::Value>()
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://localhost:6420/modules/friends/scripts/list_friends/call" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "value" // Your JSON payload here
+  }'
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type     |
+| :------------------- | :------- |
+| **`userToken`** (\*) | `string` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                                                     |
+| :----------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **`friends`** (\*) | _Array of objects:_<br /><ul><li>`userIdA`: `string`</li><li>`userIdB`: `string`</li><li>`createdAt`: `string`</li></ul> |
+
+_(\*) Required._
+

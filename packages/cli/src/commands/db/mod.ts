@@ -6,7 +6,12 @@ import { migrateCommand } from "./migrate.ts";
 import { dbReset } from "../../../../toolchain/src/migrate/reset.ts";
 import { resolveModules } from "../../util.ts";
 import { instanceCommand } from "./instance.ts";
-import { DEFAULT_DATABASE, ensurePostgresRunning, getDefaultDatabaseUrl, getDefaultPostgresManager } from "../../../../toolchain/src/postgres/mod.ts";
+import {
+	DEFAULT_DATABASE,
+	ensurePostgresRunning,
+	getDefaultDatabaseUrl,
+	getDefaultPostgresManager,
+} from "../../../../toolchain/src/postgres/mod.ts";
 import { openShell } from "../../../../toolchain/src/postgres/manager.ts";
 import { assertExists } from "../../../../toolchain/src/deps.ts";
 

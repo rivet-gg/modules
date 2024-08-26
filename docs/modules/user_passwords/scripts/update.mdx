@@ -1,0 +1,47 @@
+---
+title: "Update Password for User"
+description: "Update a userID/password combination. Errors if user does not have a password."
+sidebarTitle: "Update Password for User"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/user_passwords/scripts/update.ts) | `update` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.userPasswords.update({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property               | Type                               |
+| :--------------------- | :--------------------------------- |
+| **`userId`** (\*)      | `string`                           |
+| **`newPassword`** (\*) | `string`                           |
+| `newAlgorithm`         | `'bcrypt' \| 'scrypt' \| 'argon2'` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object record with dynamic keys:_
+
+- _keys of type_ `string`
+- _values of type_ `never`
+

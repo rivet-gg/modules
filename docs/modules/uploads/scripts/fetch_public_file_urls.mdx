@@ -1,0 +1,50 @@
+---
+title: "Fetch Public File URLs"
+description: "Returns public presigned URLs for specified files in an upload"
+sidebarTitle: "Fetch Public File URLs"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/uploads/scripts/fetch_public_file_urls.ts) | `fetch_public_file_urls` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.uploads.fetchPublicFileUrls({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type            |
+| :------------------- | :-------------- |
+| **`uploadId`** (\*)  | `string`        |
+| **`filePaths`** (\*) | `Array<string>` |
+| `expirySeconds`      | `number`        |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                                                                     |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`files`** (\*) | _Array of objects:_<br /><ul><li>`uploadId`: `string`</li><li>`url`: `string`</li><li>`path`: `string`</li><li>`mime`: `string` (_nullable_)</li><li>`contentLength`: `string`</li></ul> |
+
+_(\*) Required._
+
