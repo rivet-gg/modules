@@ -7,11 +7,12 @@ import { drizzle, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
 import { Logger } from "npm:drizzle-orm@0.33.0/logger";
 import { log } from "./logger.ts";
 import { LogEntry } from "./logger.ts";
-
-const DEFAULT_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable";
+import { assertExists } from "./deps.ts";
 
 export function getDatabaseUrl(env: Environment): URL {
-	return new URL(env.get("DATABASE_URL") ?? DEFAULT_DATABASE_URL);
+	const databaseUrl = env.get("DATABASE_URL");
+	assertExists(databaseUrl, "`DATABASE_URL` environment variable missing");
+	return new URL(databaseUrl);
 }
 
 /**

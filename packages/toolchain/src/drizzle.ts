@@ -3,10 +3,10 @@ import { dbMigrationsPath, DRIZZLE_ORM_REEXPORT } from "./project/mod.ts";
 import { dbPath, Module } from "./project/module.ts";
 import { Project } from "./project/project.ts";
 import { verbose } from "./term/status.ts";
-import { getDatabaseUrl } from "./utils/db.ts";
 import { copy, dedent, relative, resolve } from "./deps.ts";
 import { compileDbSchemaHelper } from "./build/gen/db_schema.ts";
 import { DRIZZLE_KIT_PACKAGE, DRIZZLE_ORM_PACKAGE } from "./drizzle_consts.ts";
+import { getDefaultDatabaseUrl } from "./postgres/mod.ts";
 
 export interface RunCommandOpts {
 	args: string[];
@@ -71,7 +71,7 @@ export async function runDrizzleCommand(project: Project, module: Module, opts: 
 				prefix: "unix",
 			},
 			dbCredentials: {
-				url: getDatabaseUrl(),
+				url: await getDefaultDatabaseUrl(project),
 			},
 			verbose: Deno.env.get("VERBOSE") == "1",
 			schemaFilter: [module.db.schema],
