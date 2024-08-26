@@ -1,0 +1,12 @@
+---
+title: "Misc"
+---
+
+### Don't use `deno compile`
+
+OpenGB relies on access to the `deno` binary to run dev servers.
+
+Binaries generated with `deno compile` don't give you access to the `deno` binary.
+
+Therefore, all instances of OpenGB must be ran using `deno install` or `deno run`.
+
