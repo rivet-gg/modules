@@ -1,7 +1,7 @@
 {
 	"status": "stable",
-	"name": "Rivet API",
-	"description": "Helper for calling the Rivet API.",
+	"name": "Rivet",
+	"description": "Open-source game servers & backend for multiplayer games.",
 	"icon": "r",
 	"tags": [
 		"core",
