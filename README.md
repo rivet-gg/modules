@@ -43,7 +43,7 @@ deno task cli:install
 - **Language** TypeScript
 - **Runtime** Deno
 - **Database** Postgres
-- **ORM** Prisma
+- **ORM** Drizzle
 
 ## Documentation
 

@@ -136,7 +136,7 @@
                 "docs/engine/design/typescript",
                 "docs/engine/design/deno",
                 "docs/engine/design/postgres",
-                "docs/engine/design/prisma",
+                "docs/engine/design/drizzle",
                 "docs/engine/design/registries-dependencies",
                 "docs/engine/design/misc"
               ]
