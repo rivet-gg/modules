@@ -6,7 +6,9 @@ import { migrateCommand } from "./migrate.ts";
 import { dbReset } from "../../../../toolchain/src/migrate/reset.ts";
 import { resolveModules } from "../../util.ts";
 import { instanceCommand } from "./instance.ts";
-import { getDefaultDatabaseUrl } from "../../../../toolchain/src/postgres/mod.ts";
+import { DEFAULT_DATABASE, ensurePostgresRunning, getDefaultDatabaseUrl, getDefaultPostgresManager } from "../../../../toolchain/src/postgres/mod.ts";
+import { openShell } from "../../../../toolchain/src/postgres/manager.ts";
+import { assertExists } from "../../../../toolchain/src/deps.ts";
 
 export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
 // Unique container name for this runtime so we can run multiple instances in
@@ -44,8 +46,6 @@ dbCommand
 dbCommand
 	.command("sh")
 	.action(async (opts) => {
-		const project = await initProject(opts);
-
 		// Validate terminal
 		if (!Deno.stdin.isTerminal()) {
 			throw new UserError("Cannot run this command without a terminal.", {
@@ -54,30 +54,11 @@ dbCommand
 			});
 		}
 
-		// Warn if tyring to run inside of Docker
-		if (Deno.env.has("RUNNING_IN_DOCKER")) {
-			warn("Skipping Postgres Dev Server", "Cannot start Postgres dev server when running OpenGB inside of Docker");
-			return;
-		}
-
-		// Start the container
-		verbose("Starting container", `${POSTGRES_CONTAINER_NAME} (${POSTGRES_IMAGE})`);
-		await new Deno.Command("docker", {
-			args: [
-				"run",
-				"-it",
-				"--rm",
-				`--name=${POSTGRES_CONTAINER_NAME}`,
-				"--add-host=host.docker.internal:host-gateway",
-				POSTGRES_IMAGE,
-				// ===
-				"psql",
-				await getDefaultDatabaseUrl(project),
-			],
-			stdin: "inherit",
-			stdout: "inherit",
-			stderr: "inherit",
-		}).output();
+		const project = await initProject(opts);
+		await ensurePostgresRunning(project);
+		const manager = await getDefaultPostgresManager(project);
+		assertExists(manager);
+		await openShell(manager, DEFAULT_DATABASE);
 	});
 
 dbCommand

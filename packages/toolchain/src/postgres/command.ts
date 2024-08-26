@@ -1,17 +1,13 @@
 import { resolve } from "../deps.ts";
 import { verbose } from "../term/status.ts";
-import { CommandError, ExecutableNotFoundError } from "./error.ts";
+import { CommandError } from "./error.ts";
+import { Settings, binaryDir } from "./settings.ts";
 
 export interface Command {
 	/**
 	 * The program name
 	 */
 	program: string;
-
-	/**
-	 * Location of the program binary
-	 */
-	programDir?: string;
 
 	/**
 	 * The arguments for the command
@@ -24,14 +20,13 @@ export interface Command {
 	envs: Record<string, string>;
 }
 
-export async function execute(command: Command, timeout?: number): Promise<[string, string]> {
+export function getProgramFile(settings: Settings, program: string): string {
+	return resolve(binaryDir(settings), program);
+}
+
+export async function execute(settings: Settings, command: Command, timeout?: number): Promise<[string, string]> {
 	// Resolve path to program
-	let programFile: string;
-	if (command.programDir) {
-		programFile = resolve(command.programDir, command.program);
-	} else {
-		programFile = command.program;
-	}
+	const programFile = getProgramFile(settings, command.program);
 
 	verbose(`Executing command`, `${programFile} ${command.args.map((x) => JSON.stringify(x)).join(" ")}`);
 
