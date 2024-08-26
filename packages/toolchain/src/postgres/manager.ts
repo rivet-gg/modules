@@ -11,7 +11,7 @@ import { verbose } from "../term/status.ts";
 import { addShutdownHandler } from "../utils/shutdown_handler.ts";
 import { PostgresClient } from "../migrate/deps.ts";
 import { assertExists, dirname, ensureDir, exists, move, resolve } from "../deps.ts";
-import { execute } from "./command.ts";
+import { execute, getProgramFile } from "./command.ts";
 import { getDownloadUrl, getReleaseFileNameForCurrentHost } from "./resolver.ts";
 import { InternalError } from "../error/mod.ts";
 import * as tar from "npm:tar";
@@ -149,9 +149,8 @@ async function initialize(manager: Manager): Promise<void> {
 	verbose(`Initializing Postgres`, manager.settings.dataDir);
 
 	try {
-		await execute({
+		await execute(manager.settings, {
 			program: "initdb",
-			programDir: binaryDir(manager.settings),
 			args: [
 				"--pgdata",
 				manager.settings.dataDir,
@@ -196,9 +195,8 @@ async function start(manager: Manager): Promise<void> {
 			options.push(`-c ${k}=${v}`);
 		}
 
-		await execute({
+		await execute(manager.settings, {
 			program: "pg_ctl",
-			programDir: binaryDir(manager.settings),
 			args: [
 				"start",
 				"--pgdata",
@@ -224,9 +222,8 @@ export async function stop(manager: Manager): Promise<void> {
 	verbose(`Stopping database ${manager.settings.dataDir}`);
 
 	try {
-		await execute({
+		await execute(manager.settings, {
 			program: "pg_ctl",
-			programDir: binaryDir(manager.settings),
 			args: [
 				"stop",
 				"--pgdata",
@@ -319,8 +316,25 @@ async function createDefaultDatabase(manager: Manager): Promise<void> {
 		}
 	}
 }
+
 export function getDatabaseUrl(manager: Manager, databaseName: string): string {
 	assertExists(manager.state.superuserPassword, "Missing superuser password");
 	assertExists(manager.state.port, "Missing port");
 	return `postgresql://${BOOTSTRAP_SUPERUSER}:${manager.state.superuserPassword}@${manager.settings.host}:${manager.state.port}/${databaseName}`;
+}
+
+export async function openShell(manager: Manager, databaseName: string): Promise<void> {
+	const databaseUrl = getDatabaseUrl(manager, databaseName);
+
+	const psql = new Deno.Command(getProgramFile(manager.settings, "psql"), {
+		args: [databaseUrl],
+		stdin: "inherit",
+		stdout: "inherit",
+		stderr: "inherit",
+	});
+
+	const { success } = await psql.output();
+	if (!success) {
+		throw new InternalError("Failed to spawn psql");
+	}
 }
