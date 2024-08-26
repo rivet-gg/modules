@@ -43,10 +43,6 @@ export class Postgres {
 
 	public async shutdown() {
 		this.isShutDown = true;
-		for (const client of this.drizzleClients.values()) {
-			// TODO:
-			// await client.$disconnect();
-		}
 		if (this.pgPool?.end) await this.pgPool.end();
 	}
 

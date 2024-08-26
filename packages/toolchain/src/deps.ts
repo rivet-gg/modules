@@ -8,8 +8,14 @@ export {
 	resolve,
 	SEP,
 } from "https://deno.land/std@0.208.0/path/mod.ts";
-export { copy, emptyDir, exists, move } from "https://deno.land/std@0.208.0/fs/mod.ts";
-export { assert, assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
+export { copy, emptyDir, ensureDir, ensureFile, exists, move } from "https://deno.land/std@0.208.0/fs/mod.ts";
+export {
+	assert,
+	assertEquals,
+	assertExists,
+	assertRejects,
+	assertThrows,
+} from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 export { fromError as fromValidationError, isZodErrorLike as isValidationError } from "npm:zod-validation-error@3.3.0";
 

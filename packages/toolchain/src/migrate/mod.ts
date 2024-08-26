@@ -1,12 +1,12 @@
 import { PostgresClient } from "./deps.ts";
 import { Module, ModuleDatabase, Project } from "../project/mod.ts";
-import { ensurePostgresRunning } from "../utils/postgres_daemon.ts";
 import { createOnce, Once } from "../utils/once.ts";
 import { getDatabaseUrl } from "../utils/db.ts";
 import { InternalError } from "../error/mod.ts";
 import { getOrInitOnce } from "../utils/once.ts";
 import { addShutdownHandler } from "../utils/shutdown_handler.ts";
 import { verbose } from "../term/status.ts";
+import { ensurePostgresRunning } from "../postgres/mod.ts";
 
 export type ForEachDatabaseCallback = (
 	opts: { module: Module; db: ModuleDatabase },
