@@ -3,10 +3,10 @@ import {
 	createManager,
 	databaseExists,
 	dropDatabase,
-	isRunning,
 	Manager,
 	setup,
-	start,
+	Status,
+	status,
 	stop,
 } from "./manager.ts";
 import { Settings } from "./settings.ts";
@@ -15,31 +15,30 @@ import { assertEquals, assertRejects, exists, resolve } from "../deps.ts";
 async function createTempSettings(): Promise<Settings> {
 	const tempDir = await Deno.makeTempDir();
 	return {
-		releasesUrl: "",
+		stateFile: resolve(tempDir, "manager_state.json"),
 		version: "16.4.0",
 		installationDir: resolve(tempDir, "installation"),
 		passwordFile: resolve(tempDir, ".pgpass"),
 		dataDir: resolve(tempDir, "data"),
 		host: "localhost",
-		port: 0,
-		username: "postgres",
-		password: "test-password",
-		temporary: true,
-		timeout: 5000,
 		configuration: {},
+		defaultDatabases: ["foo", "bar"],
 	};
 }
 
 Deno.test("e2e", async () => {
 	const settings = await createTempSettings();
-	const manager: Manager = createManager(settings);
+	const manager: Manager = await createManager(settings);
 
 	await setup(manager);
+
 	assertEquals(await exists(settings.installationDir, { isDirectory: true }), true);
 	assertEquals(await exists(settings.dataDir, { isDirectory: true }), true);
 
-	await start(manager);
-	assertEquals(await isRunning(manager), true);
+	assertEquals(await status(manager), Status.Started);
+
+	assertEquals(await databaseExists(manager, "foo"), true);
+	assertEquals(await databaseExists(manager, "bar"), true);
 
 	const dbName = "test_db";
 
@@ -57,5 +56,11 @@ Deno.test("e2e", async () => {
 	assertEquals(await databaseExists(manager, dbName), false);
 
 	await stop(manager);
-	assertEquals(await isRunning(manager), false);
+	assertEquals(await status(manager), Status.Stopped);
+
+	await setup(manager);
+	assertEquals(await status(manager), Status.Started);
+
+	await stop(manager);
+	assertEquals(await status(manager), Status.Stopped);
 });

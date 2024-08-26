@@ -21,6 +21,8 @@ export const devCommand = new Command<GlobalOpts>()
 		"Configure how migrations are ran",
 		{ default: "dev" },
 	)
+	// Reserved for future use
+	.option("--non-interactive", "Run without interactive input")
 	.action(
 		async (opts) => {
 			await watch({

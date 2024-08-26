@@ -1,7 +1,8 @@
 import { Module, Project } from "../project/mod.ts";
-import { forEachDatabase, getDefaultClient } from "./mod.ts";
+import { forEachDatabase } from "./mod.ts";
 import { info } from "../term/status.ts";
 import { assertValidString } from "./mod.ts";
+import { getDefaultClient } from "../postgres/mod.ts";
 
 export async function dbReset(
 	project: Project,
