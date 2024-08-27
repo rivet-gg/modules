@@ -3,6 +3,10 @@
   "packages": {
     "specifiers": {
       "jsr:@bartlomieju/postgres@^0.17.2": "jsr:@bartlomieju/postgres@0.17.2",
+      "jsr:@cliffy/command@^1.0.0-rc.5": "jsr:@cliffy/command@1.0.0-rc.5",
+      "jsr:@cliffy/flags@1.0.0-rc.5": "jsr:@cliffy/flags@1.0.0-rc.5",
+      "jsr:@cliffy/internal@1.0.0-rc.5": "jsr:@cliffy/internal@1.0.0-rc.5",
+      "jsr:@cliffy/table@1.0.0-rc.5": "jsr:@cliffy/table@1.0.0-rc.5",
       "jsr:@david/code-block-writer@^13": "jsr:@david/code-block-writer@13.0.2",
       "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2": "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2",
       "jsr:@std/assert@^0.213.1": "jsr:@std/assert@0.213.1",
@@ -12,6 +16,7 @@
       "jsr:@std/async@^1.0.4": "jsr:@std/async@1.0.4",
       "jsr:@std/bytes@0.213.1": "jsr:@std/bytes@0.213.1",
       "jsr:@std/bytes@^0.213.1": "jsr:@std/bytes@0.213.1",
+      "jsr:@std/cli@1.0.0-rc.2": "jsr:@std/cli@1.0.0-rc.2",
       "jsr:@std/collections@^1.0.5": "jsr:@std/collections@1.0.5",
       "jsr:@std/crypto@0.213.1": "jsr:@std/crypto@0.213.1",
       "jsr:@std/crypto@^1.0.3": "jsr:@std/crypto@1.0.3",
@@ -21,6 +26,7 @@
       "jsr:@std/encoding@^1.0.3": "jsr:@std/encoding@1.0.3",
       "jsr:@std/fmt@0.213.1": "jsr:@std/fmt@0.213.1",
       "jsr:@std/fmt@^1.0.1": "jsr:@std/fmt@1.0.1",
+      "jsr:@std/fmt@~0.225.4": "jsr:@std/fmt@0.225.6",
       "jsr:@std/fs@^0.229.3": "jsr:@std/fs@0.229.3",
       "jsr:@std/fs@^1.0.2": "jsr:@std/fs@1.0.2",
       "jsr:@std/internal@^1.0.2": "jsr:@std/internal@1.0.2",
@@ -32,6 +38,7 @@
       "jsr:@std/path@1.0.0-rc.1": "jsr:@std/path@1.0.0-rc.1",
       "jsr:@std/path@^0.225.2": "jsr:@std/path@0.225.2",
       "jsr:@std/path@^1.0.3": "jsr:@std/path@1.0.3",
+      "jsr:@std/text@1.0.0-rc.1": "jsr:@std/text@1.0.0-rc.1",
       "jsr:@ts-morph/common@^0.24.0": "jsr:@ts-morph/common@0.24.0",
       "jsr:@ts-morph/ts-morph@^23.0.0": "jsr:@ts-morph/ts-morph@23.0.0",
       "npm:@asteasolutions/zod-to-openapi@^7.1.1": "npm:@asteasolutions/zod-to-openapi@7.1.1_zod@3.23.8",
@@ -56,6 +63,32 @@
           "jsr:@std/fmt@0.213.1",
           "jsr:@std/io@0.213.1",
           "jsr:@std/path@0.213.1"
+        ]
+      },
+      "@cliffy/command@1.0.0-rc.5": {
+        "integrity": "55e00a1d0ae38152fb275a89494a81ffb9b144eb9060107c0be5af46e1ba736c",
+        "dependencies": [
+          "jsr:@cliffy/flags@1.0.0-rc.5",
+          "jsr:@cliffy/internal@1.0.0-rc.5",
+          "jsr:@cliffy/table@1.0.0-rc.5",
+          "jsr:@std/fmt@~0.225.4",
+          "jsr:@std/text@1.0.0-rc.1"
+        ]
+      },
+      "@cliffy/flags@1.0.0-rc.5": {
+        "integrity": "bd33b7b399e0af353f5516d87a2d552d46ee7e7f4a6f0c0bc65fcce750710217",
+        "dependencies": [
+          "jsr:@std/text@1.0.0-rc.1"
+        ]
+      },
+      "@cliffy/internal@1.0.0-rc.5": {
+        "integrity": "1e8dca4fcfba1815bf1a899bb880e09f8b45284c352465ef8fb015887c1fc126"
+      },
+      "@cliffy/table@1.0.0-rc.5": {
+        "integrity": "2b3e1b4764bbb56b0c39aeba95bc0bb551d9bd4475fbb6d1ce368c08b7ef9eb3",
+        "dependencies": [
+          "jsr:@std/cli@1.0.0-rc.2",
+          "jsr:@std/fmt@~0.225.4"
         ]
       },
       "@david/code-block-writer@13.0.2": {
@@ -90,6 +123,9 @@
       "@std/bytes@0.213.1": {
         "integrity": "97f133c5bfb18b4522675e0822089de91e32618a4d8c2fcea8e175aca8f1f65c"
       },
+      "@std/cli@1.0.0-rc.2": {
+        "integrity": "97dfae82b9f0e189768ebfa7a5da53375955b94bad0a1804f8e3b73563b03787"
+      },
       "@std/collections@1.0.5": {
         "integrity": "ab9eac23b57a0c0b89ba45134e61561f69f3d001f37235a248ed40be260c0c10"
       },
@@ -110,6 +146,9 @@
       },
       "@std/fmt@0.213.1": {
         "integrity": "a06d31777566d874b9c856c10244ac3e6b660bdec4c82506cd46be052a1082c3"
+      },
+      "@std/fmt@0.225.6": {
+        "integrity": "aba6aea27f66813cecfd9484e074a9e9845782ab0685c030e453a8a70b37afc8"
       },
       "@std/fmt@1.0.1": {
         "integrity": "ef76c37faa7720faa8c20fd8cc74583f9b1e356dfd630c8714baa716a45856ab"
@@ -163,6 +202,9 @@
       },
       "@std/path@1.0.3": {
         "integrity": "cd89d014ce7eb3742f2147b990f6753ee51d95276bfc211bc50c860c1bc7df6f"
+      },
+      "@std/text@1.0.0-rc.1": {
+        "integrity": "34c722203e87ee12792c8d4a0cd2ee0e001341cbce75b860fc21be19d62232b0"
       },
       "@ts-morph/common@0.24.0": {
         "integrity": "12b625b8e562446ba658cdbe9ad77774b4bd96b992ae8bd34c60dbf24d06c1f3",
@@ -740,6 +782,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@bartlomieju/postgres@^0.17.2",
+      "jsr:@cliffy/command@^1.0.0-rc.5",
       "jsr:@luca/esbuild-deno-loader@^0.10.3",
       "jsr:@std/assert@^1.0.3",
       "jsr:@std/async@^1.0.4",

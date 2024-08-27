@@ -1,4 +1,6 @@
-import { Command, CompletionsCommand, HelpCommand, ValidationError } from "@cliffy/command";
+import { Command, ValidationError } from "@cliffy/command";
+import { CompletionsCommand } from "@cliffy/command/completions";
+import { HelpCommand } from "@cliffy/command/help";
 import * as colors from "@std/fmt/colors";
 import { devCommand } from "./commands/dev.ts";
 import { moduleCommand } from "./commands/module.ts";
