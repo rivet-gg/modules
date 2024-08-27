@@ -2,14 +2,14 @@
 	"tasks": {
 		// Runs the CLI
 		"cli:run": "deno task artifacts:build && deno task cli:run:dirty",
-		"cli:run:dirty": "deno run -A --check packages/cli/src/main.ts --project tests/basic",
+		"cli:run:dirty": "deno run -A --check packages/cli/main.ts --project tests/basic",
 
 		// Specific CLI tasks
 		"cli:run:build": "deno task cli:run build",
 		"cli:run:clean_build": "deno task artifacts:build && deno task cli:run:dirty clean && deno task cli:run build",
 
 		// Installs the CLI on the local machine
-		"cli:install": "deno task artifacts:build && deno install --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force packages/cli/src/main.ts",
+		"cli:install": "deno task artifacts:build && deno install --allow-net --allow-read --allow-env --allow-run --allow-write --allow-sys --name opengb --force packages/cli/main.ts",
 
     // Build Dockerfile
 		"docker:build": "docker build -t opengb -f cli.Dockerfile .",
@@ -36,7 +36,7 @@
 		// Runs tests
 		"test:core": "deno task artifacts:build && deno test -A packages/",
 		"test:project": "deno task cli:run test --strict-schemas --force-deploy-migrations",
-		"test:registry": "deno task artifacts:build && deno run -A --check packages/cli/src/main.ts --path ../opengb-modules/tests/basic test --strict-schemas --force-deploy-migrations"
+		"test:registry": "deno task artifacts:build && deno run -A --check packages/cli/main.ts --path ../opengb-modules/tests/basic test --strict-schemas --force-deploy-migrations"
 	},
 	"lint": {
 		"include": ["packages/"],

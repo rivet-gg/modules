@@ -2,7 +2,7 @@
 //
 // This is used to make using the ORM much easier by being able to access `Query.*` instead of having to know the imports from two different packages.
 
-import { DRIZZLE_ORM_PACKAGE } from "../../packages/toolchain/src/drizzle_consts.ts";
+import { DRIZZLE_ORM_PACKAGE } from "../../packages/toolchain/drizzle_consts.ts";
 import { resolve } from "./deps.ts";
 import { projectRoot } from "./util.ts";
 
