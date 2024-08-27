@@ -1,9 +1,11 @@
 import { pascalify } from "../../../case_conversion/mod.ts";
-import { dirname, glob, resolve } from "../../deps.ts";
+import { dirname } from "@std/path";
+import * as glob from "glob";
+import { resolve } from "@std/path";
 import { GeneratedCodeBuilder, Lang } from "../../build/gen/code_builder.ts";
 import { Project } from "../../project/mod.ts";
 import dynamicArchive from "../../../../artifacts/dynamic_archive.json" with { type: "json" };
-import { dedent } from "../../build/deps.ts";
+import dedent from "dedent";
 import { autoGenHeader } from "../../build/misc.ts";
 
 // https://docs.godotengine.org/en/stable/classes/class_object.html#class-object

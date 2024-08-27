@@ -1,4 +1,5 @@
-import { move, resolve } from "../deps.ts";
+import { move } from "@std/fs";
+import { resolve } from "@std/path";
 import { CommandError, UnreachableError } from "../error/mod.ts";
 import { Project } from "../project/mod.ts";
 import { projectGenPath, SDK_PATH } from "../project/project.ts";

@@ -1,4 +1,4 @@
-import { ensureFile } from "../deps.ts";
+import { ensureFile } from "@std/fs";
 
 export interface State {
 	port?: number;

@@ -1,5 +1,7 @@
-import { assert, exists, isAbsolute } from "../deps.ts";
-import { z } from "../build/schema/deps.ts";
+import { assert } from "@std/assert";
+import { exists } from "@std/fs";
+import { isAbsolute } from "@std/path";
+import { z } from "zod";
 import { UserError, ValidationError } from "../error/mod.ts";
 import { loadProjectConfigPath } from "../project/mod.ts";
 

@@ -1,4 +1,4 @@
-import { dedent } from "./deps.ts";
+import dedent from "dedent";
 
 export function autoGenHeader(commentChar = "//") {
 	return dedent`

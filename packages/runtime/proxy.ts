@@ -1,4 +1,4 @@
-import { ActorContext, Context, ModuleContext, Runtime, Trace } from "./mod.ts";
+import { Context, Runtime, Trace } from "./mod.ts";
 import { RequestOf, ResponseOf } from "./types/registry.ts";
 import { ActorProxy } from "./actor/proxy.ts";
 import { ContextParams } from "./context.ts";

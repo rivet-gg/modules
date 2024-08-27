@@ -1,7 +1,7 @@
 import { Module, Project, Script } from "../project/mod.ts";
 import { Cache, compareFileHash, compareHash, HashValue, loadCache, writeCache } from "./cache.ts";
 import { progress } from "../term/status.ts";
-import { assert } from "../deps.ts";
+import { assert } from "@std/assert";
 import { CombinedError } from "../error/mod.ts";
 
 /**

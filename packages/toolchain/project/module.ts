@@ -1,5 +1,7 @@
-import { exists, relative, resolve } from "../deps.ts";
-import { deepMerge, glob } from "./deps.ts";
+import { exists } from "@std/fs";
+import { relative, resolve } from "@std/path";
+import * as glob from "glob";
+import { deepMerge } from "@std/collections";
 import { configPath as moduleConfigPath, readConfig as readModuleConfig } from "../config/module.ts";
 import { ModuleConfig } from "../config/module.ts";
 import { Script } from "./script.ts";

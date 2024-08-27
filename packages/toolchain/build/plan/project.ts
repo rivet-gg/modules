@@ -1,5 +1,6 @@
 import { BuildState, buildStep, waitForBuildPromises } from "../../build_state/mod.ts";
-import { glob, relative, resolve } from "../../deps.ts";
+import * as glob from "glob";
+import { relative, resolve } from "@std/path";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, MigrateMode, Runtime } from "../mod.ts";
 import { planModuleBuild } from "./module.ts";

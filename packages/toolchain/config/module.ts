@@ -1,6 +1,6 @@
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { UserError } from "../error/mod.ts";
-import { z } from "../build/schema/deps.ts";
+import { z } from "zod";
 
 const ScriptConfigSchema = z.object({
 	/**

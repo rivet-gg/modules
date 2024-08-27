@@ -1,4 +1,4 @@
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { ProjectConfig } from "../config/project.ts";
 
 export async function templateProject(rootPath: string) {

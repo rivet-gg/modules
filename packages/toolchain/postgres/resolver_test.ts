@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "../deps.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { getReleaseFileName } from "./resolver.ts";
 
 Deno.test("getPostgresFileName", async (t) => {

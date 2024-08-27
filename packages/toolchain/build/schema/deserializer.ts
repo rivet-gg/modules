@@ -1,4 +1,4 @@
-import { CodeBlockWriter, Project, VariableDeclarationKind } from "./deps.ts";
+import { CodeBlockWriter, Project, VariableDeclarationKind } from "@ts-morph/ts-morph";
 import { AnySchemaElement, is, s } from "./schema.ts";
 
 interface GenerateOptions {

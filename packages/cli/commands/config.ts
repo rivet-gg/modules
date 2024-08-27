@@ -1,4 +1,4 @@
-import { Command } from "../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts } from "../common.ts";
 import { readConfig } from "../../toolchain/config/project.ts";
 import { loadProjectConfigPath } from "../../toolchain/project/mod.ts";

@@ -1,4 +1,4 @@
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { Project } from "../project/mod.ts";
 
 export async function generateDenoConfig(project: Project) {

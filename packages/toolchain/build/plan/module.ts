@@ -1,5 +1,6 @@
 import { BuildState, buildStep } from "../../build_state/mod.ts";
-import { assertExists, resolve } from "../../deps.ts";
+import { assertExists } from "@std/assert";
+import { resolve } from "@std/path";
 import { configPath, Module, Project } from "../../project/mod.ts";
 import { compileModuleHelper } from "../gen/mod.ts";
 import { compileModuleConfigSchema } from "../module_config_schema.ts";

@@ -1,5 +1,6 @@
 import { camelify, pascalify } from "../../../case_conversion/mod.ts";
-import { exists, resolve } from "../../deps.ts";
+import { exists } from "@std/fs";
+import { resolve } from "@std/path";
 import { GeneratedCodeBuilder } from "../../build/gen/code_builder.ts";
 import { Project } from "../../project/mod.ts";
 import dynamicArchive from "../../../../artifacts/dynamic_archive.json" with { type: "json" };

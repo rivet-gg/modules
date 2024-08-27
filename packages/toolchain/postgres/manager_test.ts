@@ -10,7 +10,9 @@ import {
 	stop,
 } from "./manager.ts";
 import { Settings } from "./settings.ts";
-import { assertEquals, assertRejects, exists, resolve } from "../deps.ts";
+import { assertEquals, assertRejects } from "@std/assert";
+import { exists } from "@std/fs";
+import { resolve } from "@std/path";
 
 async function createTempSettings(): Promise<Settings> {
 	const tempDir = await Deno.makeTempDir();

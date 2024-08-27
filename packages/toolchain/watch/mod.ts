@@ -1,11 +1,11 @@
-import { abortable } from "./deps.ts";
-import { dirname, resolve, SEP } from "../deps.ts";
+import { abortable } from "@std/async";
+import { dirname, resolve, SEPARATOR } from "@std/path";
 import { Project } from "../project/mod.ts";
 import { loadProject, loadProjectConfigPath, LoadProjectOpts } from "../project/project.ts";
 import { info, verbose } from "../term/status.ts";
 import { InternalError } from "../error/mod.ts";
 import { printError } from "../error/mod.ts";
-import { colors } from "../term/deps.ts";
+import * as colors from "@std/fmt/colors";
 
 export interface WatchOpts {
 	/**
@@ -152,7 +152,7 @@ function getWatchPaths(loadProjectOpts: LoadProjectOpts, project?: Project) {
 }
 
 function shouldPathTriggerRebuild(path: string) {
-	const pathSplit = path.split(SEP);
+	const pathSplit = path.split(SEPARATOR);
 
 	// Ignore generated files
 	if (pathSplit.includes(".opengb")) return false;

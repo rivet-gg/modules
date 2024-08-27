@@ -1,7 +1,6 @@
-import { Command } from "../../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts, initProject } from "../../common.ts";
 import { UserError } from "../../../toolchain/error/mod.ts";
-import { verbose, warn } from "../../../toolchain/term/status.ts";
 import { migrateCommand } from "./migrate.ts";
 import { dbReset } from "../../../toolchain/migrate/reset.ts";
 import { resolveModules } from "../../util.ts";
@@ -13,7 +12,7 @@ import {
 	getDefaultPostgresManager,
 } from "../../../toolchain/postgres/mod.ts";
 import { openShell } from "../../../toolchain/postgres/manager.ts";
-import { assertExists } from "../../../toolchain/deps.ts";
+import { assertExists } from "@std/assert";
 
 export const POSTGRES_IMAGE = "postgres:16.2-alpine3.19";
 // Unique container name for this runtime so we can run multiple instances in

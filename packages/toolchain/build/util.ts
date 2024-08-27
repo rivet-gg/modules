@@ -1,4 +1,5 @@
-import { dirname, emptyDir, resolve } from "../deps.ts";
+import { dirname, resolve } from "@std/path";
+import { emptyDir } from "@std/fs";
 import { UnreachableError } from "../error/mod.ts";
 
 /**

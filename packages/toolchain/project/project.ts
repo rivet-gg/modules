@@ -1,5 +1,7 @@
-import { assert, copy, emptyDir, exists, resolve } from "../deps.ts";
-import { glob } from "./deps.ts";
+import { assert } from "@std/assert";
+import { copy, emptyDir, exists } from "@std/fs";
+import { dirname, resolve } from "@std/path";
+import * as glob from "glob";
 import { readConfig as readProjectConfig } from "../config/project.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { loadModule, Module } from "./module.ts";
@@ -12,7 +14,6 @@ import { UnreachableError, UserError } from "../error/mod.ts";
 import { Runtime } from "../build/mod.ts";
 import { PathResolver, QualifiedPathPair } from "../../path_resolver/mod.ts";
 import { RouteCollisionError } from "../error/mod.ts";
-import { dirname } from "../deps.ts";
 
 export interface Project {
 	path: string;

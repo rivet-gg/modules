@@ -1,5 +1,6 @@
-import { resolve } from "../../toolchain/deps.ts";
-import { Command, glob } from "../deps.ts";
+import { resolve } from "@std/path";
+import { Command } from "@cliffy/command";
+import * as glob from "glob";
 import { GlobalOpts } from "../common.ts";
 import { build, DbDriver, Format, Runtime } from "../../toolchain/build/mod.ts";
 import { watch } from "../../toolchain/watch/mod.ts";

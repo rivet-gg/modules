@@ -1,9 +1,9 @@
 import { DbDriver } from "../build/mod.ts";
 import { build, Format, Runtime } from "../build/mod.ts";
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { printError } from "../error/mod.ts";
 import { loadProject } from "../project/mod.ts";
-import { dedent } from "./deps.ts";
+import dedent from "dedent";
 import { templateModule } from "./module.ts";
 import { templateProject } from "./project.ts";
 import { templateScript } from "./script.ts";
