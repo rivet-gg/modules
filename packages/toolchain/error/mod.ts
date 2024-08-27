@@ -1,6 +1,7 @@
-import { fromValidationError, relative } from "../deps.ts";
+import { relative } from "@std/path";
 import { QualifiedPathPair } from "../../path_resolver/mod.ts";
-import { colors } from "../term/deps.ts";
+import * as colors from "@std/fmt/colors";
+import { fromError as fromValidationError } from "zod-validation-error";
 
 /**
  * Error type known to this program. If an error does not extend KnownError,

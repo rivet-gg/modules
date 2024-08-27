@@ -1,5 +1,3 @@
-import { assertEquals, assertThrows } from "../deps.ts";
-
 const DOWNLOAD_BASE_URL = "https://releases.rivet.gg/postgres";
 
 export function getDownloadUrl(version: string, fileName: string): string {

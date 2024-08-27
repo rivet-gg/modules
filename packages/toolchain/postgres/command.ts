@@ -1,4 +1,4 @@
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { verbose } from "../term/status.ts";
 import { CommandError } from "./error.ts";
 import { binaryDir, Settings } from "./settings.ts";

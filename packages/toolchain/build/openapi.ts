@@ -1,6 +1,6 @@
 import { Project } from "../project/mod.ts";
 import { OPEN_API_PATH, projectGenPath } from "../project/project.ts";
-import { OpenApiGeneratorV31, OpenAPIRegistry } from "./schema/deps.ts";
+import { OpenApiGeneratorV31, OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { convertSerializedSchemaToZod } from "./schema/mod.ts";
 
 export const DEFAULT_SERVER = "http://localhost:6420";

@@ -1,8 +1,10 @@
 import { camelify, pascalify } from "../../../case_conversion/mod.ts";
-import { exists, glob, resolve } from "../../deps.ts";
+import { exists } from "@std/fs";
+import { resolve } from "@std/path";
+import * as glob from "glob";
 import { GeneratedCodeBuilder, Lang } from "../../build/gen/code_builder.ts";
 import { Project } from "../../project/mod.ts";
-import { dedent } from "../../build/deps.ts";
+import dedent from "dedent";
 
 // Can be nested, like Foo.Bar
 export const DEFAULT_PACKAGE_NAME = "Backend";

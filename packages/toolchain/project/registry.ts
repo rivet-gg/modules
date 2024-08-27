@@ -1,4 +1,5 @@
-import { emptyDir, exists, resolve } from "../deps.ts";
+import { emptyDir, exists } from "@std/fs";
+import { resolve } from "@std/path";
 import { RegistryConfig, RegistryConfigGit, RegistryConfigLocal } from "../config/project.ts";
 import { progress, warn } from "../term/status.ts";
 import { UnreachableError, UserError } from "../error/mod.ts";

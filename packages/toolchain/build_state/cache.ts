@@ -1,9 +1,10 @@
 import { AnySchemaElement } from "../build/schema/mod.ts";
-import { exists } from "../deps.ts";
+import { exists } from "@std/fs";
 import { UnreachableError } from "../error/mod.ts";
 import { CACHE_PATH, Project, projectGenPath } from "../project/project.ts";
 import { verbose } from "../term/status.ts";
-import { crypto, encodeHex } from "./deps.ts";
+import { crypto } from "@std/crypto";
+import { encodeHex } from "@std/encoding/hex";
 
 // TODO: Replace this with the OpenGB version instead since it means we'll change . We need to compile this in the build artifacts.
 export const CACHE_VERSION = 6;

@@ -1,4 +1,4 @@
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { genActorCaseConversionMapPath, genRuntimeActorDriverPath, Project } from "../project/mod.ts";
 import {
 	ENTRYPOINT_PATH,
@@ -13,14 +13,14 @@ import { dbSchemaPath } from "../project/module.ts";
 import { CommandError, UnreachableError } from "../error/mod.ts";
 import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
-import { dedent } from "./deps.ts";
+import dedent from "dedent";
 import { convertSerializedSchemaToZodExpression } from "./schema/mod.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
 
 	// Generate module configs
-	const [modImports, modConfig] = generateModImports(project, opts);
+	const [modImports, modConfig] = generateModImports(project);
 
 	let imports = `
 		// Schemas
@@ -248,7 +248,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	if (!fmtOutput.success) throw new CommandError("Failed to format generated files.", { commandOutput: fmtOutput });
 }
 
-function generateModImports(project: Project, opts: BuildOpts) {
+function generateModImports(project: Project) {
 	let modImports = "";
 	let modConfig = "{";
 	for (const mod of project.modules.values()) {

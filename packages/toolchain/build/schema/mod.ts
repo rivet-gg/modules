@@ -1,4 +1,4 @@
-import { z as zod } from "./deps.ts";
+import { z as zod } from "zod";
 import { AnySchemaElement, is } from "./schema.ts";
 
 export { schemaElements } from "./schema.ts";
@@ -8,6 +8,10 @@ export * from "./schema.ts";
 export * from "./deserializer.ts";
 
 export { convertZodToSerializedSchema } from "./serializer.ts";
+
+import { z } from "zod";
+import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+extendZodWithOpenApi(z);
 
 export const convertSchemaToZod = (
 	schema: AnySchemaElement,

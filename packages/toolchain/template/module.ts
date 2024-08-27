@@ -1,8 +1,8 @@
 import { UserError } from "../error/mod.ts";
 import { ModuleConfig } from "../config/module.ts";
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 import { getLocalRegistry, Project } from "../project/mod.ts";
-import { dedent } from "./deps.ts";
+import dedent from "dedent";
 
 export async function templateModule(project: Project, moduleName: string) {
 	const localRegistry = getLocalRegistry(project);

@@ -1,13 +1,11 @@
-import { assert, assertEquals, assertExists, resolve } from "../deps.ts";
-import { UserError } from "../error/mod.ts";
-import { PostgresClient } from "../migrate/deps.ts";
+import { assert, assertExists } from "@std/assert";
+import { resolve } from "@std/path";
+import { Client as PostgresClient } from "@bartlomieju/postgres";
 import { Project } from "../project/project.ts";
 import { verbose } from "../term/status.ts";
 import { createOnce, getOrInitOnce } from "../utils/once.ts";
 import { addShutdownHandler } from "../utils/shutdown_handler.ts";
 import { getClient, getDatabaseUrl, Manager, setup } from "./manager.ts";
-import { Status } from "./manager.ts";
-import { status } from "./manager.ts";
 import { createManager } from "./manager.ts";
 import { Settings } from "./settings.ts";
 

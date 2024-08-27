@@ -1,4 +1,4 @@
-import { Command } from "../../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts, initProject } from "../../common.ts";
 import { getDefaultPostgresManager } from "../../../toolchain/postgres/mod.ts";
 import { Manager, setup, status, stop } from "../../../toolchain/postgres/manager.ts";

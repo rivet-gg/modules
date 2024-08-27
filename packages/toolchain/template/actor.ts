@@ -1,5 +1,5 @@
 import { UserError } from "../error/mod.ts";
-import { dirname, resolve } from "../deps.ts";
+import { dirname, resolve } from "@std/path";
 import { getLocalRegistry, Project } from "../project/mod.ts";
 
 export async function templateActor(

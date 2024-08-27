@@ -1,5 +1,5 @@
-import { dedent } from "../deps.ts";
-import { dirname, formatPath, isAbsolute, parsePath, relative, resolve } from "../../deps.ts";
+import dedent from "dedent";
+import { dirname, format as formatPath, isAbsolute, parse as parsePath, relative, resolve } from "@std/path";
 import { autoGenHeader } from "../misc.ts";
 
 export enum Lang {

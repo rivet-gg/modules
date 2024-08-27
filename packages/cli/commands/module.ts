@@ -1,6 +1,6 @@
-import { Command } from "../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts, initProject } from "../common.ts";
-import { resolve } from "../../toolchain/deps.ts";
+import { resolve } from "@std/path";
 import { fetchAndResolveModule } from "../../toolchain/project/mod.ts";
 import { ProjectModuleConfig } from "../../toolchain/config/project.ts";
 import { UserError } from "../../toolchain/error/mod.ts";

@@ -1,4 +1,4 @@
-import { resolve } from "../deps.ts";
+import { resolve } from "@std/path";
 
 export interface Settings {
 	stateFile: string;

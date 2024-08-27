@@ -1,5 +1,14 @@
 import { InternalError } from "../../error/mod.ts";
-import { ClassDeclaration, InterfaceDeclaration, Node, Project, ts, Type, TypeAliasDeclaration, z } from "./deps.ts";
+import {
+	ClassDeclaration,
+	InterfaceDeclaration,
+	Node,
+	Project,
+	ts,
+	Type,
+	TypeAliasDeclaration,
+} from "@ts-morph/ts-morph";
+import { z } from "zod";
 import { AnySchemaElement, is, s, SchemaElementOptions } from "./schema.ts";
 
 const OPENGB_SCHEMA_TYPESCRIPT_LIB_FILE = "__OPENGB_INTERNALS___THIS_FILE_IS_NOT_REAL__internal_types.d.ts";

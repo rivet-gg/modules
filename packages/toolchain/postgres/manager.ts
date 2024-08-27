@@ -9,8 +9,10 @@ import {
 import { binaryDir, Settings } from "./settings.ts";
 import { verbose } from "../term/status.ts";
 import { addShutdownHandler } from "../utils/shutdown_handler.ts";
-import { PostgresClient } from "../migrate/deps.ts";
-import { assertExists, dirname, ensureDir, exists, move, resolve } from "../deps.ts";
+import { Client as PostgresClient } from "@bartlomieju/postgres";
+import { assertExists } from "@std/assert";
+import { dirname, resolve } from "@std/path";
+import { ensureDir, exists, move } from "@std/fs";
 import { execute, getProgramFile } from "./command.ts";
 import { getDownloadUrl, getReleaseFileNameForCurrentHost } from "./resolver.ts";
 import { InternalError } from "../error/mod.ts";

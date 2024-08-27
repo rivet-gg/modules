@@ -1,4 +1,4 @@
-import { Command } from "../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts, initProject } from "../common.ts";
 import { generateSdk } from "../../toolchain/sdk/generate.ts";
 import { UnreachableError } from "../../toolchain/error/mod.ts";

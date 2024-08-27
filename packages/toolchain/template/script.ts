@@ -1,5 +1,6 @@
 import { UserError } from "../error/mod.ts";
-import { dedent, resolve } from "../deps.ts";
+import { resolve } from "@std/path";
+import dedent from "dedent";
 import { getLocalRegistry, Project } from "../project/mod.ts";
 
 export async function templateScript(

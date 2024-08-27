@@ -1,7 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.220.1/assert/mod.ts";
 
 import { createSchemaSerializer, schemaElements } from "./mod.ts";
-import { resolve } from "../../deps.ts";
+import { resolve } from "@std/path";
 
 Deno.test("schema serializer should handle simple inheritance", () => {
 	const code = `

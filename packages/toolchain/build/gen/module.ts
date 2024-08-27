@@ -36,7 +36,7 @@ export async function compileModuleHelper(
 	const runtimeConfigPath = helper.relative(projectGenPath(project, RUNTIME_CONFIG_PATH));
 
 	// Import block
-	const importBlock = helper.chunk.withNewlinesPerChunk(1)
+	helper.chunk.withNewlinesPerChunk(1)
 		.append`
 			import {
 				ModuleContextParams as ModuleContextParamsInner,
@@ -59,7 +59,7 @@ export async function compileModuleHelper(
 	genPublic(project, module, helper);
 	genDependencies(project, module, helper);
 	genActors(project, module, helper);
-	genModule(project, module, helper, importBlock, userConfigType);
+	genModule(project, module, helper, userConfigType);
 	genTest(project, module, helper);
 	genScript(project, module, helper);
 	genRoute(project, module, helper);
@@ -163,7 +163,6 @@ function genModule(
 	project: Project,
 	module: Module,
 	helper: GeneratedCodeBuilder,
-	importBlock: GeneratedCodeBuilder,
 	userConfigType: string,
 ) {
 	// Database

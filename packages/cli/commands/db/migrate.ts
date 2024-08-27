@@ -1,4 +1,4 @@
-import { Command } from "../../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts, initProject } from "../../common.ts";
 import { UserError } from "../../../toolchain/error/mod.ts";
 import { migrateGenerate } from "../../../toolchain/migrate/generate.ts";

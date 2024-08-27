@@ -1,5 +1,5 @@
-import { Command, CompletionsCommand, HelpCommand, ValidationError } from "./deps.ts";
-import { colors } from "../toolchain/term/deps.ts";
+import { Command, CompletionsCommand, HelpCommand, ValidationError } from "@cliffy/command";
+import * as colors from "@std/fmt/colors";
 import { devCommand } from "./commands/dev.ts";
 import { moduleCommand } from "./commands/module.ts";
 import { buildCommand } from "./commands/build.ts";

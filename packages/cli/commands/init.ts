@@ -1,4 +1,4 @@
-import { Command } from "../deps.ts";
+import { Command } from "@cliffy/command";
 import { GlobalOpts } from "../common.ts";
 import { templateProject } from "../../toolchain/template/project.ts";
 

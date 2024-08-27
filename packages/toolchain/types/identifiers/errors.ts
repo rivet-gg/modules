@@ -1,6 +1,6 @@
 import { UserError, UserErrorOpts } from "../../error/mod.ts";
 import { printableAsciiRegex } from "./defs.ts";
-import { bold, brightRed } from "./deps.ts";
+import { bold, brightRed } from "@std/fmt/colors";
 
 export class IdentifierError extends UserError {
 	public constructor(private issue: string, private identifier: string, opts?: UserErrorOpts) {

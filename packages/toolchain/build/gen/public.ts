@@ -1,6 +1,6 @@
 import { genModulePublicInternal, Project, publicPath } from "../../project/mod.ts";
 import { GeneratedCodeBuilder } from "./mod.ts";
-import { exists } from "../../deps.ts";
+import { exists } from "@std/fs";
 import { genModulePublicExternal } from "../../project/project.ts";
 import { camelify } from "../../../case_conversion/mod.ts";
 
