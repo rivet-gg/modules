@@ -20,6 +20,7 @@
     }
   },
   "modeToggle": {
+    "default":"dark",
     "isHidden": true
   },
   "topbarCtaButton": {
