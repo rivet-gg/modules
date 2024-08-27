@@ -1,5 +1,5 @@
-import { resolve } from "./deps.ts";
-import { glob } from "./deps.ts";
+import { resolve } from "@std/path";
+import * as glob from "glob";
 
 /**
  * Path to the root of the repo. Used for reading & writing files to the

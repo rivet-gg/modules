@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.220.1/assert/mod.ts";
-import dedent from "https://esm.sh/dedent@^1.5.3";
+import { assertEquals } from "@std/assert";
+import dedent from "dedent";
 
 import { convertSerializedSchemaToTypeScript } from "./mod.ts";
 import { s } from "./schema.ts";

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-net --allow-env
 
 import { S3Bucket } from "https://deno.land/x/s3@0.5.0/mod.ts";
-import { assert } from "https://deno.land/std@0.182.0/testing/asserts.ts";
+import { assert } from "https://deno.land/std@0.224.0/testing/asserts.ts";
 
 const GITHUB_REPO = "https://github.com/theseus-rs/postgresql-binaries";
 const BUCKET_NAME = "rivet-releases";
