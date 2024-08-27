@@ -1,4 +1,4 @@
-import { assert } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { assert } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { ModuleContext } from "./context.ts";
 import { Context } from "./context.ts";
 import { fromValidationError } from "./deps.ts";

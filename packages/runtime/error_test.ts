@@ -1,4 +1,4 @@
-import { unimplemented } from "https://deno.land/std@0.208.0/assert/unimplemented.ts";
+import { unimplemented } from "https://deno.land/std@0.224.0/assert/unimplemented.ts";
 import { assertEquals, assertExists } from "./deps.ts";
 import { ModuleContext } from "./context.ts";
 import { RuntimeError } from "./error.ts";

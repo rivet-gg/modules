@@ -1,8 +1,8 @@
 #!/usr/bin/env deno run -A
 
-import { resolve } from "https://deno.land/std@0.214.0/path/mod.ts";
-import { emptyDir } from "https://deno.land/std@0.208.0/fs/mod.ts";
-import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { resolve } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { emptyDir } from "https://deno.land/std@0.224.0/fs/mod.ts";
+import { assert, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { zod2md } from "npm:zod2md";
 import { ModuleMeta, ProjectMeta } from "../../../packages/toolchain/build/meta.ts";
 import { convertSerializedSchemaToZodConstant } from "../../../packages/toolchain/build/schema/deserializer.ts";

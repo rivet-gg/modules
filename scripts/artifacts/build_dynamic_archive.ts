@@ -2,7 +2,7 @@
 //
 // Generates a JSON file with all of the files that need to be accessed dynamically.
 
-import { resolve } from "./deps.ts";
+import { resolve } from "@std/path";
 import { buildArtifacts, projectRoot } from "./util.ts";
 
 await buildArtifacts({
