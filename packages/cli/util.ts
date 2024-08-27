@@ -1,4 +1,4 @@
-import { EnumType } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
+import { EnumType } from "@cliffy/command";
 import { MigrateMode } from "../toolchain/build/mod.ts";
 import { Project } from "../toolchain/project/mod.ts";
 import { UnreachableError, UserError } from "../toolchain/error/mod.ts";

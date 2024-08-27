@@ -1,10 +1,9 @@
-import { Command } from "@cliffy/command";
+import { Command, EnumType } from "@cliffy/command";
 import { GlobalOpts, initProject } from "../common.ts";
 import { generateSdk } from "../../toolchain/sdk/generate.ts";
 import { UnreachableError } from "../../toolchain/error/mod.ts";
 import { SdkTarget } from "../../toolchain/sdk/generate.ts";
 import { build, DbDriver, Format, Runtime } from "../../toolchain/build/mod.ts";
-import { EnumType } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
 
 const targetType = new EnumType(["typescript", "unity", "godot"]);
 
