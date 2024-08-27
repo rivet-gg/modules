@@ -1,0 +1,50 @@
+---
+title: "Verify and Add Email and Password to existing user"
+description: "Verify a user's email address and register it with an existing account. Requires a password."
+sidebarTitle: "Verify and Add Email and Password to existing user"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email/scripts/verify_add_email_pass.ts) | `verify_add_email_pass` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.authEmail.verifyAddEmailPass({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                     | Type                  |
+| :--------------------------- | :-------------------- |
+| **`userToken`** (\*)         | `string`              |
+| **`email`** (\*)             | `string`              |
+| **`password`** (\*)          | `string`              |
+| **`oldPassword`** (\*)       | `string` (_nullable_) |
+| **`verificationToken`** (\*) | `string`              |
+| **`code`** (\*)              | `string`              |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object record with dynamic keys:_
+
+- _keys of type_ `string`
+- _values of type_ `never`
+

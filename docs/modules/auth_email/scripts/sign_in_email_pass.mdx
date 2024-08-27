@@ -1,0 +1,50 @@
+---
+title: "Sign In with Email and Password"
+description: "Sign in a user with an email and password."
+sidebarTitle: "Sign In with Email and Password"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email/scripts/sign_in_email_pass.ts) | `sign_in_email_pass` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.authEmail.signInEmailPass({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property            | Type     |
+| :------------------ | :------- |
+| **`email`** (\*)    | `string` |
+| **`password`** (\*) | `string` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type     |
+| :------------------- | :------- |
+| **`userToken`** (\*) | `string` |
+| **`userId`** (\*)    | `string` |
+
+_(\*) Required._
+

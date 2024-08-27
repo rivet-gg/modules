@@ -33,16 +33,15 @@ if (!Deno.env.get("SKIP_BUILD_MODULES")) {
 		assert(installOutput.success);
 	}
 
-	console.log("Building project");
+	console.log("Building project", TEST_PROJECT_PATH);
 	const buildOutput = await new Deno.Command("deno", {
 		args: [
 			"run",
 			"-A",
 			resolve(OPENGB_ROOT, "packages", "cli", "src", "main.ts"),
-			"--project",
-			TEST_PROJECT_PATH,
 			"build",
 		],
+		cwd: TEST_PROJECT_PATH,
 		stdout: "inherit",
 		stderr: "inherit",
 	}).output();

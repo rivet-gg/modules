@@ -172,10 +172,148 @@
           ]
         },
         {
+          "icon": "key",
+          "group": "Auth Email",
+          "pages": [
+            "modules/auth_email/overview",
+            "modules/auth_email/config",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/auth_email/scripts/send_verification",
+                "modules/auth_email/scripts/sign_in_email_pass",
+                "modules/auth_email/scripts/verify_add_email_pass",
+                "modules/auth_email/scripts/verify_add_no_pass",
+                "modules/auth_email/scripts/verify_link_email",
+                "modules/auth_email/scripts/verify_login_or_create_no_pass",
+                "modules/auth_email/scripts/verify_sign_up_email_pass"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Auth Email Linking",
+          "pages": [
+            "modules/auth_email_link/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_email_link/scripts/send_verification"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/auth_email_link/scripts/verify_link_email"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Auth Email Passwordless",
+          "pages": [
+            "modules/auth_email_passwordless/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_email_passwordless/scripts/send_verification",
+                "modules/auth_email_passwordless/scripts/verify_add_no_pass",
+                "modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Auth Email/Password",
+          "pages": [
+            "modules/auth_email_password/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_email_password/scripts/send_verification",
+                "modules/auth_email_password/scripts/sign_in_email_pass",
+                "modules/auth_email_password/scripts/verify_add_email_pass",
+                "modules/auth_email_password/scripts/verify_sign_up_email_pass"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Auth Username Password",
+          "pages": [
+            "modules/auth_username_password/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_username_password/scripts/sign_in",
+                "modules/auth_username_password/scripts/sign_up"
+              ]
+            }
+          ]
+        },
+        {
           "icon": "messages",
           "group": "Chat",
           "pages": [
             "modules/chat/overview"
+          ]
+        },
+        {
+          "icon": "coin",
+          "group": "Currency",
+          "pages": [
+            "modules/currency/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/currency/scripts/fetch_balance_by_token"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/currency/scripts/adjust_balance",
+                "modules/currency/scripts/fetch_balance",
+                "modules/currency/scripts/set_balance"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "envelope",
+          "group": "Email",
+          "pages": [
+            "modules/email/overview",
+            "modules/email/config",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/email/scripts/send_email"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "user-group",
+          "group": "Friends",
+          "pages": [
+            "modules/friends/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/friends/scripts/accept_request",
+                "modules/friends/scripts/decline_request",
+                "modules/friends/scripts/list_friends",
+                "modules/friends/scripts/list_incoming_friend_requests",
+                "modules/friends/scripts/list_outgoing_friend_requests",
+                "modules/friends/scripts/remove_friend",
+                "modules/friends/scripts/send_request"
+              ]
+            }
           ]
         },
         {
@@ -190,6 +328,30 @@
           "group": "Groups",
           "pages": [
             "modules/groups/overview"
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Identities",
+          "pages": [
+            "modules/identities/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/identities/scripts/list"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/identities/scripts/fetch",
+                "modules/identities/scripts/link",
+                "modules/identities/scripts/set",
+                "modules/identities/scripts/sign_in_or_sign_up",
+                "modules/identities/scripts/sign_in",
+                "modules/identities/scripts/sign_up"
+              ]
+            }
           ]
         },
         {
@@ -268,7 +430,7 @@
               "group": "Scripts (Internal)",
               "pages": [
                 "modules/rivet/scripts/call",
-                "modules/rivet/scripts/get_config"
+                "modules/rivet/scripts/fetch_config"
               ]
             }
           ]
@@ -287,6 +449,61 @@
                 "modules/tokens/scripts/fetch",
                 "modules/tokens/scripts/revoke",
                 "modules/tokens/scripts/validate"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "file-arrow-up",
+          "group": "Uploads",
+          "pages": [
+            "modules/uploads/overview",
+            "modules/uploads/config",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/uploads/scripts/complete",
+                "modules/uploads/scripts/delete",
+                "modules/uploads/scripts/fetch_public_file_urls",
+                "modules/uploads/scripts/fetch",
+                "modules/uploads/scripts/prepare"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "shield-halved",
+          "group": "User Password Verifier",
+          "pages": [
+            "modules/user_passwords/overview",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/user_passwords/scripts/add",
+                "modules/user_passwords/scripts/update",
+                "modules/user_passwords/scripts/verify"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "user",
+          "group": "Users",
+          "pages": [
+            "modules/users/overview",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/users/scripts/authenticate_token",
+                "modules/users/scripts/fetch"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/users/scripts/create",
+                "modules/users/scripts/create_token",
+                "modules/users/scripts/fetch_by_username"
               ]
             }
           ]

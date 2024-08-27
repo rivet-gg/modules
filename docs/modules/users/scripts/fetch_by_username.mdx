@@ -1,0 +1,48 @@
+---
+title: "Fetch User by Username"
+description: ""
+sidebarTitle: "Fetch User by Username"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/users/scripts/fetch_by_username.ts) | `fetch_by_username` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.users.fetchByUsername({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type            |
+| :------------------- | :-------------- |
+| **`usernames`** (\*) | `Array<string>` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                           |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`users`** (\*) | _Array of objects:_<br /><ul><li>`id`: `string`</li><li>`username`: `string`</li><li>`createdAt`: `Date`</li><li>`updatedAt`: `Date`</li></ul> |
+
+_(\*) Required._
+

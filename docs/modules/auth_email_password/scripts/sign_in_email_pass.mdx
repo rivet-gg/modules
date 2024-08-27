@@ -1,0 +1,115 @@
+---
+title: "Sign In with Email and Password"
+description: "Sign in a user with an email and password."
+sidebarTitle: "Sign In with Email and Password"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email_password/scripts/sign_in_email_pass.ts) | `sign_in_email_pass` | Yes |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.authEmailPassword.signInEmailPass({
+  // Request body
+});
+```
+```javascript JavaScript
+import { Backend } from "opengb-sdk";
+const backend = new Backend({ endpoint: "http://localhost:6420" });
+const data = await backend.authEmailPassword.signInEmailPass({
+  // Request body
+});
+```
+
+```gdscript Godot
+var data = backend.auth_email_password.sign_in_email_pass({
+  # Request body
+})
+```
+
+```csharp Unity
+var data = Backend.AuthEmailPassword.SignInEmailPass();
+```
+
+```cpp Unreal Engine
+// IMPORTANT: Auto-generated SDK coming soon
+
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Misc/DefaultValueHelper.h"
+
+void UYourClassName::PostRequest()
+{
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
+    Request->SetURL(TEXT("https://localhost:6420/modules/auth_email_password/scripts/sign_in_email_pass/call"));
+    Request->SetVerb(TEXT("POST"));
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+    FString Payload = TEXT("{\"key\":\"value\"}");
+    Request->SetContentAsString(Payload);
+    Request->ProcessRequest();
+}
+
+void UYourClassName::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    if(!bWasSuccessful || !Response.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Request Failed"));
+        return
+    }
+
+    FString data = Response->GetContentAsString();
+
+    // Success
+}
+```
+
+```rust Rust
+// IMPORTANT: Auto-generated SDK coming soon
+
+let data = reqwest::Client::new()
+    .post("https://localhost:6420/modules/auth_email_password/scripts/sign_in_email_pass/call")
+    .json(&body) // Make sure `body` is defined
+    .send()
+    .await?
+    .error_for_status()?
+    .json::<serde_json::Value>()
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://localhost:6420/modules/auth_email_password/scripts/sign_in_email_pass/call" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "value" // Your JSON payload here
+  }'
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property            | Type     |
+| :------------------ | :------- |
+| **`email`** (\*)    | `string` |
+| **`password`** (\*) | `string` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Unknown type._ (_optional & nullable_)
+

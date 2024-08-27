@@ -1,0 +1,50 @@
+---
+title: "Sign In With Identity"
+description: "Sign in to a user with an identity."
+sidebarTitle: "Sign In With Identity"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/identities/scripts/sign_in.ts) | `sign_in` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.identities.signIn({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property        | Type                                                                                               |
+| :-------------- | :------------------------------------------------------------------------------------------------- |
+| **`info`** (\*) | _Object with properties:_<ul><li>`identityType`: `string`</li><li>`identityId`: `string`</li></ul> |
+| `uniqueData`    | `unknown` (_nullable_)                                                                             |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property             | Type     |
+| :------------------- | :------- |
+| **`userToken`** (\*) | `string` |
+| **`userId`** (\*)    | `string` |
+
+_(\*) Required._
+

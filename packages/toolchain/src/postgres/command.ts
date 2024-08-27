@@ -1,7 +1,7 @@
 import { resolve } from "../deps.ts";
 import { verbose } from "../term/status.ts";
 import { CommandError } from "./error.ts";
-import { Settings, binaryDir } from "./settings.ts";
+import { binaryDir, Settings } from "./settings.ts";
 
 export interface Command {
 	/**

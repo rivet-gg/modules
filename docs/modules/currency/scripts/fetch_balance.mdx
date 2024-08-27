@@ -1,0 +1,48 @@
+---
+title: "Fetch Balance"
+description: ""
+sidebarTitle: "Fetch Balance"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/currency/scripts/fetch_balance.ts) | `fetch_balance` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.currency.fetchBalance({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type     |
+| :---------------- | :------- |
+| **`userId`** (\*) | `string` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property           | Type     |
+| :----------------- | :------- |
+| **`balance`** (\*) | `number` |
+
+_(\*) Required._
+

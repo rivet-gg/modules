@@ -1,0 +1,49 @@
+---
+title: "Adjust Balance"
+description: ""
+sidebarTitle: "Adjust Balance"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/currency/scripts/adjust_balance.ts) | `adjust_balance` | No |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.currency.adjustBalance({
+  // Request body
+});
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property          | Type     |
+| :---------------- | :------- |
+| **`userId`** (\*) | `string` |
+| **`amount`** (\*) | `number` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                  | Type     |
+| :------------------------ | :------- |
+| **`updatedBalance`** (\*) | `number` |
+
+_(\*) Required._
+

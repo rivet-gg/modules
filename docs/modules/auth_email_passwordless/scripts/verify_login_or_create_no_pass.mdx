@@ -1,0 +1,115 @@
+---
+title: "Verify and Login as (or Create) User (No Password)"
+description: "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password."
+sidebarTitle: "Verify and Login as (or Create) User (No Password)"
+---
+
+| Source                                                                                                      | Name       | Public     |
+| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass.ts) | `verify_login_or_create_no_pass` | Yes |
+
+<RequestExample>
+```typescript OpenGB Script
+const data = await ctx.modules.authEmailPasswordless.verifyLoginOrCreateNoPass({
+  // Request body
+});
+```
+```javascript JavaScript
+import { Backend } from "opengb-sdk";
+const backend = new Backend({ endpoint: "http://localhost:6420" });
+const data = await backend.authEmailPasswordless.verifyLoginOrCreateNoPass({
+  // Request body
+});
+```
+
+```gdscript Godot
+var data = backend.auth_email_passwordless.verify_login_or_create_no_pass({
+  # Request body
+})
+```
+
+```csharp Unity
+var data = Backend.AuthEmailPasswordless.VerifyLoginOrCreateNoPass();
+```
+
+```cpp Unreal Engine
+// IMPORTANT: Auto-generated SDK coming soon
+
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Misc/DefaultValueHelper.h"
+
+void UYourClassName::PostRequest()
+{
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
+    Request->SetURL(TEXT("https://localhost:6420/modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass/call"));
+    Request->SetVerb(TEXT("POST"));
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+    FString Payload = TEXT("{\"key\":\"value\"}");
+    Request->SetContentAsString(Payload);
+    Request->ProcessRequest();
+}
+
+void UYourClassName::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    if(!bWasSuccessful || !Response.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Request Failed"));
+        return
+    }
+
+    FString data = Response->GetContentAsString();
+
+    // Success
+}
+```
+
+```rust Rust
+// IMPORTANT: Auto-generated SDK coming soon
+
+let data = reqwest::Client::new()
+    .post("https://localhost:6420/modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass/call")
+    .json(&body) // Make sure `body` is defined
+    .send()
+    .await?
+    .error_for_status()?
+    .json::<serde_json::Value>()
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://localhost:6420/modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass/call" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "value" // Your JSON payload here
+  }'
+```
+
+</RequestExample>
+
+## Request
+
+
+
+### Config
+
+_Object containing the following properties:_
+
+| Property                     | Type     |
+| :--------------------------- | :------- |
+| **`verificationToken`** (\*) | `string` |
+| **`code`** (\*)              | `string` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Config
+
+_Unknown type._ (_optional & nullable_)
+
