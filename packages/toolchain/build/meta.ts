@@ -1,4 +1,4 @@
-import { ModuleConfig, ScriptConfig } from "../config/module.ts";
+import type { IndexedModuleConfig, ModuleConfig, ScriptConfig } from "../config/module.ts";
 import { ProjectConfig } from "../config/project.ts";
 import { RegistryConfig } from "../config/project.ts";
 import { hasUserConfigSchema, Project } from "../project/mod.ts";
@@ -17,6 +17,7 @@ export interface RegistryMeta {
 	name: string;
 	config: RegistryConfig;
 	isExternal: boolean;
+	modules: Record<string, IndexedModuleConfig>;
 }
 
 export interface ModuleMeta {

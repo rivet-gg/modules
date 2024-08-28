@@ -1,0 +1,45 @@
+{
+  "name": "@opengb/editor",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "yarn@4.4.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/pro-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@rivet-gg/components": "https://github.com/rivet-gg/hub#workspace=@rivet-gg/components&head=07-14-feat_opengb_web",
+    "@sentry/react": "^8.17.0",
+    "@tanstack/query-broadcast-client-experimental": "^5.50.1",
+    "@tanstack/query-sync-storage-persister": "^5.50.1",
+    "@tanstack/react-query": "^5.50.1",
+    "@tanstack/react-query-devtools": "^5.50.1",
+    "@tanstack/react-query-persist-client": "^5.50.1",
+    "@tanstack/react-router": "^1.33.4",
+    "@tanstack/router-devtools": "^1.33.4",
+    "codemirror-json-schema": "^0.7.8",
+    "hono": "^4.5.9",
+    "ky": "^1.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.0",
+    "superjson": "^2.2.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@tanstack/router-vite-plugin": "^1.45.2",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.20",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-favicons-inject": "^2.2.0"
+  }
+}

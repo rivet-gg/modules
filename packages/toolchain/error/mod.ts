@@ -114,13 +114,18 @@ export class CombinedError extends KnownError {
 }
 interface ValidationErrorOpts extends UserErrorOpts {
 	validationError: Error;
+	info?: Record<string, unknown>;
 }
 
 export class ValidationError extends UserError {
 	public readonly validationError: Error;
+	public readonly info: Record<string, unknown> = {};
 	constructor(message: string, opts: ValidationErrorOpts) {
 		super(message, opts);
 		this.name = "ValidationError";
+		if (opts.info) {
+			this.info = opts.info;
+		}
 		this.validationError = opts.validationError;
 	}
 }

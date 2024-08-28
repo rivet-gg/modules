@@ -95,7 +95,7 @@ export const ModuleSchema = z.object({
 	routes: z.record(RouteConfigSchema).optional().describe("The routes associated with this module."),
 	errors: z.record(ErrorConfigSchema).describe("The errors associated with this module."),
 	dependencies: z.record(DependencyConfigSchema).optional().describe("The dependencies of this module."),
-	defaultConfig: z.unknown().optional().describe("Default user config."),
+	defaultConfig: z.record(z.unknown()).optional().describe("Default user config."),
 });
 
 export type ModuleConfig = z.infer<typeof ModuleSchema>;

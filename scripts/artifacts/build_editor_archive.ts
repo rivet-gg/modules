@@ -1,12 +1,12 @@
 // deno task artifacts:build:editor
 
-import { resolve } from "./deps.ts";
+import { resolve } from "@std/path";
 import { buildArtifacts, projectRoot } from "./util.ts";
 
-const WEB_REPO_PATH = resolve(import.meta.dirname!, "..", "..", "vendor", "hub");
+const EDITOR_PATH = resolve(import.meta.dirname!, "..", "..", "editor");
 
 await new Deno.Command("yarn", {
-    cwd: WEB_REPO_PATH,
+    cwd: EDITOR_PATH,
     env: {
         "NODE_ENV": "production",
     },
@@ -16,9 +16,9 @@ await new Deno.Command("yarn", {
 
 await new Deno.Command("yarn", {
     args: [
-        "build:opengb",
+        "build",
     ],
-    cwd: WEB_REPO_PATH,
+    cwd: EDITOR_PATH,
     env: {
         "NODE_ENV": "production",
         "TURBO_UI": "0",

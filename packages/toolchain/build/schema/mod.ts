@@ -1,5 +1,7 @@
 import { z as zod } from "zod";
 import { AnySchemaElement, is } from "./schema.ts";
+import { DEFAULT_COMPILER_OPTIONS, OPENGB_SCHEMA_TYPESCRIPT_LIB_FILE } from "./serializer.ts";
+import { Project } from "@ts-morph/ts-morph";
 
 export { schemaElements } from "./schema.ts";
 export { createSchemaSerializer } from "./serializer.ts";
@@ -86,4 +88,21 @@ export const convertSerializedSchemaToZod = (
 	serializedSchema: AnySchemaElement,
 ) => {
 	return convertSchemaToZod(serializedSchema);
+};
+
+export const getSourceFileDependencies = (path: string, { skipInternal = true }: { skipInternal?: boolean } = {}) => {
+	const project = new Project({
+		compilerOptions: DEFAULT_COMPILER_OPTIONS,
+	});
+	project.addSourceFileAtPath(path);
+	project.resolveSourceFileDependencies();
+
+	const sourceFiles = project.getSourceFiles().map((sourceFile) => sourceFile.getFilePath());
+
+	if (skipInternal) {
+		return sourceFiles.filter((sourceFile) =>
+			!sourceFile.includes(".opengb") && !sourceFile.includes(OPENGB_SCHEMA_TYPESCRIPT_LIB_FILE)
+		);
+	}
+	return sourceFiles;
 };

@@ -3,7 +3,7 @@ import * as glob from "glob";
 import { relative, resolve } from "@std/path";
 import { Project } from "../../project/mod.ts";
 import { BuildOpts, Format, MigrateMode, Runtime } from "../mod.ts";
-import { planModuleBuild } from "./module.ts";
+import { planModuleBuild, planModuleParse } from "./module.ts";
 import { compileTypeHelpers } from "../gen/mod.ts";
 import { generateDenoConfig } from "../deno_config.ts";
 import { generateEntrypoint } from "../entrypoint.ts";
@@ -23,6 +23,7 @@ import { migratePush } from "../../migrate/push.ts";
 import { migrateApply } from "../../migrate/apply.ts";
 import { migrateGenerate } from "../../migrate/generate.ts";
 import { verbose } from "../../term/status.ts";
+import { planProjectValidate } from "../validate.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -30,6 +31,27 @@ export async function planProjectBuild(
 	opts: BuildOpts,
 ) {
 	const signal = buildState.signal;
+
+	for (const module of project.modules.values()) {
+		await planModuleParse(buildState, project, module, opts);
+	}
+
+	// Wait for modules parse
+	await waitForBuildPromises(buildState);
+
+	planProjectValidate(buildState, project);
+
+	buildStep(buildState, {
+		id: `project.generate.meta`,
+		name: "Generate",
+		description: "meta.json",
+		async build() {
+			await generateMeta(project);
+		},
+	});
+
+	// Wait for backend.json validation
+	await waitForBuildPromises(buildState);
 
 	// TODO: Add way to compare runtime artifacts (or let this be handled by the cache version and never rerun?)
 	buildStep(buildState, {
@@ -43,12 +65,7 @@ export async function planProjectBuild(
 		},
 	});
 
-	// Wait for runtime since script schemas depend on this
 	await waitForBuildPromises(buildState);
-
-	for (const module of project.modules.values()) {
-		await planModuleBuild(buildState, project, module, opts);
-	}
 
 	buildStep(buildState, {
 		id: `project.generate.dependencies`,
@@ -83,6 +100,10 @@ export async function planProjectBuild(
 		},
 	});
 
+	for (const module of project.modules.values()) {
+		await planModuleBuild(buildState, project, module, opts);
+	}
+
 	// Wait for module schemas requestSchema/responseSchema
 	await waitForBuildPromises(buildState);
 
@@ -101,15 +122,6 @@ export async function planProjectBuild(
 		description: "openapi.json",
 		async build() {
 			await generateOpenApi(project);
-		},
-	});
-
-	buildStep(buildState, {
-		id: `project.generate.meta`,
-		name: "Generate",
-		description: "meta.json",
-		async build() {
-			await generateMeta(project);
 		},
 	});
 

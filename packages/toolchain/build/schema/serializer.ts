@@ -11,7 +11,7 @@ import {
 import { z } from "zod";
 import { AnySchemaElement, is, s, SchemaElementOptions } from "./schema.ts";
 
-const OPENGB_SCHEMA_TYPESCRIPT_LIB_FILE = "__OPENGB_INTERNALS___THIS_FILE_IS_NOT_REAL__internal_types.d.ts";
+export const OPENGB_SCHEMA_TYPESCRIPT_LIB_FILE = "__OPENGB_INTERNALS___THIS_FILE_IS_NOT_REAL__internal_types.d.ts";
 
 function generateSerializableTypeSchema(
 	type: Type<any>,
@@ -128,7 +128,7 @@ function generateSerializableTypeSchema(
 	return s.unknown();
 }
 
-const DEFAULT_COMPILER_OPTIONS = {
+export const DEFAULT_COMPILER_OPTIONS = {
 	allowJs: true,
 	esModuleInterop: true,
 	experimentalDecorators: false,
@@ -274,9 +274,7 @@ interface Date {}
 
 	const hasCode = "code" in opts;
 	const project = new Project({
-		compilerOptions: hasCode
-			? { target: ts.ScriptTarget.ESNext, strict: true, noLib: true }
-			: DEFAULT_COMPILER_OPTIONS,
+		compilerOptions: hasCode ? { target: ts.ScriptTarget.ESNext, strict: true, noLib: true } : DEFAULT_COMPILER_OPTIONS,
 		skipAddingFilesFromTsConfig: hasCode,
 		useInMemoryFileSystem: hasCode,
 	});
