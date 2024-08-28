@@ -6,7 +6,7 @@ import { Project } from "../../toolchain/project/mod.ts";
 import { InternalError } from "../../toolchain/error/mod.ts";
 import { ENTRYPOINT_PATH, projectGenPath } from "../../toolchain/project/project.ts";
 import { convertMigrateMode, migrateMode } from "./../util.ts";
-import { ensurePostgresRunning } from "../../toolchain/postgres/mod.ts";
+import { ensurePostgresRunning, getDefaultDatabaseUrl } from "../../toolchain/postgres/mod.ts";
 
 export const devCommand = new Command<GlobalOpts>()
 	.description("Start the development server")
@@ -68,6 +68,9 @@ export const devCommand = new Command<GlobalOpts>()
 						stdout: "inherit",
 						stderr: "inherit",
 						signal,
+            env: {
+              "DATABASE_URL": await getDefaultDatabaseUrl(project),
+            }
 					})
 						.output();
 					if (!cmd.success) throw new InternalError("Entrypoint failed", { path: entrypointPath });
