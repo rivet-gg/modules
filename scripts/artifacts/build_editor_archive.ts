@@ -1,6 +1,6 @@
 // deno task artifacts:build:editor
 
-import { resolve } from "./deps.ts";
+import { resolve } from "@std/path";
 import { buildArtifacts, projectRoot } from "./util.ts";
 
 const WEB_REPO_PATH = resolve(import.meta.dirname!, "..", "..", "vendor", "hub");

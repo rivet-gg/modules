@@ -7,8 +7,8 @@ import { InternalError } from "../../toolchain/error/mod.ts";
 import { ENTRYPOINT_PATH, projectGenPath } from "../../toolchain/project/project.ts";
 import { convertMigrateMode, migrateMode } from "./../util.ts";
 import { ensurePostgresRunning } from "../../toolchain/postgres/mod.ts";
-import { createProjectInternalApiRouter, Mutex } from "../../toolchain/src/internal-api/mod.ts";
-import { progress } from "../../toolchain/term/status.ts";
+import { InternalState } from "../../toolchain/internal-api/state.ts";
+import { createAndStartProjectInternalApiRouter } from "../../toolchain/internal-api/mod.ts";
 
 export const devCommand = new Command<GlobalOpts>()
 	.description("Start the development server")
@@ -29,30 +29,24 @@ export const devCommand = new Command<GlobalOpts>()
 		async (opts) => {
 			const project = await initProject(opts);
 
-			const mutex = new Mutex();
+			const internalState = new InternalState();
+			internalState.set({ value: "building", project });
 
-			await mutex.acquire();
-
-			const internalApiRouter = createProjectInternalApiRouter(project, mutex);
-
-			const hostname = Deno.env.get("OPENGB_EDITOR_HOST") ?? "127.0.0.1";
-			const port = parseInt(Deno.env.get("OPENGB_EDITOR_PORT") ?? "6421");
-			Deno.serve({
-				hostname,
-				port,
-				handler: internalApiRouter.fetch,
-				onListen: () => {
-					progress("OpenGB Editor started", `http://${hostname}:${port}`);
-				},
-			});
+			createAndStartProjectInternalApiRouter(internalState);
 
 			await watch({
 				loadProjectOpts: opts,
 				disableWatch: !opts.watch,
+				onError: (error) => {
+					internalState.set({ value: "failure", project, error });
+				},
+				onFileChange: () => {
+					internalState.set({ value: "building", project });
+				},
+				onProjectChange(project) {
+					internalState.set({ value: "building", project });
+				},
 				async fn(project: Project, signal: AbortSignal) {
-					if (!mutex.isLocked()) {
-						await mutex.acquire();
-					}
 					await ensurePostgresRunning(project);
 
 					// Build project
@@ -72,6 +66,7 @@ export const devCommand = new Command<GlobalOpts>()
 							signal,
 						});
 					}
+					internalState.set({ value: "success", project });
 
 					// Determine args
 					const args = [
@@ -81,7 +76,6 @@ export const devCommand = new Command<GlobalOpts>()
 					];
 					if (opts.check) args.push("--check");
 
-					mutex.release();
 					// Run entrypoint
 					const entrypointPath = projectGenPath(project, ENTRYPOINT_PATH);
 					const cmd = await new Deno.Command("deno", {
@@ -95,7 +89,9 @@ export const devCommand = new Command<GlobalOpts>()
 						signal,
 					}).output();
 
-					if (!cmd.success) throw new InternalError("Entrypoint failed", { path: entrypointPath });
+					if (!signal.aborted && !cmd.success) {
+						throw new InternalError("Entrypoint failed", { path: entrypointPath });
+					}
 				},
 			});
 		},

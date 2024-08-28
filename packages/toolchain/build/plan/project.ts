@@ -1,14 +1,14 @@
 import { BuildState, buildStep, waitForBuildPromises } from "../../build_state/mod.ts";
 import * as glob from "glob";
 import { relative, resolve } from "@std/path";
-import { Project } from "../../project/mod.ts";
+import { mainConfigPath, Project } from "../../project/mod.ts";
 import { BuildOpts, Format, MigrateMode, Runtime } from "../mod.ts";
-import { planModuleBuild } from "./module.ts";
+import { planModuleBuild, planModuleParse } from "./module.ts";
 import { compileTypeHelpers } from "../gen/mod.ts";
 import { generateDenoConfig } from "../deno_config.ts";
 import { generateEntrypoint } from "../entrypoint.ts";
 import { generateOpenApi } from "../openapi.ts";
-import { UnreachableError, UserError } from "../../error/mod.ts";
+import { CombinedError, UnreachableError, UserError, ValidationError } from "../../error/mod.ts";
 import { generateMeta } from "../meta.ts";
 import { BUNDLE_PATH, ENTRYPOINT_PATH, MANIFEST_PATH, projectGenPath, RUNTIME_PATH } from "../../project/project.ts";
 import { compileActorTypeHelpers } from "../gen/mod.ts";
@@ -22,6 +22,7 @@ import { denoPlugins } from "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2";
 import { migratePush } from "../../migrate/push.ts";
 import { migrateApply } from "../../migrate/apply.ts";
 import { migrateGenerate } from "../../migrate/generate.ts";
+import { convertSerializedSchemaToZod } from "../schema/mod.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -29,6 +30,57 @@ export async function planProjectBuild(
 	opts: BuildOpts,
 ) {
 	const signal = buildState.signal;
+
+	for (const module of project.modules.values()) {
+		await planModuleParse(buildState, project, module, opts);
+	}
+
+	// Wait for modules parse
+	await waitForBuildPromises(buildState);
+
+	buildStep(buildState, {
+		id: `project.validate`,
+		name: "Validate",
+		description: "backend.json",
+		condition: {
+			files: [mainConfigPath(project)],
+		},
+		async build() {
+			const errors: ValidationError[] = [];
+			for (const module of project.modules.values()) {
+				if (module.userConfigSchema) {
+					const result = await convertSerializedSchemaToZod(module.userConfigSchema).safeParseAsync(
+						module.userConfig,
+					);
+
+					if (!result.success) {
+						errors.push(
+							new ValidationError(`Invalid config for module "${module.name}".`, {
+								validationError: result.error,
+								path: mainConfigPath(project),
+								info: { moduleName: module.name },
+							}),
+						);
+					}
+				}
+			}
+			if (errors.length > 0) {
+				throw new CombinedError(errors);
+			}
+		},
+	});
+
+	buildStep(buildState, {
+		id: `project.generate.meta`,
+		name: "Generate",
+		description: "meta.json",
+		async build() {
+			await generateMeta(project);
+		},
+	});
+
+	// Wait for backend.json validation
+	await waitForBuildPromises(buildState);
 
 	// TODO: Add way to compare runtime artifacts (or let this be handled by the cache version and never rerun?)
 	buildStep(buildState, {
@@ -42,12 +94,7 @@ export async function planProjectBuild(
 		},
 	});
 
-	// Wait for runtime since script schemas depend on this
 	await waitForBuildPromises(buildState);
-
-	for (const module of project.modules.values()) {
-		await planModuleBuild(buildState, project, module, opts);
-	}
 
 	buildStep(buildState, {
 		id: `project.generate.dependencies`,
@@ -82,6 +129,10 @@ export async function planProjectBuild(
 		},
 	});
 
+	for (const module of project.modules.values()) {
+		await planModuleBuild(buildState, project, module, opts);
+	}
+
 	// Wait for module schemas requestSchema/responseSchema
 	await waitForBuildPromises(buildState);
 
@@ -100,15 +151,6 @@ export async function planProjectBuild(
 		description: "openapi.json",
 		async build() {
 			await generateOpenApi(project);
-		},
-	});
-
-	buildStep(buildState, {
-		id: `project.generate.meta`,
-		name: "Generate",
-		description: "meta.json",
-		async build() {
-			await generateMeta(project);
 		},
 	});
 

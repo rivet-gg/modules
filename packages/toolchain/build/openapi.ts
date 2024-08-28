@@ -205,7 +205,9 @@ function flattenOpenAPIConfig(config: any): any {
 												mediaType,
 												{
 													...mediaTypeObject,
-													schema: mediaTypeObject.schema ? flattenAnyOf(mediaTypeObject.schema) : undefined,
+													schema: mediaTypeObject.schema
+														? flattenAnyOf(mediaTypeObject.schema)
+														: undefined,
 												},
 											]),
 										)

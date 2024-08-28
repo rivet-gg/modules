@@ -9,8 +9,6 @@ jobs:
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
 
       - name: Install Deno
         uses: denoland/setup-deno@v1
@@ -25,8 +23,6 @@ jobs:
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
 
       - name: Install Deno
         uses: denoland/setup-deno@v1

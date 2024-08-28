@@ -58,6 +58,7 @@
 		"@asteasolutions/zod-to-openapi": "npm:@asteasolutions/zod-to-openapi@^7.1.1",
 		"@bartlomieju/postgres": "jsr:@bartlomieju/postgres@^0.17.2",
 		"@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.5",
+		"@hono/hono": "jsr:@hono/hono@^4.5.9",
 		"@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@^0.10.3",
 		"@std/assert": "jsr:@std/assert@^1.0.3",
 		"@std/async": "jsr:@std/async@^1.0.4",
@@ -72,6 +73,7 @@
 		"dedent": "npm:dedent@^1.5.3",
 		"esbuild": "npm:esbuild@^0.21.5",
 		"glob": "npm:glob@^11.0.0",
+		"nanoevents": "npm:nanoevents@^9.0.0",
 		"typescript-json-schema": "npm:typescript-json-schema@^0.62.0",
 		"zod": "npm:zod@^3.23.8",
 		"zod-validation-error": "npm:zod-validation-error@^3.3.1"
