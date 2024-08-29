@@ -1,0 +1,10 @@
+{
+	"name": "Epic Online Services",
+	"description": "Epic Online Services (EOS) is a cross-platform SDK that provides essential online services such as authentication, friends, matchmaking, and more for games.",
+	"icon": "e",
+	"tags": ["platform", "integration"],
+	"authors": ["rivet-gg"],
+	"status": "coming_soon",
+	"scripts": {},
+	"errors": {}
+}
