@@ -50,6 +50,7 @@ import { H2, Separator, Footer, CTAButtons } from "/snippets/intro.mdx";
           <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Open-source, permissively licensed, & self-hostable</h3>
           <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Apache 2.0 license allows you to adapt, modify, & redistribute freely.</p>
         </div>
+        {/* TOOD: supports engines/generated client, integrate with your own api */}
       </div>
 
   </div>
@@ -82,10 +83,42 @@ import { H2, Separator, Footer, CTAButtons } from "/snippets/intro.mdx";
           </li>
         ))}
       </ul>
+      <a href="/docs/build/publish" style={{
+        color: '#ff4f00',
+        borderRadius: '6px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textDecoration: 'none',
+        border: '1px solid #ff4f00',
+        padding: '6px 16px',
+        marginTop: '20px',
+        fontSize: '13px',
+        fontWeight: 'bold'
+      }}>
+        Publish Module
+      </a>
     </div>
     <div style={{ flex: 1 }}>
       <ModuleCards cols={3} />
     </div>
+  </div>
+
+  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+    <a href="/docs/build/publish" style={{
+      color: 'white',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textDecoration: 'none',
+      backgroundColor: '#ff4f00',
+      padding: '8px 20px',
+      fontSize: '16px',
+      fontWeight: 'bold'
+    }}>
+      Publish Module
+    </a>
   </div>
 
   <div style={{ height: '100px' }}/>
