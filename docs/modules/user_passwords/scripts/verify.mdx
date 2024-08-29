@@ -1,27 +1,30 @@
 ---
 title: "Verify Password for User ID"
 description: "Verify that the provided password matches the provided user ID. Errors on mismatch."
-sidebarTitle: "Verify Password for User ID"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/user_passwords/scripts/verify.ts) | `verify` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.userPasswords.verify({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -37,7 +40,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object record with dynamic keys:_
 

@@ -4,61 +4,86 @@ description: "Authenticate users with an email/password combination."
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email_password) | `auth_email_password` | stable | No |
-
-**Authors**
-
-- [rivet-gg](https://github.com/rivet-gg)
-- [Blckbrry-Pi](https://github.com/Blckbrry-Pi)
-
-**Dependencies**
-
-- [Auth Email](/modules/auth_email/overview)
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email_password)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[rivet-gg](https://github.com/rivet-gg), [Blckbrry-Pi](https://github.com/Blckbrry-Pi)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Stable</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add auth_email_password
 ```
 
+Or add the module `auth_email_password` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="4 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
 
-```json backend.json
-"modules": {
-	"auth_email_password": {}
-}
+- **[Send Email Verification](/modules/auth_email_password/scripts/send_verification)** (`send_verification`) Send a one-time verification code to an email address to verify ownership.
 
-```
+- **[Sign In with Email and Password](/modules/auth_email_password/scripts/sign_in_email_pass)** (`sign_in_email_pass`) Sign in a user with an email and password.
+
+- **[Verify and Add Email and Password to existing user](/modules/auth_email_password/scripts/verify_add_email_pass)** (`verify_add_email_pass`) Verify a user's email address and register it with an existing account.
+
+- **[Verify and Sign Up with Email and Password](/modules/auth_email_password/scripts/verify_sign_up_email_pass)** (`verify_sign_up_email_pass`) Verify a user's email address and register a new user with an email and password.
+
+
+**Internal** 
+
+_No internal scripts._
 </Tab>
 
-</Tabs>
 
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup><Card title="Send Email Verification" href="/modules/auth_email_password/scripts/send_verification">Send a one-time verification code to an email address to verify ownership.</Card><Card title="Sign In with Email and Password" href="/modules/auth_email_password/scripts/sign_in_email_pass">Sign in a user with an email and password.</Card><Card title="Verify and Add Email and Password to existing user" href="/modules/auth_email_password/scripts/verify_add_email_pass">Verify a user's email address and register it with an existing account.</Card><Card title="Verify and Sign Up with Email and Password" href="/modules/auth_email_password/scripts/verify_sign_up_email_pass">Verify a user's email address and register a new user with an email and password.</Card></CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup>_No internal scripts._</CardGroup>
-
-## Errors
+<Tab title="1 Errors">
 
 - **Provider Disabled** (`provider_disabled`) 
+
+</Tab>
+
+
+<Tab title="1 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+

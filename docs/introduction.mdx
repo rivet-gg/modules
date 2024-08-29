@@ -1,6 +1,6 @@
 ---
 title: Open Game Backend
-description: "Open-source modular backend for all games and tools. Supports Godot, Unreal, HTML5, Unity, and custom engines."
+description: "Build your game's backend on open-source technology. Built to launch quickly, adapt to your game, and scale effortlessly. Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines."
 mode: "custom"
 ---
 
@@ -8,337 +8,85 @@ import { ModuleCards } from "/snippets/module-cards.mdx";
 import { Tags } from "/snippets/tags.mdx";
 import { H2, Separator, Footer, CTAButtons } from "/snippets/intro.mdx";
 
-{/*<img
-  className="block dark:hidden"
-  src="/images/hero-light.png"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.png"
-  alt="Hero Dark"
-/>*/}
+<div style={{ backgroundColor: '#0c0c0c', borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
+  <div className="px-4 mx-auto max-w-8xl lg:px-8" style={{ paddingTop: '60px', paddingBottom: '60px' }}>
+      <h1 style={{ textAlign: 'center', fontWeight: 700, fontSize: '42px', lineHeight: '1.2', letterSpacing: '-0.5px', color: '#fff', marginBottom: '20px' }}>Build your game's backend on open-source technology</h1>
+      <p style={{ textAlign: 'center', fontWeight: 400, fontSize: '17px', lineHeight: '1.5', color: 'rgba(255,255,255,0.8)', marginBottom: '35px', maxWidth: '750px', margin: '0 auto' }}>
+        Open Game Backend is built to <span style={{color:'white', fontWeight: 600}}>launch quickly</span>, <span style={{color:'white', fontWeight: 600}}>adapt to your game</span>, and <span style={{color:'white', fontWeight: 600}}>scale effortlessly</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.
+      </p>
 
-<div style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(255,255,255,0.04) 85%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', height: '1000px', color: 'white' }}>
-  {/*<img
-    width="500"
-    src="/images/orange/train-fun.png"
-    alt="Train Hero"
-    noZoom
-  />*/}
-  <img
-    width="500"
-    src="/images/orange/plane-fun.png"
-    alt="Plane Hero"
-    noZoom
-  />
+      <div style={{ height: '40px' }}/>
 
-  <div style={{ height: '70px' }}/>
+      <CTAButtons />
 
-  <h1 style={{ fontWeight: 800, fontSize: '60px', lineHeight: '80px', letterSpacing: '-3.8px', color: '#fff0ea' }}><span style={{opacity:0.83}}>Open-Source</span><br/><span style={{textShadow:"0 0 150px #ffb28d99"}}>Modular Game Backend</span></h1>
+      <div style={{ height: '70px' }}/>
 
-  <div style={{ height: '30px' }}/>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '80px', justifyContent: 'center', alignItems: 'start', textAlign: 'left', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <Icon icon="puzzle" size={32} color="rgba(255, 255, 255, 0.7)" />
+          </div>
+          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Modular backend</h3>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Combine pre-made modules or build your own modules to fit your game's unique requirements & launch quicky.</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <Icon icon="function" size={32} color="rgba(255, 255, 255, 0.7)" />
+          </div>
+          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Script easily like a game engine</h3>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Easily extend & adapt on top of the OpenGB Engine using TypeScript. Designed to be scripted by game developers.</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <Icon icon="house-turret" size={32} color="rgba(255, 255, 255, 0.7)" />
+          </div>
+          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Secure, load-tested, & resilient</h3>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Load testing, rate limits, captchas, strict schemas, <Tooltip tip="...documentation, secrets management, auto-scaling, and backups">and more</Tooltip> are all enforced by default.</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <Icon icon="git-alt" size={32} color="rgba(255, 255, 255, 0.7)" />
+          </div>
+          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Open-source, permissively licensed, & self-hostable</h3>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Apache 2.0 license allows you to adapt, modify, & redistribute freely.</p>
+        </div>
+      </div>
 
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>All-in-one <span style={{color:'white'}}>modular backend</span> that <span style={{color:'white'}}>adapts to your use case</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend enables you to quickly launch your game backend and adapt it to your use case.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend enables you <span style={{color:'white'}}>launch quickly</span>, <span style={{color:'white'}}>scale painlessly</span>, and <span style={{color:'white'}}>adapt to your unique requirements</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend enables you <span style={{color:'white'}}>launch quickly</span> and easily <span style={{color:'white'}}>adapt for your game</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend enables you to <span style={{color:'white'}}>launch quickly</span> and <span style={{color:'white'}}>adapt to your game</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend <span style={{color:'white'}}>adapts to your game</span> and enables you to <span style={{color:'white'}}>launch quickly</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  {/*<h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend is built to <span style={{color:'white'}}>adapt to your game</span>, <span style={{color:'white'}}>launch quickly</span>, and <span style={{color:'white'}}>scale effortlessly</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>*/}
-  <h2 style={{ fontWeight: 400, fontSize: '20px', lineHeight: '36px', letterSpacing: '-0.2px', color: 'rgba(255,255,255,0.6)' }}>Open Game Backend is built to <span style={{color:'white'}}>launch quickly</span>, <span style={{color:'white'}}>adapt to your game</span>, and <span style={{color:'white'}}>scale effortlessly</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.</h2>
-
-  <div style={{ height: '80px' }}/>
-
-  <CTAButtons />
-
-  <div style={{ height: '20px' }}/>
-
-  <a target="_blank" href="https://github.com/rivet-gg/opengb">
-    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", opacity: 0.5 }}>
-      <Icon icon="skull" iconType="solid" color="white" />
-      <div style={{marginLeft:"8px",marginTop:"4px"}}>Trust no-one, own your backend</div>
-    </div>
-  </a>
+  </div>
 </div>
 
-<div style={{ height: '40px' }}/>
-
 <div className="px-4 mx-auto max-w-8xl lg:px-8">
-  <H2>What is Open Game Backend?</H2>
-  {/*<p>The fastest way to launch your game while matching your scale & customization.</p>*/}
+  <div style={{ height: '20px' }}/>
 
-  <CardGroup cols={3}>
-    <Card icon="puzzle" title="Modular backend">
-      Combine pre-made modules or build your own modules to fit your game's unique requirements & launch quicky.
-    </Card>
-    <Card icon="battery-full" title="Batteries included">
-      Provides thoroughly reviewed, tested, and documented modules to get you started quickly & allow you to customize to fit your needs.
-    </Card>
-    <Card icon="function" title="Script easily like a game engine">
-      Easily extend & adapt on top of the [OpenGB Engine](/engine/introduction) using TypeScript. Designed to be scripted by game developers.
-    </Card>
-    <Card icon="bolt" title="Real-time with actors">
-      Built around innovative actor-based technology to provide complicated real-time functionality.
-    </Card>
-    <Card icon="house-turret" title="Secure, load-tested, & resilient">
-      Built to withstand the chaos that games need to grow & stay online. Load testing, rate limits, captchas, strict schemas, <Tooltip tip="...documentation, secrets management, auto-scaling, and backups">and more</Tooltip> are all enforced by default.
-    </Card>
-    <Card icon="git-alt" title="Open-source, permissively licensed, & self-hostable">
-      Apache 2.0 license allows you to adapt, modify, & redistribute freely.
-    </Card>
-    {/*<Card
-      icon="arrow-right"
-      title="Get Started"
-      href="/docs/quickstart"
-    ></Card>*/}
-  </CardGroup>
-
-  <div style={{maxWidth:'max-content',margin:'0 auto'}}>
-    <Info>
-      See how Open Game Backend compares to [PlayFab](/comparison/playfab), [Supabase](/comparison/supabase), and [Nakama](/comparison/nakama).
-    </Info>
-  </div>
-
-  <Separator />
-
-  <H2>Get started</H2>
-
-  {/*<Frame caption="OpenGB Architecture" style={{maxWidth:'800px',margin:'0 auto'}}>
-    <div style={{width:"100%"}}>
-      <img src="/images/overview.svg" style={{width: "100%"}} />
+  <div style={{ display: 'flex' }}>
+    <div style={{ width: '250px', marginRight: '40px', marginTop: '3em' }}>
+      <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#f0f0f0' }}>Categories</h3>
+      <ul style={{ listStyleType: 'none', padding: 0 }}>
+        {[
+          { name: 'Multiplayer', slug: 'multiplayer' },
+          { name: 'Authentication', slug: 'auth' },
+          { name: 'Social', slug: 'social' },
+          { name: 'Economy', slug: 'economy' },
+          { name: 'Competitive', slug: 'competitive' },
+          { name: 'Analytics', slug: 'analytics' },
+          { name: 'Security', slug: 'security' },
+          { name: 'Utility', slug: 'utility' },
+          { name: 'Platform', slug: 'platform' },
+          { name: 'Infrastructure', slug: 'infra' },
+          { name: 'Service', slug: 'service' }
+        ].map(category => (
+          <li key={category.slug} style={{ marginBottom: '8px' }}>
+            <a href={`#${category.slug}`} style={{ color: '#cccccc', textDecoration: 'none', fontSize: '14px' }}>
+              {category.name}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
-  </Frame>*/}
-
-  <Steps>
-    <Step title="Setup project">
-      Start by installing the [`users` module](/modules/users), generating an SDK, and starting the server.
-
-      ```sh
-      # Create project
-      opengb init
-      # Install module
-      opengb module add friends
-      # Generate SDK to communicate with OpenGB for your game engine. Supports Godot, Unity, and JavaScript.
-      opengb sdk generate --output path/to/sdk godot
-      # Start dev server & database
-      opengb dev
-      ```
-
-      See all available modules [here](/modules/overview).
-    </Step>
-    <Step title="Call backend scripts">
-      Use the SDK you just generated to call backend scripts. You can see the documentation for `users.fetch` [here](/modules/users/scripts/fetch).
-
-      <CodeGroup>
-        ```javascript JavaScript (HTML5)
-        const backend = new Backend({ endpoint: "http://localhost:6420" });
-        const data = await backend.users.fetch({ userIds });
-        console.log("Users", data.users);
-        ```
-
-        ```gdscript Godot
-        var data = backend.users.fetch({ "userIds": my_user_ids })
-        print("Users", data["users"])
-        ```
-
-        ```csharp Unity
-        var data = Backend.Users.Fetch();
-        ```
-
-        ```cpp Unreal Engine
-        // IMPORTANT: Auto-generated SDK coming soon
-
-        TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-        JsonObject->SetArrayField(TEXT("userIds"), UserIds);
-
-        FString OutputString;
-        TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
-        FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-
-        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-        Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
-        Request->SetURL(TEXT("http://localhost:6420/modules/users/scripts/fetch/call"));
-        Request->SetVerb(TEXT("POST"));
-        Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-        Request->SetContentAsString(OutputString);
-        Request->ProcessRequest();
-        ```
-
-        ```rust Rust
-        // IMPORTANT: Auto-generated SDK coming soon
-
-        let data = reqwest::Client::new()
-            .post("http://localhost:8080/modules/users/scripts/fetch/call")
-            .json(&json!({ "userIds": user_ids }))
-            .send()
-            .await?
-            .error_for_status()?
-            .json::<serde_json::Value>()
-            .await?;
-        ```
-
-        ```sh curl
-        curl -X POST "http://localhost:8080/modules/users/scripts/fetch/call" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "userIds": ["00000000-0000-0000-0000-000000000000"]
-          }'
-
-        ```
-      </CodeGroup>
-    </Step>
-    <Step title="Deploy server">
-      <Tabs>
-        <Tab title="Deploy to Rivet Cloud">
-          Deploy a production-grade scalable backend to [Rivet Cloud](https://rivet.gg) for free. Requires installing the [Rivet CLI](https://github.com/rivet-gg/cli).
-
-          ```sh
-          rivet backend deploy prod
-          ```
-        </Tab>
-        <Tab title="Run locally">
-          If developing locally, OpenGB can be ran with:
-
-          ```sh
-          # Server will start at http://localhost:6420
-          opengb dev
-          ```
-        </Tab>
-        <Tab title="Self-host">
-          Learn more about self-hosting [here](/docs/self-hosting).
-        </Tab>
-      </Tabs>
-    </Step>
-    <Step title="Write your own module (optional)">
-      Open Game Backend is designed to scale & adapt to the needs of your game. Easily extend & modify modules using TypeScript, no backend experience required.
-
-      <CodeGroup>
-        ```sh Setup
-        # Create new module
-        opengb create module my_leaderboard
-        # Add new script
-        opengb create script my_leaderboard submit_score
-        ```
-
-        ```typescript scripts/submit_score.ts
-        import { ScriptContext } from "../module.gen.ts";
-
-        // User-provided requests are automatically validated with this schema by OpenGB for security
-        export interface Request {
-          userToken: string;
-          score: number;
-        }
-
-        export interface Response {
-          rank: number;
-        }
-
-        export async function run(
-          ctx: ScriptContext,
-          req: Request,
-        ): Promise<Response> {
-          // Rate limit & auth
-          await ctx.modules.rateLimit.throttlePublic({ requests: 1, period: 15 });
-          const validate = await ctx.modules.users.authenticateUser({
-            userToken: req.userToken,
-          });
-
-          // Write to database. This is type-safe & includes intellisense.
-          await ctx.db.scores.create({
-            data: {
-              userId: validate.userId,
-              score: req.score,
-            },
-          });
-
-          // Query database. This is type-safe & includes intellisense.
-          const rank = await ctx.db.scores.count({
-            where: {
-              score: { gt: req.score },
-            },
-          });
-
-          return {
-            rank: rank + 1,
-          };
-        }
-
-        ```
-
-        ```prisma db/schema.prisma
-        datasource db {
-            provider = "postgresql"
-            url      = env("DATABASE_URL")
-        }
-
-        model Scores {
-            id        String   @id @default(uuid()) @db.Uuid
-            createdAt DateTime @default(now()) @db.Timestamp
-            userId    String   @db.Uuid
-            score     Int
-
-            @@index([score])
-        }
-        ```
-
-        ```typescript tests/e2e.ts
-        // This code is optional. Writing tests is good practice to catch common mistakes & save time in the long run.
-
-        import { test, TestContext } from "../module.gen.ts";
-        import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
-
-        test("e2e", async (ctx: TestContext) => {
-          // Create user & token to authenticate with
-          const { user } = await ctx.modules.users.create({});
-          const { token } = await ctx.modules.users.createToken({
-            userId: user.id,
-          });
-
-          // Create some testing scores
-          for (let score = 1; score <= 10; score++) {
-            await ctx.modules.myLeaderboard.submitScore({
-              userToken: token.token,
-              score: score,
-            });
-          }
-
-          // Get top scores
-          const topScores = await ctx.modules.myLeaderboard.getTopScores({ count: 5 });
-          assertEquals(topScores.scores.length, 5);
-          assertEquals(topScores.scores[0].score, 10);
-        });
-        ```
-      </CodeGroup>
-
-      Read more about how to build your own modules [here](/docs/build/overview).
-    </Step>
-  </Steps>
-
-  <Separator />
-
-  <H2>Modules</H2>
-
-  <ModuleCards cols={4} />
-
-  <Separator />
-
-  <H2>What's next?</H2>
-
-  <CardGroup cols={4}>
-    <Card href="https://rivet.gg/discord" target="_blank" icon="discord" title="Join the Community">
-      Chat with the developers, get support, make suggestions, or just hang out.
-    </Card>
-    <Card href="https://github.com/rivet-gg/opengb/issues" target="_blank" icon="github" title="View GitHub Issues">
-      Report bugs, make suggestions.
-    </Card>
-    <Card href="https://rivet.gg" icon="cloud-arrow-up" title="Rivet Cloud">
-      Hosting for Open Game Backend.
-    </Card>
-    <Card href="https://calendly.com/nicholas_kissel/rivet-demo" icon="phone" title="Enterprise">
-      Book a demo of Open Game Backend.
-    </Card>
-  </CardGroup>
+    <div style={{ flex: 1 }}>
+      <ModuleCards cols={3} />
+    </div>
+  </div>
 
   <div style={{ height: '100px' }}/>
 

@@ -1,27 +1,30 @@
 ---
 title: "Throttle"
 description: "Limit the amount of times an request can be made by a given key."
-sidebarTitle: "Throttle"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rate_limit/scripts/throttle.ts) | `throttle` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.rateLimit.throttle({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -39,7 +42,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object record with dynamic keys:_
 

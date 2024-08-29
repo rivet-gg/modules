@@ -1,27 +1,30 @@
 ---
 title: "Verify and Login as (or Create) User (No Password)"
 description: "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password."
-sidebarTitle: "Verify and Login as (or Create) User (No Password)"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email/scripts/verify_login_or_create_no_pass.ts) | `verify_login_or_create_no_pass` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.authEmail.verifyLoginOrCreateNoPass({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -37,7 +40,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object containing the following properties:_
 

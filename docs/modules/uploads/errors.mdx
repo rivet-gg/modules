@@ -1,0 +1,71 @@
+---
+title: "Errors"
+---
+
+
+## Combined Size Limit Exceeded
+
+`size_limit_exceeded`
+
+There is a maximum total size per upload (see config)
+
+
+## Duplicate Paths Provided
+
+`duplicate_paths`
+
+An upload cannot contain 2 files with the same paths (see `cause` for offending paths)
+
+
+## Multipart Upload Completion Failure
+
+`multipart_upload_completion_fail`
+
+The multipart upload failed to complete (see `cause` for more information)
+
+
+## No Files Provided
+
+`no_files`
+
+An upload must have at least 1 file
+
+
+## Possibility Of Too Many Chunks
+
+`too_many_chunks`
+
+AWS S3 has a limit on the number of parts that can be uploaded in a
+multipart upload. This limit is 10,000 parts. If the number of chunks
+required to upload the maximum multipart upload size exceeds this limit,
+any operation will preemptively throw this error.
+
+
+
+## S3 Not Configured
+
+`s3_not_configured`
+
+The S3 bucket is not configured (missing env variables)
+
+
+## Too Many Files Provided
+
+`too_many_files`
+
+There is a limit to how many files can be put into a single upload (see config)
+
+
+## Upload Already completed
+
+`upload_already_completed`
+
+\`complete\` was already called on this upload
+
+
+## Upload Not Found
+
+`upload_not_found`
+
+The provided upload ID didn't match any known existing uploads
+

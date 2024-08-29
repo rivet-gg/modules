@@ -1,0 +1,135 @@
+---
+title: "Discord Activities"
+description: "Activities are a way to enjoy shared experiences with friends, such as games and media, on Discord itself. "
+sidebarTitle: Overview
+---
+
+import { H2, Separator } from "/snippets/intro.mdx";
+
+<Tabs>
+<Tab title="Metadata">
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/discord_activity)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[discord](https://github.com/discord), [rivet-gg](https://github.com/rivet-gg)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Beta</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
+opengb module add discord_activity
+```
+
+Or add the module `discord_activity` to your `backend.json`.
+</Tab>
+
+<Tab title="0 Scripts">
+**Public**
+
+_No public scripts._
+
+**Internal** 
+
+_No internal scripts._
+</Tab>
+
+
+
+<Tab title="0 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+
+Integrate your Rivet game with [Discord Activities](https://discord.com/developers/docs/activities/overview).
+
+<Steps>
+<Step title="Set up Discord SDK">
+Set up the Discord SDK ([docs](https://discord.com/developers/docs/activities/building-an-activity#step-3-installing-the-embedded-app-sdk)):
+
+```js
+// Import the SDK
+import { DiscordSDK } from "@discord/embedded-app-sdk";
+
+// Instantiate the SDK 
+const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID);
+
+setupDiscordSdk().then(() => {
+    console.log("Discord SDK is ready");
+});
+
+async function setupDiscordSdk() {
+    await discordSdk.ready();
+}
+```
+</Step>
+
+<Step title="Update lobbies code">
+Update your Rivet matchmaking code to include tags:
+```js
+const res = await backend.lobbies.findOrCreate({
+    tags: {
+        // Discord SDK set up in previous step
+        instanceId: discordSdk.instanceId,
+    },
+    // ...
+});
+```
+</Step>
+
+<Step title="Set up route mapping">
+After following the [activity tutorial](https://discord.com/developers/docs/activities/building-an-activity), access the [URL mapping](https://discord.com/developers/docs/activities/development-guides#url-mapping) for your Discord app and configure it like so:
+
+| Prefix | Target |
+|--------|--------|
+| /gstatic | fonts.gstatic.com/ |
+| /ws | lobby.rivet.run/ |
+| /api | api.rivet.gg/ |
+| / | asteroids-xxx.rivet.game/ |
+
+<Note>
+    The URL used for the "Root Mapping" will be printed in the console when you deploy to Rivet via `rivet deploy`.
+</Note>
+</Step>
+
+<Step title="Run activity">
+Run activity (read docs [here](https://discord.com/developers/docs/activities/building-an-activity#step-4-running-your-app-locally-in-discord))
+</Step>
+</Steps>
+
+## Example repo
+
+A fully integrated example can be found [here](https://github.com/rivet-gg/discord-embedded-app-sdk/tree/main/examples/asteroids-rivet). (This is using a slightly dated API, but is lagely identical.)
+

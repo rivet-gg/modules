@@ -1,65 +1,57 @@
 {
-	"$schema": "https://mintlify.com/schema.json",
-	"name": "Open Game Backend",
-	"logo": {
-		"dark": "/logo/dark.svg",
-		"light": "/logo/light.svg"
-	},
-	"favicon": "/favicon.svg",
-	"colors": {
-		"primary": "#ff4f00",
-		"light": "#ff8952",
-		"dark": "#ff4f00",
-		"background": {
-			"light": "#fffdfa",
-			"dark": "#0b0a0a"
-		},
-		"anchors": {
-			"from": "#ff4f00",
-			"to": "#ff4f00"
-		}
-	},
-	"modeToggle": {
-		"isHidden": true
-	},
-	"topbarCtaButton": {
-		"type": "github",
-		"url": "https://github.com/rivet-gg/opengb"
-	},
-	"primaryTab": {
-		"name": "Home"
-	},
-	"tabs": [
-		{
-			"name": "Documentation",
-			"url": "docs"
-		},
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Open Game Backend",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#ff4f00",
+    "light": "#fa631e",
+    "dark": "#ff4f00",
+    "background": {
+      "light": "#fffdfa",
+      "dark": "#0b0a0a"
+    },
+    "anchors": {
+      "from": "#ff4f00",
+      "to": "#ff4f00"
+    }
+  },
+  "modeToggle": {
+    "default":"dark",
+    "isHidden": true
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/rivet-gg/opengb"
+  },
+  "topbarLinks": [
+	{
+		"name": "Publish Module",
+		"url": "/docs/build/publishing"
+	}
+  ],
+  "topAnchor": {
+    "name": "All Modules",
+    "icon": "grid-2",
+    "iconType": "regular"
+  },
+  "anchors": [
 		{
 			"name": "Modules",
-			"url": "modules"
+			"url": "modules",
+      "icon": "puzzle",
+      "iconType": "regular"
 		},
 		{
-			"name": "Integrations",
-			"url": "integrations"
+			"name": "Documentation",
+			"url": "docs",
+      "icon": "book-open",
+      "iconType": "regular"
 		}
-	],
-	"anchors": [
-		{
-			"name": "Community",
-			"icon": "discord",
-			"url": "https://rivet.gg/discord"
-		},
-		{
-			"name": "Issues",
-			"icon": "github",
-			"url": "https://github.com/rivet-gg/opengb/issues"
-		},
-		{
-			"name": "Sign In to Rivet",
-			"icon": "browser",
-			"url": "https://hub.rivet.gg"
-		}
-	],
+  ],
 	"navigation": [
 		{
 			"group": "Getting Started",
@@ -104,6 +96,7 @@
 				{
 					"group": "Advanced",
 					"pages": [
+						"docs/build/publishing",
 						"docs/build/conventions",
 						"docs/build/ide",
 						"docs/build/public",

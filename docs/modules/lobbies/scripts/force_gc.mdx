@@ -1,27 +1,30 @@
 ---
 title: "Force Garbage Collection"
 description: "Rarely used. Forces the matchmaker to purge lobbies & players."
-sidebarTitle: "Force Garbage Collection"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/lobbies/scripts/force_gc.ts) | `force_gc` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.lobbies.forceGc({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -35,7 +38,7 @@ _All properties are optional._
 
 
 
-### Config
+### Response
 
 _Object containing the following properties:_
 
