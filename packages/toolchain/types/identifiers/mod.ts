@@ -5,8 +5,8 @@ export function validateIdentifier(
 	ident: string,
 	identType: Casing,
 ) {
-	if (ident.length < 1 || ident.length > 32) {
-		throw new IdentifierError("must be between 1 and 32 characters", ident);
+	if (ident.length < 1 || ident.length > 64) {
+		throw new IdentifierError("must be between 1 and 64 characters", ident);
 	}
 
 	if (!printableAsciiRegex.test(ident)) {
