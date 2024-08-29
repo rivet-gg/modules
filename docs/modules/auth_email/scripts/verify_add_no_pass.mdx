@@ -1,27 +1,30 @@
 ---
 title: "Verify and Add Email to Existing User (No Password)"
 description: "Verify a user's email address and register it with an existing account. Does not require a password."
-sidebarTitle: "Verify and Add Email to Existing User (No Password)"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email/scripts/verify_add_no_pass.ts) | `verify_add_no_pass` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.authEmail.verifyAddNoPass({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -38,7 +41,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object record with dynamic keys:_
 

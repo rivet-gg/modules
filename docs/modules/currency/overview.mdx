@@ -4,63 +4,97 @@ description: "Track user balances and allow them to deposit and withdraw."
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/currency) | `currency` | preview | Yes |
-
-**Authors**
-
-- [ABCxFF](https://github.com/ABCxFF)
-
-**Dependencies**
-
-- [Rate Limit](/modules/rate_limit/overview)
-- [Users](/modules/users/overview)
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/currency)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[ABCxFF](https://github.com/ABCxFF), [NathanFlurry](https://github.com/NathanFlurry)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Preview</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="database"/></span>
+  <span>Includes Database</span>
+</p>
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add currency
 ```
 
+Or add the module `currency` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="4 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
 
-```json backend.json
-"modules": {
-	"currency": {}
-}
+- **[Fetch Balance by Token](/modules/currency/scripts/fetch_balance_by_token)** (`fetch_balance_by_token`) undefined
 
-```
+
+**Internal** 
+
+
+- **[Adjust Balance](/modules/currency/scripts/adjust_balance)** (`adjust_balance`) undefined
+
+- **[Fetch Balance](/modules/currency/scripts/fetch_balance)** (`fetch_balance`) undefined
+
+- **[Set Balance](/modules/currency/scripts/set_balance)** (`set_balance`) undefined
+
 </Tab>
 
-</Tabs>
 
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup><Card title="Fetch Balance by Token" href="/modules/currency/scripts/fetch_balance_by_token"></Card></CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup><Card title="Adjust Balance" href="/modules/currency/scripts/adjust_balance"></Card><Card title="Fetch Balance" href="/modules/currency/scripts/fetch_balance"></Card><Card title="Set Balance" href="/modules/currency/scripts/set_balance"></Card></CardGroup>
-
-## Errors
+<Tab title="3 Errors">
 
 - **Invalid Amount** (`invalid_amount`) 
+
+
 - **Invalid User** (`invalid_user`) 
+
+
 - **Not Enough Funds** (`not_enough_funds`) 
+
+</Tab>
+
+
+<Tab title="2 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+

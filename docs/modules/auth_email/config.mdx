@@ -1,22 +1,5 @@
----
-title: "Config"
----
 
-This config can be modified by adding the following to your `backend.json`:
-
-```json
-{
-  "modules": {
-    "auth_email": {
-      "config": {
-        // Your config here
-      }
-    }
-  }
-}
-```
-
-## Schema
+# Config
 
 
 
@@ -32,10 +15,7 @@ _Object containing the following properties:_
 _All properties are optional._
 
 
-## Default Value
-
-The provided user config will be merged with this config. If no user config is
-  provided, this config will be used.
+## Default Config
 
 ```json
 {
@@ -43,4 +23,3 @@ The provided user config will be merged with this config. If no user config is
     "fromName": "Authentication Code"
 }
 ```
-

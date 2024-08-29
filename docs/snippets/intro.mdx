@@ -8,17 +8,12 @@ export const CTAButtons = () => {
     },
     getStartedLink: {
       color: 'white',
-      borderRadius: '9999px',
-      border: '1px solid #ff4f0055',
-      padding: '4px',
+      borderRadius: '8px',
       display: 'flex',
       alignItems: 'stretch',
       justifyContent: 'center',
       textDecoration: 'none',
-    },
-    getStartedSpan: {
       backgroundColor: '#ff4f00',
-      borderRadius: '9999px',
       padding: '8px 20px',
       display: 'flex',
       alignItems: 'center',
@@ -32,30 +27,30 @@ export const CTAButtons = () => {
       marginLeft: '16px',
     },
     icon: {
-      width: '20px',
-      height: '20px',
-      marginLeft: '4px',
+      display: 'flex',
+      marginLeft: '6px',
+      marginBottom: '2px',
     },
   };
 
   return (
     <div style={styles.container}>
       <a href="/docs/quickstart" style={styles.getStartedLink}>
-        <span style={styles.getStartedSpan}>
-          <span>Get Started</span>
-        </span>
+        <span>Download OpenGB</span>
       </a>
-      <a href="/modules/overview" style={styles.docsLink}>
-        <span>See Modules</span>
-        <Icon icon="chevron-right" iconType="solid" color="#ff4f00" style={styles.icon} />
+      <a href="/docs/build" style={styles.docsLink}>
+        <span>Build Your Own Module</span>
+        <div style={styles.icon}>
+          <Icon icon="chevron-right" iconType="solid" color="#ff4f00"  />
+        </div>
       </a>
     </div>
   );
 };
 
-export const H2 = ({ children }) => {
+export const H2 = ({ id, children }) => {
   return (
-    <h2 style={{color:'white', fontWeight: 700, fontSize: '1.5em', marginTop: '2em', marginBottom: '0.6em', lineHeight: 1.3}}>{children}</h2>
+    <h2 id={id} style={{color:'white', fontWeight: 700, fontSize: '1.5em', marginTop: '2em', marginBottom: '0.6em', lineHeight: 1.3}}>{children}</h2>
   );
 }
 

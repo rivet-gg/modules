@@ -4,61 +4,82 @@ description: "Link emails to users."
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email_link) | `auth_email_link` | stable | No |
-
-**Authors**
-
-- [rivet-gg](https://github.com/rivet-gg)
-- [Blckbrry-Pi](https://github.com/Blckbrry-Pi)
-
-**Dependencies**
-
-- [Auth Email](/modules/auth_email/overview)
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email_link)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[rivet-gg](https://github.com/rivet-gg), [Blckbrry-Pi](https://github.com/Blckbrry-Pi)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Stable</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add auth_email_link
 ```
 
+Or add the module `auth_email_link` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="2 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
 
-```json backend.json
-"modules": {
-	"auth_email_link": {}
-}
+- **[Send Email Verification](/modules/auth_email_link/scripts/send_verification)** (`send_verification`) Send a one-time verification code to an email address to verify ownership.
 
-```
+
+**Internal** 
+
+
+- **[Verify and Link Email Address to User](/modules/auth_email_link/scripts/verify_link_email)** (`verify_link_email`) Verify a user's email address and link it to an existing account without implicitly allowing login.
+
 </Tab>
 
-</Tabs>
 
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup><Card title="Send Email Verification" href="/modules/auth_email_link/scripts/send_verification">Send a one-time verification code to an email address to verify ownership.</Card></CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup><Card title="Verify and Link Email Address to User" href="/modules/auth_email_link/scripts/verify_link_email">Verify a user's email address and link it to an existing account without implicitly allowing login.</Card></CardGroup>
-
-## Errors
+<Tab title="1 Errors">
 
 - **Provider Disabled** (`provider_disabled`) 
+
+</Tab>
+
+
+<Tab title="1 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+

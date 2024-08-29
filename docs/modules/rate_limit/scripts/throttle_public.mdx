@@ -1,27 +1,30 @@
 ---
 title: "Throttle Public"
 description: "Limit the amount of times a public request can be made by a given key. This will rate limit based off the user's IP address."
-sidebarTitle: "Throttle Public"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rate_limit/scripts/throttle_public.ts) | `throttle_public` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.rateLimit.throttlePublic({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -37,7 +40,7 @@ _All properties are optional._
 
 
 
-### Config
+### Response
 
 _Object record with dynamic keys:_
 

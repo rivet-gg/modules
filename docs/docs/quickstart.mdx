@@ -10,41 +10,24 @@ Before getting started, [read about how OpenGB works](/introduction#how-opengb-w
 <Steps>
     <Step title="Install Open Game Backend">
         <Tabs>
-            {/* <Tab title="With Rivet CLI">
-                **Install Prerequisites**
-
-                - [Rivet CLI](https://github.com/rivet-gg/cli?tab=readme-ov-file#installation)
-                - [Docker](https://docs.docker.com/get-docker/)
-            </Tab>
-            <Tab title="With Docker">
-                
-            </Tab> */}
             <Tab title="Install From GitHub (recommended)">
-                **Install Prerequisites**
-
-                - [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
-                - [Docker](https://docs.docker.com/get-docker/)
-                - Git
-
-                **Install Open Game Backend**
+                1. [Install Git](https://git-scm.com/downloads)
+                2. [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+                3. Install Open Game Backend:
 
                 <Version />
                 
             </Tab>
             <Tab title="Build From Source">
-                **Install Prerequisites**
+                1. [Install Git](https://git-scm.com/downloads)
+                2. [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+                3: Clone & Build Open Game Backend
 
-                - [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
-                - [Docker](https://docs.docker.com/get-docker/)
-                - Git
-
-                **Clone & Build Open Game Backend**
-
-                ```
-                git clone https://github.com/rivet-gg/opengb.git
-                cd opengb
-                deno task cli:install
-                ```
+                    ``` sh
+                    git clone https://github.com/rivet-gg/opengb.git
+                    cd opengb
+                    deno task cli:install
+                    ```
             </Tab>
         </Tabs>
     </Step>
@@ -55,9 +38,7 @@ Before getting started, [read about how OpenGB works](/introduction#how-opengb-w
         opengb init
         ```
 
-        <Info>
-            This creates a `backend.json` config file. See the project configuration [here](/docs/project-config).
-        </Info>
+        This creates a `backend.json` config file. See the project configuration [here](/docs/project-config).
     </Step>
     <Step title="Add modules">
         The default project comes with a set of modules preinstalled. For example, install the `friends` module by running the following command:
@@ -68,9 +49,7 @@ Before getting started, [read about how OpenGB works](/introduction#how-opengb-w
 
         This adds the `friends` module to the `backend.json` file. You can also install modules manually by adding them to this config.
 
-        <Info>
-            See a list of available modules [here](/modules).
-        </Info>
+        See a list of available modules [here](/modules).
     </Step>
     <Step title="Run development server">
         The development server is great for testing your scripts locally. This will build & run your backend locally & hot reload when you make changes to the configuration.
@@ -94,13 +73,15 @@ Before getting started, [read about how OpenGB works](/introduction#how-opengb-w
             Godot, Unity, Unreal, and Rust SDKs coming soon.
         </Info>
     </Step>
-    <Step title="Open in Postman/Insomnia/Firecamp/etc (optional)">
-        The [OpenAPI](https://www.openapis.org/) specification is generated at `.opengb/openapi.json`. You can import this file into your favorite API client to start making requests to your server.
-    </Step>
     <Step title="Deploy server (optional)">
-        <Info>
-            Documentation coming soon.
-        </Info>
+        Install the [Rivet CLI](https://github.com/rivet-gg/cli), then run the following:
+
+        ```sh
+        rivet init
+        rivet deploy prod
+        ```
+
+        See self-hosting instructions [here](/docs/self-hosting).
     </Step>
     <Step title="Next steps">
         <CardGroup>

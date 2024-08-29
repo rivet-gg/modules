@@ -16,6 +16,7 @@
 				"foo": "hello world",
 				"bar": 1234
 			}
-		}
+		},
+		"friends": {}
 	}
 }

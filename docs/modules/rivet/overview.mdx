@@ -1,72 +1,85 @@
 ---
-title: "Rivet API"
-description: "Helper for calling the Rivet API."
+title: "Rivet"
+description: "Open-source game servers & backend for multiplayer games."
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rivet) | `rivet` | stable | No |
-
-**Authors**
-
-- [NathanFlurry](https://github.com/NathanFlurry)
-
-**Dependencies**
-
-_No dependencies_
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/rivet)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[NathanFlurry](https://github.com/NathanFlurry)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Stable</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add rivet
 ```
 
+Or add the module `rivet` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="2 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
+_No public scripts._
 
-```json backend.json
-"modules": {
-	"rivet": {
-		"config": {
-			// Your config here. See config docs for more details.
-		}
-	}
-}
+**Internal** 
 
-```
+
+- **[Call](/modules/rivet/scripts/call)** (`call`) Call a Rivet REST endpoint.
+
+- **[Fetch Config](/modules/rivet/scripts/fetch_config)** (`fetch_config`) Provides Rivet-related config paramteres from the environment.
+
 </Tab>
 
-</Tabs>
 
-
-## Config
-
-<Card title="View Config" icon="square-sliders" href="/modules/rivet/config"></Card>
-
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup>_No public scripts._</CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup><Card title="Call" href="/modules/rivet/scripts/call">Call a Rivet REST endpoint.</Card><Card title="Fetch Config" href="/modules/rivet/scripts/fetch_config">Provides Rivet-related config paramteres from the environment.</Card></CardGroup>
-
-## Errors
+<Tab title="1 Errors">
 
 - **Rivet API Error** (`rivet_api_error`) An error from the Rivet API.
+
+</Tab>
+
+
+<Tab title="0 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+

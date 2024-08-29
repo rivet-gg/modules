@@ -1,130 +1,302 @@
-export const ModuleCards = ({ cols }) => (
-<>
-	<p>These modules are thoroughly reviewed, tested, and documented to help you get your game backend up and running as quickly as possible. Learn more about <a href="/build">creating your own module</a> and <a href="/docs/registries">using your own registries</a>.</p>
+import { H2 } from "/snippets/intro.mdx";
 
-	<CardGroup cols={cols ?? 2}>
-		<Card title="Build your own" icon="plus" href="/build" />
-		
-        <Card title="Achievements" icon="medal" href="/modules/achievements/overview">
-          <div>Unlock and track user achievements. (Coming late-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Analytics" icon="chart-line" href="/modules/analytics/overview">
-          <div>Track and visualize user behavior data. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Auth Email" icon="key" href="/modules/auth_email/overview">
-          <div>[INTERNAL-ONLY: use auth_email_password/auth_email_passwordless/auth_email_link.] Authenticating users with email only or an email/password combination.</div>
-          <Tags tags={["stable","core","auth","user"]} />
-        </Card>
-      
-        <Card title="Auth Email Linking" icon="key" href="/modules/auth_email_link/overview">
-          <div>Link emails to users.</div>
-          <Tags tags={["stable","core","auth","user"]} />
-        </Card>
-      
-        <Card title="Auth Email Passwordless" icon="key" href="/modules/auth_email_passwordless/overview">
-          <div>Authenticate users with only an email.</div>
-          <Tags tags={["stable","core","auth","user"]} />
-        </Card>
-      
-        <Card title="Auth Email/Password" icon="key" href="/modules/auth_email_password/overview">
-          <div>Authenticate users with an email/password combination.</div>
-          <Tags tags={["stable","core","auth","user"]} />
-        </Card>
-      
-        <Card title="Auth Username Password" icon="key" href="/modules/auth_username_password/overview">
-          <div>Authenticate users with a username/password combination.</div>
-          <Tags tags={["stable","core","auth","user"]} />
-        </Card>
-      
-        <Card title="Chat" icon="messages" href="/modules/chat/overview">
-          <div>In-game player-to-player messaging. (Coming late-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Currency" icon="coin" href="/modules/currency/overview">
-          <div>Track user balances and allow them to deposit and withdraw.</div>
-          <Tags tags={["preview","economy"]} />
-        </Card>
-      
-        <Card title="Email" icon="envelope" href="/modules/email/overview">
-          <div>Send emails using multiple providers.</div>
-          <Tags tags={["stable","email"]} />
-        </Card>
-      
-        <Card title="Friends" icon="user-group" href="/modules/friends/overview">
-          <div>Allow users to send and accept friend requests.</div>
-          <Tags tags={["beta","social"]} />
-        </Card>
-      
-        <Card title="Game Saves" icon="floppy-disk" href="/modules/game_saves/overview">
-          <div>Store and manage player progress data or world state. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Groups" icon="user-group" href="/modules/groups/overview">
-          <div>Group users in groups/clans/guilds. (Coming late-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Identities" icon="key" href="/modules/identities/overview">
-          <div>Manage identities and identity data for users. Intended for internal use by modules exposing auth providers.</div>
-          <Tags tags={["beta","core","user","auth"]} />
-        </Card>
-      
-        <Card title="Leaderboards" icon="ranking-star" href="/modules/leaderboards/overview">
-          <div>Track and display top player rankings. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Lobbies" icon="game-board" href="/modules/lobbies/overview">
-          <div>Lobby & player management. Create & join lobbies instantly.</div>
-          <Tags tags={["stable","core","multiplayer"]} />
-        </Card>
-      
-        <Card title="Matchmaker" icon="chess-knight" href="/modules/matchmaker/overview">
-          <div>Ticket-based matchmaking that balances skill, latency, and more. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Parties" icon="party-horn" href="/modules/parties/overview">
-          <div>Real-time player groups. Integrates with matchmaking. (Coming mid-2024)</div>
-          <Tags tags={["coming_soon","game"]} />
-        </Card>
-      
-        <Card title="Rate Limit" icon="gauge-circle-minus" href="/modules/rate_limit/overview">
-          <div>Prevent abuse by limiting request rate.</div>
-          <Tags tags={["stable","core","utility"]} />
-        </Card>
-      
-        <Card title="Rivet API" icon="r" href="/modules/rivet/overview">
-          <div>Helper for calling the Rivet API.</div>
-          <Tags tags={["stable","core","api"]} />
-        </Card>
-      
-        <Card title="Tokens" icon="lock" href="/modules/tokens/overview">
-          <div>Create & verify tokens for authorization purposes.</div>
-          <Tags tags={["stable","core","utility"]} />
-        </Card>
-      
-        <Card title="Uploads" icon="file-arrow-up" href="/modules/uploads/overview">
-          <div>Upload & store blobs of data.</div>
-          <Tags tags={["stable","core","utility"]} />
-        </Card>
-      
-        <Card title="User Password Verifier" icon="shield-halved" href="/modules/user_passwords/overview">
-          <div>An INTERNAL-ONLY module to store and verify passwords by user ID. Used by some auth modules that require password verification.</div>
-          <Tags tags={["beta","core","user","auth","internal"]} />
-        </Card>
-      
-        <Card title="Users" icon="user" href="/modules/users/overview">
-          <div>Identify and manage users.</div>
-          <Tags tags={["stable","core","social"]} />
-        </Card>
-      
-	</CardGroup>
-</>
+export const ModuleCards = ({ cols }) => (
+	<>
+	  <H2 id="multiplayer">Multiplayer</H2>
+<p>Engage players with live multiplayer gameplay, fostering competition and cooperation.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Lobbies" 
+icon="game-board" 
+href="/modules/lobbies/overview"
+>
+Lobby & player management
+</Card>
+<Card 
+title="Matchmaker" 
+icon="chess-knight" 
+href="/modules/matchmaker/overview"
+>
+[Early Access] Ticket-based matchmaking that balances skill, latency, and more
+</Card>
+<Card 
+title="Parties" 
+icon="party-horn" 
+href="/modules/parties/overview"
+>
+[Early Access] Real-time player groups
+</Card>
+<Card 
+title="Presence" 
+icon="circle-dot" 
+href="/modules/presence/overview"
+>
+[Early Access] Real-time online presence for players
+</Card>
+</CardGroup>
+
+<H2 id="auth">Authentication</H2>
+<p>Secure and manage user accounts to personalize and safeguard the player experience.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Auth Email" 
+icon="key" 
+href="/modules/auth_email/overview"
+>
+[INTERNAL-ONLY: use auth_email_password/auth_email_passwordless/auth_email_link
+</Card>
+<Card 
+title="Auth Email Linking" 
+icon="key" 
+href="/modules/auth_email_link/overview"
+>
+Link emails to users
+</Card>
+<Card 
+title="Auth Email Passwordless" 
+icon="key" 
+href="/modules/auth_email_passwordless/overview"
+>
+Authenticate users with only an email
+</Card>
+<Card 
+title="Auth Email/Password" 
+icon="key" 
+href="/modules/auth_email_password/overview"
+>
+Authenticate users with an email/password combination
+</Card>
+<Card 
+title="Auth Username Password" 
+icon="key" 
+href="/modules/auth_username_password/overview"
+>
+Authenticate users with a username/password combination
+</Card>
+<Card 
+title="Identities" 
+icon="key" 
+href="/modules/identities/overview"
+>
+Manage identities and identity data for users
+</Card>
+<Card 
+title="User Password Verifier" 
+icon="shield-halved" 
+href="/modules/user_passwords/overview"
+>
+An INTERNAL-ONLY module to store and verify passwords by user ID
+</Card>
+<Card 
+title="Social Authentication Provider" 
+icon="key" 
+href="/modules/auth_oauth/overview"
+>
+[Early Access] Authenticate users with OAuth 2
+</Card>
+</CardGroup>
+
+<H2 id="social">Social</H2>
+<p>Facilitate player interaction and community-building to boost engagement and retention.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Friends" 
+icon="user-group" 
+href="/modules/friends/overview"
+>
+Allow users to send and accept friend requests
+</Card>
+<Card 
+title="Users" 
+icon="user" 
+href="/modules/users/overview"
+>
+Identify and manage users
+</Card>
+<Card 
+title="Chat" 
+icon="messages" 
+href="/modules/chat/overview"
+>
+[Early Access] In-game player-to-player messaging
+</Card>
+<Card 
+title="Groups" 
+icon="user-group" 
+href="/modules/groups/overview"
+>
+[Early Access] Group users in groups/clans/guilds
+</Card>
+</CardGroup>
+
+<H2 id="economy">Economy</H2>
+<p>Drive player progression and monetization with virtual goods and currencies.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Currency" 
+icon="coin" 
+href="/modules/currency/overview"
+>
+Track user balances and allow them to deposit and withdraw
+</Card>
+</CardGroup>
+
+<H2 id="competitive">Competitive</H2>
+<p>Motivate and reward skilled play with rankings, tournaments, and leagues.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Achievements" 
+icon="medal" 
+href="/modules/achievements/overview"
+>
+[Early Access] Unlock and track user achievements
+</Card>
+<Card 
+title="Leaderboards" 
+icon="ranking-star" 
+href="/modules/leaderboards/overview"
+>
+[Early Access] Track and display top player rankings
+</Card>
+</CardGroup>
+
+<H2 id="analytics">Analytics</H2>
+<p>Gain actionable insights to optimize game design, balance, and monetization.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Analytics" 
+icon="chart-line" 
+href="/modules/analytics/overview"
+>
+[Early Access] Track and visualize user behavior data
+</Card>
+</CardGroup>
+
+<H2 id="security">Security</H2>
+<p>Protect your game and players from cheating, hacking, and disruptive behavior.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Infisical" 
+icon="infinity" 
+href="/modules/infisical/overview"
+>
+All-in-one platform to securely manage application configuration and secrets across your team and infrastructure
+</Card>
+<Card 
+title="Rate Limit" 
+icon="gauge-circle-minus" 
+href="/modules/rate_limit/overview"
+>
+Prevent abuse by limiting request rate
+</Card>
+<Card 
+title="Tokens" 
+icon="lock" 
+href="/modules/tokens/overview"
+>
+Create & verify tokens for authorization purposes
+</Card>
+</CardGroup>
+
+<H2 id="utility">Utility</H2>
+<p>Streamline development with foundational tools and reusable components.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Email" 
+icon="envelope" 
+href="/modules/email/overview"
+>
+Send emails using multiple providers
+</Card>
+<Card 
+title="Uploads" 
+icon="file-arrow-up" 
+href="/modules/uploads/overview"
+>
+Upload & store blobs of data
+</Card>
+<Card 
+title="Game Saves" 
+icon="floppy-disk" 
+href="/modules/game_saves/overview"
+>
+[Early Access] Store and manage player progress data or world state
+</Card>
+</CardGroup>
+
+<H2 id="platform">Platform</H2>
+<p>Extend your game's reach and engage players across popular gaming platforms.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Discord Activities" 
+icon="discord" 
+href="/modules/discord_activity/overview"
+>
+Activities are a way to enjoy shared experiences with friends, such as games and media, on Discord itself
+</Card>
+<Card 
+title="Epic Online Services" 
+icon="e" 
+href="/modules/eos/overview"
+>
+[Early Access] Epic Online Services (EOS) is a cross-platform SDK that provides essential online services such as authentication, friends, matchmaking, and more for games
+</Card>
+<Card 
+title="Steam" 
+icon="steam" 
+href="/modules/steam/overview"
+>
+[Early Access] Integrate with Steam accounts
+</Card>
+<Card 
+title="Twitch" 
+icon="twitch" 
+href="/modules/twitch/overview"
+>
+[Early Access] Integrate your game with drops
+</Card>
+</CardGroup>
+
+<H2 id="infra">Infrastructure</H2>
+<p>Extend and integrate your game with custom backend services and third-party APIs.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Rivet" 
+icon="r" 
+href="/modules/rivet/overview"
+>
+Open-source game servers & backend for multiplayer games
+</Card>
+</CardGroup>
+
+<H2 id="service">Service</H2>
+<p>Integrate third-party services to enhance functionality and streamline operations.</p>
+<div style={{ height: '20px' }}/>
+<CardGroup cols={cols ?? 2}>
+	<Card 
+title="Twilio SendGrid" 
+icon="envelope" 
+href="/modules/sendgrid/overview"
+>
+Get your emails to the inbox—where they belong
+</Card>
+<Card 
+title="IDEM" 
+icon="i" 
+href="/modules/idem/overview"
+>
+[Early Access] Matchmaking for multi-player games – as an API
+</Card>
+</CardGroup>
+	</>
 );

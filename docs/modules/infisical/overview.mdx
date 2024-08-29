@@ -1,0 +1,95 @@
+---
+title: "Infisical"
+description: "All-in-one platform to securely manage application configuration and secrets across your team and infrastructure."
+sidebarTitle: Overview
+---
+
+import { H2, Separator } from "/snippets/intro.mdx";
+
+<Tabs>
+<Tab title="Metadata">
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/infisical)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[infisical](https://github.com/infisical), [rivet-gg](https://github.com/rivet-gg)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Stable</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
+opengb module add infisical
+```
+
+Or add the module `infisical` to your `backend.json`.
+</Tab>
+
+<Tab title="0 Scripts">
+**Public**
+
+_No public scripts._
+
+**Internal** 
+
+_No internal scripts._
+</Tab>
+
+
+
+<Tab title="0 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+
+[Infisical](https://infisical.com/) is an easy to use tool for managing secrets. This is helpful for when dealing with API keys in development.
+
+<Steps>
+    <Step title="Install Infisical">
+        [Documentation](https://infisical.com/docs/cli/overview)
+    </Step>
+    <Step title="Login">
+        ```sh
+        infisical login
+        ```
+    </Step>
+    <Step title="Populate environment variables">
+        [Documentation](https://infisical.com/docs/documentation/platform/project#secrets)
+    </Step>
+    <Step title="Run dev server with Infisical">
+        ```sh
+        infisical run -- opengb dev
+        ```
+    </Step>
+</Steps>

@@ -4,80 +4,109 @@ description: "[INTERNAL-ONLY: use auth_email_password/auth_email_passwordless/au
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email) | `auth_email` | stable | Yes |
-
-**Authors**
-
-- [rivet-gg](https://github.com/rivet-gg)
-- [NathanFlurry](https://github.com/NathanFlurry)
-- [Blckbrry-Pi](https://github.com/Blckbrry-Pi)
-
-**Dependencies**
-
-- [Email](/modules/email/overview)
-- [Identities](/modules/identities/overview)
-- [Rate Limit](/modules/rate_limit/overview)
-- [Tokens](/modules/tokens/overview)
-- [User Password Verifier](/modules/user_passwords/overview)
-- [Users](/modules/users/overview)
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[rivet-gg](https://github.com/rivet-gg), [NathanFlurry](https://github.com/NathanFlurry), [Blckbrry-Pi](https://github.com/Blckbrry-Pi)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Stable</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="database"/></span>
+  <span>Includes Database</span>
+</p>
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add auth_email
 ```
 
+Or add the module `auth_email` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="7 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
+_No public scripts._
 
-```json backend.json
-"modules": {
-	"auth_email": {
-		"config": {
-			// Your config here. See config docs for more details.
-		}
-	}
-}
+**Internal** 
 
-```
+
+- **[Send Email Verification (No Password)](/modules/auth_email/scripts/send_verification)** (`send_verification`) Send a one-time verification code to an email address to verify ownership. Does not require a password.
+
+- **[Sign In with Email and Password](/modules/auth_email/scripts/sign_in_email_pass)** (`sign_in_email_pass`) Sign in a user with an email and password.
+
+- **[Verify and Add Email and Password to existing user](/modules/auth_email/scripts/verify_add_email_pass)** (`verify_add_email_pass`) Verify a user's email address and register it with an existing account. Requires a password.
+
+- **[Verify and Add Email to Existing User (No Password)](/modules/auth_email/scripts/verify_add_no_pass)** (`verify_add_no_pass`) Verify a user's email address and register it with an existing account. Does not require a password.
+
+- **[Verify and Link Email Address to User](/modules/auth_email/scripts/verify_link_email)** (`verify_link_email`) Verify a user's email address and link it to an existing account without allowing login passwordless.
+
+- **[Verify and Login as (or Create) User (No Password)](/modules/auth_email/scripts/verify_login_or_create_no_pass)** (`verify_login_or_create_no_pass`) Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password.
+
+- **[Verify and Sign Up with Email and Password](/modules/auth_email/scripts/verify_sign_up_email_pass)** (`verify_sign_up_email_pass`) Sign up a new user with an email and password.
+
 </Tab>
 
-</Tabs>
 
-
-## Config
-
-<Card title="View Config" icon="square-sliders" href="/modules/auth_email/config"></Card>
-
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup>_No public scripts._</CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup><Card title="Send Email Verification (No Password)" href="/modules/auth_email/scripts/send_verification">Send a one-time verification code to an email address to verify ownership. Does not require a password.</Card><Card title="Sign In with Email and Password" href="/modules/auth_email/scripts/sign_in_email_pass">Sign in a user with an email and password.</Card><Card title="Verify and Add Email and Password to existing user" href="/modules/auth_email/scripts/verify_add_email_pass">Verify a user's email address and register it with an existing account. Requires a password.</Card><Card title="Verify and Add Email to Existing User (No Password)" href="/modules/auth_email/scripts/verify_add_no_pass">Verify a user's email address and register it with an existing account. Does not require a password.</Card><Card title="Verify and Link Email Address to User" href="/modules/auth_email/scripts/verify_link_email">Verify a user's email address and link it to an existing account without allowing login passwordless.</Card><Card title="Verify and Login as (or Create) User (No Password)" href="/modules/auth_email/scripts/verify_login_or_create_no_pass">Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password.</Card><Card title="Verify and Sign Up with Email and Password" href="/modules/auth_email/scripts/verify_sign_up_email_pass">Sign up a new user with an email and password.</Card></CardGroup>
-
-## Errors
+<Tab title="5 Errors">
 
 - **Email Already Used** (`email_already_used`) 
+
+
 - **Verification Code Already Used** (`verification_code_already_used`) 
+
+
 - **Verification Code Attempt Limit** (`verification_code_attempt_limit`) 
+
+
 - **Verification Code Expired** (`verification_code_expired`) 
+
+
 - **Verification Code Invalid** (`verification_code_invalid`) 
+
+</Tab>
+
+
+<Tab title="6 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+

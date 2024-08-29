@@ -4,64 +4,95 @@ description: "An INTERNAL-ONLY module to store and verify passwords by user ID. 
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/user_passwords) | `user_passwords` | beta | Yes |
-
-**Authors**
-
-- [rivet-gg](https://github.com/rivet-gg)
-- [Blckbrry-Pi](https://github.com/Blckbrry-Pi)
-
-**Dependencies**
-
-- [Rate Limit](/modules/rate_limit/overview)
-- [Users](/modules/users/overview)
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/user_passwords)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[rivet-gg](https://github.com/rivet-gg), [Blckbrry-Pi](https://github.com/Blckbrry-Pi)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Beta</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="database"/></span>
+  <span>Includes Database</span>
+</p>
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add user_passwords
 ```
 
+Or add the module `user_passwords` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="3 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
+_No public scripts._
 
-```json backend.json
-"modules": {
-	"user_passwords": {}
-}
+**Internal** 
 
-```
+
+- **[Add Password for User](/modules/user_passwords/scripts/add)** (`add`) Register a new userID/password combination. Errors if user already has a password.
+
+- **[Update Password for User](/modules/user_passwords/scripts/update)** (`update`) Update a userID/password combination. Errors if user does not have a password.
+
+- **[Verify Password for User ID](/modules/user_passwords/scripts/verify)** (`verify`) Verify that the provided password matches the provided user ID. Errors on mismatch.
+
 </Tab>
 
-</Tabs>
 
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup>_No public scripts._</CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup><Card title="Add Password for User" href="/modules/user_passwords/scripts/add">Register a new userID/password combination. Errors if user already has a password.</Card><Card title="Update Password for User" href="/modules/user_passwords/scripts/update">Update a userID/password combination. Errors if user does not have a password.</Card><Card title="Verify Password for User ID" href="/modules/user_passwords/scripts/verify">Verify that the provided password matches the provided user ID. Errors on mismatch.</Card></CardGroup>
-
-## Errors
+<Tab title="3 Errors">
 
 - **Password is Invalid** (`password_invalid`) 
+
+
 - **User already has a password** (`user_already_has_password`) 
+
+
 - **User does not yet have a password** (`user_does_not_have_password`) 
+
+</Tab>
+
+
+<Tab title="2 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+

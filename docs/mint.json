@@ -8,7 +8,7 @@
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#ff4f00",
-    "light": "#ff8952",
+    "light": "#fa631e",
     "dark": "#ff4f00",
     "background": {
       "light": "#fffdfa",
@@ -20,45 +20,36 @@
     }
   },
   "modeToggle": {
-    "default":"dark",
+    "default": "dark",
     "isHidden": true
   },
   "topbarCtaButton": {
     "type": "github",
     "url": "https://github.com/rivet-gg/opengb"
   },
-  "primaryTab": {
-    "name": "Home"
-  },
-  "tabs": [
+  "topbarLinks": [
     {
-      "name": "Documentation",
-      "url": "docs"
-    },
-    {
-      "name": "Modules",
-      "url": "modules"
-    },
-    {
-      "name": "Integrations",
-      "url": "integrations"
+      "name": "Publish Module",
+      "url": "/docs/build/publishing"
     }
   ],
+  "topAnchor": {
+    "name": "All Modules",
+    "icon": "grid-2",
+    "iconType": "regular"
+  },
   "anchors": [
     {
-      "name": "Community",
-      "icon": "discord",
-      "url": "https://rivet.gg/discord"
+      "name": "Modules",
+      "url": "modules",
+      "icon": "puzzle",
+      "iconType": "regular"
     },
     {
-      "name": "Issues",
-      "icon": "github",
-      "url": "https://github.com/rivet-gg/opengb/issues"
-    },
-    {
-      "name": "Sign In to Rivet",
-      "icon": "browser",
-      "url": "https://hub.rivet.gg"
+      "name": "Documentation",
+      "url": "docs",
+      "icon": "book-open",
+      "iconType": "regular"
     }
   ],
   "navigation": [
@@ -105,6 +96,7 @@
         {
           "group": "Advanced",
           "pages": [
+            "docs/build/publishing",
             "docs/build/conventions",
             "docs/build/ide",
             "docs/build/public",
@@ -155,219 +147,15 @@
       ]
     },
     {
-      "group": "Modules",
+      "group": "Multiplayer",
       "pages": [
-        "modules/overview",
-        {
-          "icon": "medal",
-          "group": "Achievements",
-          "pages": [
-            "modules/achievements/overview"
-          ]
-        },
-        {
-          "icon": "chart-line",
-          "group": "Analytics",
-          "pages": [
-            "modules/analytics/overview"
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Auth Email",
-          "pages": [
-            "modules/auth_email/overview",
-            "modules/auth_email/config",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/auth_email/scripts/send_verification",
-                "modules/auth_email/scripts/sign_in_email_pass",
-                "modules/auth_email/scripts/verify_add_email_pass",
-                "modules/auth_email/scripts/verify_add_no_pass",
-                "modules/auth_email/scripts/verify_link_email",
-                "modules/auth_email/scripts/verify_login_or_create_no_pass",
-                "modules/auth_email/scripts/verify_sign_up_email_pass"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Auth Email Linking",
-          "pages": [
-            "modules/auth_email_link/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/auth_email_link/scripts/send_verification"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/auth_email_link/scripts/verify_link_email"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Auth Email Passwordless",
-          "pages": [
-            "modules/auth_email_passwordless/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/auth_email_passwordless/scripts/send_verification",
-                "modules/auth_email_passwordless/scripts/verify_add_no_pass",
-                "modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Auth Email/Password",
-          "pages": [
-            "modules/auth_email_password/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/auth_email_password/scripts/send_verification",
-                "modules/auth_email_password/scripts/sign_in_email_pass",
-                "modules/auth_email_password/scripts/verify_add_email_pass",
-                "modules/auth_email_password/scripts/verify_sign_up_email_pass"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Auth Username Password",
-          "pages": [
-            "modules/auth_username_password/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/auth_username_password/scripts/sign_in",
-                "modules/auth_username_password/scripts/sign_up"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "messages",
-          "group": "Chat",
-          "pages": [
-            "modules/chat/overview"
-          ]
-        },
-        {
-          "icon": "coin",
-          "group": "Currency",
-          "pages": [
-            "modules/currency/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/currency/scripts/fetch_balance_by_token"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/currency/scripts/adjust_balance",
-                "modules/currency/scripts/fetch_balance",
-                "modules/currency/scripts/set_balance"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "envelope",
-          "group": "Email",
-          "pages": [
-            "modules/email/overview",
-            "modules/email/config",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/email/scripts/send_email"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "user-group",
-          "group": "Friends",
-          "pages": [
-            "modules/friends/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/friends/scripts/accept_request",
-                "modules/friends/scripts/decline_request",
-                "modules/friends/scripts/list_friends",
-                "modules/friends/scripts/list_incoming_friend_requests",
-                "modules/friends/scripts/list_outgoing_friend_requests",
-                "modules/friends/scripts/remove_friend",
-                "modules/friends/scripts/send_request"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "floppy-disk",
-          "group": "Game Saves",
-          "pages": [
-            "modules/game_saves/overview"
-          ]
-        },
-        {
-          "icon": "user-group",
-          "group": "Groups",
-          "pages": [
-            "modules/groups/overview"
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Identities",
-          "pages": [
-            "modules/identities/overview",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/identities/scripts/list"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/identities/scripts/fetch",
-                "modules/identities/scripts/link",
-                "modules/identities/scripts/set",
-                "modules/identities/scripts/sign_in_or_sign_up",
-                "modules/identities/scripts/sign_in",
-                "modules/identities/scripts/sign_up"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "ranking-star",
-          "group": "Leaderboards",
-          "pages": [
-            "modules/leaderboards/overview"
-          ]
-        },
         {
           "icon": "game-board",
           "group": "Lobbies",
           "pages": [
             "modules/lobbies/overview",
             "modules/lobbies/config",
+            "modules/lobbies/errors",
             {
               "group": "Scripts (Public)",
               "pages": [
@@ -408,66 +196,127 @@
           ]
         },
         {
-          "icon": "gauge-circle-minus",
-          "group": "Rate Limit",
+          "icon": "circle-dot",
+          "group": "Presence",
           "pages": [
-            "modules/rate_limit/overview",
+            "modules/presence/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Authentication",
+      "pages": [
+        {
+          "icon": "key",
+          "group": "Auth Email",
+          "pages": [
+            "modules/auth_email/overview",
+            "modules/auth_email/config",
+            "modules/auth_email/errors",
             {
               "group": "Scripts (Internal)",
               "pages": [
-                "modules/rate_limit/scripts/throttle",
-                "modules/rate_limit/scripts/throttle_public"
+                "modules/auth_email/scripts/send_verification",
+                "modules/auth_email/scripts/sign_in_email_pass",
+                "modules/auth_email/scripts/verify_add_email_pass",
+                "modules/auth_email/scripts/verify_add_no_pass",
+                "modules/auth_email/scripts/verify_link_email",
+                "modules/auth_email/scripts/verify_login_or_create_no_pass",
+                "modules/auth_email/scripts/verify_sign_up_email_pass"
               ]
             }
           ]
         },
         {
-          "icon": "r",
-          "group": "Rivet API",
+          "icon": "key",
+          "group": "Auth Email Linking",
           "pages": [
-            "modules/rivet/overview",
-            "modules/rivet/config",
+            "modules/auth_email_link/overview",
+            "modules/auth_email_link/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_email_link/scripts/send_verification"
+              ]
+            },
             {
               "group": "Scripts (Internal)",
               "pages": [
-                "modules/rivet/scripts/call",
-                "modules/rivet/scripts/fetch_config"
+                "modules/auth_email_link/scripts/verify_link_email"
               ]
             }
           ]
         },
         {
-          "icon": "lock",
-          "group": "Tokens",
+          "icon": "key",
+          "group": "Auth Email Passwordless",
           "pages": [
-            "modules/tokens/overview",
+            "modules/auth_email_passwordless/overview",
+            "modules/auth_email_passwordless/errors",
             {
-              "group": "Scripts (Internal)",
+              "group": "Scripts (Public)",
               "pages": [
-                "modules/tokens/scripts/create",
-                "modules/tokens/scripts/extend",
-                "modules/tokens/scripts/fetch_by_token",
-                "modules/tokens/scripts/fetch",
-                "modules/tokens/scripts/revoke",
-                "modules/tokens/scripts/validate"
+                "modules/auth_email_passwordless/scripts/send_verification",
+                "modules/auth_email_passwordless/scripts/verify_add_no_pass",
+                "modules/auth_email_passwordless/scripts/verify_login_or_create_no_pass"
               ]
             }
           ]
         },
         {
-          "icon": "file-arrow-up",
-          "group": "Uploads",
+          "icon": "key",
+          "group": "Auth Email/Password",
           "pages": [
-            "modules/uploads/overview",
-            "modules/uploads/config",
+            "modules/auth_email_password/overview",
+            "modules/auth_email_password/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_email_password/scripts/send_verification",
+                "modules/auth_email_password/scripts/sign_in_email_pass",
+                "modules/auth_email_password/scripts/verify_add_email_pass",
+                "modules/auth_email_password/scripts/verify_sign_up_email_pass"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Auth Username Password",
+          "pages": [
+            "modules/auth_username_password/overview",
+            "modules/auth_username_password/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/auth_username_password/scripts/sign_in",
+                "modules/auth_username_password/scripts/sign_up"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "key",
+          "group": "Identities",
+          "pages": [
+            "modules/identities/overview",
+            "modules/identities/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/identities/scripts/list"
+              ]
+            },
             {
               "group": "Scripts (Internal)",
               "pages": [
-                "modules/uploads/scripts/complete",
-                "modules/uploads/scripts/delete",
-                "modules/uploads/scripts/fetch_public_file_urls",
-                "modules/uploads/scripts/fetch",
-                "modules/uploads/scripts/prepare"
+                "modules/identities/scripts/fetch",
+                "modules/identities/scripts/link",
+                "modules/identities/scripts/set",
+                "modules/identities/scripts/sign_in_or_sign_up",
+                "modules/identities/scripts/sign_in",
+                "modules/identities/scripts/sign_up"
               ]
             }
           ]
@@ -477,6 +326,7 @@
           "group": "User Password Verifier",
           "pages": [
             "modules/user_passwords/overview",
+            "modules/user_passwords/errors",
             {
               "group": "Scripts (Internal)",
               "pages": [
@@ -488,10 +338,43 @@
           ]
         },
         {
+          "icon": "key",
+          "group": "Social Authentication Provider",
+          "pages": [
+            "modules/auth_oauth/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Social",
+      "pages": [
+        {
+          "icon": "user-group",
+          "group": "Friends",
+          "pages": [
+            "modules/friends/overview",
+            "modules/friends/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/friends/scripts/accept_request",
+                "modules/friends/scripts/decline_request",
+                "modules/friends/scripts/list_friends",
+                "modules/friends/scripts/list_incoming_friend_requests",
+                "modules/friends/scripts/list_outgoing_friend_requests",
+                "modules/friends/scripts/remove_friend",
+                "modules/friends/scripts/send_request"
+              ]
+            }
+          ]
+        },
+        {
           "icon": "user",
           "group": "Users",
           "pages": [
             "modules/users/overview",
+            "modules/users/errors",
             {
               "group": "Scripts (Public)",
               "pages": [
@@ -507,6 +390,243 @@
                 "modules/users/scripts/fetch_by_username"
               ]
             }
+          ]
+        },
+        {
+          "icon": "messages",
+          "group": "Chat",
+          "pages": [
+            "modules/chat/overview"
+          ]
+        },
+        {
+          "icon": "user-group",
+          "group": "Groups",
+          "pages": [
+            "modules/groups/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Economy",
+      "pages": [
+        {
+          "icon": "coin",
+          "group": "Currency",
+          "pages": [
+            "modules/currency/overview",
+            "modules/currency/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/currency/scripts/fetch_balance_by_token"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/currency/scripts/adjust_balance",
+                "modules/currency/scripts/fetch_balance",
+                "modules/currency/scripts/set_balance"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Competitive",
+      "pages": [
+        {
+          "icon": "medal",
+          "group": "Achievements",
+          "pages": [
+            "modules/achievements/overview"
+          ]
+        },
+        {
+          "icon": "ranking-star",
+          "group": "Leaderboards",
+          "pages": [
+            "modules/leaderboards/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Analytics",
+      "pages": [
+        {
+          "icon": "chart-line",
+          "group": "Analytics",
+          "pages": [
+            "modules/analytics/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Security",
+      "pages": [
+        {
+          "icon": "infinity",
+          "group": "Infisical",
+          "pages": [
+            "modules/infisical/overview"
+          ]
+        },
+        {
+          "icon": "gauge-circle-minus",
+          "group": "Rate Limit",
+          "pages": [
+            "modules/rate_limit/overview",
+            "modules/rate_limit/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/rate_limit/scripts/throttle",
+                "modules/rate_limit/scripts/throttle_public"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "lock",
+          "group": "Tokens",
+          "pages": [
+            "modules/tokens/overview",
+            "modules/tokens/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/tokens/scripts/create",
+                "modules/tokens/scripts/extend",
+                "modules/tokens/scripts/fetch_by_token",
+                "modules/tokens/scripts/fetch",
+                "modules/tokens/scripts/revoke",
+                "modules/tokens/scripts/validate"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Utility",
+      "pages": [
+        {
+          "icon": "envelope",
+          "group": "Email",
+          "pages": [
+            "modules/email/overview",
+            "modules/email/config",
+            "modules/email/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/email/scripts/send_email"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "file-arrow-up",
+          "group": "Uploads",
+          "pages": [
+            "modules/uploads/overview",
+            "modules/uploads/config",
+            "modules/uploads/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/uploads/scripts/complete",
+                "modules/uploads/scripts/delete",
+                "modules/uploads/scripts/fetch_public_file_urls",
+                "modules/uploads/scripts/fetch",
+                "modules/uploads/scripts/prepare"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "floppy-disk",
+          "group": "Game Saves",
+          "pages": [
+            "modules/game_saves/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Platform",
+      "pages": [
+        {
+          "icon": "discord",
+          "group": "Discord Activities",
+          "pages": [
+            "modules/discord_activity/overview"
+          ]
+        },
+        {
+          "icon": "e",
+          "group": "Epic Online Services",
+          "pages": [
+            "modules/eos/overview"
+          ]
+        },
+        {
+          "icon": "steam",
+          "group": "Steam",
+          "pages": [
+            "modules/steam/overview"
+          ]
+        },
+        {
+          "icon": "twitch",
+          "group": "Twitch",
+          "pages": [
+            "modules/twitch/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Infrastructure",
+      "pages": [
+        {
+          "icon": "r",
+          "group": "Rivet",
+          "pages": [
+            "modules/rivet/overview",
+            "modules/rivet/config",
+            "modules/rivet/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/rivet/scripts/call",
+                "modules/rivet/scripts/fetch_config"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Service",
+      "pages": [
+        {
+          "icon": "envelope",
+          "group": "Twilio SendGrid",
+          "pages": [
+            "modules/sendgrid/overview"
+          ]
+        },
+        {
+          "icon": "i",
+          "group": "IDEM",
+          "pages": [
+            "modules/idem/overview"
           ]
         }
       ]

@@ -1,27 +1,30 @@
 ---
 title: "Add Password for User"
 description: "Register a new userID/password combination. Errors if user already has a password."
-sidebarTitle: "Add Password for User"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/user_passwords/scripts/add.ts) | `add` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.userPasswords.add({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -38,7 +41,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object record with dynamic keys:_
 

@@ -1,27 +1,30 @@
 ---
 title: "Verify and Link Email Address to User"
 description: "Verify a user's email address and link it to an existing account without allowing login passwordless."
-sidebarTitle: "Verify and Link Email Address to User"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email/scripts/verify_link_email.ts) | `verify_link_email` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.authEmail.verifyLinkEmail({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -38,7 +41,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object record with dynamic keys:_
 

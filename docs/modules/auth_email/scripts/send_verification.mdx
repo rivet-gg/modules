@@ -1,27 +1,30 @@
 ---
 title: "Send Email Verification (No Password)"
 description: "Send a one-time verification code to an email address to verify ownership. Does not require a password."
-sidebarTitle: "Send Email Verification (No Password)"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/auth_email/scripts/send_verification.ts) | `send_verification` | No |
+## Public
+
+No
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.authEmail.sendVerification({
   // Request body
 });
 ```
 
+
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -37,7 +40,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object containing the following properties:_
 

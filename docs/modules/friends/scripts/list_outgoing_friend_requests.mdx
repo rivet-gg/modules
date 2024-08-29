@@ -1,19 +1,24 @@
 ---
 title: "List Outgoing Friend Requests"
 description: "List all friend requests sent by a user."
-sidebarTitle: "List Outgoing Friend Requests"
 ---
 
-| Source                                                                                                      | Name       | Public     |
-| ----------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/friends/scripts/list_outgoing_friend_requests.ts) | `list_outgoing_friend_requests` | Yes |
+## Public
+
+Yes
+
+## Request
+
 
 <RequestExample>
+
 ```typescript OpenGB Script
 const data = await ctx.modules.friends.listOutgoingFriendRequests({
   // Request body
 });
 ```
+
+
 ```javascript JavaScript
 import { Backend } from "opengb-sdk";
 const backend = new Backend({ endpoint: "http://localhost:6420" });
@@ -47,7 +52,7 @@ void UYourClassName::PostRequest()
     Request->SetURL(TEXT("https://localhost:6420/modules/friends/scripts/list_outgoing_friend_requests/call"));
     Request->SetVerb(TEXT("POST"));
     Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-    FString Payload = TEXT("{\"key\":\"value\"}");
+    FString Payload = TEXT("{"key":"value"}");
     Request->SetContentAsString(Payload);
     Request->ProcessRequest();
 }
@@ -89,11 +94,10 @@ curl -X POST "https://localhost:6420/modules/friends/scripts/list_outgoing_frien
 
 </RequestExample>
 
-## Request
 
 
 
-### Config
+### Request
 
 _Object containing the following properties:_
 
@@ -108,7 +112,7 @@ _(\*) Required._
 
 
 
-### Config
+### Response
 
 _Object containing the following properties:_
 

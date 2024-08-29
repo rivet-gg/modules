@@ -4,71 +4,83 @@ description: "Send emails using multiple providers."
 sidebarTitle: Overview
 ---
 
-| Source                                                                           | Name       | Status     | Database     |
-| -------------------------------------------------------------------------------- | ---------- | ---------- | ------------ |
-| [Source](https://github.com/rivet-gg/opengb-modules/tree/main/modules/email) | `email` | stable | No |
-
-**Authors**
-
-- [rivet-gg](https://github.com/rivet-gg)
-- [NathanFlurry](https://github.com/NathanFlurry)
-
-**Dependencies**
-
-_No dependencies_
-
-## Installation
+import { H2, Separator } from "/snippets/intro.mdx";
 
 <Tabs>
+<Tab title="Metadata">
 
-<Tab title="CLI">
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
+  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/email)</span>
+</p>
 
-```sh CLI
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
+  <span>[rivet-gg](https://github.com/rivet-gg), [NathanFlurry](https://github.com/NathanFlurry)</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
+  <span>Stable</span>
+</p>
+
+
+
+<p>
+  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
+  <span>Apache 2.0</span>
+</p>
+
+
+
+
+
+</Tab>
+
+<Tab title="Install">
+Run the following command in your project directory:
+
+```bash
 opengb module add email
 ```
 
+Or add the module `email` to your `backend.json`.
 </Tab>
 
-<Tab title="backend.json">
+<Tab title="1 Scripts">
+**Public**
 
-Add the following to your `backend.json`:
+_No public scripts._
 
-```json backend.json
-"modules": {
-	"email": {
-		"config": {
-			// Your config here. See config docs for more details.
-		}
-	}
-}
+**Internal** 
 
-```
+
+- **[Send Email](/modules/email/scripts/send_email)** (`send_email`) undefined
+
 </Tab>
 
-</Tabs>
 
-
-## Config
-
-<Card title="View Config" icon="square-sliders" href="/modules/email/config"></Card>
-
-
-
-## Scripts
-
-### Public
-
-These scripts can be called publicly by your game.
-
-<CardGroup>_No public scripts._</CardGroup>
-
-### Internal
-
-These scripts can only be called by other OpenGB modules.
-
-<CardGroup><Card title="Send Email" href="/modules/email/scripts/send_email"></Card></CardGroup>
-
-## Errors
+<Tab title="2 Errors">
 
 - **Email Missing Content** (`email_missing_content`) Email must have `html` and/or `text`
+
+
 - **SendGrid Error** (`sendgrid_error`) 
+
+</Tab>
+
+
+<Tab title="0 Dependencies">
+
+_No dependencies_
+
+</Tab>
+</Tabs>
+
+---
+
+
