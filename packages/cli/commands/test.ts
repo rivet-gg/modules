@@ -8,7 +8,7 @@ import { Project } from "../../toolchain/project/mod.ts";
 import { UserError } from "../../toolchain/error/mod.ts";
 import { info } from "../../toolchain/term/status.ts";
 import { convertMigrateMode, migrateMode } from "./../util.ts";
-import { ensurePostgresRunning } from "../../toolchain/postgres/mod.ts";
+import { ensurePostgresRunning, getDefaultDatabaseUrl } from "../../toolchain/postgres/mod.ts";
 
 // TODO: https://github.com/rivet-gg/opengb-engine/issues/86
 export const testCommand = new Command<GlobalOpts>()
@@ -25,6 +25,7 @@ export const testCommand = new Command<GlobalOpts>()
 		{ default: "dev" },
 	)
 	.option("-w, --watch", "Automatically rerun tests on changes")
+	.option("--filter <name:string>", "Filter tests by name")
 	.action(
 		async (opts, ...modulesFilter: string[]) => {
 			await watch({
@@ -58,6 +59,7 @@ export const testCommand = new Command<GlobalOpts>()
 						"--allow-read",
 					];
 					if (opts.check) args.push("--check");
+					if (opts.filter) args.push(`--filter=${opts.filter}`);
 
 					// Find test scripts
 					const testingModules = [];
