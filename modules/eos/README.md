@@ -1,3 +1,3 @@
 # Epic Online Services
 
-See [Epic Online Services](https://dev.epicgames.com/docs/en-US/api-ref) for more details.
+[Get Early Access](https://b8v8449klvp.typeform.com/to/kpcSBpuP)

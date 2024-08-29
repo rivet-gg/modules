@@ -4,7 +4,7 @@
 	"icon": "discord",
 	"tags": ["platform", "integration"],
 	"authors": ["discord", "rivet-gg"],
-	"status": "coming_soon",
+	"status": "beta",
 	"scripts": {},
 	"errors": {}
 }
