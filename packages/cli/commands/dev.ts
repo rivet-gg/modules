@@ -68,9 +68,9 @@ export const devCommand = new Command<GlobalOpts>()
 						stdout: "inherit",
 						stderr: "inherit",
 						signal,
-            env: {
-              "DATABASE_URL": await getDefaultDatabaseUrl(project),
-            }
+						env: {
+							"DATABASE_URL": await getDefaultDatabaseUrl(project),
+						},
 					})
 						.output();
 					if (!cmd.success) throw new InternalError("Entrypoint failed", { path: entrypointPath });

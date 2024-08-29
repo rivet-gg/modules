@@ -97,6 +97,7 @@ export const testCommand = new Command<GlobalOpts>()
 						stderr: "inherit",
 						signal,
 						env: {
+							"DATABASE_URL": await getDefaultDatabaseUrl(project),
 							// Force color for test logs
 							"OPENGB_TERM_COLOR": Deno.env.get("OPENGB_TERM_COLOR") ?? "always",
 						},
