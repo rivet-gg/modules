@@ -1,35 +1,37 @@
 {
-	"name": "Auth Email Linking",
-	"description": "Link emails to users.",
-	"icon": "key",
-	"tags": [
-		"core",
-		"auth",
-		"user"
-	],
-	"authors": [
-		"rivet-gg",
-		"Blckbrry-Pi"
-	],
-	"status": "stable",
-	"dependencies": { "auth_email": {} },
-	"defaultConfig": {
-		"enable": false
-	},
-	"scripts": {
-		"send_verification": {
-			"name": "Send Email Verification",
-			"description": "Send a one-time verification code to an email address to verify ownership.",
-			"public": true
-		},
-		"verify_link_email": {
-			"name": "Verify and Link Email Address to User",
-			"description": "Verify a user's email address and link it to an existing account without implicitly allowing login."
-		}
-	},
-	"errors": {
-		"provider_disabled": {
-			"name": "Provider Disabled"
-		}
-	}
+  "name": "Auth Email Linking",
+  "description": "Link emails to users.",
+  "icon": "key",
+  "tags": [
+    "core",
+    "auth",
+    "user"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi"
+  ],
+  "status": "stable",
+  "dependencies": {
+    "auth_email": {}
+  },
+  "defaultConfig": {
+    "enable": false
+  },
+  "scripts": {
+    "send_verification": {
+      "name": "Send Email Verification",
+      "description": "Send a one-time verification code to an email address to verify ownership.",
+      "public": true
+    },
+    "verify_link_email": {
+      "name": "Verify and Link Email Address to User",
+      "description": "Verify a user's email address and link it to an existing account without implicitly allowing login."
+    }
+  },
+  "errors": {
+    "provider_disabled": {
+      "name": "Provider Disabled"
+    }
+  }
 }

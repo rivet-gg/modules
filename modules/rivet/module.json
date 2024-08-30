@@ -1,39 +1,40 @@
 {
-	"status": "stable",
-	"name": "Rivet",
-	"description": "Open-source game servers & backend for multiplayer games.",
-	"icon": "r",
-	"tags": [
-		"core",
-		"infra"
-	],
-	"authors": [
-		"NathanFlurry"
-	],
-	"scripts": {
-		"call": {
-			"name": "Call",
-			"description": "Call a Rivet REST endpoint.",
-			"public": false
-		},
-		"fetch_config": {
+  "status": "stable",
+  "name": "Rivet",
+  "description": "Open-source game servers & backend for multiplayer games.",
+  "icon": "r",
+  "tags": [
+    "core",
+    "infra"
+  ],
+  "authors": [
+    "NathanFlurry",
+    "rivet-gg"
+  ],
+  "scripts": {
+    "call": {
+      "name": "Call",
+      "description": "Call a Rivet REST endpoint.",
+      "public": false
+    },
+    "fetch_config": {
       "name": "Fetch Config",
       "description": "Provides Rivet-related config paramteres from the environment.",
-			"public": false
-		}
-	},
-	"errors": {
-		"rivet_api_error": {
-			"name": "Rivet API Error",
-			"description": "An error from the Rivet API.",
+      "public": false
+    }
+  },
+  "errors": {
+    "rivet_api_error": {
+      "name": "Rivet API Error",
+      "description": "An error from the Rivet API.",
       "internal": true
-		}
-	},
-	"defaultConfig": {
-		"apiEndpoint": "https://api.rivet.gg",
-		"apiEndpointVariable": "RIVET_API_ENDPOINT",
-		"serviceTokenVariable": "RIVET_SERVICE_TOKEN",
-		"gameIdVariable": "RIVET_GAME_ID",
-		"environmentIdVariable": "RIVET_ENVIRONMENT_ID"
-	}
+    }
+  },
+  "defaultConfig": {
+    "apiEndpoint": "https://api.rivet.gg",
+    "apiEndpointVariable": "RIVET_API_ENDPOINT",
+    "serviceTokenVariable": "RIVET_SERVICE_TOKEN",
+    "gameIdVariable": "RIVET_GAME_ID",
+    "environmentIdVariable": "RIVET_ENVIRONMENT_ID"
+  }
 }

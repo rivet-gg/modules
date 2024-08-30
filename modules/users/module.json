@@ -1,47 +1,47 @@
 {
-    "name": "Users",
-    "description": "Identify and manage users.",
-    "icon": "user",
-    "tags": [
-        "core",
-        "social"
-    ],
-    "authors": [
-        "rivet-gg",
-        "NathanFlurry"
-    ],
-    "status": "stable",
-    "dependencies": {
-        "rate_limit": {},
-        "tokens": {}
+  "name": "Users",
+  "description": "Identify and manage users.",
+  "icon": "user",
+  "tags": [
+    "core",
+    "social"
+  ],
+  "authors": [
+    "rivet-gg",
+    "NathanFlurry"
+  ],
+  "status": "stable",
+  "dependencies": {
+    "rate_limit": {},
+    "tokens": {}
+  },
+  "scripts": {
+    "fetch": {
+      "name": "Fetch User",
+      "public": true
     },
-    "scripts": {
-        "fetch": {
-            "name": "Fetch User",
-            "public": true
-        },
-        "fetch_by_username": {
-            "name": "Fetch User by Username"
-        },
-        "create": {
-            "name": "Create User"
-        },
-        "authenticate_token": {
-            "name": "Authenticate User Token",
-            "description": "Validate a user token. Throws an error if the token is invalid.",
-            "public": true
-        },
-        "create_token": {
-            "name": "Create User Token",
-            "description": "Create a token for a user to authenticate future requests."
-        }
+    "fetch_by_username": {
+      "name": "Fetch User by Username"
     },
-    "errors": {
-        "token_not_user_token": {
-            "name": "Token Not User Token"
-        },
-        "unknown_identity_type": {
-            "name": "Unknown Identity Type"
-        }
+    "create": {
+      "name": "Create User"
+    },
+    "authenticate_token": {
+      "name": "Authenticate User Token",
+      "description": "Validate a user token. Throws an error if the token is invalid.",
+      "public": true
+    },
+    "create_token": {
+      "name": "Create User Token",
+      "description": "Create a token for a user to authenticate future requests."
     }
+  },
+  "errors": {
+    "token_not_user_token": {
+      "name": "Token Not User Token"
+    },
+    "unknown_identity_type": {
+      "name": "Unknown Identity Type"
+    }
+  }
 }

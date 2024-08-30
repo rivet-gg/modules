@@ -1,28 +1,28 @@
 {
-	"name": "Email",
-	"description": "Send emails using multiple providers.",
-	"icon": "envelope",
-	"tags": [
-		"email",
+  "name": "Email",
+  "description": "Send emails using multiple providers.",
+  "icon": "envelope",
+  "tags": [
+    "email",
     "utility"
-	],
-	"authors": [
-		"rivet-gg",
-		"NathanFlurry"
-	],
-	"status": "stable",
-	"scripts": {
-		"send_email": {
-			"name": "Send Email"
-		}
-	},
-	"errors": {
-		"email_missing_content": {
-			"name": "Email Missing Content",
-			"description": "Email must have `html` and/or `text`"
-		},
-		"sendgrid_error": {
-			"name": "SendGrid Error"
-		}
-	}
+  ],
+  "authors": [
+    "rivet-gg",
+    "NathanFlurry"
+  ],
+  "status": "stable",
+  "scripts": {
+    "send_email": {
+      "name": "Send Email"
+    }
+  },
+  "errors": {
+    "email_missing_content": {
+      "name": "Email Missing Content",
+      "description": "Email must have `html` and/or `text`"
+    },
+    "sendgrid_error": {
+      "name": "SendGrid Error"
+    }
+  }
 }

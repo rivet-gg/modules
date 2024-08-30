@@ -1,90 +1,90 @@
 {
-	"status": "stable",
-	"name": "Uploads",
-	"description": "Upload & store blobs of data.",
-	"icon": "file-arrow-up",
-	"tags": [
-		"core",
-		"utility"
-	],
-	"authors": [
-		"rivet-gg",
-		"Blckbrry-Pi",
-		"NathanFlurry"
-	],
-	"scripts": {
-		"prepare": {
-			"name": "Prepare Upload",
-			"description": "Prepare an upload batch for data transfer",
-			"public": false
-		},
-		"complete": {
-			"name": "Complete Upload",
-			"description": "Alert the module that the upload has been completed",
-			"public": false
-		},
-		"fetch": {
-			"name": "Fetch Upload Metadata",
-			"description": "Fetch the metadata (including contained files) for specified upload IDs",
-			"public": false
-		},
-		"delete": {
-			"name": "Delete Upload",
-			"description": "Removes the upload and deletes the files from the bucket",
-			"public": false
-		},
-		"fetch_public_file_urls": {
-			"name": "Fetch Public File URLs",
-			"description": "Returns public presigned URLs for specified files in an upload",
-			"public": false
-		}
-	},
-	"errors": {
-		"no_files": {
-			"name": "No Files Provided",
-			"description": "An upload must have at least 1 file",
-			"internal": false
-		},
-		"too_many_files": {
-			"name": "Too Many Files Provided",
-			"description": "There is a limit to how many files can be put into a single upload (see config)",
-			"internal": false
-		},
-		"duplicate_paths": {
-			"name": "Duplicate Paths Provided",
-			"description": "An upload cannot contain 2 files with the same paths (see `cause` for offending paths)",
-			"internal": false
-		},
-		"size_limit_exceeded": {
-			"name": "Combined Size Limit Exceeded",
-			"description": "There is a maximum total size per upload (see config)",
-			"internal": false
-		},
-		"upload_not_found": {
-			"name": "Upload Not Found",
-			"description": "The provided upload ID didn't match any known existing uploads",
-			"internal": false
-		},
-		"upload_already_completed": {
-			"name": "Upload Already completed",
-			"description": "\\`complete\\` was already called on this upload",
-			"internal": false
-		},
-		"s3_not_configured": {
-			"name": "S3 Not Configured",
-			"description": "The S3 bucket is not configured (missing env variables)",
-			"internal": false
-		},
-		"too_many_chunks": {
-			"name": "Possibility Of Too Many Chunks",
-			"description": "AWS S3 has a limit on the number of parts that can be uploaded in a\nmultipart upload. This limit is 10,000 parts. If the number of chunks\nrequired to upload the maximum multipart upload size exceeds this limit,\nany operation will preemptively throw this error.\n",
-			"internal": false
-		},
-		"multipart_upload_completion_fail": {
-			"name": "Multipart Upload Completion Failure",
-			"description": "The multipart upload failed to complete (see `cause` for more information)",
-			"internal": false
-		}
-	},
-	"dependencies": {}
+  "status": "stable",
+  "name": "Uploads",
+  "description": "Upload & store blobs of data.",
+  "icon": "file-arrow-up",
+  "tags": [
+    "core",
+    "utility"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi",
+    "NathanFlurry"
+  ],
+  "scripts": {
+    "prepare": {
+      "name": "Prepare Upload",
+      "description": "Prepare an upload batch for data transfer",
+      "public": false
+    },
+    "complete": {
+      "name": "Complete Upload",
+      "description": "Alert the module that the upload has been completed",
+      "public": false
+    },
+    "fetch": {
+      "name": "Fetch Upload Metadata",
+      "description": "Fetch the metadata (including contained files) for specified upload IDs",
+      "public": false
+    },
+    "delete": {
+      "name": "Delete Upload",
+      "description": "Removes the upload and deletes the files from the bucket",
+      "public": false
+    },
+    "fetch_public_file_urls": {
+      "name": "Fetch Public File URLs",
+      "description": "Returns public presigned URLs for specified files in an upload",
+      "public": false
+    }
+  },
+  "errors": {
+    "no_files": {
+      "name": "No Files Provided",
+      "description": "An upload must have at least 1 file",
+      "internal": false
+    },
+    "too_many_files": {
+      "name": "Too Many Files Provided",
+      "description": "There is a limit to how many files can be put into a single upload (see config)",
+      "internal": false
+    },
+    "duplicate_paths": {
+      "name": "Duplicate Paths Provided",
+      "description": "An upload cannot contain 2 files with the same paths (see `cause` for offending paths)",
+      "internal": false
+    },
+    "size_limit_exceeded": {
+      "name": "Combined Size Limit Exceeded",
+      "description": "There is a maximum total size per upload (see config)",
+      "internal": false
+    },
+    "upload_not_found": {
+      "name": "Upload Not Found",
+      "description": "The provided upload ID didn't match any known existing uploads",
+      "internal": false
+    },
+    "upload_already_completed": {
+      "name": "Upload Already completed",
+      "description": "\\`complete\\` was already called on this upload",
+      "internal": false
+    },
+    "s3_not_configured": {
+      "name": "S3 Not Configured",
+      "description": "The S3 bucket is not configured (missing env variables)",
+      "internal": false
+    },
+    "too_many_chunks": {
+      "name": "Possibility Of Too Many Chunks",
+      "description": "AWS S3 has a limit on the number of parts that can be uploaded in a\nmultipart upload. This limit is 10,000 parts. If the number of chunks\nrequired to upload the maximum multipart upload size exceeds this limit,\nany operation will preemptively throw this error.\n",
+      "internal": false
+    },
+    "multipart_upload_completion_fail": {
+      "name": "Multipart Upload Completion Failure",
+      "description": "The multipart upload failed to complete (see `cause` for more information)",
+      "internal": false
+    }
+  },
+  "dependencies": {}
 }

@@ -3,12 +3,12 @@
   "description": "Authenticate users with OAuth 2.0.",
   "icon": "key",
   "tags": [
-      "core",
-      "user",
-      "auth"
+    "core",
+    "user",
+    "auth"
   ],
   "authors": [
-      "rivet-gg"
+    "rivet-gg"
   ],
   "status": "coming_soon",
   "dependencies": {},

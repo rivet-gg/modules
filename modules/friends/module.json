@@ -1,77 +1,77 @@
 {
-	"name": "Friends",
-	"description": "Allow users to send and accept friend requests.",
-	"icon": "user-group",
-	"tags": [
-		"social"
-	],
-	"authors": [
-		"rivet-gg",
-		"NathanFlurry"
-	],
-	"status": "beta",
-	"dependencies": {
-		"rate_limit": {},
-		"users": {}
-	},
-	"scripts": {
-		"send_request": {
-			"name": "Send Request",
-			"description": "Send a friend request to another user.",
-			"public": true
-		},
-		"accept_request": {
-			"name": "Accept Request",
-			"description": "Accept a friend request from another user.",
-			"public": true
-		},
-		"decline_request": {
-			"name": "Decline Request",
-			"description": "Decline a friend request from another user.",
-			"public": true
-		},
-		"remove_friend": {
-			"name": "Remove Friend",
-			"description": "Remove a friend from your friends list.",
-			"public": true
-		},
-		"list_friends": {
-			"name": "List Friends",
-			"description": "List all friends of a user.",
-			"public": true
-		},
-		"list_outgoing_friend_requests": {
-			"name": "List Outgoing Friend Requests",
-			"description": "List all friend requests sent by a user.",
-			"public": true
-		},
-		"list_incoming_friend_requests": {
-			"name": "List Incoming Friend Requests",
-			"description": "List all friend requests received by a user.",
-			"public": true
-		}
-	},
-	"errors": {
-		"already_friends": {
-			"name": "Already Friends"
-		},
-		"friend_request_not_found": {
-			"name": "Friend Request Not Found"
-		},
-		"friend_request_already_exists": {
-			"name": "Friend Request Already Exists"
-		},
-		"not_friend_request_recipient": {
-			"name": "Not Friend Request Recipient"
-		},
-		"friend_request_already_accepted": {
-			"name": "Friend Request Already Accepted"
-		},
-		"friend_request_already_declined": {
-			"name": "Friend Request Already Declined"
-		},
-		"cannot_send_to_self": {
-			"name": "Cannot Send to Self"
-		}
-	}
+  "name": "Friends",
+  "description": "Allow users to send and accept friend requests.",
+  "icon": "user-group",
+  "tags": [
+    "social"
+  ],
+  "authors": [
+    "rivet-gg",
+    "NathanFlurry"
+  ],
+  "status": "beta",
+  "dependencies": {
+    "rate_limit": {},
+    "users": {}
+  },
+  "scripts": {
+    "send_request": {
+      "name": "Send Request",
+      "description": "Send a friend request to another user.",
+      "public": true
+    },
+    "accept_request": {
+      "name": "Accept Request",
+      "description": "Accept a friend request from another user.",
+      "public": true
+    },
+    "decline_request": {
+      "name": "Decline Request",
+      "description": "Decline a friend request from another user.",
+      "public": true
+    },
+    "remove_friend": {
+      "name": "Remove Friend",
+      "description": "Remove a friend from your friends list.",
+      "public": true
+    },
+    "list_friends": {
+      "name": "List Friends",
+      "description": "List all friends of a user.",
+      "public": true
+    },
+    "list_outgoing_friend_requests": {
+      "name": "List Outgoing Friend Requests",
+      "description": "List all friend requests sent by a user.",
+      "public": true
+    },
+    "list_incoming_friend_requests": {
+      "name": "List Incoming Friend Requests",
+      "description": "List all friend requests received by a user.",
+      "public": true
+    }
+  },
+  "errors": {
+    "already_friends": {
+      "name": "Already Friends"
+    },
+    "friend_request_not_found": {
+      "name": "Friend Request Not Found"
+    },
+    "friend_request_already_exists": {
+      "name": "Friend Request Already Exists"
+    },
+    "not_friend_request_recipient": {
+      "name": "Not Friend Request Recipient"
+    },
+    "friend_request_already_accepted": {
+      "name": "Friend Request Already Accepted"
+    },
+    "friend_request_already_declined": {
+      "name": "Friend Request Already Declined"
+    },
+    "cannot_send_to_self": {
+      "name": "Cannot Send to Self"
+    }
+  }
 }

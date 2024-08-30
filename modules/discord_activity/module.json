@@ -1,10 +1,16 @@
 {
-	"name": "Discord Activities",
-	"description": "Activities are a way to enjoy shared experiences with friends, such as games and media, on Discord itself. ",
-	"icon": "discord",
-	"tags": ["platform", "integration"],
-	"authors": ["discord", "rivet-gg"],
-	"status": "beta",
-	"scripts": {},
-	"errors": {}
+  "name": "Discord Activities",
+  "description": "Activities are a way to enjoy shared experiences with friends, such as games and media, on Discord itself. ",
+  "icon": "discord",
+  "tags": [
+    "platform",
+    "integration"
+  ],
+  "authors": [
+    "discord",
+    "rivet-gg"
+  ],
+  "status": "beta",
+  "scripts": {},
+  "errors": {}
 }

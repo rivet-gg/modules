@@ -1,46 +1,48 @@
 {
-	"name": "Auth Email/Password",
-	"description": "Authenticate users with an email/password combination.",
-	"icon": "key",
-	"tags": [
-		"core",
-		"auth",
-		"user"
-	],
-	"authors": [
-		"rivet-gg",
-		"Blckbrry-Pi"
-	],
-	"status": "stable",
-	"dependencies": { "auth_email": {} },
-	"defaultConfig": {
-		"enable": false
-	},
-	"scripts": {
-		"send_verification": {
-			"name": "Send Email Verification",
-			"description": "Send a one-time verification code to an email address to verify ownership.",
-			"public": true
-		},
-		"verify_sign_up_email_pass": {
-			"name": "Verify and Sign Up with Email and Password",
-			"description": "Verify a user's email address and register a new user with an email and password.",
-			"public": true
-		},
-		"sign_in_email_pass": {
-			"name": "Sign In with Email and Password",
-			"description": "Sign in a user with an email and password.",
-			"public": true
-		},
-		"verify_add_email_pass": {
-			"name": "Verify and Add Email and Password to existing user",
-			"description": "Verify a user's email address and register it with an existing account.",
-			"public": true
-		}
-	},
-	"errors": {
-		"provider_disabled": {
-			"name": "Provider Disabled"
-		}
-	}
+  "name": "Auth Email/Password",
+  "description": "Authenticate users with an email/password combination.",
+  "icon": "key",
+  "tags": [
+    "core",
+    "auth",
+    "user"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi"
+  ],
+  "status": "stable",
+  "dependencies": {
+    "auth_email": {}
+  },
+  "defaultConfig": {
+    "enable": false
+  },
+  "scripts": {
+    "send_verification": {
+      "name": "Send Email Verification",
+      "description": "Send a one-time verification code to an email address to verify ownership.",
+      "public": true
+    },
+    "verify_sign_up_email_pass": {
+      "name": "Verify and Sign Up with Email and Password",
+      "description": "Verify a user's email address and register a new user with an email and password.",
+      "public": true
+    },
+    "sign_in_email_pass": {
+      "name": "Sign In with Email and Password",
+      "description": "Sign in a user with an email and password.",
+      "public": true
+    },
+    "verify_add_email_pass": {
+      "name": "Verify and Add Email and Password to existing user",
+      "description": "Verify a user's email address and register it with an existing account.",
+      "public": true
+    }
+  },
+  "errors": {
+    "provider_disabled": {
+      "name": "Provider Disabled"
+    }
+  }
 }

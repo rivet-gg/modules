@@ -1,43 +1,43 @@
 {
-    "name": "Auth Username Password",
-    "description": "Authenticate users with a username/password combination.",
-    "icon": "key",
-    "tags": [
-        "core",
-        "auth",
-        "user"
-    ],
-    "authors": [
-        "rivet-gg",
-        "Blckbrry-Pi"
-    ],
-    "status": "stable",
-    "dependencies": {
-        "users": {},
-        "rate_limit": {},
-        "user_passwords": {}
+  "name": "Auth Username Password",
+  "description": "Authenticate users with a username/password combination.",
+  "icon": "key",
+  "tags": [
+    "core",
+    "auth",
+    "user"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi"
+  ],
+  "status": "stable",
+  "dependencies": {
+    "users": {},
+    "rate_limit": {},
+    "user_passwords": {}
+  },
+  "scripts": {
+    "sign_up": {
+      "name": "Sign Up with Username and Password",
+      "description": "Sign up a new user with a username and password.",
+      "public": true
     },
-    "scripts": {
-		"sign_up": {
-			"name": "Sign Up with Username and Password",
-			"description": "Sign up a new user with a username and password.",
-			"public": true
-		},
-		"sign_in": {
-			"name": "Sign In with Username and Password",
-			"description": "Sign in a user with a username and password.",
-			"public": true
-		}
-    },
-    "errors": {
-        "provider_disabled": {
-            "name": "Provider Disabled"
-        },
-        "username_or_password_invalid": {
-            "name": "Username or Password Invalid"
-        },
-        "user_already_exists": {
-            "name": "User Already Exists"
-        }
+    "sign_in": {
+      "name": "Sign In with Username and Password",
+      "description": "Sign in a user with a username and password.",
+      "public": true
     }
+  },
+  "errors": {
+    "provider_disabled": {
+      "name": "Provider Disabled"
+    },
+    "username_or_password_invalid": {
+      "name": "Username or Password Invalid"
+    },
+    "user_already_exists": {
+      "name": "User Already Exists"
+    }
+  }
 }
