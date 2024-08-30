@@ -3,11 +3,16 @@ import { Config } from "./mod.ts";
 import { Environment } from "./environment.ts";
 
 // See also packages/toolchain/drizzle_consts.ts (DRIZZLE_ORM_PACKAGE)
-import { drizzle, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
+//
+// Just types since all actual Postgres Drizzle code will be imported in
+// entrypoint.ts in order to support multiple drivers.
+import type { drizzle, NodePgDatabase } from "npm:drizzle-orm@0.33.0/node-postgres";
 import { Logger } from "npm:drizzle-orm@0.33.0/logger";
 import { log } from "./logger.ts";
 import { LogEntry } from "./logger.ts";
 import { assertExists } from "./deps.ts";
+
+export { drizzle };
 
 export function getDatabaseUrl(env: Environment): URL {
 	const databaseUrl = env.get("DATABASE_URL");
@@ -80,9 +85,9 @@ export class Postgres {
 
 			// Create & insert pool
 			const pool = this.getOrCreatePgPool(env, config);
-			const drizzleInstance = drizzle(pool, {
+			const drizzleInstance = config.db.drizzleFn(pool, {
 				schema: module.db.drizzleSchema,
-				logger: Deno.env.get("_OPENGB_LOG_SQL_QUERIES") == "1" ? new DrizzleLogger() : undefined,
+				logger: env.get("_OPENGB_LOG_SQL_QUERIES") == "1" ? new DrizzleLogger() : undefined,
 			});
 			this.drizzleClients.set(module.db.schemaName, drizzleInstance);
 			return drizzleInstance as Database<T>;

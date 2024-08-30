@@ -11,6 +11,8 @@ import { ContextParams } from "./mod.ts";
 import { errorToLogEntries, log, LOGGER_CONFIG } from "./logger.ts";
 import { Environment } from "./environment.ts";
 
+import type { drizzle } from "./postgres.ts";
+
 interface ParseSuccessResult<Output = unknown> {
 	success: true;
 	data: Output;
@@ -36,6 +38,9 @@ export interface Config {
 	modules: Record<string, Module>;
 	cors?: CorsConfig;
 	db: {
+		/** Function to initiate drizzle for the given driver. */
+		drizzleFn: typeof drizzle;
+		/** Creates a new Postgres pool. */
 		createPgPool: (url: URL) => PgPoolDummy;
 	};
 }

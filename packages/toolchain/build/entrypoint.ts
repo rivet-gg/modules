@@ -15,6 +15,7 @@ import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
 import dedent from "dedent";
 import { convertSerializedSchemaToZodExpression } from "./schema/mod.ts";
+import { DRIZZLE_KIT_VERSION, DRIZZLE_ORM_PACKAGE, NEON_PACKAGE, PG_PACKAGE } from "../drizzle_consts.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
@@ -24,40 +25,36 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 
 	let imports = `
 		// Schemas
-		import * as z from "npm:zod@3.23.8";
+		import * as z from "https://esm.sh/zod@3.23.8";
 		`;
 
 	if (opts.dbDriver == DbDriver.NodePostgres) {
 		imports += `
-		// Import Prisma adapter for Postgres
-		//
 		// We can't use esm.sh for these because they rely on special Node
 		// functionality & don't need to be portable
 		//
 		// https://github.com/esm-dev/esm.sh/issues/684
-		import pg from "npm:pg@^8.11.3";
-		import { PrismaPg } from "npm:@prisma/adapter-pg@^5.12.0";
+		import pg from "${PG_PACKAGE}";
+		import { drizzle } from "${DRIZZLE_ORM_PACKAGE}/node-postgres";
 		`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
 		imports += `
-		// Import Prisma serverless adapter for Neon
-    //
-    // These versions need to be pinned because Neon relies on using
-    // \`instanceof\`, so the dependencies must be exactly the same.
+		// These versions need to be pinned because Neon relies on using
+		// \`instanceof\`, so the dependencies must be exactly the same.
 		import * as neon from "https://esm.sh/@neondatabase/serverless@0.9.3";
-		import { PrismaNeon } from "https://esm.sh/@prisma/adapter-neon@5.17.0?deps=@neondatabase/serverless@0.9.3";
+		import { drizzle } from "https://esm.sh/drizzle-orm@${DRIZZLE_KIT_VERSION}/neon-serverless";
+
+		// TODO:
+		// neonConfig.webSocketConstructor = ws;
 		`;
 	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
 		imports += `
-		// Import Prisma adapter for Postgres
-		//
 		// We can't use esm.sh for these because they rely on special Node
 		// functionality & don't need to be portable
 		//
 		// https://github.com/esm-dev/esm.sh/issues/684
-		// import 'npm:pg-cloudflare';
-		import pg from "npm:pg@8.12.0";
-		import { PrismaPg } from "npm:@prisma/adapter-pg@5.12.0";
+		import pg from "${PG_PACKAGE}";
+		import { drizzle } from "${DRIZZLE_ORM_PACKAGE}/node-postgres";
 		`;
 	}
 
@@ -84,6 +81,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			modules: ${modConfig},
 			${corsSource}
 			db: {
+				drizzleFn: drizzle,
 				createPgPool: ${generateCreatePgPool(opts)},
 			},
 		} as Config;

@@ -7,6 +7,9 @@
 		}
 	},
 	"modules": {
+    "users": {},
+    "rate_limit": {},
+    "tokens": {},
 		"foo": {
 			"registry": "local"
 		},
