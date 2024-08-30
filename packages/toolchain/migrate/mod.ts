@@ -1,6 +1,7 @@
 import { Module, ModuleDatabase, Project } from "../project/mod.ts";
 import { InternalError } from "../error/mod.ts";
 import { ensurePostgresRunning } from "../postgres/mod.ts";
+import { verbose } from "../term/status.ts";
 
 export type ForEachDatabaseCallback = (
 	opts: { module: Module; db: ModuleDatabase },
@@ -23,6 +24,7 @@ export async function forEachDatabase(
 		signal?.throwIfAborted();
 
 		// Callback
+		verbose("Running callback for database", mod.name);
 		await callback({ module: mod, db: mod.db });
 	}
 }

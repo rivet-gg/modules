@@ -7,7 +7,7 @@ import { copy } from "@std/fs";
 import { relative, resolve } from "@std/path";
 import dedent from "dedent";
 import { compileDbSchemaHelper } from "./build/gen/db_schema.ts";
-import { DRIZZLE_KIT_PACKAGE, DRIZZLE_ORM_PACKAGE } from "./drizzle_consts.ts";
+import { DRIZZLE_KIT_PACKAGE, DRIZZLE_ORM_PACKAGE, PG_PACKAGE } from "./drizzle_consts.ts";
 import { getDefaultDatabaseUrl } from "./postgres/mod.ts";
 
 export interface RunCommandOpts {
@@ -80,13 +80,13 @@ export async function runDrizzleCommand(project: Project, module: Module, opts: 
 		}),
 	);
 
-	verbose("Running Drizzle command", tempDir);
+	verbose("Running Drizzle command", module.name, tempDir);
 
 	// Install dependencies
 	//
 	// This uses node_modules since drizzle-kit depends on being able to import `drizzle-orm`.
 	const denoCache = await new Deno.Command("deno", {
-		args: ["cache", "--node-modules-dir", DRIZZLE_ORM_PACKAGE, DRIZZLE_KIT_PACKAGE, "npm:pg@8.11.3"],
+		args: ["cache", "--node-modules-dir", DRIZZLE_ORM_PACKAGE, DRIZZLE_KIT_PACKAGE, PG_PACKAGE],
 		cwd: tempDir,
 		signal,
 	}).output();

@@ -100,10 +100,15 @@ export async function getDefaultClient(project: Project): Promise<PostgresClient
 }
 
 export async function getDefaultDatabaseUrl(project: Project): Promise<string> {
-	assert(postgresEnabled());
+	const dbUrlEnv = Deno.env.get("DATABASE_URL");
+	if (dbUrlEnv) {
+		return dbUrlEnv;
+	} else {
+		assert(postgresEnabled());
 
-	const manager = await getDefaultPostgresManager(project);
-	assertExists(manager);
+		const manager = await getDefaultPostgresManager(project);
+		assertExists(manager);
 
-	return getDatabaseUrl(manager, DEFAULT_DATABASE);
+		return getDatabaseUrl(manager, DEFAULT_DATABASE);
+	}
 }
