@@ -27,6 +27,12 @@
     "type": "github",
     "url": "https://github.com/rivet-gg/opengb"
   },
+  "topbarLinks": [
+    {
+      "name": "Documentation",
+      "url": "/docs"
+    }
+  ],
   "topAnchor": {
     "name": "All Modules",
     "icon": "grid-2",

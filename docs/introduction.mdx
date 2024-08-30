@@ -11,11 +11,14 @@ import { H2, Separator, Footer, CTAButtons } from "/snippets/intro.mdx";
 <div style={{ backgroundColor: '#0c0c0c', borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
   <div className="px-4 mx-auto max-w-8xl lg:px-8" style={{ paddingTop: '60px', paddingBottom: '60px' }}>
       <h1 style={{ textAlign: 'center', fontWeight: 700, fontSize: '42px', lineHeight: '1.2', letterSpacing: '-0.5px', color: '#fff', marginBottom: '20px' }}>Build your game's backend on open-source technology</h1>
-      <p style={{ textAlign: 'center', fontWeight: 400, fontSize: '17px', lineHeight: '1.5', color: 'rgba(255,255,255,0.8)', marginBottom: '35px', maxWidth: '750px', margin: '0 auto' }}>
+      {/* <p style={{ textAlign: 'center', fontWeight: 400, fontSize: '17px', lineHeight: '1.5', color: 'rgba(255,255,255,0.8)', marginBottom: '35px', maxWidth: '750px', margin: '0 auto' }}>
         Open Game Backend is built to <span style={{color:'white', fontWeight: 600}}>launch quickly</span>, <span style={{color:'white', fontWeight: 600}}>adapt to your game</span>, and <span style={{color:'white', fontWeight: 600}}>scale effortlessly</span>.<br/>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines.
+      </p> */}
+      <p style={{ textAlign: 'center', fontWeight: 400, fontSize: '17px', lineHeight: '1.5', color: 'rgba(255,255,255,0.8)', marginBottom: '35px', maxWidth: '750px', margin: '0 auto' }}>
+        Open-source, permissively licensed, & self-hostable.
       </p>
 
-      <div style={{ height: '40px' }}/>
+      <div style={{ height: '20px' }}/>
 
       <CTAButtons />
 
@@ -31,10 +34,10 @@ import { H2, Separator, Footer, CTAButtons } from "/snippets/intro.mdx";
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <div style={{ marginBottom: '20px' }}>
-            <Icon icon="function" size={32} color="rgba(255, 255, 255, 0.7)" />
+            <Icon icon="engine" size={32} color="rgba(255, 255, 255, 0.7)" />
           </div>
-          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Script easily like a game engine</h3>
-          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Easily extend & adapt on top of the OpenGB Engine using TypeScript. Designed to be scripted by game developers.</p>
+          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Works with your game engine</h3>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Supports Godot, Unity, Unreal Engine, HTML5, and Custom Engines. Generates native SDKs to work with your backend.</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <div style={{ marginBottom: '20px' }}>
@@ -45,10 +48,10 @@ import { H2, Separator, Footer, CTAButtons } from "/snippets/intro.mdx";
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <div style={{ marginBottom: '20px' }}>
-            <Icon icon="git-alt" size={32} color="rgba(255, 255, 255, 0.7)" />
+            <Icon icon="square-dashed-circle-plus" size={32} color="rgba(255, 255, 255, 0.7)" />
           </div>
-          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Open-source, permissively licensed, & self-hostable</h3>
-          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Apache 2.0 license allows you to adapt, modify, & redistribute freely.</p>
+          <h3 style={{ fontSize: '19px', fontWeight: 'bold', marginBottom: '8px', color: '#f0f0f0' }}>Works with your existing backend</h3>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#cccccc' }}>Add features to your existing backend without migrating.</p>
         </div>
         {/* TOOD: supports engines/generated client, integrate with your own api */}
       </div>

@@ -84,7 +84,7 @@ export async function generateModule(context: TemplateContext, groupNav, moduleN
   ).join("");
   const configSection = module.hasUserConfigSchema ? tplConfigSection(moduleName, module) : "";
 
-  const overview = await tplOverview(moduleName, module, publicScripts, internalScripts, configSection);
+  const overview = await tplOverview(context, moduleName, module, publicScripts, internalScripts, configSection);
   await Deno.writeTextFile(resolve(modulePath, "overview.mdx"), overview);
 
   // Write errors to dedicated file
@@ -112,7 +112,7 @@ function tplDeps(meta: ProjectMeta, moduleName: string, module: ModuleMeta, depe
   return `
 ${
     deps.length > 0
-      ? deps.map(([k, v]) => `- [${b.name}](/modules/${k}/overview)`).join("\n")
+      ? deps.map(([k, v]) => `- [${v.config.name}](/modules/${k}/overview)`).join("\n")
       : "_No dependencies_"
   }
 `;
@@ -149,8 +149,24 @@ function tplConfigSection(moduleName: string, module: ModuleMeta) {
 `;
 }
 
+function tplMetadataCell(title: string, icon: string | null, content: string, bigAssFocusedCell: boolean = false) {
+  return `
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px'${bigAssFocusedCell ? `, gridColumn: 'span 2'` : ''} }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold'${bigAssFocusedCell ? `, color: 'white'` : ''} }}>${title}</div>
+  <div style={{ display: 'flex' }}>
+    ${icon ? `
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="${icon}" />
+    </div>` : ''}
+    <div style={{ width: "100%" }}>${content}</div>
+  </div>
+</div>
+`;
+}
+
 async function tplOverview(
-  moduleName: string,
+  context: TemplateContext,
+  moduleName: string, 
   module: ModuleMeta,
   publicScripts: any[],
   internalScripts: any[],
@@ -180,89 +196,31 @@ sidebarTitle: Overview
 
 import { H2, Separator } from "/snippets/intro.mdx";
 
-<Tabs>
-<Tab title="Metadata">
-${tplMetadataLine("git-alt", `[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/${encodeURIComponent(moduleName)})`)}
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', backgroundColor: '#101010', border: '1px solid #222', borderRadius: '8px', padding: '16px' }}>
+  
+${tplMetadataCell("Installation", null, `<div>Run the following command in your project directory:</div><div style={{ marginTop: '-8px', marginBottom: '-32px' }}><CodeBlock>opengb module add ${moduleName}</CodeBlock></div>`, true)}
 
-${tplMetadataLine("user", (module.config.authors && module.config.authors.length > 0)
-    ? module.config.authors?.map((author) => `[${author}](https://github.com/${encodeURIComponent(author)})`).join(", ")
-    : "_No authors_"
-)}
+${tplMetadataCell("Authors", "user", module.config.authors ? module.config.authors.map(author => `<a href="https://github.com/${author}">${author}</a>`).join(", ") : "Unknown")}
 
-${tplMetadataLine("square-info", getStatusLabel(module.config.status!))}
+${tplMetadataCell("Status", "square-info", getStatusLabel(module.config.status!))}
 
-${tplMetadataLine("file-certificate", "Apache 2.0")}
+${tplMetadataCell("Source", "git-alt", `<a href="https://github.com/rivet-gg/opengb-modules/tree/main/modules/${moduleName}">View Source Code</a>`)}
 
-${module.db ? tplMetadataLine("database", "Includes Database") : ''}
+${tplMetadataCell("License", "file-certificate", "Apache 2.0")}
 
-${(actorCount > 0) ? tplMetadataLine("bolt", `${actorCount} actor${actorCount > 1 ? "s" : ""}`) : ''}
-</Tab>
+${tplMetadataCell("Public Scripts", "code", `${publicScripts.length} script${publicScripts.length !== 1 ? 's' : ''}`)}
 
-<Tab title="Install">
-Run the following command in your project directory:
+${tplMetadataCell("Internal Scripts", "code", `${internalScripts.length} script${internalScripts.length !== 1 ? 's' : ''}`)}
 
-\`\`\`bash
-opengb module add ${moduleName}
-\`\`\`
+${tplMetadataCell("Database", "database", module.db ? "Includes Database" : "No Database")}
 
-Or add the module \`${moduleName}\` to your \`backend.json\`.
-</Tab>
+${tplMetadataCell("Actors", "bolt", `${actorCount} actor${actorCount !== 1 ? 's' : ''}`)}
 
-<Tab title="${publicScripts.length + internalScripts.length} Scripts">
-**Public**
+</div>
 
-${
-    publicScripts.length > 0
-      ? publicScripts.map(([scriptName, script]) => `
-- **[${script.config.name}](/modules/${moduleName}/scripts/${scriptName})** (\`${scriptName}\`) ${script.config.description}
-`).join("")
-      : "_No public scripts._"
-  }
-
-**Internal** 
-
-${
-    internalScripts.length > 0
-      ? internalScripts.map(([scriptName, script]) => `
-- **[${script.config.name}](/modules/${moduleName}/scripts/${scriptName})** (\`${scriptName}\`) ${script.config.description}
-`).join("")
-      : "_No internal scripts._"
-  }
-</Tab>
-
-${
-    module.config.errors && Object.keys(module.config.errors).length > 0
-      ? `
-<Tab title="${Object.keys(module.config.errors).length} Errors">
-${
-        Object.entries(module.config.errors).sort((a, b) => a[1].name!.localeCompare(b[1].name!)).map((
-          [errorName, error],
-        ) => `
-- **${error.name}** (\`${errorName}\`) ${error.description ?? ""}
-`).join("\n")
-      }
-</Tab>
-`
-      : ""
-  }
-
-<Tab title="${Object.keys(module.config.dependencies ?? {}).length} Dependencies">
-${tplDeps(moduleName, module, module.config.dependencies)}
-</Tab>
-</Tabs>
-
----
+<div style={{ height: '20px' }}/>
 
 ${readmeContent}
-`;
-}
-
-function tplMetadataLine(icon: string, text: string) {
-  return `
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="${icon}"/></span>
-  <span>${text}</span>
-</p>
 `;
 }
 

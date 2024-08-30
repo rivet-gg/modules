@@ -6,147 +6,125 @@ sidebarTitle: Overview
 
 import { H2, Separator } from "/snippets/intro.mdx";
 
-<Tabs>
-<Tab title="Metadata">
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', backgroundColor: '#101010', border: '1px solid #222', borderRadius: '8px', padding: '16px' }}>
+  
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px', gridColumn: 'span 2' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold', color: 'white' }}>Installation</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: "100%" }}><div>Run the following command in your project directory:</div><div style={{ marginTop: '-8px', marginBottom: '-32px' }}><CodeBlock>opengb module add lobbies</CodeBlock></div></div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Authors</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="user" />
+    </div>
+    <div style={{ width: "100%" }}><a href="https://github.com/NathanFlurry">NathanFlurry</a></div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Status</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="square-info" />
+    </div>
+    <div style={{ width: "100%" }}>Stable</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Source</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="git-alt" />
+    </div>
+    <div style={{ width: "100%" }}><a href="https://github.com/rivet-gg/opengb-modules/tree/main/modules/lobbies">View Source Code</a></div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>License</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="file-certificate" />
+    </div>
+    <div style={{ width: "100%" }}>Apache 2.0</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Public Scripts</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="code" />
+    </div>
+    <div style={{ width: "100%" }}>11 scripts</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Internal Scripts</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="code" />
+    </div>
+    <div style={{ width: "100%" }}>2 scripts</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Database</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="database" />
+    </div>
+    <div style={{ width: "100%" }}>No Database</div>
+  </div>
+</div>
 
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
-  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/lobbies)</span>
-</p>
 
 
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Actors</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="bolt" />
+    </div>
+    <div style={{ width: "100%" }}>1 actor</div>
+  </div>
+</div>
 
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
-  <span>[NathanFlurry](https://github.com/NathanFlurry)</span>
-</p>
 
+</div>
 
-
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
-  <span>Stable</span>
-</p>
-
-
-
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
-  <span>Apache 2.0</span>
-</p>
-
-
-
-
-
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="bolt"/></span>
-  <span>1 actor</span>
-</p>
-
-</Tab>
-
-<Tab title="Install">
-Run the following command in your project directory:
-
-```bash
-opengb module add lobbies
-```
-
-Or add the module `lobbies` to your `backend.json`.
-</Tab>
-
-<Tab title="13 Scripts">
-**Public**
-
-
-- **[Create Lobby](/modules/lobbies/scripts/create)** (`create`) Creates a new lobby on-demand.
-
-- **[Destroy Lobby](/modules/lobbies/scripts/destroy)** (`destroy`) Destroys an existing lobby.
-
-- **[Fetch Lobby Manager State](/modules/lobbies/scripts/fetch_lobby_manager_state)** (`fetch_lobby_manager_state`) See full state of the lobby manager for debugging.
-
-- **[Find Lobby](/modules/lobbies/scripts/find)** (`find`) Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.
-
-- **[Find Or Create Lobby](/modules/lobbies/scripts/find_or_create)** (`find_or_create`) Finds a lobby or creates one if there are no available spots for players.
-
-- **[Join Lobby](/modules/lobbies/scripts/join)** (`join`) Add a player to an existing lobby.
-
-- **[List Lobbies](/modules/lobbies/scripts/list)** (`list`) List & query all lobbies.
-
-- **[Reset Lobby Manager State](/modules/lobbies/scripts/reset_lobby_manager_state)** (`reset_lobby_manager_state`) Reset lobby manager state. For debugging only.
-
-- **[Set Lobby Ready](/modules/lobbies/scripts/set_lobby_ready)** (`set_lobby_ready`) Called on lobby startup after initiation to notify it can start accepting player. This should be called after operations like loading maps are complete.
-
-- **[Set Player Connected](/modules/lobbies/scripts/set_player_connected)** (`set_player_connected`) Called when a player connects to the lobby.
-
-- **[Set Player Disconnected](/modules/lobbies/scripts/set_player_disconnected)** (`set_player_disconnected`) Called when a player disconnects from the lobby.
-
-
-**Internal** 
-
-
-- **[Force Garbage Collection](/modules/lobbies/scripts/force_gc)** (`force_gc`) Rarely used. Forces the matchmaker to purge lobbies & players.
-
-- **[List Regions](/modules/lobbies/scripts/list_regions)** (`list_regions`) List available regions.
-
-</Tab>
-
-
-<Tab title="14 Errors">
-
-- **Build Not Found** (`build_not_found`) Build not found. Check that there is a build with the provided version & that the bulid is enabled.
-
-
-- **Cannot Mutate Lobbies** (`cannot_mutate_lobbies`) This backend doesn't let you create or destroy lobbies.
-
-
-- **Lobby Aborted** (`lobby_aborted`) Lobby stopped while attempting to join.
-
-
-- **Lobby Already Ready** (`lobby_already_ready`) Lobby already set as ready.
-
-
-- **Lobby Create Missing Players** (`lobby_create_missing_players`) When creating a lobby with `config.lobbies.autoDestroyWhenEmpty`, a lobby must be created with players in order to avoid creating an empty lobby.
-
-
-- **Lobby Full** (`lobby_full`) No more players can join this lobby.
-
-
-- **Lobby Not Found** (`lobby_not_found`) Lobby not found.
-
-
-- **Lobby Token Required** (`lobby_token_required`) A lobby token was not provided when required for authentication.
-
-
-- **More Players Than Max** (`more_players_than_max`) More players were passed to the create lobby than the number of max players in a lobby.
-
-
-- **No Matching Lobbies** (`no_matching_lobbies`) No lobbies matched the given query.
-
-
-- **Player Already Connected** (`player_already_connected`) The player has already connected to this server. This error helps mitigate botting attacks by only allowing one scoket to connect to a game server for every player.
-
-
-- **Player Disconnected** (`player_disconnected`) The player has already disconnected from the server. Create a new player for the specified lobby using the `join` script.
-
-
-- **Region Not Found** (`region_not_found`) Region not found.
-
-
-- **Too Many Players For IP** (`too_many_players_for_ip`) The player has too many existing players for the given IP.
-
-</Tab>
-
-
-<Tab title="2 Dependencies">
-
-_No dependencies_
-
-</Tab>
-</Tabs>
-
----
+<div style={{ height: '20px' }}/>
 
 
 The lobbies module is a casual matchmaker optimized to get your player connected to your game server in under a second in the optimal region & lobby.
