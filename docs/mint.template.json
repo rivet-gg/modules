@@ -27,12 +27,6 @@
     "type": "github",
     "url": "https://github.com/rivet-gg/opengb"
   },
-  "topbarLinks": [
-	{
-		"name": "Publish Module",
-		"url": "/docs/build/publishing"
-	}
-  ],
   "topAnchor": {
     "name": "All Modules",
     "icon": "grid-2",
@@ -83,6 +77,7 @@
 				"docs/build/actors",
 				"docs/build/user-config",
 				"docs/build/errors",
+				"docs/build/publish",
 				{
 					"group": "Core Modules",
 					"pages": [
@@ -96,7 +91,6 @@
 				{
 					"group": "Advanced",
 					"pages": [
-						"docs/build/publishing",
 						"docs/build/conventions",
 						"docs/build/ide",
 						"docs/build/public",
