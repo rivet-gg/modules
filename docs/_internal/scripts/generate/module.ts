@@ -208,13 +208,29 @@ ${tplMetadataCell("Source", "git-alt", `<a href="https://github.com/rivet-gg/ope
 
 ${tplMetadataCell("License", "file-certificate", "Apache 2.0")}
 
-${tplMetadataCell("Public Scripts", "code", `${publicScripts.length} script${publicScripts.length !== 1 ? 's' : ''}`)}
-
-${tplMetadataCell("Internal Scripts", "code", `${internalScripts.length} script${internalScripts.length !== 1 ? 's' : ''}`)}
-
 ${tplMetadataCell("Database", "database", module.db ? "Includes Database" : "No Database")}
 
 ${tplMetadataCell("Actors", "bolt", `${actorCount} actor${actorCount !== 1 ? 's' : ''}`)}
+
+${tplMetadataCell("Public Scripts", null, `
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    ${publicScripts.length > 0 
+      ? publicScripts.slice(0, 6).map(script => `<a href="/modules/${moduleName}/scripts/${script[0]}" style={{ display: 'block', textDecoration: 'none', color: 'inherit', border: 'none', fontWeight: 'normal' }}>${script[1].config.name}</a>`).join('') +
+        (publicScripts.length > 6 ? `<div style={{ fontWeight: 'normal' }}><em>...and ${publicScripts.length - 6} more</em></div>` : '')
+      : '<div><em>No public scripts</em></div>'
+    }
+  </div>
+`)}
+
+${tplMetadataCell("Internal Scripts", null, `
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    ${internalScripts.length > 0
+      ? internalScripts.slice(0, 6).map(script => `<a href="/modules/${moduleName}/scripts/${script[0]}" style={{ display: 'block', textDecoration: 'none', color: 'inherit', border: 'none', fontWeight: 'normal' }}>${script[1].config.name}</a>`).join('') + 
+        (internalScripts.length > 6 ? `<div style={{ fontWeight: 'normal' }}><em>...and ${internalScripts.length - 6} more</em></div>` : '')
+      : '<div><em>No internal scripts</em></div>'
+    }
+  </div>
+`)}
 
 </div>
 
