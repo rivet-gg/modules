@@ -1,0 +1,301 @@
+{
+  "categories": [
+    {
+      "name": "Multiplayer",
+      "description": "Engage players with live multiplayer gameplay, fostering competition and cooperation.",
+      "modules": [
+        {
+          "id": "lobbies",
+          "name": "Lobbies",
+          "description": "Lobby & player management. Create & join lobbies instantly.",
+          "status": "stable",
+          "icon": "game-board"
+        },
+        {
+          "id": "matchmaker",
+          "name": "Matchmaker",
+          "description": "Ticket-based matchmaking that balances skill, latency, and more. (Coming mid-2024)",
+          "status": "coming_soon",
+          "icon": "chess-knight"
+        },
+        {
+          "id": "parties",
+          "name": "Parties",
+          "description": "Real-time player groups. Integrates with matchmaking. (Coming mid-2024)",
+          "status": "coming_soon",
+          "icon": "party-horn"
+        },
+        {
+          "id": "presence",
+          "name": "Presence",
+          "description": "Real-time online presence for players. See who's online and what they're doing.",
+          "status": "coming_soon",
+          "icon": "circle-dot"
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "Secure and manage user accounts to personalize and safeguard the player experience.",
+      "modules": [
+        {
+          "id": "auth_email",
+          "name": "Auth Email",
+          "description": "[INTERNAL-ONLY: use auth_email_password/auth_email_passwordless/auth_email_link.] Authenticating users with email only or an email/password combination.",
+          "status": "stable",
+          "icon": "key"
+        },
+        {
+          "id": "auth_email_link",
+          "name": "Auth Email Linking",
+          "description": "Link emails to users.",
+          "status": "stable",
+          "icon": "key"
+        },
+        {
+          "id": "auth_email_passwordless",
+          "name": "Auth Email Passwordless",
+          "description": "Authenticate users with only an email.",
+          "status": "stable",
+          "icon": "key"
+        },
+        {
+          "id": "auth_email_password",
+          "name": "Auth Email/Password",
+          "description": "Authenticate users with an email/password combination.",
+          "status": "stable",
+          "icon": "key"
+        },
+        {
+          "id": "auth_username_password",
+          "name": "Auth Username Password",
+          "description": "Authenticate users with a username/password combination.",
+          "status": "stable",
+          "icon": "key"
+        },
+        {
+          "id": "identities",
+          "name": "Identities",
+          "description": "Manage identities and identity data for users. Intended for internal use by modules exposing auth providers.",
+          "status": "beta",
+          "icon": "key"
+        },
+        {
+          "id": "user_passwords",
+          "name": "User Password Verifier",
+          "description": "An INTERNAL-ONLY module to store and verify passwords by user ID. Used by some auth modules that require password verification.",
+          "status": "beta",
+          "icon": "shield-halved"
+        },
+        {
+          "id": "auth_oauth",
+          "name": "Social Authentication Provider",
+          "description": "Authenticate users with OAuth 2.0.",
+          "status": "coming_soon",
+          "icon": "key"
+        }
+      ]
+    },
+    {
+      "name": "Social",
+      "description": "Facilitate player interaction and community-building to boost engagement and retention.",
+      "modules": [
+        {
+          "id": "friends",
+          "name": "Friends",
+          "description": "Allow users to send and accept friend requests.",
+          "status": "beta",
+          "icon": "user-group"
+        },
+        {
+          "id": "users",
+          "name": "Users",
+          "description": "Identify and manage users.",
+          "status": "stable",
+          "icon": "user"
+        },
+        {
+          "id": "chat",
+          "name": "Chat",
+          "description": "In-game player-to-player messaging. (Coming late-2024)",
+          "status": "coming_soon",
+          "icon": "messages"
+        },
+        {
+          "id": "groups",
+          "name": "Groups",
+          "description": "Group users in groups/clans/guilds. (Coming late-2024)",
+          "status": "coming_soon",
+          "icon": "user-group"
+        }
+      ]
+    },
+    {
+      "name": "Economy",
+      "description": "Drive player progression and monetization with virtual goods and currencies.",
+      "modules": [
+        {
+          "id": "currency",
+          "name": "Currency",
+          "description": "Track user balances and allow them to deposit and withdraw.",
+          "status": "preview",
+          "icon": "coin"
+        }
+      ]
+    },
+    {
+      "name": "Competitive",
+      "description": "Motivate and reward skilled play with rankings, tournaments, and leagues.",
+      "modules": [
+        {
+          "id": "achievements",
+          "name": "Achievements",
+          "description": "Unlock and track user achievements. (Coming late-2024)",
+          "status": "coming_soon",
+          "icon": "medal"
+        },
+        {
+          "id": "leaderboards",
+          "name": "Leaderboards",
+          "description": "Track and display top player rankings. (Coming mid-2024)",
+          "status": "coming_soon",
+          "icon": "ranking-star"
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Gain actionable insights to optimize game design, balance, and monetization.",
+      "modules": [
+        {
+          "id": "analytics",
+          "name": "Analytics",
+          "description": "Track and visualize user behavior data. (Coming mid-2024)",
+          "status": "coming_soon",
+          "icon": "chart-line"
+        }
+      ]
+    },
+    {
+      "name": "Security",
+      "description": "Protect your game and players from cheating, hacking, and disruptive behavior.",
+      "modules": [
+        {
+          "id": "infisical",
+          "name": "Infisical",
+          "description": "All-in-one platform to securely manage application configuration and secrets across your team and infrastructure.",
+          "status": "stable",
+          "icon": "infinity"
+        },
+        {
+          "id": "rate_limit",
+          "name": "Rate Limit",
+          "description": "Prevent abuse by limiting request rate.",
+          "status": "stable",
+          "icon": "gauge-circle-minus"
+        },
+        {
+          "id": "tokens",
+          "name": "Tokens",
+          "description": "Create & verify tokens for authorization purposes.",
+          "status": "stable",
+          "icon": "lock"
+        }
+      ]
+    },
+    {
+      "name": "Utility",
+      "description": "Streamline development with foundational tools and reusable components.",
+      "modules": [
+        {
+          "id": "email",
+          "name": "Email",
+          "description": "Send emails using multiple providers.",
+          "status": "stable",
+          "icon": "envelope"
+        },
+        {
+          "id": "uploads",
+          "name": "Uploads",
+          "description": "Upload & store blobs of data.",
+          "status": "stable",
+          "icon": "file-arrow-up"
+        },
+        {
+          "id": "game_saves",
+          "name": "Game Saves",
+          "description": "Store and manage player progress data or world state. (Coming mid-2024)",
+          "status": "coming_soon",
+          "icon": "floppy-disk"
+        }
+      ]
+    },
+    {
+      "name": "Platform",
+      "description": "Extend your game's reach and engage players across popular gaming platforms.",
+      "modules": [
+        {
+          "id": "discord_activity",
+          "name": "Discord Activities",
+          "description": "Activities are a way to enjoy shared experiences with friends, such as games and media, on Discord itself. ",
+          "status": "beta",
+          "icon": "discord"
+        },
+        {
+          "id": "eos",
+          "name": "Epic Online Services",
+          "description": "Epic Online Services (EOS) is a cross-platform SDK that provides essential online services such as authentication, friends, matchmaking, and more for games.",
+          "status": "coming_soon",
+          "icon": "e"
+        },
+        {
+          "id": "steam",
+          "name": "Steam",
+          "description": "Integrate with Steam accounts",
+          "status": "coming_soon",
+          "icon": "steam"
+        },
+        {
+          "id": "twitch",
+          "name": "Twitch",
+          "description": "Integrate your game with drops",
+          "status": "coming_soon",
+          "icon": "twitch"
+        }
+      ]
+    },
+    {
+      "name": "Infrastructure",
+      "description": "Extend and integrate your game with custom backend services and third-party APIs.",
+      "modules": [
+        {
+          "id": "rivet",
+          "name": "Rivet",
+          "description": "Open-source game servers & backend for multiplayer games.",
+          "status": "stable",
+          "icon": "r"
+        }
+      ]
+    },
+    {
+      "name": "Service",
+      "description": "Integrate third-party services to enhance functionality and streamline operations.",
+      "modules": [
+        {
+          "id": "sendgrid",
+          "name": "Twilio SendGrid",
+          "description": "Get your emails to the inbox—where they belong.",
+          "status": "stable",
+          "icon": "envelope"
+        },
+        {
+          "id": "idem",
+          "name": "IDEM",
+          "description": "Matchmaking for multi-player games – as an API. Be sure your game's matchmaking will be loved by players.",
+          "status": "coming_soon",
+          "icon": "i"
+        }
+      ]
+    }
+  ]
+}

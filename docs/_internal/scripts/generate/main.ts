@@ -32,17 +32,18 @@ import { generateProjectConfig } from "./project_config.ts";
 import { generateModuleConfig } from "./module_config.ts";
 import { generateModule } from "./module.ts";
 import { Category, processCategories } from "./categories.ts";
-import { OPENGB_ROOT, DOCS_ROOT, TEST_PROJECT_PATH, DOCS_MODULES_PATH } from "./paths.ts";
+import { DOCS_MODULES_PATH, DOCS_ROOT, OPENGB_ROOT, TEST_PROJECT_PATH } from "./paths.ts";
+import { generateMeta } from "./meta.ts";
 
 if (Deno.env.has("BUILD_OPENGB")) {
-  console.log("Build OpenGB CLI");
-  const installOutput = await new Deno.Command("deno", {
-    args: ["task", "artifacts:build"],
-    cwd: OPENGB_ROOT,
-    stdout: "inherit",
-    stderr: "inherit",
-  }).output();
-  assert(installOutput.success);
+	console.log("Build OpenGB CLI");
+	const installOutput = await new Deno.Command("deno", {
+		args: ["task", "artifacts:build"],
+		cwd: OPENGB_ROOT,
+		stdout: "inherit",
+		stderr: "inherit",
+	}).output();
+	assert(installOutput.success);
 }
 
 if (!Deno.env.has("NO_BUILD_MODULES")) {
@@ -71,15 +72,14 @@ const meta = JSON.parse(metaRaw) as ProjectMeta;
 await emptyDir(DOCS_MODULES_PATH);
 
 export interface TemplateContext {
-  projectMeta: ProjectMeta,
+	projectMeta: ProjectMeta;
 	extraNav: any;
 	categories: Category[];
 }
 
 const context: TemplateContext = {
-  projectMeta: meta,
-	extraNav: [
-  ],
+	projectMeta: meta,
+	extraNav: [],
 	categories: processCategories(meta),
 };
 
@@ -88,20 +88,21 @@ await generateModuleCards(context);
 await generateModulesOverview();
 await generateProjectConfig();
 await generateModuleConfig();
+await generateMeta(context);
 
 // Generate modules
 for (const category of context.categories) {
-  // Add nav
-  const nav = {
-    "group": category.name,
-    "pages": []
-  };
-  context.extraNav.push(nav);
+	// Add nav
+	const nav = {
+		"group": category.name,
+		"pages": [],
+	};
+	context.extraNav.push(nav);
 
-  // Generate modules
-  for (const module of category.modules) {
-    await generateModule(context, nav, module.id, module.module);
-  }
+	// Generate modules
+	for (const module of category.modules) {
+		await generateModule(context, nav, module.id, module.module);
+	}
 }
 
 // Write navigation
@@ -115,4 +116,3 @@ await Deno.writeTextFile(
 	resolve(DOCS_ROOT, "mint.json"),
 	JSON.stringify(mintTemplate, null, 2),
 );
-
