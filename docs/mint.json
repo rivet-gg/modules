@@ -100,8 +100,7 @@
             "docs/build/conventions",
             "docs/build/ide",
             "docs/build/public",
-            "docs/build/logging",
-            "docs/build/raw-sql"
+            "docs/build/logging"
           ]
         }
       ]
@@ -727,10 +726,6 @@
     {
       "source": "/build/conventions",
       "destination": "/docs/build/conventions"
-    },
-    {
-      "source": "/build/raw-sql",
-      "destination": "/docs/build/raw-sql"
     },
     {
       "source": "/comparison/playfab",
