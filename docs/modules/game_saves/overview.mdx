@@ -6,71 +6,125 @@ sidebarTitle: Overview
 
 import { H2, Separator } from "/snippets/intro.mdx";
 
-<Tabs>
-<Tab title="Metadata">
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', backgroundColor: '#101010', border: '1px solid #222', borderRadius: '8px', padding: '16px' }}>
+  
 
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="git-alt"/></span>
-  <span>[Source Code](https://github.com/rivet-gg/opengb-modules/tree/main/modules/game_saves)</span>
-</p>
-
-
-
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="user"/></span>
-  <span>_No authors_</span>
-</p>
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px', gridColumn: 'span 2' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold', color: 'white' }}>Installation</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: "100%" }}><div>Run the following command in your project directory:</div><div style={{ marginTop: '-8px', marginBottom: '-32px' }}><CodeBlock>opengb module add game_saves</CodeBlock></div></div>
+  </div>
+</div>
 
 
 
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="square-info"/></span>
-  <span>Coming Soon</span>
-</p>
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Authors</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="user" />
+    </div>
+    <div style={{ width: "100%" }}></div>
+  </div>
+</div>
 
 
 
-<p>
-  <span style={{ display: 'inline-block', width: '26px' }}><Icon icon="file-certificate"/></span>
-  <span>Apache 2.0</span>
-</p>
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Status</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="square-info" />
+    </div>
+    <div style={{ width: "100%" }}>Coming Soon</div>
+  </div>
+</div>
 
 
 
-
-
-</Tab>
-
-<Tab title="Install">
-Run the following command in your project directory:
-
-```bash
-opengb module add game_saves
-```
-
-Or add the module `game_saves` to your `backend.json`.
-</Tab>
-
-<Tab title="0 Scripts">
-**Public**
-
-_No public scripts._
-
-**Internal** 
-
-_No internal scripts._
-</Tab>
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Source</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="git-alt" />
+    </div>
+    <div style={{ width: "100%" }}><a href="https://github.com/rivet-gg/opengb-modules/tree/main/modules/game_saves">View Source Code</a></div>
+  </div>
+</div>
 
 
 
-<Tab title="0 Dependencies">
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>License</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="file-certificate" />
+    </div>
+    <div style={{ width: "100%" }}>Apache 2.0</div>
+  </div>
+</div>
 
-_No dependencies_
 
-</Tab>
-</Tabs>
 
----
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Public Scripts</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="code" />
+    </div>
+    <div style={{ width: "100%" }}>0 scripts</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Internal Scripts</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="code" />
+    </div>
+    <div style={{ width: "100%" }}>0 scripts</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Database</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="database" />
+    </div>
+    <div style={{ width: "100%" }}>No Database</div>
+  </div>
+</div>
+
+
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', marginBottom: '4px' }}>
+  <div style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>Actors</div>
+  <div style={{ display: 'flex' }}>
+    
+    <div style={{ width: '24px', height: '24px', marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Icon icon="bolt" />
+    </div>
+    <div style={{ width: "100%" }}>0 actors</div>
+  </div>
+</div>
+
+
+</div>
+
+<div style={{ height: '20px' }}/>
 
 
 [Get Early Access](https://b8v8449klvp.typeform.com/to/kpcSBpuP)
