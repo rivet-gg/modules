@@ -1,14 +1,35 @@
-import { RuntimeError, ScriptContext } from "../module.gen.ts";
-import { ReqOf, ResOf } from "../utils/types.ts";
+import { ScriptContext } from "../module.gen.ts";
+import { IDENTITY_INFO_PASSWORD } from "../utils/provider.ts";
 
+export interface Request {
+	email: string;
+	password: string;
+}
 
-export type Request = ReqOf<ScriptContext["modules"]["authEmail"]["signInEmailPass"]>;
-export type Response = ResOf<ScriptContext["modules"]["authEmail"]["signInEmailPass"]>;
+export interface Response {
+	userToken: string;
+	userId: string;
+}
 
 export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	return await ctx.modules.authEmail.signInEmailPass(req);
-}
+	await ctx.modules.rateLimit.throttlePublic({});
 
+	// Try signing in with the email
+	const { userToken, userId } = await ctx.modules.identities.signIn({
+		info: IDENTITY_INFO_PASSWORD,
+		uniqueData: {
+			identifier: req.email,
+		},
+	});
+
+	// Verify the password
+	await ctx.modules.userPasswords.verify({
+		userId,
+		password: req.password,
+	});
+
+	return { userToken, userId };
+}

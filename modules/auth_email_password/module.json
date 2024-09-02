@@ -1,6 +1,6 @@
 {
-  "name": "Auth Email/Password",
-  "description": "Authenticate users with an email/password combination.",
+  "name": "Auth Email & Password",
+  "description": "Authenticate users with a email/password combination.",
   "icon": "key",
   "tags": [
     "core",
@@ -13,10 +13,16 @@
   ],
   "status": "stable",
   "dependencies": {
-    "auth_email": {}
+    "email": {},
+    "identities": {},
+    "users": {},
+    "tokens": {},
+    "user_passwords": {},
+    "rate_limit": {}
   },
   "defaultConfig": {
-    "enable": false
+    "fromEmail": "hello@test.com",
+    "fromName": "Authentication Code"
   },
   "scripts": {
     "send_verification": {
@@ -24,25 +30,40 @@
       "description": "Send a one-time verification code to an email address to verify ownership.",
       "public": true
     },
-    "verify_sign_up_email_pass": {
-      "name": "Verify and Sign Up with Email and Password",
-      "description": "Verify a user's email address and register a new user with an email and password.",
-      "public": true
-    },
     "sign_in_email_pass": {
       "name": "Sign In with Email and Password",
       "description": "Sign in a user with an email and password.",
       "public": true
     },
+    "verify_sign_up_email_pass": {
+      "name": "Verify and Sign Up with Email and Password",
+      "description": "Sign up a new user with an email and password.",
+      "public": true
+    },
     "verify_add_email_pass": {
       "name": "Verify and Add Email and Password to existing user",
-      "description": "Verify a user's email address and register it with an existing account.",
+      "description": "Verify a user's email address and register it with an existing account. Requires a password.",
       "public": true
     }
   },
   "errors": {
-    "provider_disabled": {
-      "name": "Provider Disabled"
+    "verification_code_invalid": {
+      "name": "Verification Code Invalid"
+    },
+    "verification_code_attempt_limit": {
+      "name": "Verification Code Attempt Limit"
+    },
+    "verification_code_expired": {
+      "name": "Verification Code Expired"
+    },
+    "verification_code_already_used": {
+      "name": "Verification Code Already Used"
+    },
+    "email_already_used": {
+      "name": "Email Already Used"
     }
+  },
+  "enableConfig": {
+    "enable": true
   }
 }

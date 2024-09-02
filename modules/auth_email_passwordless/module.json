@@ -13,10 +13,16 @@
   ],
   "status": "stable",
   "dependencies": {
-    "auth_email": {}
+		"email": {},
+    "identities": {},
+    "users": {},
+		"tokens": {},
+		"rate_limit": {}
   },
   "defaultConfig": {
-    "enable": false
+    "fromEmail": "hello@test.com",
+    "fromName": "Authentication Code",
+    "mode": "login"
   },
   "scripts": {
     "send_verification": {
@@ -25,19 +31,37 @@
       "public": true
     },
     "verify_add_no_pass": {
-      "name": "Verify and Add Email to Existing User (No Password)",
+      "name": "Verify and Add Login Method",
       "description": "Verify a user's email address and register it with an existing account. Does not require a password.",
       "public": true
     },
     "verify_login_or_create_no_pass": {
-      "name": "Verify and Login as (or Create) User (No Password)",
-      "description": "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password.",
+      "name": "Verify and Login/Create User",
+      "description": "Verify the email address code and return a userToken to its account (creates a new account if one doesn't exist). Does not require a password.",
       "public": true
     }
   },
   "errors": {
-    "provider_disabled": {
-      "name": "Provider Disabled"
+    "verification_code_invalid": {
+      "name": "Verification Code Invalid"
+    },
+    "verification_code_attempt_limit": {
+      "name": "Verification Code Attempt Limit"
+    },
+    "verification_code_expired": {
+      "name": "Verification Code Expired"
+    },
+    "verification_code_already_used": {
+      "name": "Verification Code Already Used"
+    },
+    "email_already_used": {
+      "name": "Email Already Used"
+    },
+    "not_enabled": {
+      "name": "Functionality Not Enabled"
     }
+  },
+  "enableConfig": {
+    "enable": true
   }
 }

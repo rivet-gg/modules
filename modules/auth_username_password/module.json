@@ -1,5 +1,5 @@
 {
-  "name": "Auth Username Password",
+  "name": "Auth Username & Password",
   "description": "Authenticate users with a username/password combination.",
   "icon": "key",
   "tags": [

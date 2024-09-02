@@ -10,12 +10,6 @@
 		"analytics": {
 			"registry": "local"
 		},
-		"auth_email": {
-			"registry": "local"
-		},
-		"auth_email_link": {
-			"registry": "local"
-		},
 		"auth_email_password": {
 			"registry": "local"
 		},

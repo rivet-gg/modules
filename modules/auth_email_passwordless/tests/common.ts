@@ -6,7 +6,7 @@ import {
 
 export async function getVerification(ctx: TestContext, email: string) {
 	// Get a valid verification
-	const { verification: { token: verificationToken } } = await ctx.modules.authEmail
+	const { verification: { token: verificationToken } } = await ctx.modules.authEmailPasswordless
 		.sendVerification({ email });
 	const verification = await ctx.db.query.verifications.findFirst({
 			where: Query.eq(Database.verifications.token, verificationToken),
@@ -26,6 +26,7 @@ export async function verifyProvider(
 	const { identityProviders: [emailProvider] } = await ctx.modules.identities
 		.list({ userToken });
 	assertEquals(emailProvider, provider);
+	assertExists(emailProvider);
 
 	// Verify that the provider data is correct
 	const { data } = await ctx.modules.identities.fetch({
