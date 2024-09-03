@@ -46,11 +46,11 @@ export async function compileModuleHelper(
 				ActorContext as ActorContextInner,
 				RouteContext as RouteContextInner,
 				Runtime,
-			} from "${runtimePath}";
-			import config from "${runtimeConfigPath}";
-			import { dependencyCaseConversionMap } from "${dependencyCaseConversionMapPath}";
-			import { actorCaseConversionMap } from "${actorCaseConversionMapPath}";
-			import { ActorDriver } from ${JSON.stringify(genRuntimeActorDriverPath(project, opts.runtime))};
+			} from ${JSON.stringify(runtimePath)};
+			import config from ${JSON.stringify(runtimeConfigPath)};
+			import { dependencyCaseConversionMap } from ${JSON.stringify(dependencyCaseConversionMapPath)};
+			import { actorCaseConversionMap } from ${JSON.stringify(actorCaseConversionMapPath)};
+			import { ActorDriver } from ${JSON.stringify(helper.relative(genRuntimeActorDriverPath(project, opts.runtime)))};
 			export * from ${JSON.stringify(reexportPath)};
 		`;
 
@@ -100,7 +100,7 @@ function genDependencies(
 		import type {
 			DependenciesSnake as DependenciesSnakeFull,
 			DependenciesCamel as DependenciesCamelFull,
-		} from "${typedefPath}";
+		} from ${JSON.stringify(helper.relative(typedefPath))};
 	`;
 
 	const dependencyTypedefSnake = helper.chunk.withNewlinesPerChunk(1);
@@ -147,7 +147,7 @@ function genActors(
 		import type {
 			ActorsSnake as ActorsSnakeFull,
 			ActorsCamel as ActorsCamelFull,
-		} from "${typedefPath}";
+		} from ${JSON.stringify(helper.relative(typedefPath))};
 	`;
 
 	const moduleNameSnake = module.name;
@@ -168,7 +168,7 @@ function genModule(
 	// Database
 	if (module.db) {
 		helper.append`
-    export * as Query from ${JSON.stringify(projectGenPath(project, DRIZZLE_ORM_REEXPORT))};
+    export * as Query from ${JSON.stringify(helper.relative(projectGenPath(project, DRIZZLE_ORM_REEXPORT)))};
     export * as Database from "./db/schema.ts";
     `;
 		helper.append`

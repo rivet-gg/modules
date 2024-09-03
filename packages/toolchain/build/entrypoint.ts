@@ -15,7 +15,7 @@ import { autoGenHeader } from "./misc.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
 import dedent from "dedent";
 import { convertSerializedSchemaToZodExpression } from "./schema/mod.ts";
-import { DRIZZLE_KIT_VERSION, DRIZZLE_ORM_PACKAGE, NEON_PACKAGE, PG_PACKAGE } from "../drizzle_consts.ts";
+import { DRIZZLE_KIT_VERSION, DRIZZLE_ORM_PACKAGE, PG_PACKAGE } from "../drizzle_consts.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
@@ -71,7 +71,7 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	// Generate config.ts
 	const configSource = `
 		${autoGenHeader()}
-		import { Config, BuildRuntime } from "${runtimeModPath}";
+		import { Config, BuildRuntime } from ${JSON.stringify(runtimeModPath)};
 
 		${imports}
 		${modImports}
@@ -94,9 +94,9 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	if (opts.runtime == Runtime.Deno) {
 		entrypointSource = `
 			${autoGenHeader()}
-			import { Runtime } from "${runtimeModPath}";
-			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
-			import { actorCaseConversionMap } from "${genActorCaseConversionMapPath(project)}";
+			import { Runtime } from ${JSON.stringify(runtimeModPath)};
+			import { dependencyCaseConversionMap } from ${JSON.stringify(genDependencyCaseConversionMapPath(project))};
+			import { actorCaseConversionMap } from ${JSON.stringify(genActorCaseConversionMapPath(project))};
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
@@ -157,10 +157,10 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypointSource = `
 			${autoGenHeader()}
 			import type { IncomingRequestCf } from 'https://raw.githubusercontent.com/skymethod/denoflare/v0.6.0/common/cloudflare_workers_types.d.ts';
-			import { Runtime, Environment } from "${runtimeModPath}";
-			import { RuntimeError } from "${errorTsPath}";
-			import { dependencyCaseConversionMap } from "${genDependencyCaseConversionMapPath(project)}";
-			import { actorCaseConversionMap } from "${genActorCaseConversionMapPath(project)}";
+			import { Runtime, Environment } from ${JSON.stringify(runtimeModPath)};
+			import { RuntimeError } from ${JSON.stringify(errorTsPath)};
+			import { dependencyCaseConversionMap } from ${JSON.stringify(genDependencyCaseConversionMapPath(project))};
+			import { actorCaseConversionMap } from ${JSON.stringify(genActorCaseConversionMapPath(project))};
 			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 			import config from "./runtime_config.ts";
