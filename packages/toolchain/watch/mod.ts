@@ -49,14 +49,21 @@ export async function watch(opts: WatchOpts) {
 
 	// Start watch loop
 	while (true) {
-		const sttyOutput = await new Deno.Command("stty", {
-			args: ["sane"],
-			stdin: "inherit",
-			stdout: "inherit",
-			stderr: "inherit",
-		}).output();
-		if (!sttyOutput.success) {
-			console.warn("Failed to run `stty sane`. This may cause terminal issues.");
+		// Show warning if TTY not enabled
+		if (Deno.build.os == "linux" || Deno.build.os == "darwin") {
+			try {
+				const sttyOutput = await new Deno.Command("stty", {
+					args: ["sane"],
+					stdin: "inherit",
+					stdout: "inherit",
+					stderr: "inherit",
+				}).output();
+				if (!sttyOutput.success) {
+					console.warn("Failed to run `stty sane`. This may cause terminal issues.");
+				}
+			} catch (error: unknown) {
+				console.warn(`Failed to run \`stty\` command: ${error}`);
+			}
 		}
 
 		// Try to print horizontal line if has TTY
