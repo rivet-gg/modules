@@ -73,7 +73,7 @@ export const devCommand = new Command<GlobalOpts>()
 						},
 					})
 						.output();
-					if (!cmd.success) throw new InternalError("Entrypoint failed", { path: entrypointPath });
+					if (!signal.aborted && !cmd.success) throw new InternalError("Entrypoint failed", { path: entrypointPath });
 				},
 			});
 		},
