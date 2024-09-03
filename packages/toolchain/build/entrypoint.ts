@@ -10,53 +10,62 @@ import {
 	RUNTIME_PATH,
 } from "../project/project.ts";
 import { dbSchemaPath } from "../project/module.ts";
-import { CommandError, UnreachableError } from "../error/mod.ts";
-import { autoGenHeader } from "./misc.ts";
+import { UnreachableError } from "../error/mod.ts";
 import { BuildOpts, DbDriver, Runtime, runtimeToString } from "./mod.ts";
-import dedent from "dedent";
-import { convertSerializedSchemaToZodExpression } from "./schema/mod.ts";
 import { DRIZZLE_KIT_VERSION, DRIZZLE_ORM_PACKAGE, PG_PACKAGE } from "../drizzle_consts.ts";
+import { GeneratedCodeBuilder } from "./gen/mod.ts";
+import { convertSerializedSchemaToZodExpression } from "./schema/mod.ts";
 
 export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 	const runtimeModPath = genRuntimeModPath(project);
 
-	// Generate module configs
-	const [modImports, modConfig] = generateModImports(project);
+	const entrypoint = new GeneratedCodeBuilder(projectGenPath(project, ENTRYPOINT_PATH), 2);
+	const config = new GeneratedCodeBuilder(projectGenPath(project, RUNTIME_CONFIG_PATH), 2);
 
-	let imports = `
-		// Schemas
-		import * as z from "https://esm.sh/zod@3.23.8";
+	// Generate module configs
+	const [modImports, modConfig] = generateModImports(project, entrypoint.path!);
+
+	// Config imports
+	config.chunk.withNewlinesPerChunk(1)
+		.append`
+			// Schemas
+			import * as z from "https://esm.sh/zod@3.23.8";
 		`;
 
 	if (opts.dbDriver == DbDriver.NodePostgres) {
-		imports += `
-		// We can't use esm.sh for these because they rely on special Node
-		// functionality & don't need to be portable
-		//
-		// https://github.com/esm-dev/esm.sh/issues/684
-		import pg from "${PG_PACKAGE}";
-		import { drizzle } from "${DRIZZLE_ORM_PACKAGE}/node-postgres";
+		config.chunk.append`
+			// We can't use esm.sh for these because they rely on special Node
+			// functionality & don't need to be portable
+			//
+			// https://github.com/esm-dev/esm.sh/issues/684
+			import pg from "${PG_PACKAGE}";
+			import { drizzle } from "${DRIZZLE_ORM_PACKAGE}/node-postgres";
 		`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
-		imports += `
-		// These versions need to be pinned because Neon relies on using
-		// \`instanceof\`, so the dependencies must be exactly the same.
-		import * as neon from "https://esm.sh/@neondatabase/serverless@0.9.3";
-		import { drizzle } from "https://esm.sh/drizzle-orm@${DRIZZLE_KIT_VERSION}/neon-serverless";
+		config.chunk.append`
+			// These versions need to be pinned because Neon relies on using
+			// \`instanceof\`, so the dependencies must be exactly the same.
+			import * as neon from "https://esm.sh/@neondatabase/serverless@0.9.3";
+			import { drizzle } from "https://esm.sh/drizzle-orm@${DRIZZLE_KIT_VERSION}/neon-serverless";
 
-		// TODO:
-		// neonConfig.webSocketConstructor = ws;
+			// TODO:
+			// neonConfig.webSocketConstructor = ws;
 		`;
 	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
-		imports += `
-		// We can't use esm.sh for these because they rely on special Node
-		// functionality & don't need to be portable
-		//
-		// https://github.com/esm-dev/esm.sh/issues/684
-		import pg from "${PG_PACKAGE}";
-		import { drizzle } from "${DRIZZLE_ORM_PACKAGE}/node-postgres";
+		config.chunk.append`
+			// We can't use esm.sh for these because they rely on special Node
+			// functionality & don't need to be portable
+			//
+			// https://github.com/esm-dev/esm.sh/issues/684
+			import pg from "${PG_PACKAGE}";
+			import { drizzle } from "${DRIZZLE_ORM_PACKAGE}/node-postgres";
 		`;
 	}
+
+	config.chunk.append`
+		${modImports}
+		import { Config, BuildRuntime } from ${JSON.stringify(config.relative(runtimeModPath))};
+	`;
 
 	// CORS
 	let corsSource = "";
@@ -68,47 +77,44 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		`;
 	}
 
-	// Generate config.ts
-	const configSource = `
-		${autoGenHeader()}
-		import { Config, BuildRuntime } from ${JSON.stringify(runtimeModPath)};
-
-		${imports}
-		${modImports}
-
+	// Config export
+	config.chunk.append`
 		export default {
 			runtime: BuildRuntime.${runtimeToString(opts.runtime)},
 			modules: ${modConfig},
 			${corsSource}
 			db: {
 				drizzleFn: drizzle,
-				createPgPool: ${generateCreatePgPool(opts)},
+				createPgPool: ${generateCreatePgPool(opts)}
 			},
 		} as Config;
-		`;
+	`;
 
-	// Generate entrypoint.ts
-	let entrypointSource = "";
-
+	// Entrypoint imports
 	const actorDriverPath: string = genRuntimeActorDriverPath(project, opts.runtime);
 	if (opts.runtime == Runtime.Deno) {
-		entrypointSource = `
-			${autoGenHeader()}
-			import { Runtime } from ${JSON.stringify(runtimeModPath)};
-			import { dependencyCaseConversionMap } from ${JSON.stringify(genDependencyCaseConversionMapPath(project))};
-			import { actorCaseConversionMap } from ${JSON.stringify(genActorCaseConversionMapPath(project))};
-			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
-			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
-			import config from "./runtime_config.ts";
-			import { handleRequest } from ${
-			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "server.ts"))
+		entrypoint.chunk.withNewlinesPerChunk(1)
+			.append`
+				import { Runtime } from ${JSON.stringify(entrypoint.relative(runtimeModPath))};
+				import { dependencyCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genDependencyCaseConversionMapPath(project)))};
+				import { actorCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genActorCaseConversionMapPath(project)))};
+				import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
+				import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
+				import config from "./runtime_config.ts";
+				import { handleRequest } from ${
+			JSON.stringify(entrypoint.relative(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "server.ts")))
 		};
-			import { ActorDriver } from ${JSON.stringify(actorDriverPath)};
-			import { PathResolver } from ${
-			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "mod.ts"))
+				import { ActorDriver } from ${JSON.stringify(entrypoint.relative(actorDriverPath))};
+				import { PathResolver } from ${
+			JSON.stringify(entrypoint.relative(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "mod.ts")))
 		};
-			import { log } from ${JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "logger.ts"))};
+				import { log } from ${
+			JSON.stringify(entrypoint.relative(projectGenPath(project, RUNTIME_PATH, "packages", "runtime", "logger.ts")))
+		};
+			`;
 
+		// Deno entrypoint
+		entrypoint.chunk.append`
 			const runtime = new Runtime<{
 				dependenciesSnake: DependenciesSnake,
 				dependenciesCamel: DependenciesCamel,
@@ -121,7 +127,6 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 				dependencyCaseConversionMap,
 				actorCaseConversionMap,
 			);
-
 
 			const resolver = new PathResolver(runtime.routePaths());
 
@@ -148,28 +153,31 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 					);
 				},
 			).finished;
-			`;
+		`;
 	} else if (opts.runtime == Runtime.CloudflareWorkersPlatforms) {
 		const runtimePath = projectGenPath(project, RUNTIME_PATH);
 		const serverTsPath = resolve(runtimePath, "packages", "runtime", "server.ts");
 		const errorTsPath = resolve(runtimePath, "packages", "runtime", "error.ts");
 
-		entrypointSource = `
-			${autoGenHeader()}
-			import type { IncomingRequestCf } from 'https://raw.githubusercontent.com/skymethod/denoflare/v0.6.0/common/cloudflare_workers_types.d.ts';
-			import { Runtime, Environment } from ${JSON.stringify(runtimeModPath)};
-			import { RuntimeError } from ${JSON.stringify(errorTsPath)};
-			import { dependencyCaseConversionMap } from ${JSON.stringify(genDependencyCaseConversionMapPath(project))};
-			import { actorCaseConversionMap } from ${JSON.stringify(genActorCaseConversionMapPath(project))};
-			import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
-			import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
-			import config from "./runtime_config.ts";
-			import { handleRequest } from ${JSON.stringify(serverTsPath)};
-			import { ActorDriver, buildGlobalDurableObjectClass } from ${JSON.stringify(actorDriverPath)};
-			import { PathResolver } from ${
-			JSON.stringify(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "mod.ts"))
+		entrypoint.chunk.withNewlinesPerChunk(1)
+			.append`
+				import type { IncomingRequestCf } from 'https://raw.githubusercontent.com/skymethod/denoflare/v0.6.0/common/cloudflare_workers_types.d.ts';
+				import { Runtime, Environment } from ${JSON.stringify(entrypoint.relative(runtimeModPath))};
+				import { RuntimeError } from ${JSON.stringify(entrypoint.relative(errorTsPath))};
+				import { dependencyCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genDependencyCaseConversionMapPath(project)))};
+				import { actorCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genActorCaseConversionMapPath(project)))};
+				import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
+				import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
+				import config from "./runtime_config.ts";
+				import { handleRequest } from ${JSON.stringify(entrypoint.relative(serverTsPath))};
+				import { ActorDriver, buildGlobalDurableObjectClass } from ${JSON.stringify(entrypoint.relative(actorDriverPath))};
+				import { PathResolver } from ${
+			JSON.stringify(entrypoint.relative(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "mod.ts")))
 		};
+			`;
 
+		// Cloudflare entrypoint
+		entrypoint.chunk.append`
 			export default {
 				async fetch(req: IncomingRequestCf, env: Record<string, unknown>, ctx) {
 					${hyperdriveAdapter(opts)}
@@ -224,123 +232,119 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 			// Export durable object binding
 			const __GlobalDurableObject = buildGlobalDurableObjectClass(config, dependencyCaseConversionMap, actorCaseConversionMap);
 			export { __GlobalDurableObject };
-			`;
+		`;
 	}
 
 	// Write files
-	const configPath = projectGenPath(project, RUNTIME_CONFIG_PATH);
-	const entrypointPath = projectGenPath(project, ENTRYPOINT_PATH);
+	await config.write();
+	await entrypoint.write();
 
-	await Deno.writeTextFile(configPath, configSource);
-	await Deno.writeTextFile(entrypointPath, entrypointSource);
 	await Deno.writeTextFile(
 		projectGenPath(project, GITIGNORE_PATH),
 		".",
 	);
-
-	// Format files
-	const fmtOutput = await new Deno.Command("deno", {
-		args: ["fmt", configPath, entrypointPath],
-		signal: opts.signal,
-	}).output();
-	if (!fmtOutput.success) throw new CommandError("Failed to format generated files.", { commandOutput: fmtOutput });
 }
 
-function generateModImports(project: Project) {
-	let modImports = "";
-	let modConfig = "{";
-	for (const mod of project.modules.values()) {
-		modConfig += `${JSON.stringify(mod.name)}: {`;
+function generateModImports(project: Project, path: string) {
+	const modImports = new GeneratedCodeBuilder(path);
+	const modConfig = new GeneratedCodeBuilder(path);
 
-		modConfig += `"storageAlias": ${JSON.stringify(mod.storageAlias)},`;
+	modConfig.append`{`;
+
+	for (const mod of project.modules.values()) {
+		modConfig.append`${JSON.stringify(mod.name)}: {`;
+
+		modConfig.append`"storageAlias": ${JSON.stringify(mod.storageAlias)},`;
 
 		// Generate script configs
-		modConfig += "scripts: {";
+		modConfig.append`scripts: {`;
 		for (const script of mod.scripts.values()) {
 			const runIdent = `modules$$${mod.name}$$${script.name}$$run`;
 
-			modImports += `import { run as ${runIdent} } from '${mod.path}/scripts/${script.name}.ts';\n`;
+			modImports.append`import { run as ${runIdent} } from ${JSON.stringify(modImports.relative(resolve(mod.path, "scripts", `${script.name}.ts`)))};`;
 
-			modConfig += `${JSON.stringify(script.name)}: {`;
-			modConfig += `run: ${runIdent},`;
-			modConfig += `public: ${JSON.stringify(script.config.public ?? false)},`;
-			modConfig += `requestSchema: ${convertSerializedSchemaToZodExpression(script.schemas?.request!)},`;
-			modConfig += `responseSchema: ${convertSerializedSchemaToZodExpression(script.schemas?.response!)},`;
-			modConfig += `},`;
+			modConfig.append`${JSON.stringify(script.name)}: {`;
+			modConfig.append`run: ${runIdent},`;
+			modConfig.append`public: ${JSON.stringify(script.config.public ?? false)},`;
+			modConfig.append`requestSchema: ${convertSerializedSchemaToZodExpression(script.schemas?.request!)},`;
+			modConfig.append`responseSchema: ${convertSerializedSchemaToZodExpression(script.schemas?.response!)},`;
+			modConfig.append`},`;
 		}
-		modConfig += "},";
+		modConfig.append`},`;
 
 		// Generate actor configs
-		modConfig += "actors: {";
+		modConfig.append`actors: {`;
 		for (const actor of mod.actors.values()) {
 			const actorIdent = `modules$$${mod.name}$$${actor.name}$$Actor`;
 
-			modImports += `import { Actor as ${actorIdent} } from '${mod.path}/actors/${actor.name}.ts';\n`;
+			modImports.append`import { Actor as ${actorIdent} } from ${JSON.stringify(modImports.relative(resolve(mod.path, "actors", `${actor.name}.ts`)))};`;
 
-			modConfig += `${JSON.stringify(actor.name)}: {`;
-			modConfig += `actor: ${actorIdent},`;
-			modConfig += `storageAlias: ${JSON.stringify(actor.storageAlias)},`;
-			modConfig += `},`;
+			modConfig.append`${JSON.stringify(actor.name)}: {`;
+			modConfig.append`actor: ${actorIdent},`;
+			modConfig.append`storageAlias: ${JSON.stringify(actor.storageAlias)},`;
+			modConfig.append`},`;
 		}
-		modConfig += "},";
+		modConfig.append`},`;
 
 		// Generate route configs
-		modConfig += "routes: {";
+		modConfig.append`routes: {`;
 		for (const route of mod.routes.values()) {
 			const handleIdent = `modules$$${mod.name}$$${route.name}$$route$$handle`;
 
-			modImports += `import { handle as ${handleIdent} } from '${mod.path}/routes/${route.name}.ts';\n`;
+			modImports.append`import { handle as ${handleIdent} } from ${JSON.stringify(modImports.relative(resolve(mod.path, "routes", `${route.name}.ts`)))};`;
 
-			modConfig += `${JSON.stringify(route.name)}: {`;
-			modConfig += `run: ${handleIdent},`;
+			modConfig.append`${JSON.stringify(route.name)}: {`;
+			modConfig.append`run: ${handleIdent},`;
 			const methods = route.config.method ? [route.config.method] : ["GET", "POST", "PUT", "PATCH", "DELETE"];
-			modConfig += `methods: new Set(${JSON.stringify(methods)}),`;
+			modConfig.append`methods: new Set(${JSON.stringify(methods)}),`;
 			if ("path" in route.config) {
-				modConfig += `path: ${JSON.stringify(route.config.path)},`;
+				modConfig.append`path: ${JSON.stringify(route.config.path)},`;
 			} else {
-				modConfig += `pathPrefix: ${JSON.stringify(route.config.pathPrefix)},`;
+				modConfig.append`pathPrefix: ${JSON.stringify(route.config.pathPrefix)},`;
 			}
-			modConfig += `},`;
+			modConfig.append`},`;
 		}
-		modConfig += "},";
+		modConfig.append`},`;
 
 		// Generate error configs
-		modConfig += `errors: ${JSON.stringify(mod.config.errors)},`;
+		modConfig.append`errors: ${JSON.stringify(mod.config.errors)},`;
 
 		// Generate dependency lookup
-		modConfig += `dependencies: new Set([`;
-		modConfig += JSON.stringify(mod.name) + ",";
+		modConfig.append`dependencies: new Set([`;
+		modConfig.append`${JSON.stringify(mod.name)},`;
 		for (const dependencyName in mod.config.dependencies) {
-			modConfig += JSON.stringify(dependencyName) + ",";
+			modConfig.append`${JSON.stringify(dependencyName)},`;
 		}
-		modConfig += `]),`;
+		modConfig.append`]),`;
 
 		// Generate db config
 		if (mod.db) {
 			const drizzleSchemaImportName = `drizzleSchema$$${mod.name}`;
 			const drizzleSchemaImportPath = dbSchemaPath(mod);
-			modImports += `import * as ${drizzleSchemaImportName} from ${JSON.stringify(drizzleSchemaImportPath)};\n`;
+			modImports.append`import * as ${drizzleSchemaImportName} from ${JSON.stringify(modImports.relative(drizzleSchemaImportPath))};`;
 
-			modConfig += `db: {`;
-			modConfig += `schemaName: ${JSON.stringify(mod.db.schema)},`;
-			modConfig += `drizzleSchema: ${drizzleSchemaImportName},`, modConfig += `},`;
+			modConfig.append`db: {`;
+			modConfig.append`schemaName: ${JSON.stringify(mod.db.schema)},`;
+			modConfig.append`drizzleSchema: ${drizzleSchemaImportName},`;
+			modConfig.append`},`;
 		} else {
-			modConfig += `db: undefined,`;
+			modConfig.append`db: undefined,`;
 		}
 
 		// Generate user config
-		modConfig += `userConfig: ${JSON.stringify(mod.userConfig)},`;
+		modConfig.append`userConfig: ${JSON.stringify(mod.userConfig)},`;
 
-		modConfig += "},";
+		modConfig.append`},`;
 	}
-	modConfig += "}";
+	modConfig.append`}`;
 
 	return [modImports, modConfig];
 }
 
 function generateCreatePgPool(opts: BuildOpts) {
+	const output = new GeneratedCodeBuilder();
 	if (opts.dbDriver == DbDriver.NodePostgres) {
-		return dedent`
+		output.append`
 			(url: URL) => {
 				return new pg.Pool({
 					connectionString: url.toString(),
@@ -348,7 +352,7 @@ function generateCreatePgPool(opts: BuildOpts) {
 			}
 		`;
 	} else if (opts.dbDriver == DbDriver.NeonServerless) {
-		return dedent`
+		output.append`
 			(url: URL) => {
 				return new neon.Pool({
 					connectionString: url.toString(),
@@ -356,7 +360,7 @@ function generateCreatePgPool(opts: BuildOpts) {
 			}
 		`;
 	} else if (opts.dbDriver == DbDriver.CloudflareHyperdrive) {
-		return dedent`
+		output.append`
 			(url: URL) => {
 				return new pg.Pool({
 					connectionString: url.toString(),
@@ -370,15 +374,18 @@ function generateCreatePgPool(opts: BuildOpts) {
 	} else {
 		throw new UnreachableError(opts.dbDriver);
 	}
+	return output;
 }
 
-function hyperdriveAdapter(opts: BuildOpts): string {
-	if (opts.dbDriver != DbDriver.CloudflareHyperdrive) return "";
-	return dedent`
+function hyperdriveAdapter(opts: BuildOpts) {
+	const output = new GeneratedCodeBuilder();
+	if (opts.dbDriver != DbDriver.CloudflareHyperdrive) return;
+	output.append`
 		interface Hyperdrive {
 			connectionString: string;
 		}
 
 		env.DATABASE_URL = (env.__HYPERDRIVE as Hyperdrive).connectionString;
 	`;
+	return output;
 }

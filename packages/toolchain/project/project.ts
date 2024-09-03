@@ -254,13 +254,20 @@ export async function fetchAndResolveModule(
 		);
 
 		// HACK: Copy gen file to temp dir to avoid overwriting it
-		const genPath = resolve(path, "module.gen.ts");
-		let tempGenDir: string | undefined;
-		let tempGenPath: string | undefined;
-		if (await exists(genPath, { isFile: true })) {
-			tempGenDir = await Deno.makeTempDir();
-			tempGenPath = resolve(tempGenDir, "module.gen.ts");
-			await copy(genPath, tempGenPath, { overwrite: true });
+		const tempGenDir: string | undefined = await Deno.makeTempDir();
+
+		const moduleGenPath = resolve(path, "module.gen.ts");
+		let tempModuleGenPath: string | undefined;
+		if (await exists(moduleGenPath, { isFile: true })) {
+			tempModuleGenPath = resolve(tempGenDir, "module.gen.ts");
+			await copy(moduleGenPath, tempModuleGenPath, { overwrite: true });
+		}
+
+		const schemaGenPath = resolve(path, "db", "schema.gen.ts");
+		let tempSchemaGenPath: string | undefined;
+		if (await exists(schemaGenPath, { isFile: true })) {
+			tempSchemaGenPath = resolve(tempGenDir, "schema.gen.ts");
+			await copy(schemaGenPath, tempSchemaGenPath, { overwrite: true });
 		}
 
 		// TODO: Only copy when needed, this copies every time the CLI is ran
@@ -268,12 +275,15 @@ export async function fetchAndResolveModule(
 		await copy(sourcePath, path, { overwrite: true });
 
 		// HACK: Restore gen file
-		if (tempGenDir && tempGenPath) {
-			// Cannot `move` from a temp dir because /tmp might be in a
-			// different file system
-			await copy(tempGenPath, genPath, { overwrite: true });
-			await Deno.remove(tempGenDir, { recursive: true });
+		// Cannot `move` from a temp dir because /tmp might be in a
+		// different file system
+		if (tempModuleGenPath) {
+			await copy(tempModuleGenPath, moduleGenPath, { overwrite: true });
 		}
+		if (tempSchemaGenPath) {
+			await copy(tempSchemaGenPath, schemaGenPath, { overwrite: true });
+		}
+		await Deno.remove(tempGenDir, { recursive: true });
 	} else {
 		// Use original path
 		path = sourcePath;

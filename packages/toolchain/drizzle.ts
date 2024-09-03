@@ -80,7 +80,7 @@ export async function runDrizzleCommand(project: Project, module: Module, opts: 
 		}),
 	);
 
-	verbose("Running Drizzle command", module.name, tempDir);
+	verbose("Running Drizzle command", `${module.name} ${tempDir}`);
 
 	// Install dependencies
 	//
