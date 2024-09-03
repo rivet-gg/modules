@@ -3,7 +3,7 @@ import { dirname, resolve, SEPARATOR } from "@std/path";
 import { Project } from "../project/mod.ts";
 import { loadProject, loadProjectConfigPath, LoadProjectOpts } from "../project/project.ts";
 import { info, verbose } from "../term/status.ts";
-import { InternalError } from "../error/mod.ts";
+import { AbortError, InternalError } from "../error/mod.ts";
 import { printError } from "../error/mod.ts";
 import * as colors from "@std/fmt/colors";
 
@@ -83,7 +83,11 @@ export async function watch(opts: WatchOpts) {
 				fnAbortController.signal,
 			)
 				.catch((err) => {
-					if (err.name != "AbortError") throw err;
+          // Ignore abort error
+					if (err instanceof AbortError) return;
+
+          // Re-throw error
+          throw err;
 				});
 		}
 
@@ -106,7 +110,7 @@ export async function watch(opts: WatchOpts) {
 
 		// Abort previous build. Ignore if it's already aborted.
 		try {
-			fnAbortController?.abort("Rebuilding project due to file change.");
+			fnAbortController?.abort(new AbortError("Rebuilding project due to file change."));
 		} catch (err) {
 			if (err instanceof Error && err.name != "AbortError") throw err;
 		}
