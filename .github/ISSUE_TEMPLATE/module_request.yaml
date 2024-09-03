@@ -9,7 +9,7 @@ body:
     attributes:
       label: Module Name
       description: "Provide a clear and concise name for the proposed module."
-      placeholder: Example: Leaderboard Module
+      placeholder: "Example: Leaderboard Module"
     validations:
       required: true
 
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Use Case
       description: "Explain the primary use case for this module in game backends. Potentially include the relevant types of games and existing games with similar features."
-      placeholder: This module would be used for...
+      placeholder: "This module would be used for..."
     validations:
       required: true
 
