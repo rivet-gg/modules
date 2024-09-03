@@ -1,0 +1,53 @@
+name: New Module Request
+description: Suggest a new module for OpenGB
+title: "[MODULE REQUEST] "
+labels: ["enhancement", "module request"]
+assignees: []
+body:
+  - type: input
+    id: module-name
+    attributes:
+      label: Module Name
+      description: Provide a clear and concise name for the proposed module.
+      placeholder: e.g., Leaderboard Module
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Explain the primary use case for this module in game backends. Potentially include the relevant types of games and existing games with similar features.
+      placeholder: This module would be used for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: features
+    attributes:
+      label: Features
+      description: List the key features you'd like to see in this module.
+      placeholder: |
+        - [ ] Feature 1
+        - [ ] Feature 2
+        - [ ] Feature 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: integration
+    attributes:
+      label: Integration with Existing Modules
+      description: Describe how this module would integrate with existing OpenGB modules. Examples: friends integrates with users, parties integrates with lobbies.
+      placeholder: This module could integrate with...
+    validations:
+      required: false
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Prior Art
+      description: Add any other tools that you think are helpful for reference in designing this module.
+      placeholder: Similar implementations or relevant examples include...
+    validations:
+      required: false
