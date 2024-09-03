@@ -8,8 +8,8 @@ body:
     id: module-name
     attributes:
       label: Module Name
-      description: Provide a clear and concise name for the proposed module.
-      placeholder: e.g., Leaderboard Module
+      description: "Provide a clear and concise name for the proposed module."
+      placeholder: Example: Leaderboard Module
     validations:
       required: true
 
@@ -17,7 +17,7 @@ body:
     id: use-case
     attributes:
       label: Use Case
-      description: Explain the primary use case for this module in game backends. Potentially include the relevant types of games and existing games with similar features.
+      description: "Explain the primary use case for this module in game backends. Potentially include the relevant types of games and existing games with similar features."
       placeholder: This module would be used for...
     validations:
       required: true
@@ -26,7 +26,7 @@ body:
     id: features
     attributes:
       label: Features
-      description: List the key features you'd like to see in this module.
+      description: "List the key features you'd like to see in this module."
       placeholder: |
         - [ ] Feature 1
         - [ ] Feature 2
@@ -38,8 +38,8 @@ body:
     id: integration
     attributes:
       label: Integration with Existing Modules
-      description: Describe how this module would integrate with existing OpenGB modules. Examples: friends integrates with users, parties integrates with lobbies.
-      placeholder: This module could integrate with...
+      description: "Describe how this module would integrate with existing OpenGB modules. Examples: friends integrates with users, parties integrates with lobbies."
+      placeholder: "This module could integrate with..."
     validations:
       required: false
 
@@ -47,7 +47,7 @@ body:
     id: prior-art
     attributes:
       label: Prior Art
-      description: Add any other tools that you think are helpful for reference in designing this module.
-      placeholder: Similar implementations or relevant examples include...
+      description: "Add any other tools that you think are helpful for reference in designing this module."
+      placeholder: "Similar implementations or relevant examples include..."
     validations:
       required: false
