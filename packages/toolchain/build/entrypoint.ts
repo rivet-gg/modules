@@ -96,8 +96,12 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 		entrypoint.chunk.withNewlinesPerChunk(1)
 			.append`
 				import { Runtime } from ${JSON.stringify(entrypoint.relative(runtimeModPath))};
-				import { dependencyCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genDependencyCaseConversionMapPath(project)))};
-				import { actorCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genActorCaseConversionMapPath(project)))};
+				import { dependencyCaseConversionMap } from ${
+			JSON.stringify(entrypoint.relative(genDependencyCaseConversionMapPath(project)))
+		};
+				import { actorCaseConversionMap } from ${
+			JSON.stringify(entrypoint.relative(genActorCaseConversionMapPath(project)))
+		};
 				import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 				import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 				import config from "./runtime_config.ts";
@@ -164,13 +168,19 @@ export async function generateEntrypoint(project: Project, opts: BuildOpts) {
 				import type { IncomingRequestCf } from 'https://raw.githubusercontent.com/skymethod/denoflare/v0.6.0/common/cloudflare_workers_types.d.ts';
 				import { Runtime, Environment } from ${JSON.stringify(entrypoint.relative(runtimeModPath))};
 				import { RuntimeError } from ${JSON.stringify(entrypoint.relative(errorTsPath))};
-				import { dependencyCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genDependencyCaseConversionMapPath(project)))};
-				import { actorCaseConversionMap } from ${JSON.stringify(entrypoint.relative(genActorCaseConversionMapPath(project)))};
+				import { dependencyCaseConversionMap } from ${
+			JSON.stringify(entrypoint.relative(genDependencyCaseConversionMapPath(project)))
+		};
+				import { actorCaseConversionMap } from ${
+			JSON.stringify(entrypoint.relative(genActorCaseConversionMapPath(project)))
+		};
 				import type { DependenciesSnake, DependenciesCamel } from "./dependencies.d.ts";
 				import type { ActorsSnake, ActorsCamel } from "./actors.d.ts";
 				import config from "./runtime_config.ts";
 				import { handleRequest } from ${JSON.stringify(entrypoint.relative(serverTsPath))};
-				import { ActorDriver, buildGlobalDurableObjectClass } from ${JSON.stringify(entrypoint.relative(actorDriverPath))};
+				import { ActorDriver, buildGlobalDurableObjectClass } from ${
+			JSON.stringify(entrypoint.relative(actorDriverPath))
+		};
 				import { PathResolver } from ${
 			JSON.stringify(entrypoint.relative(projectGenPath(project, RUNTIME_PATH, "packages", "path_resolver", "mod.ts")))
 		};
@@ -261,7 +271,9 @@ function generateModImports(project: Project, path: string) {
 		for (const script of mod.scripts.values()) {
 			const runIdent = `modules$$${mod.name}$$${script.name}$$run`;
 
-			modImports.append`import { run as ${runIdent} } from ${JSON.stringify(modImports.relative(resolve(mod.path, "scripts", `${script.name}.ts`)))};`;
+			modImports.append`import { run as ${runIdent} } from ${
+				JSON.stringify(modImports.relative(resolve(mod.path, "scripts", `${script.name}.ts`)))
+			};`;
 
 			modConfig.append`${JSON.stringify(script.name)}: {`;
 			modConfig.append`run: ${runIdent},`;
@@ -277,7 +289,9 @@ function generateModImports(project: Project, path: string) {
 		for (const actor of mod.actors.values()) {
 			const actorIdent = `modules$$${mod.name}$$${actor.name}$$Actor`;
 
-			modImports.append`import { Actor as ${actorIdent} } from ${JSON.stringify(modImports.relative(resolve(mod.path, "actors", `${actor.name}.ts`)))};`;
+			modImports.append`import { Actor as ${actorIdent} } from ${
+				JSON.stringify(modImports.relative(resolve(mod.path, "actors", `${actor.name}.ts`)))
+			};`;
 
 			modConfig.append`${JSON.stringify(actor.name)}: {`;
 			modConfig.append`actor: ${actorIdent},`;
@@ -291,7 +305,9 @@ function generateModImports(project: Project, path: string) {
 		for (const route of mod.routes.values()) {
 			const handleIdent = `modules$$${mod.name}$$${route.name}$$route$$handle`;
 
-			modImports.append`import { handle as ${handleIdent} } from ${JSON.stringify(modImports.relative(resolve(mod.path, "routes", `${route.name}.ts`)))};`;
+			modImports.append`import { handle as ${handleIdent} } from ${
+				JSON.stringify(modImports.relative(resolve(mod.path, "routes", `${route.name}.ts`)))
+			};`;
 
 			modConfig.append`${JSON.stringify(route.name)}: {`;
 			modConfig.append`run: ${handleIdent},`;
@@ -321,7 +337,9 @@ function generateModImports(project: Project, path: string) {
 		if (mod.db) {
 			const drizzleSchemaImportName = `drizzleSchema$$${mod.name}`;
 			const drizzleSchemaImportPath = dbSchemaPath(mod);
-			modImports.append`import * as ${drizzleSchemaImportName} from ${JSON.stringify(modImports.relative(drizzleSchemaImportPath))};`;
+			modImports.append`import * as ${drizzleSchemaImportName} from ${
+				JSON.stringify(modImports.relative(drizzleSchemaImportPath))
+			};`;
 
 			modConfig.append`db: {`;
 			modConfig.append`schemaName: ${JSON.stringify(mod.db.schema)},`;

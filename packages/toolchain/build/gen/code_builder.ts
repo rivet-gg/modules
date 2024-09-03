@@ -17,6 +17,11 @@ function ensureRelativePrefixed(path: string) {
 	else return formatPath({ ...parsed, dir: `.` });
 }
 
+function forcePosixPath(path: string) {
+	// TODO: This is not correct
+	return path.replaceAll("\\", "/");
+}
+
 export class GeneratedCodeBuilder {
 	private sourceParts: string[] = [""];
 	private chunks: GeneratedCodeBuilder[] = [];
@@ -84,7 +89,7 @@ export class GeneratedCodeBuilder {
 		const denoRelative = relative(dirname(this.path), resolve(...pathSegments));
 
 		// relative("a/b/c", "a/b/c/d.ts") returns "d.ts", but we want "./d.ts"
-		return ensureRelativePrefixed(denoRelative);
+		return forcePosixPath(ensureRelativePrefixed(denoRelative));
 	}
 
 	public newline() {
