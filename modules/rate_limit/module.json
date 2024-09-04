@@ -4,7 +4,8 @@
 	"icon": "gauge-circle-minus",
 	"tags": [
 		"core",
-		"utility"
+		"utility",
+    "security"
 	],
 	"authors": [
 		"rivet-gg",

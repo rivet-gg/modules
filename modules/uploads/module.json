@@ -34,6 +34,8 @@
 			"public": false
 		},
 		"fetch_public_file_urls": {
+			"name": "Fetch Public File URLs",
+			"description": "Returns public presigned URLs for specified files in an upload",
 			"public": false
 		}
 	},

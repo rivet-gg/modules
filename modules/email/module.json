@@ -3,7 +3,8 @@
 	"description": "Send emails using multiple providers.",
 	"icon": "envelope",
 	"tags": [
-		"email"
+		"email",
+    "utility"
 	],
 	"authors": [
 		"rivet-gg",
