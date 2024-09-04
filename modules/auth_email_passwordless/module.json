@@ -1,41 +1,43 @@
 {
-	"name": "Auth Email Passwordless",
-	"description": "Authenticate users with only an email.",
-	"icon": "key",
-	"tags": [
-		"core",
-		"auth",
-		"user"
-	],
-	"authors": [
-		"rivet-gg",
-		"Blckbrry-Pi"
-	],
-	"status": "stable",
-	"dependencies": { "auth_email": {} },
-	"defaultConfig": {
-		"enable": false
-	},
-	"scripts": {
-		"send_verification": {
-			"name": "Send Email Verification",
-			"description": "Send a one-time verification code to an email address to verify ownership.",
-			"public": true
-		},
-		"verify_add_no_pass": {
-			"name": "Verify and Add Email to Existing User (No Password)",
-			"description": "Verify a user's email address and register it with an existing account. Does not require a password.",
-			"public": true
-		},
-		"verify_login_or_create_no_pass": {
-			"name": "Verify and Login as (or Create) User (No Password)",
-			"description": "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password.",
-			"public": true
-		}
-	},
-	"errors": {
-		"provider_disabled": {
-			"name": "Provider Disabled"
-		}
-	}
+  "name": "Auth Email Passwordless",
+  "description": "Authenticate users with only an email.",
+  "icon": "key",
+  "tags": [
+    "core",
+    "auth",
+    "user"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi"
+  ],
+  "status": "stable",
+  "dependencies": {
+    "auth_email": {}
+  },
+  "defaultConfig": {
+    "enable": false
+  },
+  "scripts": {
+    "send_verification": {
+      "name": "Send Email Verification",
+      "description": "Send a one-time verification code to an email address to verify ownership.",
+      "public": true
+    },
+    "verify_add_no_pass": {
+      "name": "Verify and Add Email to Existing User (No Password)",
+      "description": "Verify a user's email address and register it with an existing account. Does not require a password.",
+      "public": true
+    },
+    "verify_login_or_create_no_pass": {
+      "name": "Verify and Login as (or Create) User (No Password)",
+      "description": "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password.",
+      "public": true
+    }
+  },
+  "errors": {
+    "provider_disabled": {
+      "name": "Provider Disabled"
+    }
+  }
 }

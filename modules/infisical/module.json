@@ -1,10 +1,16 @@
 {
-	"name": "Infisical",
-	"description": "All-in-one platform to securely manage application configuration and secrets across your team and infrastructure.",
-	"icon": "infinity",
-	"tags": ["security", "integration"],
-	"authors": ["infisical", "rivet-gg"],
-	"status": "stable",
-	"scripts": {},
-	"errors": {}
+  "name": "Infisical",
+  "description": "All-in-one platform to securely manage application configuration and secrets across your team and infrastructure.",
+  "icon": "infinity",
+  "tags": [
+    "security",
+    "integration"
+  ],
+  "authors": [
+    "infisical",
+    "rivet-gg"
+  ],
+  "status": "stable",
+  "scripts": {},
+  "errors": {}
 }

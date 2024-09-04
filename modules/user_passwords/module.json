@@ -1,45 +1,45 @@
 {
-	"name": "User Password Verifier",
-    "description": "An INTERNAL-ONLY module to store and verify passwords by user ID. Used by some auth modules that require password verification.",
-    "icon": "shield-halved",
-    "tags": [
-        "core",
-        "user",
-        "auth",
-		"internal"
-    ],
-    "authors": [
-        "rivet-gg",
-        "Blckbrry-Pi"
-    ],
-    "status": "beta",
-	"dependencies": {
-		"users": {},
-		"rate_limit": {}
-	},
-	"scripts": {
-		"verify": {
-			"name": "Verify Password for User ID",
-			"description": "Verify that the provided password matches the provided user ID. Errors on mismatch."
-		},
-		"add": {
-			"name": "Add Password for User",
-			"description": "Register a new userID/password combination. Errors if user already has a password."
-		},
-		"update": {
-			"name": "Update Password for User",
-			"description": "Update a userID/password combination. Errors if user does not have a password."
-		}
-	},
-    "errors": {
-        "user_already_has_password": {
-            "name": "User already has a password"
-        },
-        "user_does_not_have_password": {
-            "name": "User does not yet have a password"
-        },
-        "password_invalid": {
-            "name": "Password is Invalid"
-        }
+  "name": "User Password Verifier",
+  "description": "An INTERNAL-ONLY module to store and verify passwords by user ID. Used by some auth modules that require password verification.",
+  "icon": "shield-halved",
+  "tags": [
+    "core",
+    "user",
+    "auth",
+    "internal"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi"
+  ],
+  "status": "beta",
+  "dependencies": {
+    "users": {},
+    "rate_limit": {}
+  },
+  "scripts": {
+    "verify": {
+      "name": "Verify Password for User ID",
+      "description": "Verify that the provided password matches the provided user ID. Errors on mismatch."
+    },
+    "add": {
+      "name": "Add Password for User",
+      "description": "Register a new userID/password combination. Errors if user already has a password."
+    },
+    "update": {
+      "name": "Update Password for User",
+      "description": "Update a userID/password combination. Errors if user does not have a password."
     }
+  },
+  "errors": {
+    "user_already_has_password": {
+      "name": "User already has a password"
+    },
+    "user_does_not_have_password": {
+      "name": "User does not yet have a password"
+    },
+    "password_invalid": {
+      "name": "Password is Invalid"
+    }
+  }
 }

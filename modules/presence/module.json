@@ -1,12 +1,14 @@
 {
-	"name": "Presence",
-	"description": "Real-time online presence for players. See who's online and what they're doing.",
-	"icon": "circle-dot",
-	"tags": [
-		"multiplayer"  
-	],
-	"authors": [],
-	"status": "coming_soon",
-	"scripts": {},
-	"errors": {}
+  "name": "Presence",
+  "description": "Real-time online presence for players. See who's online and what they're doing.",
+  "icon": "circle-dot",
+  "tags": [
+    "multiplayer"
+  ],
+  "authors": [
+    "rivet-gg"
+  ],
+  "status": "coming_soon",
+  "scripts": {},
+  "errors": {}
 }

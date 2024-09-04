@@ -1,10 +1,15 @@
 {
-	"name": "Twitch",
-	"description": "Integrate your game with drops",
-	"icon": "twitch",
-	"tags": ["platform", "integration"],
-	"authors": ["rivet-gg"],
-	"status": "coming_soon",
-	"scripts": {},
-	"errors": {}
+  "name": "Twitch",
+  "description": "Integrate your game with drops",
+  "icon": "twitch",
+  "tags": [
+    "platform",
+    "integration"
+  ],
+  "authors": [
+    "rivet-gg"
+  ],
+  "status": "coming_soon",
+  "scripts": {},
+  "errors": {}
 }

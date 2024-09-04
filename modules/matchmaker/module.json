@@ -5,8 +5,10 @@
   "tags": [
     "multiplayer"
   ],
-  "authors": [],
+  "authors": [
+    "rivet-gg"
+  ],
   "status": "coming_soon",
-	"scripts": {},
-	"errors": {}
+  "scripts": {},
+  "errors": {}
 }

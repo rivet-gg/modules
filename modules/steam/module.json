@@ -1,10 +1,15 @@
 {
-	"name": "Steam",
-	"description": "Integrate with Steam accounts",
-	"icon": "steam",
-	"tags": ["platform", "integration"],
-	"authors": ["rivet-gg"],
-	"status": "coming_soon",
-	"scripts": {},
-	"errors": {}
+  "name": "Steam",
+  "description": "Integrate with Steam accounts",
+  "icon": "steam",
+  "tags": [
+    "platform",
+    "integration"
+  ],
+  "authors": [
+    "rivet-gg"
+  ],
+  "status": "coming_soon",
+  "scripts": {},
+  "errors": {}
 }

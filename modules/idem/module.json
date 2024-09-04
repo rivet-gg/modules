@@ -1,10 +1,16 @@
 {
-	"name": "IDEM",
-	"description": "Matchmaking for multi-player games – as an API. Be sure your game's matchmaking will be loved by players.",
-	"icon": "i",
-	"tags": ["service", "integration"],
-	"authors": ["idem-matchmaking"],
-	"status": "coming_soon",
-	"scripts": {},
-	"errors": {}
+  "name": "IDEM",
+  "description": "Matchmaking for multi-player games – as an API. Be sure your game's matchmaking will be loved by players.",
+  "icon": "i",
+  "tags": [
+    "service",
+    "integration"
+  ],
+  "authors": [
+    "idem-matchmaking",
+    "rivet-gg"
+  ],
+  "status": "coming_soon",
+  "scripts": {},
+  "errors": {}
 }

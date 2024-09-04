@@ -1,78 +1,77 @@
 {
-	"name": "Auth Email",
-	"description": "[INTERNAL-ONLY: use auth_email_password/auth_email_passwordless/auth_email_link.] Authenticating users with email only or an email/password combination.",
-	"icon": "key",
-	"tags": [
-		"core",
-		"auth",
-		"user"
-	],
-	"authors": [
-		"rivet-gg",
-		"NathanFlurry",
-		"Blckbrry-Pi"
-	],
-	"status": "stable",
-	"dependencies": {
-		"email": {},
-        "identities": {},
-        "users": {},
-		"tokens": {},
-		"user_passwords": {},
-		"rate_limit": {}
-	},
-	"defaultConfig": {
-		"fromEmail": "hello@test.com",
-		"fromName": "Authentication Code"
-	},
-	"scripts": {
-		"send_verification": {
-			"name": "Send Email Verification (No Password)",
-			"description": "Send a one-time verification code to an email address to verify ownership. Does not require a password."
-		},
-		"verify_add_no_pass": {
-			"name": "Verify and Add Email to Existing User (No Password)",
-			"description": "Verify a user's email address and register it with an existing account. Does not require a password."
-		},
-		"verify_login_or_create_no_pass": {
-			"name": "Verify and Login as (or Create) User (No Password)",
-			"description": "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password."
-		},
-		"verify_link_email": {
-			"name": "Verify and Link Email Address to User",
-			"description": "Verify a user's email address and link it to an existing account without allowing login passwordless."
-		},
-
-		"verify_sign_up_email_pass": {
-			"name": "Verify and Sign Up with Email and Password",
-			"description": "Sign up a new user with an email and password."
-		},
-		"sign_in_email_pass": {
-			"name": "Sign In with Email and Password",
-			"description": "Sign in a user with an email and password."
-		},
-		"verify_add_email_pass": {
-			"name": "Verify and Add Email and Password to existing user",
-			"description": "Verify a user's email address and register it with an existing account. Requires a password."
-		}
-	},
-	"errors": {
-		"verification_code_invalid": {
-			"name": "Verification Code Invalid"
-		},
-		"verification_code_attempt_limit": {
-			"name": "Verification Code Attempt Limit"
-		},
-		"verification_code_expired": {
-			"name": "Verification Code Expired"
-		},
-		"verification_code_already_used": {
-			"name": "Verification Code Already Used"
-		},
-		"email_already_used": {
-			"name": "Email Already Used"
-		}
-	},
+  "name": "Auth Email",
+  "description": "[INTERNAL-ONLY: use auth_email_password/auth_email_passwordless/auth_email_link.] Authenticating users with email only or an email/password combination.",
+  "icon": "key",
+  "tags": [
+    "core",
+    "auth",
+    "user"
+  ],
+  "authors": [
+    "rivet-gg",
+    "NathanFlurry",
+    "Blckbrry-Pi"
+  ],
+  "status": "stable",
+  "dependencies": {
+    "email": {},
+    "identities": {},
+    "users": {},
+    "tokens": {},
+    "user_passwords": {},
+    "rate_limit": {}
+  },
+  "defaultConfig": {
+    "fromEmail": "hello@test.com",
+    "fromName": "Authentication Code"
+  },
+  "scripts": {
+    "send_verification": {
+      "name": "Send Email Verification (No Password)",
+      "description": "Send a one-time verification code to an email address to verify ownership. Does not require a password."
+    },
+    "verify_add_no_pass": {
+      "name": "Verify and Add Email to Existing User (No Password)",
+      "description": "Verify a user's email address and register it with an existing account. Does not require a password."
+    },
+    "verify_login_or_create_no_pass": {
+      "name": "Verify and Login as (or Create) User (No Password)",
+      "description": "Verify the email address code and return a userToken to AN account (creates a new account if one doesn't exist). Does not require a password."
+    },
+    "verify_link_email": {
+      "name": "Verify and Link Email Address to User",
+      "description": "Verify a user's email address and link it to an existing account without allowing login passwordless."
+    },
+    "verify_sign_up_email_pass": {
+      "name": "Verify and Sign Up with Email and Password",
+      "description": "Sign up a new user with an email and password."
+    },
+    "sign_in_email_pass": {
+      "name": "Sign In with Email and Password",
+      "description": "Sign in a user with an email and password."
+    },
+    "verify_add_email_pass": {
+      "name": "Verify and Add Email and Password to existing user",
+      "description": "Verify a user's email address and register it with an existing account. Requires a password."
+    }
+  },
+  "errors": {
+    "verification_code_invalid": {
+      "name": "Verification Code Invalid"
+    },
+    "verification_code_attempt_limit": {
+      "name": "Verification Code Attempt Limit"
+    },
+    "verification_code_expired": {
+      "name": "Verification Code Expired"
+    },
+    "verification_code_already_used": {
+      "name": "Verification Code Already Used"
+    },
+    "email_already_used": {
+      "name": "Email Already Used"
+    }
+  },
   "enableConfig": {
     "enable": true
   }

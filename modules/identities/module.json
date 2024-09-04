@@ -1,64 +1,63 @@
 {
-    "name": "Identities",
-    "description": "Manage identities and identity data for users. Intended for internal use by modules exposing auth providers.",
-    "icon": "key",
-    "tags": [
-        "core",
-        "user",
-        "auth"
-    ],
-    "authors": [
-        "rivet-gg",
-        "Blckbrry-Pi"
-    ],
-    "status": "beta",
-    "dependencies": {
-        "rate_limit": {},
-        "users": {},
-        "tokens": {}
+  "name": "Identities",
+  "description": "Manage identities and identity data for users. Intended for internal use by modules exposing auth providers.",
+  "icon": "key",
+  "tags": [
+    "core",
+    "user",
+    "auth"
+  ],
+  "authors": [
+    "rivet-gg",
+    "Blckbrry-Pi"
+  ],
+  "status": "beta",
+  "dependencies": {
+    "rate_limit": {},
+    "users": {},
+    "tokens": {}
+  },
+  "scripts": {
+    "list": {
+      "name": "List Identities",
+      "description": "List all identities the user is associated with.",
+      "public": true
     },
-    "scripts": {
-        "list": {
-            "name": "List Identities",
-            "description": "List all identities the user is associated with.",
-            "public": true
-        },
-        "fetch": {
-            "name": "Fetch Identity Data",
-            "description": "Fetch the data associated with a specific identity for a user."
-        },
-        "set": {
-            "name": "Set Identity Data",
-            "description": "Set the data associated with a specific identity for a user."
-        },
-
-        "sign_in": {
-            "name": "Sign In With Identity",
-            "description": "Sign in to a user with an identity."
-        },
-        "sign_up": {
-            "name": "Sign Up With Identity",
-            "description": "Sign up with an identity. Creates a new user."
-        },
-        "sign_in_or_sign_up": {
-            "name": "Sign In or Sign Up With Identity",
-            "description": "Sign in to a user with an identity, creating a new user if it fails."
-        },
-        "link": {
-            "name": "Link Identity To User",
-            "description": "Link a new identity and its associated data to a user. This is used for login and non-login identities."
-        }
+    "fetch": {
+      "name": "Fetch Identity Data",
+      "description": "Fetch the data associated with a specific identity for a user."
     },
-    "routes": {},
-    "errors": {
-        "identity_provider_not_found": {
-            "name": "Identity Provider Not Found"
-        },
-        "identity_provider_already_added": {
-            "name": "Identity Provider Already Added To User"
-        },
-        "identity_provider_already_used": {
-            "name": "Identity Provider Already Used By Other User"
-        }
+    "set": {
+      "name": "Set Identity Data",
+      "description": "Set the data associated with a specific identity for a user."
+    },
+    "sign_in": {
+      "name": "Sign In With Identity",
+      "description": "Sign in to a user with an identity."
+    },
+    "sign_up": {
+      "name": "Sign Up With Identity",
+      "description": "Sign up with an identity. Creates a new user."
+    },
+    "sign_in_or_sign_up": {
+      "name": "Sign In or Sign Up With Identity",
+      "description": "Sign in to a user with an identity, creating a new user if it fails."
+    },
+    "link": {
+      "name": "Link Identity To User",
+      "description": "Link a new identity and its associated data to a user. This is used for login and non-login identities."
     }
+  },
+  "routes": {},
+  "errors": {
+    "identity_provider_not_found": {
+      "name": "Identity Provider Not Found"
+    },
+    "identity_provider_already_added": {
+      "name": "Identity Provider Already Added To User"
+    },
+    "identity_provider_already_used": {
+      "name": "Identity Provider Already Used By Other User"
+    }
+  }
 }
