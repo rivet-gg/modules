@@ -1,5 +1,22 @@
 blank_issues_enabled: false
+
 contact_links:
   - name: Discord Community
     url: https://rivet.gg/discord
     about: Ask questions & talk to developers
+  - name: Enterprise Support
+    url: https://calendly.com/d/zvq-v4z-84t/rivet-founders-15-minute?month=2024-09
+    about: Get professional support with everything from module development, integrations, and priority bug fixes
+
+issue_templates:
+  - name: Bug Report
+    filename: bug_report.yml
+    description: File a bug report
+
+  - name: Module Feature Request
+    filename: module_feature_request.yml
+    description: Suggest an enhancement for an existing module
+
+  - name: New Module Request
+    filename: module_request.yml
+    description: Request a new module for OpenGB
