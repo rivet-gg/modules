@@ -1,0 +1,57 @@
+name: Module Feature Request
+description: Suggest an enhancement for an existing OpenGB module
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which existing module is this feature request for? If requesting a new module, please use the _New Module Request_ issue template.
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: Provide a clear and concise description of the feature you'd like to see added
+      placeholder: I would like to see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Explain the primary use case for this feature. How would it benefit users of the module?
+      placeholder: This feature would be useful for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-implementation
+    attributes:
+      label: Proposed Implementation
+      description: If you have ideas about how this feature could be implemented, please share them here
+      placeholder: This feature could be implemented by...
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: I've also thought about...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, examples, or screenshots about the feature request here
+    validations:
+      required: false
