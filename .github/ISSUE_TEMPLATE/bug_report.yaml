@@ -1,0 +1,68 @@
+name: Bug Report
+description: Report a bug in an existing OpenGB module
+title: "[BUG] "
+labels: ["bug"]
+assignees: []
+body:
+  - type: input
+    id: module
+    attributes:
+      label: Affected Module
+      description: Which module is this bug related to?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: OpenGB Version
+      description: Provide the output of `opengb --version`
+      placeholder: e.g., 1.2.3
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Provide a clear and concise description of the bug
+      placeholder: When I try to... the module does... instead of...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: List the steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Describe what you expected to happen
+      placeholder: I expected the module to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+    validations:
+      required: false
