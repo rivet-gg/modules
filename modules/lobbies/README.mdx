@@ -1,0 +1,645 @@
+# Lobbies
+
+The lobbies module is a casual matchmaker optimized to get your player connected to your game server in under a second in the optimal region & lobby.
+
+Supports multiple backends, including:
+
+- Rivet Dynamic Servers
+- Local Development
+
+## Getting started
+
+### Integration
+
+To integrate your servers to the Lobbies system, you need to call these three scripts in your server code.
+
+- **`set_lobby_ready`**: Notifies the lobbies system that the server is ready to accept players
+- **`set_player_connected`**: Notifies the lobbies system of a player connection while confirming the connection's legitimacy
+- **`set_player_disconnected`**: Notifies the lobbies system of a player disconnection
+
+And don't worry about notifying the lobbies system if your lobby closes or crashes, that gets taken internally by the Dynamic Server system. Although if you want to manually tell the lobbies system to stop letting in new players, you can call the **`lobbies.setClosed`** endpoint.
+
+### Connecting to lobbies
+
+Once integrated, you can call the following scripts to find and join available lobbies in your client code.
+
+- **`find`**: Finds an available lobby and grants a player token to connect
+- **`join`**: Given a lobby's id, grants a player token to be used for connection
+
+If you want the client to be able to create a whole new lobby (for things like private games), you can also use the **`create`** script.
+
+### Getting other lobby info
+
+Additionally, you can make use of these scripts to get more information about your game's lobbies.
+
+- **`list_regions`**: Returns listing of all regions available in game
+- **`list`**: Returns listing of all the lobbies linked to the lobbies system
+- **`lobbies.players.getStatistics`**: Returns player count statistics by region and game mode
+
+The Lobbies system is tightly integrated with Dynamic Servers to automatically boot lobbies on-demand when players need them. Read more about how Dynamic Servers operates your game servers [here](/docs/dynamic-servers/index).
+
+## How the matchmaker chooses lobbies
+
+This document explains the logic going on behind the scenes when a game calls find.
+
+### TL;DR
+
+Lobbies will return the lobby in the [closest region](#determining-the-region) with the [least spots available](#determining-the-lobby) (i.e. `max players - current players`).
+
+### Determining the region
+
+If no region is specified in find, OpenGB will use the GeoIP location provided by Cloudflare to find the nearest datacenter.
+
+GeoIP does not always provide the most optimal route to the datacenter, so we recommend providing the user with the ability to select their own region.
+
+### Determining the lobby
+
+Once the region has been determined, Lobbies will filter out full lobbies and then find the fullest lobby (i.e. least available spots).
+
+### Providing multiple game modes
+
+find allows the developer to provide multiple game modes to join. In this case, Lobbies will select the optimal lobby from all of the provided game modes.
+
+This can be helpful for games with low traffic but still want to provide multiple game modes to their users. In this situation, new players will be connected to any lobby for any game mode with players in it.
+
+### Full lobbies & no lobbies running
+
+When all of the lobbies are full or there are no lobbies running, Lobbies will automatically create a new lobby for the game mode specified and connect the player to that lobby.
+
+If this is not the desired behavior, find can be called with `prevent_auto_create_lobby` as `true`. This will return a MATCHMAKER_NO_AVAILABLE_LOBBIES error when no lobby can accept players.
+
+## Making games feel full in off hours
+
+### The problem
+
+Player counts in a given region usually fluxuate by at least 50% ever day during off hours. Games often feel _more_ empty than they actually are as players are leaving the game because there are _more_ lobbies with _less_ players spread evenly across them.
+
+For example:
+
+- 9 AM: There are **3 empty lobbies** and **15 players online**. Now there are **5 players in each lobby**.
+- 2 PM: Now there are **25 players online**, so 2 more lobbies are booted bringing us to **5 lobbies**. Now there are **5 players in each lobby**.
+- 10 PM: Players are going to bed, so there are **10 players online** with **5 lobbies**. Now there are **2 players in each lobby**.
+
+Even though there are twice as many players online at 10 PM as there were at 9 AM, there are _less_ players in each lobby.
+
+### How the matchmaker deals with this
+
+Lobbies is designed to mitigate this issue by prioritizing filling a few lobbies instead of spreading players across all lobbies.
+
+Take our example at 10 PM where there are **5 lobbies** with **2 players in each lobby**. If 2 new players come online, they will all be put in the same lobby, so one of the lobbies will have 4 players in it while the rest still have 2 players in them..
+
+### Auto-merging lobbies
+
+In our example, we still have 4 lobbies with only 2 players online.
+
+We recommend prompting players to find a new lobby when the lobby is almost empty. By having the players in these empty lobbies call `find_or_create` again, the players will be compacted in fewer, fuller lobbies.
+
+
+## Automatic region selection
+
+The OpenGB uses the client's IP address to determine the closest region. This allows us to find the optimal lobby for the player and connect them to a lobby in under a second.
+
+If you want to implement your own region selection logic, use `list_regions` to list all enabled regions for your game.
+
+### Which GeoIP database does OpenGB use under the hood?
+
+We use Cloudflare's provided geolocation.
+
+There are a series of [existing GeoIP
+databases](https://medium.com/@ipdata_co/what-is-the-best-commercial-ip-geolocation-api-d8195cda7027)
+with varying accuracy that we researched. However, we found that Cloudflare
+provides the most consistently accurate client location since they have more
+routing information than just the client's IP to work with.
+
+{/* ## Lobby tags
+
+Lobby tags are an optional property that can be passed to the [`lobbies.find`](/docs/matchmaker/api/lobbies/find) and [`lobbies.create`](/docs/matchmaker/api/lobbies/create) endpoints to allow filtering which lobbies the matchmaker will route a player to.
+
+To enable tags, set [`taggable`](http://localhost:3000/docs/general/config#matchmaker-game-modes-game-mode-taggable) to true.
+
+<CodeGroup title='rivet.yaml'>
+```yaml
+matchmaker:
+  game_modes:
+    default:
+      taggable: true
+```
+</CodeGroup>
+
+When passed to [`lobbies.create`](/docs/matchmaker/api/lobbies/create), the newly created lobby will have the given tags. When passed to [`lobbies.find`](/docs/matchmaker/api/lobbies/find), the matchmaker will attempt to return a lobby with a **superset** of the given tags. If no lobby is found, a new lobby is created with the given tags.
+
+<CodeGroup title='Request' tag='POST' label='https://matchmaker.api.rivet.gg/v1/lobbies/find'>
+```ts
+// Create Rivet client
+import { RivetClient } from '@rivet-gg/api';
+const RIVET = new RivetClient({ token: addYourTokenHere });
+
+// Make request
+await RIVET.matchmaker.lobbies.find({
+  gameMode: 'default',
+  tags: {
+    map: "sandstorm",
+    difficulty: "hard"
+  }
+});
+```
+</CodeGroup>
+
+<Warning>Tags are immutable. After a lobby is created, its tags cannot be changed.</Warning>
+
+### Example
+
+When passed to [`lobbies.find`](/docs/matchmaker/api/lobbies/find) the matchmaker will only return lobbies that have a **superset** of the given tags.
+
+Imagine this scenario where two lobbies were created with the tags and one without:
+
+1. **Lobby 1**
+
+   - `worldId = 123abc`
+   - `map = sandstorm`
+
+2. **Lobby 2**
+
+   - `worldId = foobar`
+   - `map = sandstorm`
+
+3. **Lobby 3**
+   - No tags
+
+Here is what would happen with the following [`lobbies.find`](/docs/matchmaker/api/lobbies/find) requests:
+
+<Note>
+  This example uses
+  [`prevent_auto_create_lobby`](http://localhost:3000/docs/matchmaker/api/lobbies[`lobbies.find`](/docs/matchmaker/api/lobbies/find)#prevent-auto-create-lobby)
+  to demonstrate the errors returned. If auto creating lobbies is enabled, cases 4 and 5 would create a new
+  lobby with the given tags and cases 1-3 would create a new lobby with the given tags only if all available
+  servers are full.
+</Note>
+
+1. **A [`lobbies.find`](/docs/matchmaker/api/lobbies/find) request with no tags**
+
+   The matchmaker would connect the player to any of the 3 lobbies.
+
+2. **A [`lobbies.find`](/docs/matchmaker/api/lobbies/find) request with the tags `map = sandstorm`**
+
+   The matchmaker would connect the player to either lobby 1 or lobby 2.
+
+3. **A [`lobbies.find`](/docs/matchmaker/api/lobbies/find) request with the tags `map = sandstorm`, `worldId = 123abc`**
+
+   The matchmaker would only connect players to lobby 1.
+
+4. **A [`lobbies.find`](/docs/matchmaker/api/lobbies/find) request with the tags `map = sandstorm`, `worldId = foobar`, `difficulty = hard`**
+
+   The matchmaker would error because there are no lobbies with the given tags. Note that there is a lobby with two of the requested tags, but it contains a **subset** of the tags in the request, not a **superset**.
+
+5. **A [`lobbies.find`](/docs/matchmaker/api/lobbies/find) request with the tags `map = tropic`**
+
+   The matchmaker would error because there are no lobbies with the given tags.
+
+### Authentication
+
+It can be useful to allow/disallow certain tags from being used when creating or finding lobbies. This can be done via [custom external verification](/docs/matchmaker/guides/anti-botting#custom-external-verification).
+
+## Anti-botting
+
+Botting is the act of using an automated script or computer program to connect to and interact with a game.
+This guide will show three ways to prevent botting using Rivet.
+
+1. [Captcha](#captcha)
+2. [Custom external verification](#custom-external-verification)
+
+## Captcha
+
+One popular method of bot prevention used across the entire internet is the
+[CAPTCHA](https://en.wikipedia.org/wiki/CAPTCHA).
+
+### Configuration changes
+
+To configure captcha for the Rivet matchmaker, add the following to your version config file:
+
+```yaml rivet.yaml
+matchmaker:
+  captcha:
+    # How many requests a connection can make before captcha reverification is required
+    requests_before_reverify: 10
+    # How much time before captcha reverification is required
+    verification_ttl: 240000 # milliseconds
+    # Chosen captcha provider here ...
+```
+
+The Rivet matchmaker currently supports two captcha providers:
+
+<AccordionGroup>
+  <Accordion title='hCaptcha'>
+    See the [hCaptcha guide](https://docs.hcaptcha.com/) for setup information. Add the following configuration
+    to your version config file:
+
+    ```yaml rivet.yaml
+    matchmaker:
+      captcha:
+        # ...
+        hcaptcha:
+          # hCaptcha difficulty (easy, moderate, difficult, always_on)
+          level: moderate
+    ```
+
+    <Note>Rivet does not currently support the usage of a custom hCaptcha site ID.</Note>
+
+  </Accordion>
+  <Accordion title='Cloudflare Turnstile'>
+    See the [Cloudflare Turnstile](https://blog.cloudflare.com/turnstile-private-captcha-alternative/) guide
+    for setup information.
+
+    Add the following configuration to your version config file:
+
+    ```yaml rivet.yaml
+    matchmaker:
+      captcha:
+      # ...
+      turnstile:
+        domains:
+          example.com: MY_TURNSTILE_SECRET_KEY
+    ```
+
+    <Accordion title='Where can I find my Turnstile secret key?'>
+      Your Turnstile secret key can be found here:
+      <Image src={imgTurnstile1} alt='Cloudflare sidebar' />
+      <Image src={imgTurnstile2} alt='Turnstile sites page' />
+      <Image src={imgTurnstile3} alt='Turnstile settings page' />
+    </Accordion>
+
+  </Accordion>
+</AccordionGroup>
+
+### Client-side changes
+
+After setting up captcha in your version config, future calls to
+[`lobbies.find`](/docs/matchmaker/api/lobbies/find), [`lobbies.join`](/docs/matchmaker/api/lobbies/join), and
+[`lobbies.create`](/docs/matchmaker/api/lobbies/create) will fail if captcha is not provided when requested.
+
+The response body will look something like this:
+
+```json
+{
+  "code": "CAPTCHA_CAPTCHA_REQUIRED",
+  "message": "Captcha is required.",
+  "documentation": "https://rivet.gg/docs/general/errors/captcha/captcha-required",
+  "metadata": {
+    "hcaptcha": {
+      "site_id": "MY_HCAPTCHA_SITE_ID"
+    }
+  }
+}
+```
+
+Use the metadata provided (or in the case of Turnstile, just your own site key) to have the user verify a
+captcha. After a successful captcha completion, retry the [`lobbies.find`](/docs/matchmaker/api/lobbies/find),
+[`lobbies.join`](/docs/matchmaker/api/lobbies/join), or [`lobbies.create`](/docs/matchmaker/api/lobbies/create)
+request with the captcha response:
+
+<CodeGroup title='Request' tag='POST' label='https://matchmaker.api.rivet.gg/v1/lobbies/find'>
+  ```bash {{ "title": "cURL" }}
+  curl
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d "{ \"captcha\": { \"turnstile\": { \"client_response\": \"CAPTCHA_RESPONSE\" } } }" \
+    'https://matchmaker.api.rivet.gg/v1/lobbies/find'
+  ```
+
+```ts
+import { RivetClient } from '@rivet-gg/api';
+const RIVET = new RivetClient({ token: addYourTokenHere });
+
+await RIVET.matchmaker.lobbies.find({
+  captcha: {
+    // Or `hcaptcha` depending on your version config
+    turnstile: {
+      clientResponse: 'CAPTCHA_RESPONSE'
+    }
+  }
+});
+```
+
+</CodeGroup>
+
+## Custom external verification
+
+The Rivet matchmaker allows for external verification requests to enable developers to arbitrarily
+allow/reject matchmaker requests by their own logic. This is useful for games that have their own
+account system or custom anti-botting mechanism that want to restrict API calls to the matchmaker.
+
+This is done via a webhook-like system that sends a `POST` request to a custom API
+endpoint after every [`lobbies.find`](/docs/matchmaker/api/lobbies/find), [`lobbies.join`](/docs/matchmaker/api/lobbies/join),
+or [`lobbies.create`](/docs/matchmaker/api/lobbies/create) request.
+
+### Configuration changes
+
+In this example, Rivet will send `https://my.app/verify` an HTTP POST request
+after every [`lobbies.join`](/docs/matchmaker/api/lobbies/join) request it
+receives.
+
+```yaml rivet.yaml
+matchmaker:
+  game_modes:
+    default:
+      actions:
+        join:
+          enabled: true
+          verification_config:
+            url: https://my.app/verify
+            headers:
+              my_header: SECRET_CODE
+```
+
+The request payload will look something like this:
+
+```json
+{
+  // This is arbitrary JSON data provided by the user to the /find or /join
+  // endpoints. Can be null.
+  "verification_data": {
+    // ...
+  },
+  "game": {
+    "namespace_id": "NAMESPACE_ID",
+    "game_mode_id": "GAME_MODE_ID",
+    "game_mode_name_id": "default",
+
+    // Info about the lobby only if it is already running. Null otherwise.
+    // When this value is null and `kind` is "find", that implies this lobby
+    // is being auto-created.
+    "lobby": {
+      "lobby_id": "LOBBY_ID",
+      "region_id": "REGION_ID",
+      "region_name_id": "atl",
+      "create_ts": "Tue, 15 Nov 1994 12:45:26 GMT",
+      "is_closed": false
+    },
+    // This is arbitrary JSON data. Can be null. †
+    "state": {
+      // ...
+    },
+    // This is arbitrary JSON data provided by the user to the /create
+    // endpoint when creating a custom lobby. Can be null. It will be
+    // passed to the `RIVET_LOBBY_CONFIG` environment variable upon
+    // lobby creation. ††
+    "config": {
+      // ...
+    },
+    // This is an arbitrary string hashmap provided by /find or /create by
+    // the user
+    "tags": {
+      // ...
+    },
+    // Set by the user in /find and /create requests. Null if unset.
+    "dynamic_max_players": 4
+  },
+  // IP info about all connecting players in this request.
+  "clients": {
+    "1.2.3.4": {
+      // Null if `User-Agent` header was not set.
+      "user_agent": "...",
+      // Coordinates can be null if IP fetching failed.
+      "latitude": 0.0,
+      "longitude": 0.0
+    }
+  },
+  "join_kind": "normal", // Either "normal", or "party"
+  "kind": "join" // Either "find", "join", or "create"
+}
+```
+
+_† See [lobbies.setState](/docs/matchmaker/api/lobbies/set-state)._
+
+_†† See [Lobby environment variables](/docs/matchmaker/concepts/lobby-env) for more info._
+
+### Server reply
+
+Your server should reply to Rivet's request according to these rules:
+
+- A success status code (`200` - `299`) tells the matchmaker it should accept the request
+- Any other status code tells the matchmaker it should reject the request with the [`MATCHMAKER_VERIFICATION_FAILED`](/docs/general/errors/mm/verification-failed) error
+
+### Client-side changes
+
+This code shows how to provide user data to your external verification server through Rivet:
+
+<CodeGroup title='Request' tag='POST' label='https://matchmaker.api.rivet.gg/v1/lobbies/find'>
+  ```bash {{ "title": "cURL" }}
+  curl
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d "{ \"verification_data\": { \"foo\": \"bar\" } }" \
+    'https://matchmaker.api.rivet.gg/v1/lobbies/find'
+  ```
+
+```ts
+import { RivetClient } from '@rivet-gg/api';
+const RIVET = new RivetClient({ token: addYourTokenHere });
+
+await RIVET.matchmaker.lobbies.find({
+  verificationData: {
+    foo: 'bar'
+  }
+});
+```
+
+</CodeGroup>
+
+If your server returns a response that ends up rejecting the matchmaker request,
+the user's request will fail with the [`MATCHMAKER_VERIFICATION_FAILED`](/docs/general/errors/mm/verification-failed)
+error code. If Rivet's request to your server times out or fails for any reason, the matchmaker request will fail with the
+[`MATCHMAKER_VERIFICATION_REQUEST_FAILED`](/docs/general/errors/mm/verification-request-failed) error code.
+
+### Use case: Custom account verification
+
+If you plan on using an external account system instead of Rivet's identities, you can
+leverage the external verification system discussed above.
+
+For example, passing a user's account token into this request will allow you to verify
+that the user is who they say they are:
+
+<CodeGroup title='Request' tag='POST' label='https://matchmaker.api.rivet.gg/v1/lobbies/find'>
+  ```bash {{ "title": "cURL" }}
+  curl
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d "{ \"verification_data\": { \"my_secret_account_token\": \"my-external-account-token-here" } }" \
+    'https://matchmaker.api.rivet.gg/v1/lobbies/find'
+  ```
+
+```ts
+import { RivetClient } from '@rivet-gg/api';
+const RIVET = new RivetClient({ token: addYourTokenHere });
+
+await RIVET.matchmaker.lobbies.find({
+  verificationData: {
+    mySecretAccountToken: 'my-external-account-token-here'
+  }
+});
+```
+
+</CodeGroup>
+
+## Custom games
+
+The Rivet matchmaker allows for the creation of lobbies on demand via the
+[`lobbies.create`](/docs/matchmaker/api/lobbies/create) endpoint. This guide will discuss in detail all of
+the configurations available with custom lobbies.
+
+### Creation
+
+To create custom lobbies, you must first enable them in your version config:
+
+<CodeGroup title='rivet.yaml'>
+  ```yaml
+  # ...
+
+  matchmaker:
+    game_modes:
+      default:
+        actions:
+          create:
+            enabled: true
+            # Public custom lobbies will be listed in the response to `lobbies.list`, private custom
+            # lobbies will not
+            enable_public: true  # Optional
+            enable_private: true # Optional
+            max_lobbies_per_identity: 5 # Optional
+  ```
+
+</CodeGroup>
+
+Now users can create a new custom lobby on-demand like so:
+
+<CodeGroup title='Request' tag='POST' label='https://matchmaker.api.rivet.gg/v1/lobbies/create'>
+  ```bash {{ "title": "cURL" }}
+  curl
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d "{ \"game_mode\": \"default\", \"region\": \"atl\", \"publicity\": \"private\" }" \
+    'https://matchmaker.api.rivet.gg/v1/lobbies/create'
+  ```
+
+```ts
+// Create Rivet client
+import { RivetClient } from '@rivet-gg/api';
+const RIVET = new RivetClient({ token: addYourTokenHere });
+
+// Make request
+await RIVET.matchmaker.lobbies.create({
+  gameMode: 'default',
+  // Optional
+  region: 'atl',
+  publicity: RIVET.matchmaker.CustomLobbyPublicity.Private
+});
+```
+
+</CodeGroup>
+
+<Warning>
+  Make sure you enable the publicity you intend to use in your
+  [`lobbies.create`](/docs/matchmaker/api/lobbies/create) request by setting `enable_public` and/or
+  `enable_private` to `true`. If it is not enabled, you will receive a `MATCHMAKER_CUSTOM_LOBBY_CONFIG_INVALID` error
+  from the API call.
+</Warning>
+
+### Customization
+
+Additionally, users can input any arbitrary JSON to the
+[`lobbies.create`](/docs/matchmaker/api/lobbies/create) endpoint and have it be sent directly to the new
+custom lobby that will be created. This allows users to customize game properties to their liking.
+
+<CodeGroup title='Request' tag='POST' label='https://matchmaker.api.rivet.gg/v1/lobbies/create'>
+  ```bash {{ "title": "cURL" }}
+  curl
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d "{ \"game_mode\": \"default\", \"publicity\": \"private\", \"lobby_config\": { \"roundDuration\": 120, \"gravity\": 4.6, \"coinsPerKill\": 100 } }" \
+    'https://matchmaker.api.rivet.gg/v1/lobbies/create'
+  ```
+
+  ```ts
+  // Create Rivet client
+  import { RivetClient } from '@rivet-gg/api';
+  const RIVET = new RivetClient({ token: addYourTokenHere });
+
+  // Make request
+  await RIVET.matchmaker.lobbies.create({
+    gameMode: 'default',
+    publicity: RIVET.matchmaker.CustomLobbyPublicity.Public,
+    lobbyConfig: {
+      roundDuration: 120,
+      gravity: 4.6,
+      coinsPerKill: 100
+    }
+  });
+  ```
+
+</CodeGroup>
+
+<Note>
+  For more info on verifying custom game config, see
+  [here](/docs/matchmaker/guides/anti-botting#custom-external-verification).
+</Note>
+
+Here's an example of how you might use the user's lobby config:
+
+<CodeGroup title='Game server'>
+  ```ts
+  // Create Rivet client
+  import { RivetClient } from '@rivet-gg/api';
+  const RIVET = new RivetClient({ token: process.env.RIVET_TOKEN });
+  await RIVET.matchmaker.lobbies.ready({});
+
+  // Parse config
+  let config: any;
+  try {
+    config = JSON.parse(process.env.RIVET_LOBBY_CONFIG);
+  } catch(e) {
+    console.error("Invalid lobby config: ", e);
+    process.exit(1);
+  }
+
+  let roundDuration = config.roundDuration ?? 240;
+  let gravity = config.gravity ?? 9.8;
+  let coinsPerKill = config.coinsPerKill ?? 50;
+
+  // ...
+  ```
+
+</CodeGroup>
+
+
+## Unconnected Players
+
+**Why it exists?**
+
+- high load & low player caps
+- preventing botting
+
+**What happens when players fail to connect?**
+
+- Unconnected players stack up
+- How lobbies API handles it
+  - Max players per IP: if creating another player and goes over ip limit, will
+    delete the old unconnected player for the same IP
+  - Maximum unconnected players: if too many unconnected players, we'll start
+    discarding the oldest unconnected player */}
+
+## Environment Variables
+
+The following environment variables are automatically set for each lobby:
+
+- `LOBBY_ID` A unique identifier for the lobby. This is a UUID string.
+- `LOBBY_VERSION` The version of the lobby, as specified in the lobby configuration.
+- `LOBBY_TOKEN` A secure token used for authenticating the lobby with the OpenGB backend.
+- `BACKEND_ENDPOINT` The public endpoint URL for the OpenGB backend.
+
+{/* ## FAQ
+
+### Competitive matchmaking
+
+Rivet Matchmaker is not built to be a competitive matchmaker out of the box. Every game has very specific requirements on how competitive matchmaking should work, so we built Rivet Matchmaker to be flexible enough to work with external systems.
+
+A few games run competitive matches on top of Rivet Matchmaker with 3rd party partners. If you're looking to run competitive matches on top of Rivet, please [reach out](https://discord.gg/BG2vqsJczH) to us! */}

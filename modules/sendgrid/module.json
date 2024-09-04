@@ -1,0 +1,10 @@
+{
+	"name": "Twilio SendGrid",
+	"description": "Get your emails to the inbox—where they belong.",
+	"icon": "envelope",
+	"tags": ["service", "integration"],
+	"authors": ["rivet-gg"],
+	"status": "stable",
+	"scripts": {},
+	"errors": {}
+}
