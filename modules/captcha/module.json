@@ -1,0 +1,18 @@
+{
+  "name": "Captcha",
+  "description": "",
+  "icon": "",
+  "tags": [],
+  "authors": [
+    "rivet-gg",
+    "ABCxFF"
+  ],
+  "status": "stable",
+  "scripts": {
+  },
+  "errors": {
+    "captcha_failed": {
+      "name": "Captcha Challenge Failed"
+    }
+  }
+}
