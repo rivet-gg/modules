@@ -5,7 +5,8 @@
   "tags": [
     "core",
     "user",
-    "auth"
+    "auth",
+    "internal"
   ],
   "authors": [
     "rivet-gg",

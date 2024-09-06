@@ -7,9 +7,6 @@
 		}
 	},
 	"modules": {
-		"achievements": {
-			"registry": "local"
-		},
 		"analytics": {
 			"registry": "local"
 		},
@@ -70,9 +67,6 @@
 				}
 			}
 		},
-		"matchmaker": {
-			"registry": "local"
-		},
 		"parties": {
 			"registry": "local"
 		},
@@ -104,18 +98,6 @@
 			"registry": "local"
 		},
 		"discord_activity": {
-			"registry": "local"
-		},
-		"eos": {
-			"registry": "local"
-		},
-		"steam": {
-			"registry": "local"
-		},
-		"idem": {
-			"registry": "local"
-		},
-		"twitch": {
 			"registry": "local"
 		},
 		"auth_oauth": {
