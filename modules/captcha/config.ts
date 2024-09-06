@@ -14,6 +14,7 @@ export interface ProviderCFTurnstile {
 }
 
 export interface ProviderHCaptcha {
+    // TODO: Score threshold
     sitekey: string;
     secret: string;
 }

@@ -7,6 +7,9 @@ export const validateCFTurnstileResponse = async (
         const result = await fetch(API, {
             body: JSON.stringify({ secret, response }),
             method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
         });
 
         const { success } = await result.json();
