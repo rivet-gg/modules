@@ -10,6 +10,14 @@
 		"achievements": {
 			"registry": "local"
 		},
+		"captcha": {
+			"registry": "local",
+			"config": {
+				"provider": {
+					"test": {}
+				}
+			}
+		},
 		"analytics": {
 			"registry": "local"
 		},
