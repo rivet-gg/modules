@@ -9,6 +9,9 @@
   ],
   "status": "stable",
   "scripts": {
+    "get_site_key": {
+      "name": "Get Captcha Site Key"
+    },
   },
   "errors": {
     "captcha_failed": {
