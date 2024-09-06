@@ -22,6 +22,7 @@ import { denoPlugins } from "jsr:@rivet-gg/esbuild-deno-loader@0.10.3-fork.2";
 import { migratePush } from "../../migrate/push.ts";
 import { migrateApply } from "../../migrate/apply.ts";
 import { migrateGenerate } from "../../migrate/generate.ts";
+import { verbose } from "../../term/status.ts";
 
 export async function planProjectBuild(
 	buildState: BuildState,
@@ -307,6 +308,7 @@ export async function planProjectBuild(
 		// Local/dev modules are pushed since the schema will frequently change.
 		// This has a risk of data loss, but this is required if iterating quickly
 		// on a schema.
+    verbose("Migration mode", opts.migrate?.mode.toString() ?? "<none>");
 		const generateMigrations = [];
 		const applyMigrations = [];
 		const pushMigrations = [];
@@ -334,6 +336,9 @@ export async function planProjectBuild(
 				}
 			}
 		}
+    verbose("Generate migrations", generateMigrations.map(x => x.name).join(", ") ?? "<none>");
+    verbose("Apply migrations", applyMigrations.map(x => x.name).join(", ") ?? "<none>");
+    verbose("Push migrations", pushMigrations.map(x => x.name).join(", ") ?? "<none>");
 
 		// Run generate commands one-by-one since they may have an interactive promp
 		for (const module of generateMigrations) {
@@ -371,9 +376,9 @@ export async function planProjectBuild(
 			await waitForBuildPromises(buildState);
 		}
 
-		// Run apply in parallel since it's non-interactive
+		// Run apply commands one-by-one since creating the initial Drizzle schema & table has a race condition
 		for (const module of applyMigrations) {
-			const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*", "*.sql"));
+			const migrations = await glob.glob(resolve(module.path, "db", "migrations", "*.sql"));
 			buildStep(buildState, {
 				id: `module.${module.name}.migrate.apply`,
 				name: "Migrate Database",
@@ -383,11 +388,12 @@ export async function planProjectBuild(
 					files: migrations,
 				},
 				async build({ signal }) {
+          verbose("applying migration inner", module.name);
 					await migrateApply(project, [module], signal);
 				},
 			});
-		}
 
-		await waitForBuildPromises(buildState);
+      await waitForBuildPromises(buildState);
+		}
 	}
 }
