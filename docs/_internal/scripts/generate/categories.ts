@@ -57,11 +57,11 @@ const CATEGORIES = [
     description: "Extend your game's reach and engage players across popular gaming platforms.",
     slug: "platform",
   },
-  {
-    name: "Infrastructure",
-    description: "Extend and integrate your game with custom backend services and third-party APIs.",
-    slug: "infra",
-  },
+  // {
+  //   name: "Infrastructure",
+  //   description: "Extend and integrate your game with custom backend services and third-party APIs.",
+  //   slug: "infra",
+  // },
   {
     name: "Service",
     description: "Integrate third-party services to enhance functionality and streamline operations.",
@@ -78,17 +78,21 @@ export interface Category {
 
 export function processCategories(meta: ProjectMeta): Category[] {
   const unsortedModules = new Set(Object.keys(meta.modules));
-  const allCatgories: Category[] = [];
+  const allCategories: Category[] = [];
   for (let categoryConfig of CATEGORIES) {
     const category: Category = {
       ...categoryConfig,
       modules: [],
     };
-    allCatgories.push(category);
+    allCategories.push(category);
 
     // Find modules
     for (const moduleId of new Set(unsortedModules)) {
       const module = meta.modules[moduleId]!;
+      if (module.config.tags?.indexOf("internal") != -1) {
+        unsortedModules.delete(moduleId);
+        continue;
+      }
 
       // Validate module
       assertExists(module.config.name, `Module missing name: ${moduleId}`);
@@ -119,5 +123,5 @@ export function processCategories(meta: ProjectMeta): Category[] {
   // Check for unsorted modules
   assert(unsortedModules.size == 0, `Modules do no have tag matching a category: ${[...unsortedModules].join(", ")}`)
 
-  return allCatgories;
+  return allCategories;
 }

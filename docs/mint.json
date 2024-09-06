@@ -181,13 +181,6 @@
           ]
         },
         {
-          "icon": "chess-knight",
-          "group": "Matchmaker",
-          "pages": [
-            "modules/matchmaker/overview"
-          ]
-        },
-        {
           "icon": "party-horn",
           "group": "Parties",
           "pages": [
@@ -206,47 +199,6 @@
     {
       "group": "Authentication",
       "pages": [
-        {
-          "icon": "key",
-          "group": "Auth Email",
-          "pages": [
-            "modules/auth_email/overview",
-            "modules/auth_email/config",
-            "modules/auth_email/errors",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/auth_email/scripts/send_verification",
-                "modules/auth_email/scripts/sign_in_email_pass",
-                "modules/auth_email/scripts/verify_add_email_pass",
-                "modules/auth_email/scripts/verify_add_no_pass",
-                "modules/auth_email/scripts/verify_link_email",
-                "modules/auth_email/scripts/verify_login_or_create_no_pass",
-                "modules/auth_email/scripts/verify_sign_up_email_pass"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Auth Email Linking",
-          "pages": [
-            "modules/auth_email_link/overview",
-            "modules/auth_email_link/errors",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/auth_email_link/scripts/send_verification"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/auth_email_link/scripts/verify_link_email"
-              ]
-            }
-          ]
-        },
         {
           "icon": "key",
           "group": "Auth Email Passwordless",
@@ -291,47 +243,6 @@
               "pages": [
                 "modules/auth_username_password/scripts/sign_in",
                 "modules/auth_username_password/scripts/sign_up"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "key",
-          "group": "Identities",
-          "pages": [
-            "modules/identities/overview",
-            "modules/identities/errors",
-            {
-              "group": "Scripts (Public)",
-              "pages": [
-                "modules/identities/scripts/list"
-              ]
-            },
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/identities/scripts/fetch",
-                "modules/identities/scripts/link",
-                "modules/identities/scripts/set",
-                "modules/identities/scripts/sign_in_or_sign_up",
-                "modules/identities/scripts/sign_in",
-                "modules/identities/scripts/sign_up"
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "shield-halved",
-          "group": "User Password Verifier",
-          "pages": [
-            "modules/user_passwords/overview",
-            "modules/user_passwords/errors",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/user_passwords/scripts/add",
-                "modules/user_passwords/scripts/update",
-                "modules/user_passwords/scripts/verify"
               ]
             }
           ]
@@ -437,13 +348,6 @@
     {
       "group": "Competitive",
       "pages": [
-        {
-          "icon": "medal",
-          "group": "Achievements",
-          "pages": [
-            "modules/achievements/overview"
-          ]
-        },
         {
           "icon": "ranking-star",
           "group": "Leaderboards",
@@ -566,48 +470,6 @@
           "pages": [
             "modules/discord_activity/overview"
           ]
-        },
-        {
-          "icon": "e",
-          "group": "Epic Online Services",
-          "pages": [
-            "modules/eos/overview"
-          ]
-        },
-        {
-          "icon": "steam",
-          "group": "Steam",
-          "pages": [
-            "modules/steam/overview"
-          ]
-        },
-        {
-          "icon": "twitch",
-          "group": "Twitch",
-          "pages": [
-            "modules/twitch/overview"
-          ]
-        }
-      ]
-    },
-    {
-      "group": "Infrastructure",
-      "pages": [
-        {
-          "icon": "r",
-          "group": "Rivet",
-          "pages": [
-            "modules/rivet/overview",
-            "modules/rivet/config",
-            "modules/rivet/errors",
-            {
-              "group": "Scripts (Internal)",
-              "pages": [
-                "modules/rivet/scripts/call",
-                "modules/rivet/scripts/fetch_config"
-              ]
-            }
-          ]
         }
       ]
     },
@@ -619,13 +481,6 @@
           "group": "Twilio SendGrid",
           "pages": [
             "modules/sendgrid/overview"
-          ]
-        },
-        {
-          "icon": "i",
-          "group": "IDEM",
-          "pages": [
-            "modules/idem/overview"
           ]
         }
       ]
