@@ -1,0 +1,34 @@
+{
+	"status": "stable",
+	"name": "Captcha",
+	"description": "",
+	"icon": "",
+	"tags": [],
+	"authors": [
+		"rivet-gg",
+		"ABCxFF"
+	],
+	"scripts": {
+		"verify_captcha_token": {
+			"name": "Verify Captcha Response",
+			"public": false
+		},
+		"guard": {
+			"name": "Ratelimit Guarded with Captcha Challenge",
+			"public": false
+		}
+	},
+	"errors": {
+		"captcha_failed": {
+			"name": "Captcha Challenge Failed",
+			"internal": false
+		},
+		"captcha_needed": {
+			"name": "Captcha Required (Rate Limit Exceeded)",
+			"internal": false
+		}
+	},
+	"actors": {
+		"throttle": {}
+	}
+}
