@@ -17,7 +17,7 @@ test("e2e", async (ctx: TestContext) => {
 		userId: user.id,
 	});
 
-	const { userId } = await ctx.modules.users.authenticateToken({
+	const { userId } = await ctx.modules.users.authenticateTokenInternal({
 		userToken: token.token,
 	});
 	assertEquals(user.id, userId);

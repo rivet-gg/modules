@@ -21,7 +21,7 @@ export async function run(
 	const { email } = await verifyCode(ctx, req.verificationToken, req.code);
 
 	// Ensure that the email is not already associated with another account
-	const providedUser = await ctx.modules.users.authenticateToken({
+	const providedUser = await ctx.modules.users.authenticateTokenInternal({
 		userToken: req.userToken,
 	});
 	await ensureNotAssociatedAll(ctx, email, new Set([providedUser.userId]));

@@ -15,7 +15,7 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({ requests: 50 });
 
-	const { userId } = await ctx.modules.users.authenticateToken({
+	const { userId } = await ctx.modules.users.authenticateTokenInternal({
 		userToken: req.userToken,
 	});
 
