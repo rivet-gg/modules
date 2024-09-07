@@ -11,12 +11,7 @@
 			"registry": "local"
 		},
 		"captcha": {
-			"registry": "local",
-			"config": {
-				"provider": {
-					"test": {}
-				}
-			}
+			"registry": "local"
 		},
 		"analytics": {
 			"registry": "local"
