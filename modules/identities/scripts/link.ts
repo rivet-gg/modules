@@ -18,7 +18,7 @@ export async function run(
 ): Promise<Response> {
 
     // Ensure the user token is valid and get the user ID
-    const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
+    const { userId } = await ctx.modules.users.authenticateTokenInternal({ userToken: req.userToken } );
 
     return await ctx.db.transaction(async (tx) => {
         // Error if this identity provider is ALREADY associated with the user

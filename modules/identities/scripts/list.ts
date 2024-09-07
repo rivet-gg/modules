@@ -16,7 +16,7 @@ export async function run(
 	await ctx.modules.rateLimit.throttlePublic({});
 
     // Ensure the user token is valid and get the user ID
-    const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
+    const { userId } = await ctx.modules.users.authenticateTokenInternal({ userToken: req.userToken } );
 
     const identityProviders = await ctx.db.query.userIdentities.findMany({
         where: Query.eq(Database.userIdentities.userId, userId),

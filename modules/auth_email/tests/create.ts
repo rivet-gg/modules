@@ -22,7 +22,7 @@ test("create_with_email_and_login_passwordless", async (ctx: TestContext) => {
 		userToken = signUpRes.userToken;
 	}
 
-	const { user } = await ctx.modules.users.authenticateToken({
+	const { user } = await ctx.modules.users.authenticateTokenInternal({
 		userToken,
 		fetchUser: true,
 	});
@@ -65,7 +65,7 @@ test("create_with_email_and_login_password", async (ctx: TestContext) => {
 		userToken = signUpRes.userToken;
 	}
 
-	const { user } = await ctx.modules.users.authenticateToken({
+	const { user } = await ctx.modules.users.authenticateTokenInternal({
 		userToken,
 		fetchUser: true,
 	});
