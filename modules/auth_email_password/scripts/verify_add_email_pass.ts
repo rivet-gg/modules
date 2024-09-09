@@ -1,5 +1,4 @@
 import { Empty, RuntimeError, ScriptContext } from "../module.gen.ts";
-import { verifyCode } from "../utils/code_management.ts";
 import { IDENTITY_INFO_PASSWORD } from "../utils/provider.ts";
 import { ensureNotAssociatedAll } from "../utils/link_assertions.ts";
 
@@ -10,7 +9,7 @@ export interface Request {
 	password: string;
 	oldPassword: string | null;
 
-	verificationToken: string;
+	token: string;
 	code: string;
 }
 
@@ -24,8 +23,17 @@ export async function run(
 
 	// Check the verification code. If it is valid, but for the wrong email, say
 	// the verification failed.
-	const { email } = await verifyCode(ctx, req.verificationToken, req.code);
-	if (!compareConstantTime(req.email, email)) {
+	const { data, succeeded } = await ctx.modules.verifications.attempt({ token: req.token, code: req.code });
+	if (!succeeded) throw new RuntimeError("invalid_code");
+
+	if (
+		typeof data !== "object" ||
+		data === null ||
+		!("email" in data) ||
+		typeof data.email !== "string"
+	) throw new RuntimeError("unknown_err");
+
+	if (!compareConstantTime(req.email, data.email)) {
 		throw new RuntimeError("verification_failed");
 	}
 
@@ -33,7 +41,7 @@ export async function run(
 	const providedUser = await ctx.modules.users.authenticateToken({
 		userToken: req.userToken,
 	});
-	await ensureNotAssociatedAll(ctx, email, new Set([providedUser.userId]));
+	await ensureNotAssociatedAll(ctx, data.email, new Set([providedUser.userId]));
 
 	// If an old password was provided, ensure it was correct and update it.
 	// If one was not, register the user with the `userPasswords` module.
@@ -58,7 +66,7 @@ export async function run(
 		userToken: req.userToken,
 		info: IDENTITY_INFO_PASSWORD,
 		uniqueData: {
-			identifier: email,
+			identifier: data.email,
 		},
 		additionalData: {},
 	});

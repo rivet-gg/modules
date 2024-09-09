@@ -1,10 +1,9 @@
 import { RuntimeError, ScriptContext } from "../module.gen.ts";
-import { verifyCode } from "../utils/code_management.ts";
 import { IDENTITY_INFO_PASSWORDLESS } from "../utils/provider.ts";
 import { ensureNotAssociatedAll } from "../utils/link_assertions.ts";
 
 export interface Request {
-	verificationToken: string;
+	token: string;
 	code: string;
 }
 
@@ -19,14 +18,23 @@ export async function run(
 	if (ctx.config.mode !== "login") throw new RuntimeError("not_enabled");
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	const { email } = await verifyCode(ctx, req.verificationToken, req.code);
+	// Verify that the code is correct and valid
+	const { data, succeeded } = await ctx.modules.verifications.attempt({ token: req.token, code: req.code });
+	if (!succeeded) throw new RuntimeError("invalid_code");
+
+	if (
+		typeof data !== "object" ||
+		data === null ||
+		!("email" in data) ||
+		typeof data.email !== "string"
+	) throw new RuntimeError("unknown_err");
 
 	// Try signing in with the email, and return the user token if successful.
 	try {
 		const signInOrUpResponse = await ctx.modules.identities.signIn({
 			info: IDENTITY_INFO_PASSWORDLESS,
 			uniqueData: {
-				identifier: email,
+				identifier: data.email,
 			},
 		});
 
@@ -40,13 +48,13 @@ export async function run(
 	}
 
 	// Ensure email is not associated to ANY account
-	await ensureNotAssociatedAll(ctx, email, new Set());
+	await ensureNotAssociatedAll(ctx, data.email, new Set());
 
 	// Sign up the user with the passwordless email identity
 	const signUpResponse = await ctx.modules.identities.signUp({
 		info: IDENTITY_INFO_PASSWORDLESS,
 		uniqueData: {
-			identifier: email,
+			identifier: data.email,
 		},
 		additionalData: {},
 	});

@@ -1,5 +1,4 @@
 import { RuntimeError, ScriptContext } from "../module.gen.ts";
-import { verifyCode } from "../utils/code_management.ts";
 import { IDENTITY_INFO_PASSWORD } from "../utils/provider.ts";
 import { ensureNotAssociatedAll } from "../utils/link_assertions.ts";
 
@@ -7,7 +6,7 @@ export interface Request {
 	email: string;
 	password: string;
 
-	verificationToken: string;
+	token: string;
 	code: string;
 }
 
@@ -23,19 +22,28 @@ export async function run(
 
 	// Check the verification code. If it is valid, but for the wrong email, say
 	// the verification failed.
-	const { email } = await verifyCode(ctx, req.verificationToken, req.code);
-	if (!compareConstantTime(req.email, email)) {
+	const { data, succeeded } = await ctx.modules.verifications.attempt({ token: req.token, code: req.code });
+	if (!succeeded) throw new RuntimeError("invalid_code");
+
+	if (
+		typeof data !== "object" ||
+		data === null ||
+		!("email" in data) ||
+		typeof data.email !== "string"
+	) throw new RuntimeError("unknown_err");
+
+	if (!compareConstantTime(req.email, data.email)) {
 		throw new RuntimeError("verification_failed");
 	}
 
 	// Ensure that the email is not associated with ANY accounts in ANY way.
-	await ensureNotAssociatedAll(ctx, email, new Set());
+	await ensureNotAssociatedAll(ctx, data.email, new Set());
 
 	// Sign up the user with the passwordless email identity
 	const { userToken, userId } = await ctx.modules.identities.signUp({
 		info: IDENTITY_INFO_PASSWORD,
 		uniqueData: {
-			identifier: email,
+			identifier: data.email,
 		},
 		additionalData: {},
 	});

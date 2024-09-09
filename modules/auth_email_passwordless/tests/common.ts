@@ -1,19 +1,16 @@
-import { TestContext, Query, Database } from "../module.gen.ts";
+import { TestContext } from "../module.gen.ts";
 import {
 	assertEquals,
 	assertExists,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
-export async function getVerification(ctx: TestContext, email: string) {
-	// Get a valid verification
-	const { verification: { token: verificationToken } } = await ctx.modules.authEmailPasswordless
-		.sendVerification({ email });
-	const verification = await ctx.db.query.verifications.findFirst({
-			where: Query.eq(Database.verifications.token, verificationToken),
-		});
+export async function getVerification(ctx: TestContext, data: { email: string }) {
+	const { id } = await ctx.modules.verifications.create({ data });
+
+	const { verification } = await ctx.modules.verifications.get({ id });
 	assertExists(verification);
 
-	return { verificationToken, code: verification.code };
+	return verification;
 }
 
 export async function verifyProvider(

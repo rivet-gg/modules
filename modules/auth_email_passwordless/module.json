@@ -17,7 +17,8 @@
     "identities": {},
     "users": {},
 		"tokens": {},
-		"rate_limit": {}
+		"rate_limit": {},
+    "verifications": {}
   },
   "defaultConfig": {
     "fromEmail": "hello@test.com",

@@ -1,0 +1,60 @@
+{
+	"status": "stable",
+	"name": "Verifications",
+	"description": "INTERNAL ONLY module — helper for OTP verifications (email/sms)",
+	"icon": "key",
+	"tags": [
+		"auth"
+	],
+	"authors": [
+		"Blckbrry-Pi"
+	],
+	"dependencies": {
+		"tokens": {}
+	},
+	"scripts": {
+		"create": {
+			"name": "Create Verification",
+			"public": false
+		},
+		"attempt": {
+			"name": "Attempt to Complete Verification",
+			"public": false
+		},
+		"invalidate": {
+			"name": "Invalidate Verification",
+			"public": false
+		},
+		"get": {
+			"name": "Get Verification Information",
+			"public": false
+		}
+	},
+	"errors": {
+		"unable_to_generate_unique_code": {
+			"name": "Unable to Generate Unique Code",
+			"description": "When generating a new code for a new verification, the script was unable to find a unique one.",
+			"internal": true
+		},
+		"no_verification_found": {
+			"name": "No verification found matching the required parameters",
+			"description": "When attempting to find a verification, the database returned no matching results.",
+			"internal": true
+		},
+		"failed_to_create": {
+			"name": "Failed to Create New Verification",
+			"description": "There was a database error while creating a new verification.",
+			"internal": true
+		},
+		"failed_to_update": {
+			"name": "Failed to Update Existing Verification",
+			"description": "There was a database error while updating the information on an existing verification.",
+			"internal": true
+		},
+		"unknown_err": {
+			"name": "Unknown Error",
+			"description": "There was an unexpected error of an unknown type.",
+			"internal": true
+		}
+	}
+}

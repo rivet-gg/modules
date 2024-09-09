@@ -16,10 +16,10 @@ test("connect_email_and_login_passwordless", async (ctx: TestContext) => {
 
 	// MARK: Connect
 	{
-		const { verificationToken, code } = await getVerification(ctx, email);
+		const { token, code } = await getVerification(ctx, { email });
 		await ctx.modules.authEmailPasswordless.verifyAddNoPass({
 			userToken,
-			verificationToken,
+			token,
 			code,
 		});
 	}
@@ -28,11 +28,11 @@ test("connect_email_and_login_passwordless", async (ctx: TestContext) => {
 
 	// MARK: Log in
 	{
-		const { verificationToken, code } = await getVerification(ctx, email);
+		const { token, code } = await getVerification(ctx, { email });
 
 		const { userToken } = await ctx.modules.authEmailPasswordless.verifyLoginOrCreateNoPass(
 			{
-				verificationToken,
+				token,
 				code,
 			},
 		);
