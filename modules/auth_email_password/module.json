@@ -26,26 +26,16 @@
     "fromName": "Authentication Code"
   },
   "scripts": {
-    "send_verification": {
-      "name": "Send Email Verification",
-      "description": "Send a one-time verification code to an email address to verify ownership.",
-      "public": true
-    },
-    "sign_in_email_pass": {
-      "name": "Sign In with Email and Password",
-      "description": "Sign in a user with an email and password.",
-      "public": true
-    },
-    "verify_sign_up_email_pass": {
-      "name": "Verify and Sign Up with Email and Password",
-      "description": "Sign up a new user with an email and password.",
-      "public": true
-    },
-    "verify_add_email_pass": {
-      "name": "Verify and Add Email and Password to existing user",
-      "description": "Verify a user's email address and register it with an existing account. Requires a password.",
-      "public": true
-    }
+		"sign_in": {
+			"name": "Sign In",
+			"description": "Initiates a verification flow with an intended action attached. Returns a token to reference that verification/action.",
+			"public": true
+		},
+		"verify_code": {
+			"name": "Verify Code",
+			"description": "Verifies ownership of an email and executes the intended action. May error if action is not able to be taken.",
+			"public": true
+		}
   },
   "errors": {
     "verification_code_invalid": {

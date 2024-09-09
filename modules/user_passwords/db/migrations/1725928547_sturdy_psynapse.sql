@@ -1,0 +1,2 @@
+ALTER TABLE "module_user_passwords"."passwords" ADD COLUMN "created_at" date DEFAULT now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "module_user_passwords"."passwords" ADD COLUMN "updated_at" date DEFAULT now() NOT NULL;
