@@ -22,7 +22,7 @@ test("e2e success and failure", async (ctx: TestContext) => {
     }
 
     assertEquals(false, await didFail(async () => {
-        for (let i = 0; i < REQUESTS - 1; ++i) {
+        for (let i = 0; i < REQUESTS; ++i) {
             await ctx.modules.captcha.guard({
                 type: "ip",
                 key: "aaaa",

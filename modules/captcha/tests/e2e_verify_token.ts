@@ -49,7 +49,7 @@ test(
             await ctx.modules.captcha.verifyCaptchaToken({
                 provider: {
                     turnstile: {
-                        secret: "1x0000000000000000000000000000000AA",
+                        secret: "2x0000000000000000000000000000000AA",
                         sitekey: ""  // doesn't really matter here
                     }
                 },
@@ -63,7 +63,7 @@ test(
             await ctx.modules.captcha.verifyCaptchaToken({
                 provider: {
                     turnstile: {
-                        secret: "2x0000000000000000000000000000000AA",
+                        secret: "1x0000000000000000000000000000000AA",
                         sitekey: ""  // doesn't really matter here
                     }
                 },
