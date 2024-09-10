@@ -2534,6 +2534,8 @@
     "https://esm.sh/v135/tslib@2.6.2/denonext/tslib.mjs": "29782bcd3139f77ec063dc5a9385c0fff4a8d0a23b6765c73d9edeb169a04bf1",
     "https://esm.sh/v135/tslib@2.6.3/denonext/tslib.mjs": "0834c22e9fbf95f6a5659cc2017543f7d41aa880f24ab84cb11d24e6bee99303",
     "https://esm.sh/v135/uuid@9.0.1/denonext/uuid.mjs": "7d7d3aa57fa136e2540886654c416d9da10d8cfebe408bae47fd47070f0bfb2a",
+    "https://esm.sh/v135/zod-validation-error@3.3.0/denonext/zod-validation-error.mjs": "4efabd593e1430c31a044f79d299a62120946a3e701159b29922b50f3223c186",
+    "https://esm.sh/v135/zod@3.23.8/denonext/zod.mjs": "b3707b03ddc01aab11b740436ab23c0fcc8d15fed072be20085c1fd611016b61",
     "https://esm.sh/zod-validation-error@3.3.0": "d8825ca67952b6adff6b35026dc465f9638d4923dbd54fe9e8e81fbfddca9630",
     "https://esm.sh/zod@3.23.8": "728819c1f651800179a5a80daf24b3e54b2ddea87828bd10e63875a604bcb94e"
   }
