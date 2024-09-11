@@ -17,6 +17,9 @@
   },
   "scripts": {
     "fetch": {
+      "name": "Fetch User"
+    },
+    "pub_fetch": {
       "name": "Fetch User",
       "public": true
     },
@@ -28,6 +31,10 @@
     },
     "authenticate_token": {
       "name": "Authenticate User Token",
+      "description": "Validate a user token. Throws an error if the token is invalid."
+    },
+    "pub_authenticate_token": {
+      "name": "Public Authenticate User Token",
       "description": "Validate a user token. Throws an error if the token is invalid.",
       "public": true
     },
