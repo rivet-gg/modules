@@ -11,7 +11,6 @@ export interface Config {
 		unconnectedExpireAfter: number;
 		autoDestroyAfter?: number;
 	};
-	captcha?: CaptchaProvider;
 }
 
 export interface LobbyRule {
@@ -43,18 +42,3 @@ export interface PlayerRange {
 
 export type LobbyBackend = { test: BackendTestConfig } | { localDevelopment: BackendLocalDevelopmentConfig } | { server: BackendServerConfig };
 
-
-export type CaptchaProvider = { test: Record<never, never> }
-    | { turnstile: ProviderCFTurnstile }
-    | { hcaptcha: ProviderHCaptcha };
-	
-export interface ProviderCFTurnstile {
-    sitekey: string;
-    secret: string;
-}
-
-export interface ProviderHCaptcha {
-    // TODO: Score threshold
-    sitekey: string;
-    secret: string;
-}

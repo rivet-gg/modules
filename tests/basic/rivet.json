@@ -67,11 +67,6 @@
 						],
 						"test": {}
 					}
-				},
-				"captcha": {
-					"provider": {
-						"test": {}
-					}
 				}
 			}
 		},
