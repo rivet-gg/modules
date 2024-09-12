@@ -2,6 +2,8 @@ import { BackendLocalDevelopmentConfig, BackendLocalDevelopmentConfigPort } from
 import { BackendServerConfig } from "./utils/lobby/backend/server.ts";
 import { BackendTestConfig } from "./utils/lobby/backend/test.ts";
 
+import type { CaptchaProvider as ExternalCaptchaProvider } from "../captcha/utils/types.ts";
+
 export interface Config {
 	lobbies: LobbyConfig;
 	lobbyRules: LobbyRule[];
@@ -11,6 +13,28 @@ export interface Config {
 		unconnectedExpireAfter: number;
 		autoDestroyAfter?: number;
 	};
+	captcha?: CaptchaConfig | null;
+}
+
+export type CaptchaProvider = ExternalCaptchaProvider;
+
+export interface RateLimitConfig {
+	period: number;
+	requests: number;
+}
+
+
+export type RateLimitByEndpointId = {
+	list: RateLimitConfig;
+	create: RateLimitConfig;
+	join: RateLimitConfig;
+	find_or_create: RateLimitConfig;
+	find: RateLimitConfig;
+};
+
+export interface CaptchaConfig {
+	provider: CaptchaProvider;
+	endpointRateLimits: Partial<RateLimitByEndpointId>;
 }
 
 export interface LobbyRule {
