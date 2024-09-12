@@ -9,6 +9,7 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
+import { getCaptchaProvider } from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
