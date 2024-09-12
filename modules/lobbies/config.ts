@@ -1,3 +1,4 @@
+import { CaptchaProvider } from "../captcha/utils/types.ts";
 import { BackendLocalDevelopmentConfig, BackendLocalDevelopmentConfigPort } from "./utils/lobby/backend/local_development.ts";
 import { BackendServerConfig } from "./utils/lobby/backend/server.ts";
 import { BackendTestConfig } from "./utils/lobby/backend/test.ts";
@@ -11,6 +12,13 @@ export interface Config {
 		unconnectedExpireAfter: number;
 		autoDestroyAfter?: number;
 	};
+	captcha?: CaptchaConfig | null;
+}
+
+export type CaptchaProvider = CaptchaProvider;
+
+export interface CaptchaConfig {
+	provider: CaptchaProvider;
 }
 
 export interface LobbyRule {
