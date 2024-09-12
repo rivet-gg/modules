@@ -3,11 +3,14 @@ import {
 	ListLobbiesResponse,
 } from "../utils/lobby_manager/rpc.ts";
 import { ScriptContext } from "../module.gen.ts";
+import { getCaptchaProvider } from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  regions?: string[];
+  	regions?: string[];
 	tags?: Record<string, string>;
+
+	captchaToken?: string;
 }
 
 export interface Response {
@@ -29,8 +32,16 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	// TODO: Cache this without hitting the DO
+	await ctx.modules.captcha.guard({
+		key: "lobbies.list",
+		period: 20,
+		requests: 5,
+		type: "default",
+		captchaToken: req.captchaToken,
+		captchaProvider: getCaptchaProvider(ctx.config)
+	});
 
+	// TODO: Cache this without hitting the DO
 	const { lobbies } = await ctx.actors.lobbyManager.getOrCreateAndCall<
 		undefined,
 		ListLobbiesRequest,

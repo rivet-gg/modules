@@ -9,11 +9,14 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
+import { getCaptchaProvider } from "../utils/captcha_config.ts";
 
 export interface Request {
 	lobbyId: string;
 	players: PlayerRequest[];
-  noWait?: boolean;
+  	noWait?: boolean;
+
+	captchaToken?: string;
 }
 
 export interface Response {
@@ -25,6 +28,15 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
+	await ctx.modules.captcha.guard({
+		key: "lobbies.join",
+		period: 15,
+		requests: 8,
+		type: "default",
+		captchaToken: req.captchaToken,
+		captchaProvider: getCaptchaProvider(ctx.config)
+	});
+
 	const { lobby, players } = await ctx.actors
 		.lobbyManager.getOrCreateAndCall<undefined, JoinLobbyRequest, JoinLobbyResponse>(
 			"default",

@@ -9,13 +9,14 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
+import { getCaptchaProvider } from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  regions?: string[];
+  	regions?: string[];
 	tags?: Record<string, string>;
 	players: PlayerRequest[];
-  noWait?: boolean;
+  	noWait?: boolean;
 
 	createConfig: {
     region: string;
@@ -23,6 +24,8 @@ export interface Request {
 		maxPlayers: number;
 		maxPlayersDirect: number;
 	};
+
+	captchaToken?: string;
 }
 
 export interface Response {
@@ -34,6 +37,15 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
+	await ctx.modules.captcha.guard({
+		key: "lobbies.find_or_create",
+		period: 15,
+		requests: 8,
+		type: "default",
+		captchaToken: req.captchaToken,
+		captchaProvider: getCaptchaProvider(ctx.config)
+	});
+
 	const lobbyId = crypto.randomUUID();
 
 	const { lobby, players } = await ctx.actors

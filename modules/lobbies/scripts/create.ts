@@ -12,7 +12,7 @@ import {
 
 export interface Request {
 	version: string;
-  region: string;
+  	region: string;
 	tags?: Record<string, string>;
 	maxPlayers: number;
 	maxPlayersDirect: number;
@@ -20,6 +20,8 @@ export interface Request {
 	players: PlayerRequest[];
 
 	noWait?: boolean;
+
+	captchaToken?: string;
 }
 
 export interface Response {
@@ -33,6 +35,15 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
+	await ctx.modules.captcha.guard({
+		key: "lobbies.create",
+		period: 15,
+		requests: 5,
+		type: "default",
+		captchaToken: req.captchaToken,
+		captchaProvider: getCaptchaProvider(ctx.config)
+	});
+
 	const lobbyId = crypto.randomUUID();
 
 	const { lobby, players } = await ctx.actors.lobbyManager
