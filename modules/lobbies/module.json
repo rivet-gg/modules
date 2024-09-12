@@ -155,7 +155,8 @@
   },
   "dependencies": {
     "tokens": {},
-    "rivet": {}
+    "rivet": {},
+    "captcha": {}
   },
   "defaultConfig": {
     "lobbies": {
