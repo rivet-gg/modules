@@ -1,7 +1,8 @@
-import { CaptchaProvider } from "../captcha/utils/types.ts";
 import { BackendLocalDevelopmentConfig, BackendLocalDevelopmentConfigPort } from "./utils/lobby/backend/local_development.ts";
 import { BackendServerConfig } from "./utils/lobby/backend/server.ts";
 import { BackendTestConfig } from "./utils/lobby/backend/test.ts";
+
+import type { CaptchaProvider as ExternalCaptchaProvider } from "../captcha/utils/types.ts";
 
 export interface Config {
 	lobbies: LobbyConfig;
@@ -15,7 +16,7 @@ export interface Config {
 	captcha?: CaptchaConfig | null;
 }
 
-export type CaptchaProvider = CaptchaProvider;
+export type CaptchaProvider = ExternalCaptchaProvider;
 
 export interface CaptchaConfig {
 	provider: CaptchaProvider;
