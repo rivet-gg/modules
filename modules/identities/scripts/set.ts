@@ -15,7 +15,7 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
     // Ensure the user token is valid and get the user ID
-    const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken } );
+    const { userId } = await ctx.modules.users.authenticateTokenInternal({ userToken: req.userToken } );
 
     await ctx.db.transaction(async (tx) => {
         // Ensure the identity provider is associated with the user

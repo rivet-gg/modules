@@ -13,7 +13,7 @@ test("test_sign_up", async (ctx: TestContext) => {
 		password,
 	});
 
-	const { userId } = await ctx.modules.users.authenticateToken({
+	const { userId } = await ctx.modules.users.authenticateTokenInternal({
 		userToken: token.token,
 	});
 
@@ -51,7 +51,7 @@ test("test_sign_in", async (ctx: TestContext) => {
 		password,
 	});
 
-	const { userId } = await ctx.modules.users.authenticateToken({
+	const { userId } = await ctx.modules.users.authenticateTokenInternal({
 		userToken: token.token,
 	});
 

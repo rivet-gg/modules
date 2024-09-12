@@ -41,7 +41,7 @@ export async function ensureNotAssociated(
 		}
 	}
 	// Email matches an existing identity using this provider
-	const existingUser = await ctx.modules.users.authenticateToken(
+	const existingUser = await ctx.modules.users.authenticateTokenInternal(
 		existingIdentity,
 	);
 

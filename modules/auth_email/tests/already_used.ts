@@ -129,7 +129,7 @@ test("email_link_then_add_pass", async (ctx: TestContext) => {
 	const password = faker.internet.password();
 
 	const { userToken } = await signUpEmailLink(ctx, email);
-	const { user } = await ctx.modules.users.authenticateToken({
+	const { user } = await ctx.modules.users.authenticateTokenInternal({
 		userToken,
 		fetchUser: true,
 	});
@@ -161,7 +161,7 @@ test("email_link_then_add_no_pass", async (ctx: TestContext) => {
 	const email = faker.internet.email();
 
 	const { userToken } = await signUpEmailLink(ctx, email);
-	const { user } = await ctx.modules.users.authenticateToken({
+	const { user } = await ctx.modules.users.authenticateTokenInternal({
 		userToken,
 		fetchUser: true,
 	});

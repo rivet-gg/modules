@@ -30,7 +30,7 @@ export async function run(
 	}
 
 	// Ensure that the email is not associated with ANY accounts in ANY way.
-	const providedUser = await ctx.modules.users.authenticateToken({
+	const providedUser = await ctx.modules.users.authenticateTokenInternal({
 		userToken: req.userToken,
 	});
 	await ensureNotAssociatedAll(ctx, email, new Set([providedUser.userId]));

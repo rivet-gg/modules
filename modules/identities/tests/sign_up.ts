@@ -14,7 +14,7 @@ export async function signUpWithTest(ctx: TestContext, username: string, uniqueD
         additionalData,
     });
 
-    const { userId, user } = await ctx.modules.users.authenticateToken({
+    const { userId, user } = await ctx.modules.users.authenticateTokenInternal({
         userToken,
         fetchUser: true,
     });
@@ -34,7 +34,7 @@ export async function signInWithTest(ctx: TestContext, uniqueData: any) {
         uniqueData,
     });
 
-    const { userId, user } = await ctx.modules.users.authenticateToken({
+    const { userId, user } = await ctx.modules.users.authenticateTokenInternal({
         userToken,
         fetchUser: true,
     });

@@ -16,10 +16,10 @@
     "tokens": {}
   },
   "scripts": {
-    "fetch": {
+    "fetch_internal": {
       "name": "Fetch User"
     },
-    "pub_fetch": {
+    "fetch": {
       "name": "Fetch User",
       "public": true
     },
@@ -29,11 +29,11 @@
     "create": {
       "name": "Create User"
     },
-    "authenticate_token": {
+    "authenticate_token_internal": {
       "name": "Authenticate User Token",
       "description": "Validate a user token. Throws an error if the token is invalid."
     },
-    "pub_authenticate_token": {
+    "authenticate_token": {
       "name": "Public Authenticate User Token",
       "description": "Validate a user token. Throws an error if the token is invalid.",
       "public": true
