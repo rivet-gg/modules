@@ -10,9 +10,7 @@ export interface Request {
     provider: CaptchaProvider
 }
 
-export interface Response {
-    success: true;
-}
+export type Response = Record<string, never>;
 
 export async function run(
 	ctx: ScriptContext,
@@ -34,5 +32,5 @@ export async function run(
         throw new RuntimeError("captcha_failed");
     }
 
-    return { success: true };
+    return {};
 }

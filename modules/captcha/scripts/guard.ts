@@ -12,9 +12,7 @@ export interface Request {
     captchaProvider: CaptchaProvider
 }
 
-export interface Response {
-    success: true;
-}
+export type Response = Record<string, never>;
 
 export async function run(
 	ctx: ScriptContext,
@@ -31,7 +29,7 @@ export async function run(
 
             await ctx.actors.throttle.getOrCreateAndCall<undefined, {}, {}>(key, undefined, "reset", {});
 
-            return { success: true };
+            return {};
         } catch {
             // If we error, it means the captcha failed, we can continue with our normal ratelimitting
         }
@@ -52,5 +50,5 @@ export async function run(
         });
     }
 
-    return { success: true };
+    return {};
 }
