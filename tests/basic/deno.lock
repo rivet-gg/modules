@@ -4,7 +4,10 @@
     "specifiers": {
       "jsr:@blackberry/bcrypt@0.15.3": "jsr:@blackberry/bcrypt@0.15.3",
       "jsr:@denosaurs/lz4@0.1.4": "jsr:@denosaurs/lz4@0.1.4",
+      "jsr:@std/assert": "jsr:@std/assert@1.0.5",
+      "jsr:@std/collections": "jsr:@std/collections@1.0.6",
       "jsr:@std/encoding@0.221": "jsr:@std/encoding@0.221.0",
+      "jsr:@std/internal@^1.0.3": "jsr:@std/internal@1.0.3",
       "npm:@prisma/adapter-pg@^5.12.0": "npm:@prisma/adapter-pg@5.18.0_pg@8.12.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:drizzle-orm@0.33.0": "npm:drizzle-orm@0.33.0_pg@8.12.0",
@@ -27,8 +30,20 @@
       "@denosaurs/lz4@0.1.4": {
         "integrity": "ad5d556c02eb01fe1e0f2e953d7be066a14870afe149b1aed1ced019460f6aa1"
       },
+      "@std/assert@1.0.5": {
+        "integrity": "e37da8e4033490ce613eec4ac1d78dba1faf5b02a3f6c573a28f15365b9b440f",
+        "dependencies": [
+          "jsr:@std/internal@^1.0.3"
+        ]
+      },
+      "@std/collections@1.0.6": {
+        "integrity": "60ad252af7df0594e6455f697920a37cd523ad66469fefcc9735e362826ac01d"
+      },
       "@std/encoding@0.221.0": {
         "integrity": "d1dd76ef0dc5d14088411e6dc1dede53bf8308c95d1537df1214c97137208e45"
+      },
+      "@std/internal@1.0.3": {
+        "integrity": "208e9b94a3d5649bd880e9ca38b885ab7651ab5b5303a56ed25de4755fb7b11e"
       }
     },
     "npm": {
