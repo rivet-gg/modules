@@ -12,10 +12,16 @@ export const validateHCaptchaResponse = async (
             method: "POST",
         });
 
+        if (result.status !== 200) {
+            return false;
+        }
+
         const { success } = await result.json();
 
         return success;
-    } catch {}
+    } catch (error) {
+        console.error("Failed to request hCaptcha /siteverify endpoint", error);
+    }
 
     return false;
 }

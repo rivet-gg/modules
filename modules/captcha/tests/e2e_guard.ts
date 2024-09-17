@@ -21,8 +21,33 @@ test("e2e success and failure", async (ctx: TestContext) => {
         }
     }
 
+
+    // First should fail
+    assertEquals(true, await didFail(async () => {
+        await ctx.modules.captcha.guard({
+            type: "ip",
+            key: "aaaa",
+            requests: REQUESTS,
+            period: PERIOD,
+            captchaProvider
+        });
+    }));
+
+    // So we solve
     assertEquals(false, await didFail(async () => {
-        for (let i = 0; i < REQUESTS; ++i) {
+        await ctx.modules.captcha.guard({
+            type: "ip",
+            key: "aaaa",
+            requests: REQUESTS,
+            period: PERIOD,
+            captchaProvider,
+            captchaToken: "foo"
+        });
+    }))
+
+    // The next REQUESTS - 1 should succeed
+    assertEquals(false, await didFail(async () => {
+        for (let i = 0; i < REQUESTS - 1; ++i) {
             await ctx.modules.captcha.guard({
                 type: "ip",
                 key: "aaaa",
@@ -33,6 +58,7 @@ test("e2e success and failure", async (ctx: TestContext) => {
         }
     }));
 
+    // Afterwhich, it should fail
     assertEquals(true, await didFail(async () => {
         await ctx.modules.captcha.guard({
             type: "ip",

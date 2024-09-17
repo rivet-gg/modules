@@ -59,7 +59,7 @@ let gameConfig = {
 interface GameState {
 	lobbyConfig: any;
 	lobbyTags: any;
-	scores: { [id: number]: number };
+	scores: Record<number, number>;
 }
 
 const gameState: GameState = {

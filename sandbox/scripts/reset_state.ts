@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run -A
 
-const origin = Deno.env.get("OPENGB_ORIGIN");
+const endpoint = Deno.env.get("BACKEND_ENDPOINT");
 
-const res = await fetch(`${origin}/modules/lobbies/scripts/reset_lobby_manager_state/call`, {
+const res = await fetch(`${endpoint}/modules/lobbies/scripts/reset_lobby_manager_state/call`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",

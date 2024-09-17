@@ -5,7 +5,8 @@
   "icon": "r",
   "tags": [
     "core",
-    "infra"
+    "infra",
+    "internal"
   ],
   "authors": [
     "NathanFlurry",

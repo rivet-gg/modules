@@ -65,7 +65,7 @@
     "list_regions": {
       "name": "List Regions",
       "description": "List available regions.",
-      "public": false
+      "public": true
     },
     "fetch_lobby_manager_state": {
       "name": "Fetch Lobby Manager State",
