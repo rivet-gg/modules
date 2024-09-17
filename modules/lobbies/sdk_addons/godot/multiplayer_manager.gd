@@ -134,7 +134,7 @@ func setup_multiplayer():
 			multiplayer.set_multiplayer_peer(peer)
 		else:
 			RivetLogger.error("Unsupported transport: %s" % transport)
-			OS.crash("Unsupported transport")
+			return
 
 		# Notify lobby ready
 		var request = {
@@ -146,8 +146,11 @@ func setup_multiplayer():
 		if response.is_ok():
 			RivetLogger.log("Lobby ready")
 		else:
-			RivetLogger.warning("Lobby ready failed failed: %s" % response.body)
+			RivetLogger.error("Lobby ready failed failed: %s" % response.body)
+
+			# Crash the server so Rivet stops waiting for the server to start
 			OS.crash("Lobby ready failed")
+
 			return
 
 ## Connect to a lobby returned from the backend.
