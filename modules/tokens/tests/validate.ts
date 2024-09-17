@@ -3,7 +3,8 @@ import {
 	assertEquals,
 	assertGreater,
 	assertRejects,
-} from "https://deno.land/std@0.217.0/assert/mod.ts";
+} from "jsr:@std/assert";
+import { omit } from "jsr:@std/collections";
 
 test(
 	"validate token not found",
@@ -95,7 +96,7 @@ test(
 			...validateResAfterWait.token,
 			expireAt: null,
 		}, {
-			...token,
+			...omit(token, ["token"]),
 			expireAt: null,
 		});
 	},

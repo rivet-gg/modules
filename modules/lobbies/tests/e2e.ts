@@ -82,7 +82,7 @@ test("lobby tags", async (ctx: TestContext) => {
 		{
 			version: VERSION,
 			region: REGION,
-			tags: { gameMode: "a", region: "atl" },
+			tags: { gameMode: "a" },
 			players: [{}],
 			maxPlayers: 8,
 			maxPlayersDirect: 8,
