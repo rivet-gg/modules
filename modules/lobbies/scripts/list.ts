@@ -19,6 +19,10 @@ interface LobbyListEntry {
 	id: string;
   version: string;
   tags: Record<string, string>;
+  createdAt: string;
+  players: number;
+  maxPlayers: number;
+  maxPlayersDirect: number;
 }
 
 export async function run(
@@ -46,11 +50,11 @@ export async function run(
     id: lobby.id,
     version: lobby.version,
     tags: lobby.tags,
-    createdAt: lobby.createdAt,
+    createdAt: new Date(lobby.createdAt).toISOString(),
     players: lobby.players,
     maxPlayers: lobby.maxPlayers,
     maxPlayersDirect: lobby.maxPlayersDirect,
-  }));
+  } satisfies LobbyListEntry));
 
 	return { lobbies: lobbyList };
 }

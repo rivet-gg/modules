@@ -1,5 +1,5 @@
 {
-  "extends": "./backend.json",
+  "extends": "./rivet.json",
   "modules": {
 		"lobbies": {
       "registry": "local",

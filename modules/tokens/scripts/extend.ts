@@ -1,5 +1,5 @@
 import { ScriptContext, Query, Database } from "../module.gen.ts";
-import { tokenFromRow, TokenWithSecret } from "../utils/types.ts";
+import { tokenFromRow, TokenWithSecret, tokenWithSecretFromRow } from "../utils/types.ts";
 
 export interface Request {
 	token: string;
@@ -27,6 +27,6 @@ export async function run(
 
 	// Return the updated token
 	return {
-		token: tokenFromRow(rows[0]!),
+		token: tokenWithSecretFromRow(rows[0]!),
 	};
 }

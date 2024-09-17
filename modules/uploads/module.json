@@ -77,7 +77,7 @@
     },
     "too_many_chunks": {
       "name": "Possibility Of Too Many Chunks",
-      "description": "AWS S3 has a limit on the number of parts that can be uploaded in a\nmultipart upload. This limit is 10,000 parts. If the number of chunks\nrequired to upload the maximum multipart upload size exceeds this limit,\nany operation will preemptively throw this error.\n",
+      "description": "AWS S3 has a limit on the number of parts that can be uploaded in a multipart upload. This limit is 10,000 parts. If the number of chunks required to upload the maximum multipart upload size exceeds this limit, any operation will preemptively throw this error.",
       "internal": false
     },
     "multipart_upload_completion_fail": {
