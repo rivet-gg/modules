@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.1.0-rc.1](https://github.com/rivet-gg/modules/compare/v1.0.0-rc.1...v1.1.0-rc.1) (2024-09-17)
+
+
+### Features
+
+* add identity providers for `email`, `email_link`, `email_password`, `email_passwordless`, and `username_password` ([#144](https://github.com/rivet-gg/modules/issues/144)) ([0f9152f](https://github.com/rivet-gg/modules/commit/0f9152f4ce57f694e9f5367d1da6039c13257dc3))
+* Create the `identites` module ([#121](https://github.com/rivet-gg/modules/issues/121)) ([ba39943](https://github.com/rivet-gg/modules/commit/ba39943b74877721bffd368e221ef546483b46b7))
+* Create the `user_passwords` module ([#127](https://github.com/rivet-gg/modules/issues/127)) ([7d12d24](https://github.com/rivet-gg/modules/commit/7d12d24836919621622bd4073289a8066c03deb4))
+* **sandbox:** create sandbox foundation ([#133](https://github.com/rivet-gg/modules/issues/133)) ([692d68a](https://github.com/rivet-gg/modules/commit/692d68a671a80bfeb4b8e895ac0d8b4f193484fd))
+
+
+### Bug Fixes
+
+* **lobbies:** make list_regions public ([#159](https://github.com/rivet-gg/modules/issues/159)) ([a97095b](https://github.com/rivet-gg/modules/commit/a97095bc3d865be8783c1b53027313448f8495a2))
+
+
+### Tests
+
+* **tokens:** add a test for the `meta` field. ([#117](https://github.com/rivet-gg/modules/issues/117)) ([7bc0a69](https://github.com/rivet-gg/modules/commit/7bc0a6905151ca6e99c0d44baec9626b42ff0ce8))
+
+
+### Chores
+
+* add coming soon modules ([#120](https://github.com/rivet-gg/modules/issues/120)) ([5f71917](https://github.com/rivet-gg/modules/commit/5f7191716fde37c042cf7a54bae508d943c8bb23))
+* add early access links ([#149](https://github.com/rivet-gg/modules/issues/149)) ([7b1fdce](https://github.com/rivet-gg/modules/commit/7b1fdce5efee9523878797ce3a12a917d14aa6f4))
+* add rivet-gg to authors of first-party modules ([#151](https://github.com/rivet-gg/modules/issues/151)) ([9d99d23](https://github.com/rivet-gg/modules/commit/9d99d2341695a8adf7b3d2914eb05847ece388a0))
+* add sandbox scripts ([#141](https://github.com/rivet-gg/modules/issues/141)) ([cab6396](https://github.com/rivet-gg/modules/commit/cab6396f9f36cae76b4581db5fe545b1fef6a439))
+* generate migrations ([#146](https://github.com/rivet-gg/modules/issues/146)) ([4381160](https://github.com/rivet-gg/modules/commit/4381160e15bbf51d5229cfa4910490b31902172b))
+* **lobbies:** add lnd-* region prefixes ([#139](https://github.com/rivet-gg/modules/issues/139)) ([205f841](https://github.com/rivet-gg/modules/commit/205f841ab3d6bd54c98ecaa21cd24202e1e69bb9))
+* **lobbies:** fix tests with stricter validation ([#162](https://github.com/rivet-gg/modules/issues/162)) ([330f63e](https://github.com/rivet-gg/modules/commit/330f63e1de89904a7a7354c5efd262596ec3132e))
+* **lobbies:** remove crash on invalid transport ([#165](https://github.com/rivet-gg/modules/issues/165)) ([47deee2](https://github.com/rivet-gg/modules/commit/47deee24d4d72980cc6a2088dec4d6c285aa1ed4))
+* **lobbies:** upgrade multiplayer manager sdk addon ([#160](https://github.com/rivet-gg/modules/issues/160)) ([88c0be5](https://github.com/rivet-gg/modules/commit/88c0be5bc15abb195acfe160aa695445de3a47e3))
+* migrate database query api ([#140](https://github.com/rivet-gg/modules/issues/140)) ([d03bd83](https://github.com/rivet-gg/modules/commit/d03bd83dda3ce39b3bea1980d6dff65e92aa5a3a))
+* name scripts ([b81597a](https://github.com/rivet-gg/modules/commit/b81597ab946c190f32df9eed03b7c690658eecd4))
+* **rate_limit:** remove db ([#137](https://github.com/rivet-gg/modules/issues/137)) ([a2f5af1](https://github.com/rivet-gg/modules/commit/a2f5af1983e97c0314fa4649d32ce27e95e54012))
+* remove enable from auth* configs ([#145](https://github.com/rivet-gg/modules/issues/145)) ([22132b7](https://github.com/rivet-gg/modules/commit/22132b748f0af1e2e473e20625fba65b3da4d679))
+* remove placeholder db from presence ([#153](https://github.com/rivet-gg/modules/issues/153)) ([0f251d4](https://github.com/rivet-gg/modules/commit/0f251d434e2e39a3685871f6bc91efa01c82da4d))
+* **sandbox:** update to new rivet.json schema ([#164](https://github.com/rivet-gg/modules/issues/164)) ([20878ff](https://github.com/rivet-gg/modules/commit/20878ff1a24bf8fd50286bcd937d6b7c836df013))
+* **tests:** move backend.json -&gt; rivet.json ([#163](https://github.com/rivet-gg/modules/issues/163)) ([f37cfdf](https://github.com/rivet-gg/modules/commit/f37cfdfde7199108458c60f68881665e2f56aca0))
+* update lobbies docs ([#148](https://github.com/rivet-gg/modules/issues/148)) ([e7cf600](https://github.com/rivet-gg/modules/commit/e7cf600216250e634c6696d3743888f99c08abe2))
+* update module list ([#155](https://github.com/rivet-gg/modules/issues/155)) ([a5c1e37](https://github.com/rivet-gg/modules/commit/a5c1e37e5171fd7922013bbb6ec7259befbef236))
+* **uploads:** add missing script name ([#147](https://github.com/rivet-gg/modules/issues/147)) ([579507a](https://github.com/rivet-gg/modules/commit/579507a341016e197757365649dae5192cfbff0d))
+* **user_passwords:** temporarily disable hashing to work around wasm bug ([#150](https://github.com/rivet-gg/modules/issues/150)) ([3e92580](https://github.com/rivet-gg/modules/commit/3e92580e5b344b15c8f6f945de756cd13e84069a))
+
 ## [1.0.0-rc.1](https://github.com/rivet-gg/opengb-modules/compare/v0.1.1...v1.0.0-rc.1) (2024-08-07)
 
 
