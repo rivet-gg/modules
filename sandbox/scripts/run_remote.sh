@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export BACKEND_ENDPOINT="https://sandbox-back-vlk--staging.backend.nathan16.gameinc.io"
+export RIVET_BACKEND_ENDPOINT="https://sandbox-back-vlk--staging.backend.nathan16.gameinc.io"
 
 # Function to clean up background processes
 cleanup() {

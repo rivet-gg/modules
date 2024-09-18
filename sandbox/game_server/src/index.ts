@@ -20,10 +20,10 @@ console.log(process.env);
 
 logTimestamp('start');
 
-const BACKEND_ENDPOINT = process.env.BACKEND_ENDPOINT;
+const BACKEND_ENDPOINT = process.env.RIVET_BACKEND_ENDPOINT;
 const LOBBY_ID = process.env.LOBBY_ID ?? "00000000-0000-0000-0000-000000000000";
 const LOBBY_TOKEN= process.env.LOBBY_TOKEN;
-if (!BACKEND_ENDPOINT) throw new Error("BACKEND_ENDPOINT");
+if (!BACKEND_ENDPOINT) throw new Error("RIVET_BACKEND_ENDPOINT");
 
 const backend = new Backend({ endpoint: BACKEND_ENDPOINT });
 
