@@ -19,7 +19,7 @@ export interface Request {
   	noWait?: boolean;
 
 	createConfig: {
-    region: string;
+    	region: string;
 		tags?: Record<string, string>;
 		maxPlayers: number;
 		maxPlayersDirect: number;
@@ -60,19 +60,19 @@ export async function run(
 			{
 				query: {
 					version: req.version,
-          regions: req.regions,
+          			regions: req.regions,
 					tags: req.tags,
 				},
 				lobby: {
 					lobbyId,
 					version: req.version,
-          region: req.createConfig.region,
+          			region: req.createConfig.region,
 					tags: req.createConfig.tags,
 					maxPlayers: req.createConfig.maxPlayers,
 					maxPlayersDirect: req.createConfig.maxPlayersDirect,
 				},
 				players: req.players,
-        noWait: req.noWait ?? false,
+        		noWait: req.noWait ?? false,
 			}
 		);
 
