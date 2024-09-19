@@ -8,7 +8,13 @@ import { REGIONS as LOCAL_DEVELOPMENT_REGIONS } from "./lobby/backend/local_deve
 import { UnreachableError } from "../module.gen.ts";
 import { LobbyBackend } from "../config.ts";
 
-export interface Region {
+export interface RegionGeoCoords {
+  latitude: number;
+  longitude: number;
+}
+
+
+export interface Region extends RegionGeoCoords {
   id: string;
   name: string;
   latitude: number;
@@ -22,3 +28,40 @@ export function regionsForBackend(backend: LobbyBackend): Region[] {
   else throw new UnreachableError(backend);
 }
 
+export const EMPTY_GEO_COORDS: RegionGeoCoords = Object.freeze({
+  latitude: 0,
+  longitude: 0
+});
+
+const getDistSq = (a: RegionGeoCoords, b: RegionGeoCoords) => {
+  const dlat = a.latitude - b.latitude;
+  const dlong = a.longitude - b.longitude;
+  return dlat * dlat + dlong * dlong;
+}
+
+export function getClosestRegion(
+  region: Region[],
+  coords: RegionGeoCoords
+) {
+  if (coords === EMPTY_GEO_COORDS) return region[0];
+  let closestRegion: Region | null = null;
+  let closestDistance = Infinity;
+  for (const r of region) {
+    const distSq = getDistSq(r, coords);
+    if (distSq < closestDistance) {
+      closestRegion = r;
+      closestDistance = distSq;
+    }
+  }
+  return closestRegion;
+}
+
+export function getSortedRegionsByProximity(
+  regions: Region[],
+  coords: RegionGeoCoords
+) {
+  if (coords === EMPTY_GEO_COORDS) return [...regions];
+  return [...regions].sort((a, b) => {
+    return getDistSq(a, coords) - getDistSq(b, coords);
+  });
+}

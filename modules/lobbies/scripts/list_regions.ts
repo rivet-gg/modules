@@ -1,6 +1,7 @@
 import { RuntimeError, ScriptContext } from "../module.gen.ts";
 import { getLobbyConfig } from "../utils/lobby_config.ts";
-import { Region, regionsForBackend } from "../utils/region.ts";
+import { getSortedRegionsByProximity, Region, regionsForBackend } from "../utils/region.ts";
+import { getRequestGeoCoords } from "../utils/rivet/geo_coord.ts";
 
 export interface Request {
   tags?: Record<string, string>,
@@ -16,7 +17,10 @@ export async function run(
 ): Promise<Response> {
   const lobbyConfig = getLobbyConfig(ctx.config, req.tags ?? {});
 
-  const regions = regionsForBackend(lobbyConfig.backend)
+  const regions = getSortedRegionsByProximity(
+    regionsForBackend(lobbyConfig.backend),
+    getRequestGeoCoords(ctx),
+  );
 
   return { regions };
 }
