@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export RIVET_BACKEND_ENDPOINT="https://sandbox-back-vlk--staging.backend.nathan16.gameinc.io"
+export RIVET_BACKEND_ENDPOINT="https://sandbox--staging.backend.rivet.gg"
 
 # Function to clean up background processes
 cleanup() {
@@ -13,10 +13,5 @@ cleanup() {
 # Trap Ctrl+C and call cleanup
 trap cleanup INT TERM
 
-# Run components
-# ./scripts/run_local_backend.sh 2>&1 | sed 's/^/[BACKEND] /' &
-# ./scripts/run_local_game_server.sh 2>&1 | sed 's/^/[GAME_SERVER] /' &
-./scripts/run_local_client.sh 2>&1 | sed 's/^/[CLIENT] /' &
-
-# Wait for all background processes to finish
-wait
+# Run client
+./scripts/run_local_client.sh 2>&1 | sed 's/^/[CLIENT] /'

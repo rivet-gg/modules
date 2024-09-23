@@ -2,7 +2,7 @@
 	"runtime": {
 		"cors": {
 			"origins": [
-				"http://localhost:8080"
+				"http://127.0.0.1:8080"
 			]
 		}
 	},
@@ -32,9 +32,6 @@
 							"environment": {
 								"SERVER_HOSTNAME": "0.0.0.0"
 							},
-							"tags": {
-
-							},
 							"ports": {
 								"game": {
 									"protocol": "http",
@@ -53,7 +50,6 @@
 		"rivet": {
 			"registry": "local",
 			"config": {
-				"apiEndpoint": "https://api.nathan16.gameinc.io",
 				"serviceTokenVariable": "RIVET_SERVICE_TOKEN"
 			}
 		}
