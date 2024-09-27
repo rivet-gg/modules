@@ -1,5 +1,9 @@
-import { ScriptContext, Query, Database } from "../module.gen.ts";
-import { tokenFromRow, TokenWithSecret, tokenWithSecretFromRow } from "../utils/types.ts";
+import { Database, Query, ScriptContext } from "../module.gen.ts";
+import {
+	tokenFromRow,
+	TokenWithSecret,
+	tokenWithSecretFromRow,
+} from "../utils/types.ts";
 
 export interface Request {
 	token: string;
@@ -20,10 +24,10 @@ export async function run(
 	});
 
 	// Update the token's expiration date
-  const rows = await ctx.db.update(Database.tokens)
-    .set({ expireAt: req.newExpiration ? new Date(req.newExpiration) : null })
-    .where(Query.eq(Database.tokens.id, token.id))
-    .returning();
+	const rows = await ctx.db.update(Database.tokens)
+		.set({ expireAt: req.newExpiration ? new Date(req.newExpiration) : null })
+		.where(Query.eq(Database.tokens.id, token.id))
+		.returning();
 
 	// Return the updated token
 	return {

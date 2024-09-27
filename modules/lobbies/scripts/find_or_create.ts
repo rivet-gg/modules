@@ -13,13 +13,13 @@ import { getCaptchaProvider } from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  	regions?: string[];
+	regions?: string[];
 	tags?: Record<string, string>;
 	players: PlayerRequest[];
-  	noWait?: boolean;
+	noWait?: boolean;
 
 	createConfig: {
-    	region: string;
+		region: string;
 		tags?: Record<string, string>;
 		maxPlayers: number;
 		maxPlayersDirect: number;
@@ -43,34 +43,38 @@ export async function run(
 		requests: 8,
 		type: "default",
 		captchaToken: req.captchaToken,
-		captchaProvider: getCaptchaProvider(ctx.config)
+		captchaProvider: getCaptchaProvider(ctx.config),
 	});
 
 	const lobbyId = crypto.randomUUID();
 
 	const { lobby, players } = await ctx.actors
-		.lobbyManager.getOrCreateAndCall<undefined, FindOrCreateLobbyRequest, FindOrCreateLobbyResponse>(
-			"default",
-			undefined,
-			"rpcFindOrCreateLobby",
-			{
-				query: {
-					version: req.version,
-          			regions: req.regions,
-					tags: req.tags,
-				},
-				lobby: {
-					lobbyId,
-					version: req.version,
-          			region: req.createConfig.region,
-					tags: req.createConfig.tags,
-					maxPlayers: req.createConfig.maxPlayers,
-					maxPlayersDirect: req.createConfig.maxPlayersDirect,
-				},
-				players: req.players,
-        		noWait: req.noWait ?? false,
-			}
-		);
+		.lobbyManager.getOrCreateAndCall<
+		undefined,
+		FindOrCreateLobbyRequest,
+		FindOrCreateLobbyResponse
+	>(
+		"default",
+		undefined,
+		"rpcFindOrCreateLobby",
+		{
+			query: {
+				version: req.version,
+				regions: req.regions,
+				tags: req.tags,
+			},
+			lobby: {
+				lobbyId,
+				version: req.version,
+				region: req.createConfig.region,
+				tags: req.createConfig.tags,
+				maxPlayers: req.createConfig.maxPlayers,
+				maxPlayersDirect: req.createConfig.maxPlayersDirect,
+			},
+			players: req.players,
+			noWait: req.noWait ?? false,
+		},
+	);
 
 	const playerResponses = [];
 	for (const player of players) {

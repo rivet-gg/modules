@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext, Query, Database } from "../module.gen.ts";
+import { Database, Query, RuntimeError, ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	userId: string;
@@ -17,7 +17,7 @@ export async function run(
 		throw new RuntimeError("invalid_amount");
 	}
 
-	const updatedBalance = await ctx.db.transaction(async tx => {
+	const updatedBalance = await ctx.db.transaction(async (tx) => {
 		const wallet = await tx.query.userWallets.findFirst({
 			where: Query.eq(Database.userWallets.userId, req.userId),
 		});
@@ -32,7 +32,7 @@ export async function run(
 				.where(Query.eq(Database.userWallets.userId, req.userId))
 				.execute();
 
-				return updatedBalance;
+			return updatedBalance;
 		} else {
 			if (req.amount < 0) {
 				throw new RuntimeError("not_enough_funds");

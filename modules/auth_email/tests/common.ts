@@ -1,4 +1,4 @@
-import { TestContext, Query, Database } from "../module.gen.ts";
+import { Database, Query, TestContext } from "../module.gen.ts";
 import {
 	assertEquals,
 	assertExists,
@@ -6,11 +6,12 @@ import {
 
 export async function getVerification(ctx: TestContext, email: string) {
 	// Get a valid verification
-	const { verification: { token: verificationToken } } = await ctx.modules.authEmail
+	const { verification: { token: verificationToken } } = await ctx.modules
+		.authEmail
 		.sendVerification({ email });
 	const verification = await ctx.db.query.verifications.findFirst({
-			where: Query.eq(Database.verifications.token, verificationToken),
-		});
+		where: Query.eq(Database.verifications.token, verificationToken),
+	});
 	assertExists(verification);
 
 	return { verificationToken, code: verification.code };

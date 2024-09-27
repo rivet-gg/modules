@@ -1,11 +1,10 @@
 import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {
-    
 }
 
 export interface Response {
-    state: any;
+	state: any;
 }
 
 export async function run(
@@ -17,8 +16,7 @@ export async function run(
 			"default",
 			undefined,
 			"rpcReadState",
-      {}
+			{},
 		);
-  return { state };
+	return { state };
 }
-

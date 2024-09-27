@@ -1,4 +1,4 @@
-import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
+import { Database, Query, RuntimeError, ScriptContext } from "../module.gen.ts";
 import { getKey } from "../utils/types.ts";
 import { deleteKeys } from "../utils/bucket.ts";
 import { getConfig } from "../utils/config_defaults.ts";
@@ -17,17 +17,17 @@ export async function run(
 ): Promise<Response> {
 	const config = getConfig(ctx);
 
-	const bytesDeleted = await ctx.db.transaction(async tx => {
+	const bytesDeleted = await ctx.db.transaction(async (tx) => {
 		// Find upload
 		const upload = await tx.query.uploads.findFirst({
 			where: Query.and(
 				Query.eq(Database.uploads.id, req.uploadId),
 				Query.isNotNull(Database.uploads.completedAt),
-				Query.isNull(Database.uploads.deletedAt)
+				Query.isNull(Database.uploads.deletedAt),
 			),
 			with: {
-				files: true
-			}
+				files: true,
+			},
 		});
 		if (!upload) {
 			throw new RuntimeError(
@@ -68,7 +68,7 @@ export async function run(
 		// Update upload
 		tx.update(Database.uploads)
 			.set({ deletedAt: new Date() })
-			.where(Query.eq(Database.uploads.id, req.uploadId))
+			.where(Query.eq(Database.uploads.id, req.uploadId));
 
 		return upload.contentLength.toString();
 	});

@@ -1,11 +1,20 @@
-import { RuntimeError, ScriptContext, Module, Database, Query } from "../module.gen.ts";
+import {
+	Database,
+	Module,
+	Query,
+	RuntimeError,
+	ScriptContext,
+} from "../module.gen.ts";
 
 const MAX_ATTEMPT_COUNT = 3;
 const EXPIRATION_TIME = 60 * 60 * 1000;
 
 export async function createVerification(ctx: ScriptContext, email: string) {
 	// Create verification
-	const code = Module.tokens.generateRandomCodeSecure("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 8);
+	const code = Module.tokens.generateRandomCodeSecure(
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+		8,
+	);
 	const verification = await ctx.db.insert(Database.verifications)
 		.values({
 			token: Module.tokens.genSecureId(),
@@ -61,7 +70,7 @@ export async function verifyCode(
 			})
 			.where(Query.and(
 				Query.eq(Database.verifications.token, verificationToken),
-				Query.isNull(Database.verifications.completedAt)
+				Query.isNull(Database.verifications.completedAt),
 			))
 			.returning();
 		if (verificationConfirmation.length === 0) {

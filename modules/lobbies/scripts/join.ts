@@ -14,7 +14,7 @@ import { getCaptchaProvider } from "../utils/captcha_config.ts";
 export interface Request {
 	lobbyId: string;
 	players: PlayerRequest[];
-  	noWait?: boolean;
+	noWait?: boolean;
 
 	captchaToken?: string;
 }
@@ -34,20 +34,24 @@ export async function run(
 		requests: 8,
 		type: "default",
 		captchaToken: req.captchaToken,
-		captchaProvider: getCaptchaProvider(ctx.config)
+		captchaProvider: getCaptchaProvider(ctx.config),
 	});
 
 	const { lobby, players } = await ctx.actors
-		.lobbyManager.getOrCreateAndCall<undefined, JoinLobbyRequest, JoinLobbyResponse>(
-			"default",
-			undefined,
-			"rpcJoinLobby",
-			{
-				lobbyId: req.lobbyId,
-				players: req.players,
-        noWait: req.noWait ?? false,
-			}
-		);
+		.lobbyManager.getOrCreateAndCall<
+		undefined,
+		JoinLobbyRequest,
+		JoinLobbyResponse
+	>(
+		"default",
+		undefined,
+		"rpcJoinLobby",
+		{
+			lobbyId: req.lobbyId,
+			players: req.players,
+			noWait: req.noWait ?? false,
+		},
+	);
 
 	const playerResponses = [];
 	for (const player of players) {

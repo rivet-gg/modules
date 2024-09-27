@@ -1,9 +1,11 @@
-import { Config, CaptchaProvider } from "../config.ts";
+import { CaptchaProvider, Config } from "../config.ts";
 
 export const getCaptchaProvider = (config: Config): CaptchaProvider => {
-    if (!config.captcha || !config.captcha.provider) return {
-        test: {}
-    }
+	if (!config.captcha || !config.captcha.provider) {
+		return {
+			test: {},
+		};
+	}
 
-    return config.captcha.provider;
-}
+	return config.captcha.provider;
+};

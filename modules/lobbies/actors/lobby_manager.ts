@@ -16,7 +16,7 @@ import {
 } from "../utils/lobby/mod.ts";
 import { PlayerResponse } from "../utils/player.ts";
 import {
-acceptAnyRegion,
+	acceptAnyRegion,
 	acceptAnyVersion,
 	canCallLobbyReadyMultipleTimes,
 	canMutateLobbies,
@@ -1286,17 +1286,22 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 	 * Finds a lobby for a given query.
 	 */
 	private queryLobby(
-    ctx: ActorContext,
+		ctx: ActorContext,
 		query: Rpc.QueryRequest,
 		playerCount: number,
 	): State.Lobby | undefined {
 		// TODO: optimize
 		// Find largest lobby that can fit the requested players
 		const lobbies = Object.values(this.lobbies)
-      .map<[State.Lobby, LobbyConfig]>((lobby) => [lobby, getLobbyConfig(ctx.config, lobby.tags)])
-			.filter(([x, config]) => x.version == query.version || acceptAnyVersion(config))
+			.map<[State.Lobby, LobbyConfig]>((
+				lobby,
+			) => [lobby, getLobbyConfig(ctx.config, lobby.tags)])
 			.filter(([x, config]) =>
-				query.regions == undefined || query.regions.includes(x.region) || acceptAnyRegion(config)
+				x.version == query.version || acceptAnyVersion(config)
+			)
+			.filter(([x, config]) =>
+				query.regions == undefined || query.regions.includes(x.region) ||
+				acceptAnyRegion(config)
 			)
 			.filter(([x, _]) =>
 				Object.keys(x.players).length <= x.maxPlayers - playerCount
@@ -1304,7 +1309,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 			.filter(([x, _]) =>
 				query.tags == undefined || lobbyTagsMatch(query.tags, x.tags)
 			)
-      .map(([x, _]) => x)
+			.map(([x, _]) => x)
 			.sort((a, b) => b.createdAt - a.createdAt)
 			.sort((a, b) =>
 				Object.keys(b.players).length - Object.keys(a.players).length

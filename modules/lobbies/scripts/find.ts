@@ -13,10 +13,10 @@ import { getCaptchaProvider } from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  	regions?: string[];
+	regions?: string[];
 	tags?: Record<string, string>;
 	players: PlayerRequest[];
-  	noWait?: boolean;
+	noWait?: boolean;
 	captchaToken?: string;
 }
 
@@ -35,9 +35,8 @@ export async function run(
 		requests: 10,
 		type: "default",
 		captchaToken: req.captchaToken,
-		captchaProvider: getCaptchaProvider(ctx.config)
+		captchaProvider: getCaptchaProvider(ctx.config),
 	});
-
 
 	const { lobby, players } = await ctx.actors.lobbyManager
 		.getOrCreateAndCall<undefined, FindLobbyRequest, FindLobbyResponse>(
@@ -47,12 +46,12 @@ export async function run(
 			{
 				query: {
 					version: req.version,
-          regions: req.regions,
+					regions: req.regions,
 					tags: req.tags,
 				},
 				players: req.players,
-        noWait: req.noWait ?? false,
-			}
+				noWait: req.noWait ?? false,
+			},
 		);
 
 	const playerResponses = [];

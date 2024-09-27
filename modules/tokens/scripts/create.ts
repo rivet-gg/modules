@@ -1,5 +1,9 @@
-import { ScriptContext, Database, Query } from "../module.gen.ts";
-import { TokenWithSecret, tokenFromRow, tokenWithSecretFromRow } from "../utils/types.ts";
+import { Database, Query, ScriptContext } from "../module.gen.ts";
+import {
+	tokenFromRow,
+	TokenWithSecret,
+	tokenWithSecretFromRow,
+} from "../utils/types.ts";
 
 export interface Request {
 	type: string;
@@ -18,14 +22,14 @@ export async function run(
 	const tokenStr = generateToken(req.type);
 
 	const rows = await ctx.db.insert(Database.tokens)
-    .values({
-      token: tokenStr,
-      type: req.type,
-      meta: req.meta,
-      trace: ctx.trace,
-      expireAt: req.expireAt ? new Date(req.expireAt) : undefined,
-    })
-    .returning();
+		.values({
+			token: tokenStr,
+			type: req.type,
+			meta: req.meta,
+			trace: ctx.trace,
+			expireAt: req.expireAt ? new Date(req.expireAt) : undefined,
+		})
+		.returning();
 
 	return {
 		token: tokenWithSecretFromRow(rows[0]!),
