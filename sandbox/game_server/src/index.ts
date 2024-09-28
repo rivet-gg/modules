@@ -1,7 +1,7 @@
 // Since we can't inherit the cert from mkcert
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
-import { Backend } from "opengb-sdk";
+import { Rivet } from "rivet-sdk";
 import { URL } from 'url';
 import { WebSocket, Server as WebSocketServer } from 'ws';
 import * as http from 'http';
@@ -20,14 +20,12 @@ console.log(process.env);
 
 logTimestamp('start');
 
-const BACKEND_ENDPOINT = process.env.RIVET_BACKEND_ENDPOINT;
 const LOBBY_ID = process.env.LOBBY_ID ?? "00000000-0000-0000-0000-000000000000";
 const LOBBY_TOKEN= process.env.LOBBY_TOKEN;
-if (!BACKEND_ENDPOINT) throw new Error("RIVET_BACKEND_ENDPOINT");
 
-const backend = new Backend({ endpoint: BACKEND_ENDPOINT });
+const rivet = new Rivet();
 
-retryDns(() => backend.lobbies.setLobbyReady({ lobbyId: LOBBY_ID, lobbyToken: LOBBY_TOKEN }))
+retryDns(() => rivet.lobbies.setLobbyReady({ lobbyId: LOBBY_ID, lobbyToken: LOBBY_TOKEN }))
 	.then(() => {
 		logTimestamp('server-ready');
 	})
@@ -117,7 +115,7 @@ wss.on('connection', async (ws, req) => {
 
 		// Unregister player
 		try {
-			await retryDns(() => backend.lobbies.setPlayerDisconnected({ lobbyId: LOBBY_ID, lobbyToken: LOBBY_TOKEN, playerTokens: [playerToken] }));
+			await retryDns(() => rivet.lobbies.setPlayerDisconnected({ lobbyId: LOBBY_ID, lobbyToken: LOBBY_TOKEN, playerTokens: [playerToken] }));
 			logTimestamp(`player-disconnect-complete-${idx}`);
 		} catch (err) {
 			console.error('failed to disconnect player', err);
@@ -125,7 +123,7 @@ wss.on('connection', async (ws, req) => {
 	});
 
 	try {
-		await retryDns(() => backend.lobbies.setPlayerConnected({ lobbyId: LOBBY_ID, lobbyToken: LOBBY_TOKEN, playerTokens: [playerToken] }));
+		await retryDns(() => rivet.lobbies.setPlayerConnected({ lobbyId: LOBBY_ID, lobbyToken: LOBBY_TOKEN, playerTokens: [playerToken] }));
 		logTimestamp(`player-connect-complete-${idx}`);
 	} catch (err) {
 		console.error('failed to connect player', idx, err);

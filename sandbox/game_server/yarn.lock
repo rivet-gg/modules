@@ -560,9 +560,6 @@ on-finished@2.4.1:
   dependencies:
     ee-first "1.1.1"
 
-opengb-sdk@../sdk/:
-  version "1.0.0"
-
 parseurl@~1.3.3:
   version "1.3.3"
   resolved "https://registry.npmjs.org/parseurl/-/parseurl-1.3.3.tgz"

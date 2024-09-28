@@ -3,6 +3,9 @@ set -euo pipefail
 
 export RIVET_BACKEND_ENDPOINT="http://127.0.0.1:6420"
 
+# Build client
+./scripts/gen_sdk.sh
+
 # Function to clean up background processes
 cleanup() {
     echo "Stopping all processes..."
