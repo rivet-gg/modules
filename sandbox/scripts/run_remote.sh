@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export RIVET_BACKEND_ENDPOINT="https://sandbox--staging.backend.rivet.gg"
+export BACKEND_ENDPOINT="https://modules-sand-m4z.backend.staging2.gameinc.io"
 
 # Function to clean up background processes
 cleanup() {

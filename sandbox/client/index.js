@@ -3,7 +3,7 @@ import { Backend } from './dist/sdk.mjs';
 
 const urlParams = new URLSearchParams(window.location.search);
 const environment = urlParams.get('env') || 'local';
-const API_ENDPOINT = environment === 'remote' ? "https://sandbox--staging.backend.rivet.gg" : "http://localhost:6420";
+const API_ENDPOINT = environment === 'remote' ? "https://modules-sand-m4z.backend.staging2.gameinc.io" : "http://localhost:6420";
 
 const backend = new Backend({ endpoint: API_ENDPOINT });
 
@@ -35,7 +35,7 @@ window.findOrCreateLobby = async function() {
       },
     });
   } else {
-		const region = "atl";
+		const region = "lnd-atl";
 		const tags = {"foo": "bar"};
     res = await backend.lobbies.findOrCreate({
       version: "2024.09.18-2",

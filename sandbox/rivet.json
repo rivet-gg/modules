@@ -48,10 +48,7 @@
 			}
 		},
 		"rivet": {
-			"registry": "local",
-			"config": {
-				"serviceTokenVariable": "RIVET_SERVICE_TOKEN"
-			}
+			"registry": "local"
 		}
 	}
 }
