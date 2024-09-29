@@ -34,62 +34,62 @@ export interface LobbyBackendServerPortResponse {
 // TODO: Return dynamic regions instead of hardcoded
 export const REGIONS: Region[] = [
   {
-    id: "atl",
+    slug: "atl",
     name: "Atlanta",
     latitude: 33.7490,
     longitude: -84.3880,
   },
   {
-    id: "lax",
+    slug: "lax",
     name: "Los Angeles",
     latitude: 34.0522,
     longitude: -118.2437,
   },
   {
-    id: "fra",
+    slug: "fra",
     name: "Frankfurt",
     latitude: 50.1109,
     longitude: 8.6821,
   },
   {
-    id: "syd",
+    slug: "syd",
     name: "Sydney",
     latitude: -33.8688,
     longitude: 151.2093,
   },
   {
-    id: "osa",
+    slug: "osa",
     name: "Osaka",
     latitude: 34.6937,
     longitude: 135.5023,
   },
   {
-    id: "gru",
+    slug: "gru",
     name: "São Paulo",
     latitude: -23.5505,
     longitude: -46.6333,
   },
   {
-    id: "bom",
+    slug: "bom",
     name: "Mumbai",
     latitude: 19.0760,
     longitude: 72.8777,
   },
   {
-    id: "sin",
+    slug: "sin",
     name: "Singapore",
     latitude: 1.3521,
     longitude: 103.8198,
   },
 
   {
-    id: "lnd-atl",
+    slug: "lnd-atl",
     name: "Atlanta",
     latitude: 33.7490,
     longitude: -84.3880,
   },
   {
-    id: "lnd-fra",
+    slug: "lnd-fra",
     name: "Frankfurt",
     latitude: 50.1109,
     longitude: 8.6821,

@@ -237,7 +237,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 
 		// Valiadte region
 		const validRegions = regionsForBackend(lobbyConfig.backend);
-		if (validRegions.findIndex((x) => x.id == req.lobby.region) == -1) {
+		if (validRegions.findIndex((x) => x.slug == req.lobby.region) == -1) {
 			throw new RuntimeError("region_not_found", {
 				meta: { region: req.lobby.region },
 			});
