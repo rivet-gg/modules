@@ -45,7 +45,7 @@ export async function checkLogin(
 	newToken: string,
 ) {
 	const { userId: signedInUserId, user: signedInUser } = await ctx.modules.users
-		.authenticateToken({
+		.authenticateTokenInternal({
 			userToken: newToken,
 			fetchUser: true,
 		});

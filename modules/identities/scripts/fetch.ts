@@ -18,7 +18,7 @@ export async function run(
 	req: Request,
 ): Promise<Response> {
     // Ensure the user token is valid and get the user ID
-    const { userId } = await ctx.modules.users.authenticateToken({ userToken: req.userToken });
+    const { userId } = await ctx.modules.users.authenticateTokenInternal({ userToken: req.userToken });
 
     // Get identity data
     const identity = await ctx.db.query.userIdentities.findFirst({
