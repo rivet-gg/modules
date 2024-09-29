@@ -27,6 +27,7 @@ import { LobbyBackendServerPortResponse } from "../utils/lobby/backend/server.ts
 import { regionsForBackend } from "../utils/region.ts";
 import * as State from "../utils/lobby_manager/state/mod.ts";
 import * as Rpc from "../utils/lobby_manager/rpc.ts";
+import { assertExists } from "jsr:@std/assert";
 
 const MANAGER_SERVER_TAG = "manager";
 const MANAGER_SERVER_TAG_VALUE = "opengb/lobbies";
@@ -413,11 +414,13 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 	}
 
 	private buildLobbyResponse(
-		_ctx: ActorContext,
+		ctx: ActorContext,
 		lobbyId: string,
 	): LobbyResponse {
 		const lobby = this.getLobby(lobbyId);
+    const lobbyConfig = getLobbyConfig(ctx.config, lobby.tags);
 
+    // Build backend
 		let backend: LobbyBackendResponse;
 		if ("test" in lobby.backend) {
 			backend = { test: {} };
@@ -462,10 +465,16 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 			throw new UnreachableError(lobby.backend);
 		}
 
+    // Get region
+    const allRegions = regionsForBackend(lobbyConfig.backend);
+    const region = allRegions.find(x => x.slug == lobby.region);
+    assertExists(region, "could not find region for lobby");
+
 		return {
 			id: lobby.id,
 			version: lobby.version,
 			tags: lobby.tags,
+      region,
 			createdAt: lobby.createdAt,
 			readyAt: lobby.readyAt,
 			players: Object.keys(lobby.players).length,

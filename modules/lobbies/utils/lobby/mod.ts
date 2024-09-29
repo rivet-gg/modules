@@ -3,6 +3,7 @@ import { LobbyBackendServerResponse } from "./backend/server.ts";
 import {
 	LobbyBackendLocalDevelopmentResponse,
 } from "./backend/local_development.ts";
+import { Region } from "../region.ts";
 
 /**
  * Check if a lobby with the given tags matches a query.
@@ -21,6 +22,7 @@ export interface LobbyResponse {
 	id: string;
 	version: string;
 	tags: Record<string, string>;
+  region: Region,
 
 	createdAt: number;
 	readyAt?: number;
