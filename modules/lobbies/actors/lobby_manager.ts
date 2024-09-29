@@ -592,8 +592,11 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 			"lobbies/lobby_id": lobby.id,
 			"lobbies/version": lobby.version,
 		};
+		const tagEnvironmentVariables: Record<string, string> = Object.create(null);
+
 		for (const [k, v] of Object.entries(lobby.tags)) {
 			serverTags[`lobbies/tags/${k}`] = v;
+			tagEnvironmentVariables[`LOBBY_TAG_${k}`] = v;
 		}
 
 		const request: RivetEndpoints.CreateServerRequest = {
@@ -602,12 +605,18 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 			runtime: {
 				build: rivetBuild.id,
 				arguments: lobbyConfig.backend.server.arguments,
-				environment: Object.assign({}, lobbyConfig.backend.server.environment, {
-					"LOBBY_ID": lobby.id,
-					"LOBBY_VERSION": lobby.version,
-					"LOBBY_TOKEN": token,
-					"RIVET_BACKEND_ENDPOINT": ctx.runtime.publicEndpoint,
-				}),
+				environment: Object.assign(
+					{},
+					tagEnvironmentVariables,
+					lobbyConfig.backend.server.environment,
+					{
+						"LOBBY_ID": lobby.id,
+						"LOBBY_VERSION": lobby.version,
+						"LOBBY_TOKEN": token,
+						"RIVET_BACKEND_ENDPOINT": ctx.runtime.publicEndpoint,
+						"RIVET_TAGS": JSON.stringify(lobby.tags),
+					},
+				),
 			},
 			network: {
 				mode: lobbyConfig.backend.server.networkMode,
