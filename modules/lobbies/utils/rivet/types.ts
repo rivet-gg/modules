@@ -51,15 +51,15 @@ export type BuildKind = "docker_image" | "oci_bundle";
 export type BuildCompression = "none" | "lz4";
 
 export interface Build {
-  id: string;
-  name: string;
-  created_at: string;
-  content_length: number;
-  tags: Record<string, string>;
+	id: string;
+	name: string;
+	created_at: string;
+	content_length: number;
+	tags: Record<string, string>;
 }
 
 export interface Datacenter {
 	id: string;
-  slug: string;
-  name: string;
+	slug: string;
+	name: string;
 }

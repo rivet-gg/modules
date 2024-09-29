@@ -1,5 +1,9 @@
 import { test, TestContext } from "../module.gen.ts";
-import { assertExists, assertEquals, assertRejects } from "https://deno.land/std@0.217.0/assert/mod.ts";
+import {
+	assertEquals,
+	assertExists,
+	assertRejects,
+} from "https://deno.land/std@0.217.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 import { RuntimeError } from "../module.gen.ts";
 
@@ -16,7 +20,6 @@ test("test_sign_up", async (ctx: TestContext) => {
 	const { userId } = await ctx.modules.users.authenticateTokenInternal({
 		userToken: token.token,
 	});
-
 
 	const { users: [user] } = await ctx.modules.users.fetchByUsername({
 		usernames: [username],
@@ -72,4 +75,3 @@ test("test_sign_in", async (ctx: TestContext) => {
 	}, RuntimeError);
 	assertEquals(error.code, "invalid_username_or_password");
 });
-

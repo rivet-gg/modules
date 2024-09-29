@@ -1,9 +1,6 @@
 import { Database, Query, ScriptContext } from "../module.gen.ts";
 import { getConfig } from "../utils/config_defaults.ts";
-import {
-	dbToOutput,
-	UploadWithOptionalFiles,
-} from "../utils/types.ts";
+import { dbToOutput, UploadWithOptionalFiles } from "../utils/types.ts";
 
 export interface Request {
 	uploadIds: string[];
@@ -20,15 +17,15 @@ export async function run(
 ): Promise<Response> {
 	getConfig(ctx);
 
-  const uploads = await ctx.db.query.uploads.findMany({
-    where: Query.inArray(Database.uploads.id, req.uploadIds),
-    orderBy: Query.desc(Database.uploads.id),
-    with: {
-      files: req.includeFiles ? true : undefined,
-    }
-  });
+	const uploads = await ctx.db.query.uploads.findMany({
+		where: Query.inArray(Database.uploads.id, req.uploadIds),
+		orderBy: Query.desc(Database.uploads.id),
+		with: {
+			files: req.includeFiles ? true : undefined,
+		},
+	});
 
-  return {
-		uploads: uploads.map(x => dbToOutput(x)),
-  };
+	return {
+		uploads: uploads.map((x) => dbToOutput(x)),
+	};
 }

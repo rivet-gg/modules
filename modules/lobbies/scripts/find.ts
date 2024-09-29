@@ -9,14 +9,17 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
-import { getCaptchaProvider, getRateLimitConfigByEndpoint } from "../utils/captcha_config.ts";
+import {
+	getCaptchaProvider,
+	getRateLimitConfigByEndpoint,
+} from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  	regions?: string[];
+	regions?: string[];
 	tags?: Record<string, string>;
 	players: PlayerRequest[];
-  	noWait?: boolean;
+	noWait?: boolean;
 	captchaToken?: string;
 }
 
@@ -38,7 +41,7 @@ export async function run(
 			requests: rateLimitConfig.requests,
 			type: "lobbies.find",
 			captchaToken: req.captchaToken,
-			captchaProvider: captchaProvider
+			captchaProvider: captchaProvider,
 		});
 	}
 
@@ -50,12 +53,12 @@ export async function run(
 			{
 				query: {
 					version: req.version,
-          regions: req.regions,
+					regions: req.regions,
 					tags: req.tags,
 				},
 				players: req.players,
-        noWait: req.noWait ?? false,
-			}
+				noWait: req.noWait ?? false,
+			},
 		);
 
 	const playerResponses = [];

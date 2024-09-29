@@ -19,16 +19,19 @@ test(
 
 		assertEquals(updatedBalance, 100);
 
-		const { balance: initialBalance } = await ctx.modules.currency.fetchBalance({
-			userId: user.id,
-		});
+		const { balance: initialBalance } = await ctx.modules.currency.fetchBalance(
+			{
+				userId: user.id,
+			},
+		);
 
 		assertEquals(initialBalance, 100);
 
-		const { updatedBalance: withdraw } = await ctx.modules.currency.adjustBalance({
-			userId: user.id,
-			amount: -50,
-		});
+		const { updatedBalance: withdraw } = await ctx.modules.currency
+			.adjustBalance({
+				userId: user.id,
+				amount: -50,
+			});
 
 		assertEquals(withdraw, 50);
 

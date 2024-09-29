@@ -21,8 +21,8 @@ export type CreateLobbyResponse = BaseLobbyResponse;
 // MARK: Destroy Lobby
 export interface DestroyLobbyRequest {
 	lobbyId: string;
-  reason?: string;
-  cause?: Error;
+	reason?: string;
+	cause?: Error;
 }
 
 // MARK: Find Lobby

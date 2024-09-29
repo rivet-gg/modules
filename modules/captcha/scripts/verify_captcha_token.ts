@@ -6,31 +6,37 @@ import { validateCFTurnstileResponse } from "../utils/providers/turnstile.ts";
 import { CaptchaProvider } from "../utils/types.ts";
 
 export interface Request {
-    token: string,
-    provider: CaptchaProvider
+	token: string;
+	provider: CaptchaProvider;
 }
 
 export type Response = Record<string, never>;
 
 export async function run(
-	ctx: ScriptContext,
+	_ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-    const captchaToken = req.token;
-    const captchaProvider = req.provider;
+	const captchaToken = req.token;
+	const captchaProvider = req.provider;
 
-    let success: boolean = false;
-    if ("hcaptcha" in captchaProvider) {
-        success = await validateHCaptchaResponse(captchaProvider.hcaptcha.secret, captchaToken);
-    } else if ("turnstile" in captchaProvider) {
-        success = await validateCFTurnstileResponse(captchaProvider.turnstile.secret, captchaToken);
-    } else {
-        success = true;
-    }
+	let success: boolean = false;
+	if ("hcaptcha" in captchaProvider) {
+		success = await validateHCaptchaResponse(
+			captchaProvider.hcaptcha.secret,
+			captchaToken,
+		);
+	} else if ("turnstile" in captchaProvider) {
+		success = await validateCFTurnstileResponse(
+			captchaProvider.turnstile.secret,
+			captchaToken,
+		);
+	} else {
+		success = true;
+	}
 
-    if (!success) {
-        throw new RuntimeError("captcha_failed");
-    }
+	if (!success) {
+		throw new RuntimeError("captcha_failed");
+	}
 
-    return {};
+	return {};
 }

@@ -1,4 +1,4 @@
-import { ScriptContext, Database } from "../module.gen.ts";
+import { Database, ScriptContext } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
 
 export interface Request {
@@ -16,11 +16,11 @@ export async function run(
 	await ctx.modules.rateLimit.throttlePublic({ requests: 2, period: 5 * 60 });
 
 	// Create user
-  const rows = await ctx.db.insert(Database.users)
-    .values({
-      username: req.username ?? generateUsername(),
-    })
-    .returning();
+	const rows = await ctx.db.insert(Database.users)
+		.values({
+			username: req.username ?? generateUsername(),
+		})
+		.returning();
 
 	return {
 		user: rows[0]!,

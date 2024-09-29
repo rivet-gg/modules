@@ -20,23 +20,27 @@ export class Actor extends ActorBase<Input, State> {
 	throttle(_ctx: ActorContext, req: ThrottleRequest): ThrottleResponse {
 		const now = Date.now();
 
-        if (now - this.state.start > req.period) {
-            this.state.start = now;
-            this.state.count = 1;
-            return { success: true };
-        }
+		this.state.count += 1;
 
-        if (this.state.count >= req.requests) {
-            return { success: false };
-        }
+		if (this.state.start === 0) {
+			this.reset(_ctx, {});
+			return { success: false };
+		}
 
-        this.state.count += 1;
+		if (now - this.state.start > req.period) {
+			this.reset(_ctx, {});
+			return { success: true };
+		}
 
-        return { success: true };
+		if (this.state.count > req.requests) {
+			return { success: false };
+		}
+
+		return { success: true };
 	}
 
-	reset(_ctx: ActorContext, req: Empty): Empty {
-		this.state.start = 0;
+	reset(_ctx: ActorContext, _req: Empty): Empty {
+		this.state.start = Date.now();
 		this.state.count = 0;
 
 		return {};
