@@ -16,7 +16,7 @@ export const uploads = schema.table("uploads", {
 });
 
 export const uploadsRelations = Query.relations(uploads, (relation) => ({
-	files: relation.many(files)
+	files: relation.many(files),
 }));
 
 export const files = schema.table("files", {
@@ -30,4 +30,3 @@ export const files = schema.table("files", {
 }, (table) => ({
 	pk: Query.primaryKey({ columns: [table.uploadId, table.path] }),
 }));
-

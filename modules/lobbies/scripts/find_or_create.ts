@@ -9,17 +9,20 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
-import { getCaptchaProvider, getRateLimitConfigByEndpoint } from "../utils/captcha_config.ts";
+import {
+	getCaptchaProvider,
+	getRateLimitConfigByEndpoint,
+} from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  	regions?: string[];
+	regions?: string[];
 	tags?: Record<string, string>;
 	players: PlayerRequest[];
-  	noWait?: boolean;
+	noWait?: boolean;
 
 	createConfig: {
-    	region: string;
+		region: string;
 		tags?: Record<string, string>;
 		maxPlayers: number;
 		maxPlayersDirect: number;
@@ -37,7 +40,10 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	const rateLimitConfig = getRateLimitConfigByEndpoint(ctx.config, "find_or_create");
+	const rateLimitConfig = getRateLimitConfigByEndpoint(
+		ctx.config,
+		"find_or_create",
+	);
 	const captchaProvider = getCaptchaProvider(ctx.config);
 	if (captchaProvider !== null) {
 		await ctx.modules.captcha.guard({
@@ -46,35 +52,39 @@ export async function run(
 			requests: rateLimitConfig.requests,
 			type: "lobbies.find_or_create",
 			captchaToken: req.captchaToken,
-			captchaProvider: captchaProvider
+			captchaProvider: captchaProvider,
 		});
 	}
 
 	const lobbyId = crypto.randomUUID();
 
 	const { lobby, players } = await ctx.actors
-		.lobbyManager.getOrCreateAndCall<undefined, FindOrCreateLobbyRequest, FindOrCreateLobbyResponse>(
-			"default",
-			undefined,
-			"rpcFindOrCreateLobby",
-			{
-				query: {
-					version: req.version,
-          			regions: req.regions,
-					tags: req.tags,
-				},
-				lobby: {
-					lobbyId,
-					version: req.version,
-          			region: req.createConfig.region,
-					tags: req.createConfig.tags,
-					maxPlayers: req.createConfig.maxPlayers,
-					maxPlayersDirect: req.createConfig.maxPlayersDirect,
-				},
-				players: req.players,
-        		noWait: req.noWait ?? false,
-			}
-		);
+		.lobbyManager.getOrCreateAndCall<
+		undefined,
+		FindOrCreateLobbyRequest,
+		FindOrCreateLobbyResponse
+	>(
+		"default",
+		undefined,
+		"rpcFindOrCreateLobby",
+		{
+			query: {
+				version: req.version,
+				regions: req.regions,
+				tags: req.tags,
+			},
+			lobby: {
+				lobbyId,
+				version: req.version,
+				region: req.createConfig.region,
+				tags: req.createConfig.tags,
+				maxPlayers: req.createConfig.maxPlayers,
+				maxPlayersDirect: req.createConfig.maxPlayersDirect,
+			},
+			players: req.players,
+			noWait: req.noWait ?? false,
+		},
+	);
 
 	const playerResponses = [];
 	for (const player of players) {

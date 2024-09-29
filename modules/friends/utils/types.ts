@@ -16,7 +16,7 @@ export interface FriendRequest {
 }
 
 export function friendFromRow(
-	row: typeof Database.friends.$inferSelect
+	row: typeof Database.friends.$inferSelect,
 ): Friend {
 	return {
 		...row,
@@ -25,7 +25,7 @@ export function friendFromRow(
 }
 
 export function friendRequestFromRow(
-	row: typeof Database.friendRequests.$inferSelect
+	row: typeof Database.friendRequests.$inferSelect,
 ): FriendRequest {
 	return {
 		...row,

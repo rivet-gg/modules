@@ -1,4 +1,4 @@
-import { BackendLocalDevelopmentConfig, BackendLocalDevelopmentConfigPort } from "./utils/lobby/backend/local_development.ts";
+import { BackendLocalDevelopmentConfig } from "./utils/lobby/backend/local_development.ts";
 import { BackendServerConfig } from "./utils/lobby/backend/server.ts";
 import { BackendTestConfig } from "./utils/lobby/backend/test.ts";
 
@@ -23,7 +23,6 @@ export interface RateLimitConfig {
 	requests: number;
 }
 
-
 export type RateLimitByEndpointId = {
 	list: RateLimitConfig;
 	create: RateLimitConfig;
@@ -43,7 +42,7 @@ export interface LobbyRule {
 }
 
 export interface LobbyConfig extends Record<PropertyKey, unknown> {
-  regions: string[];
+	regions: string[];
 	destroyOnEmptyAfter?: number | null;
 	unreadyExpireAfter: number;
 	maxPlayers: number;
@@ -64,5 +63,6 @@ export interface PlayerRange {
 	max: number;
 }
 
-export type LobbyBackend = { test: BackendTestConfig } | { localDevelopment: BackendLocalDevelopmentConfig } | { server: BackendServerConfig };
-
+export type LobbyBackend = { test: BackendTestConfig } | {
+	localDevelopment: BackendLocalDevelopmentConfig;
+} | { server: BackendServerConfig };

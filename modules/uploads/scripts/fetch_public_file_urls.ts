@@ -1,4 +1,4 @@
-import { ScriptContext, Database, Query } from "../module.gen.ts";
+import { Database, Query, ScriptContext } from "../module.gen.ts";
 import { DownloadableFile, getKey } from "../utils/types.ts";
 import { getPresignedGetUrl } from "../utils/bucket.ts";
 import { getConfig } from "../utils/config_defaults.ts";
@@ -29,8 +29,8 @@ export async function run(
 		with: {
 			files: {
 				where: Query.inArray(Database.files.path, req.filePaths),
-			}
-		}
+			},
+		},
 	});
 
 	// Check if dbFiles is defined before accessing its properties

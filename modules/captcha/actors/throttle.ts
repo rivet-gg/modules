@@ -27,19 +27,19 @@ export class Actor extends ActorBase<Input, State> {
 			return { success: false };
 		}
 
-        if (now - this.state.start > req.period) {
-            this.reset(_ctx, {});
-            return { success: true };
-        }
+		if (now - this.state.start > req.period) {
+			this.reset(_ctx, {});
+			return { success: true };
+		}
 
-        if (this.state.count > req.requests) {
-            return { success: false };
-        }
+		if (this.state.count > req.requests) {
+			return { success: false };
+		}
 
-        return { success: true };
+		return { success: true };
 	}
 
-	reset(_ctx: ActorContext, req: Empty): Empty {
+	reset(_ctx: ActorContext, _req: Empty): Empty {
 		this.state.start = Date.now();
 		this.state.count = 0;
 

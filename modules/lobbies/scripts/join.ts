@@ -9,12 +9,15 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
-import { getCaptchaProvider, getRateLimitConfigByEndpoint } from "../utils/captcha_config.ts";
+import {
+	getCaptchaProvider,
+	getRateLimitConfigByEndpoint,
+} from "../utils/captcha_config.ts";
 
 export interface Request {
 	lobbyId: string;
 	players: PlayerRequest[];
-  	noWait?: boolean;
+	noWait?: boolean;
 
 	captchaToken?: string;
 }
@@ -37,21 +40,25 @@ export async function run(
 			requests: rateLimitConfig.requests,
 			type: "lobbies.join",
 			captchaToken: req.captchaToken,
-			captchaProvider: captchaProvider
+			captchaProvider: captchaProvider,
 		});
 	}
 
 	const { lobby, players } = await ctx.actors
-		.lobbyManager.getOrCreateAndCall<undefined, JoinLobbyRequest, JoinLobbyResponse>(
-			"default",
-			undefined,
-			"rpcJoinLobby",
-			{
-				lobbyId: req.lobbyId,
-				players: req.players,
-        noWait: req.noWait ?? false,
-			}
-		);
+		.lobbyManager.getOrCreateAndCall<
+		undefined,
+		JoinLobbyRequest,
+		JoinLobbyResponse
+	>(
+		"default",
+		undefined,
+		"rpcJoinLobby",
+		{
+			lobbyId: req.lobbyId,
+			players: req.players,
+			noWait: req.noWait ?? false,
+		},
+	);
 
 	const playerResponses = [];
 	for (const player of players) {

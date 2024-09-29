@@ -16,7 +16,7 @@ import {
 } from "../utils/lobby/mod.ts";
 import { PlayerResponse } from "../utils/player.ts";
 import {
-acceptAnyRegion,
+	acceptAnyRegion,
 	acceptAnyVersion,
 	canCallLobbyReadyMultipleTimes,
 	canMutateLobbies,
@@ -312,22 +312,26 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 		const { status, lobby: newLobby } = this.getLobbyStatus(lobbyId);
 		switch (status) {
 			case "unready":
-				// Do nothing
+				{
+					// Do nothing
+				}
 				break;
-			case "ready":
+			case "ready": {
 				return newLobby!;
-			case "aborted":
+			}
+			case "aborted": {
 				const destroyMeta = this.lobbyDestroyMeta[lobbyId];
 				if (destroyMeta?.cause) {
 					throw destroyMeta.cause;
-				} else {
-					throw new RuntimeError("lobby_aborted", {
-						meta: { reason: destroyMeta?.reason },
-					});
 				}
-				break;
-			default:
+
+				throw new RuntimeError("lobby_aborted", {
+					meta: { reason: destroyMeta?.reason },
+				});
+			}
+			default: {
 				throw new UnreachableError(status);
+			}
 		}
 
 		// Wait for lobby to be ready
@@ -342,28 +346,35 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 					const { status, lobby: newLobby } = this.getLobbyStatus(lobbyId);
 					switch (status) {
 						case "unready":
-							// Do nothing
-							break;
-						case "ready":
-							unsubscribe();
-							resolve(newLobby!);
-							break;
-						case "aborted":
-							unsubscribe();
-
-							const destroyMeta = this.lobbyDestroyMeta[lobbyId];
-							if (destroyMeta?.cause) {
-								reject(destroyMeta.cause);
-							} else {
-								reject(
-									new RuntimeError("lobby_aborted", {
-										meta: { reason: destroyMeta?.reason },
-									}),
-								);
+							{
+								// Do nothing
 							}
 							break;
-						default:
+						case "ready":
+							{
+								unsubscribe();
+								resolve(newLobby!);
+							}
+							break;
+						case "aborted":
+							{
+								unsubscribe();
+
+								const destroyMeta = this.lobbyDestroyMeta[lobbyId];
+								if (destroyMeta?.cause) {
+									reject(destroyMeta.cause);
+								} else {
+									reject(
+										new RuntimeError("lobby_aborted", {
+											meta: { reason: destroyMeta?.reason },
+										}),
+									);
+								}
+							}
+							break;
+						default: {
 							throw new UnreachableError(status);
+						}
 					}
 				},
 			);
@@ -1155,7 +1166,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 	public gc(ctx: ActorContext) {
 		// GC destroy meta
 		let expiredLobbyDestroyMeta = 0;
-		for (let [lobbyId, meta] of Object.entries(this.lobbyDestroyMeta)) {
+		for (const [lobbyId, meta] of Object.entries(this.lobbyDestroyMeta)) {
 			if (Date.now() - meta.destroyedAt > 180_000) {
 				expiredLobbyDestroyMeta++;
 				delete this.lobbyDestroyMeta[lobbyId];
@@ -1286,17 +1297,22 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 	 * Finds a lobby for a given query.
 	 */
 	private queryLobby(
-    ctx: ActorContext,
+		ctx: ActorContext,
 		query: Rpc.QueryRequest,
 		playerCount: number,
 	): State.Lobby | undefined {
 		// TODO: optimize
 		// Find largest lobby that can fit the requested players
 		const lobbies = Object.values(this.lobbies)
-      .map<[State.Lobby, LobbyConfig]>((lobby) => [lobby, getLobbyConfig(ctx.config, lobby.tags)])
-			.filter(([x, config]) => x.version == query.version || acceptAnyVersion(config))
+			.map<[State.Lobby, LobbyConfig]>((
+				lobby,
+			) => [lobby, getLobbyConfig(ctx.config, lobby.tags)])
 			.filter(([x, config]) =>
-				query.regions == undefined || query.regions.includes(x.region) || acceptAnyRegion(config)
+				x.version == query.version || acceptAnyVersion(config)
+			)
+			.filter(([x, config]) =>
+				query.regions == undefined || query.regions.includes(x.region) ||
+				acceptAnyRegion(config)
 			)
 			.filter(([x, _]) =>
 				Object.keys(x.players).length <= x.maxPlayers - playerCount
@@ -1304,7 +1320,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 			.filter(([x, _]) =>
 				query.tags == undefined || lobbyTagsMatch(query.tags, x.tags)
 			)
-      .map(([x, _]) => x)
+			.map(([x, _]) => x)
 			.sort((a, b) => b.createdAt - a.createdAt)
 			.sort((a, b) =>
 				Object.keys(b.players).length - Object.keys(a.players).length

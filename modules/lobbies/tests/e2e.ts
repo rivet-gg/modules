@@ -24,7 +24,7 @@ test("e2e", async (ctx: TestContext) => {
 	// MARK: List lobbies
 	{
 		const { lobbies } = await ctx.modules.lobbies.list({
-			version: VERSION
+			version: VERSION,
 		});
 		assertEquals(lobbies.length, 1);
 		assertEquals(lobbies[0]!.id, lobby.id);
@@ -65,7 +65,7 @@ test("e2e", async (ctx: TestContext) => {
 
 	{
 		const { lobbies } = await ctx.modules.lobbies.list({
-			version: VERSION
+			version: VERSION,
 		});
 		assertEquals(lobbies.length, 0);
 	}
@@ -89,7 +89,7 @@ test("lobby tags", async (ctx: TestContext) => {
 			noWait: true,
 		},
 	);
-  await setLobbyReady(ctx, lobby1.id);
+	await setLobbyReady(ctx, lobby1.id);
 	const { lobby: lobby2 } = await ctx.modules.lobbies.create(
 		{
 			version: VERSION,
@@ -101,7 +101,7 @@ test("lobby tags", async (ctx: TestContext) => {
 			noWait: true,
 		},
 	);
-  await setLobbyReady(ctx, lobby2.id);
+	await setLobbyReady(ctx, lobby2.id);
 	const { lobby: lobby3 } = await ctx.modules.lobbies.create(
 		{
 			version: VERSION,
@@ -113,7 +113,7 @@ test("lobby tags", async (ctx: TestContext) => {
 			noWait: true,
 		},
 	);
-  await setLobbyReady(ctx, lobby3.id);
+	await setLobbyReady(ctx, lobby3.id);
 
 	// MARK: Find lobbies
 	const { lobby: lobby4 } = await ctx.modules.lobbies.find({
@@ -174,18 +174,24 @@ test("empty lobby expire", async (_ctx: TestContext) => {
 	// TODO:
 });
 
-async function issueLobbyToken(ctx: TestContext, lobbyId: string): Promise<string> {
+async function issueLobbyToken(
+	ctx: TestContext,
+	lobbyId: string,
+): Promise<string> {
 	// Issue another token for the lobby for tests
 	const { token: { token: lobbyToken } } = await ctx.modules.tokens.create({
 		type: "lobby_test",
 		meta: { lobbyId },
 	});
 
-  return lobbyToken;
+	return lobbyToken;
 }
 
-async function setLobbyReady(ctx: TestContext, lobbyId: string): Promise<{ lobbyToken: string }> {
-  const lobbyToken = await issueLobbyToken(ctx, lobbyId);
+async function setLobbyReady(
+	ctx: TestContext,
+	lobbyId: string,
+): Promise<{ lobbyToken: string }> {
+	const lobbyToken = await issueLobbyToken(ctx, lobbyId);
 	await ctx.modules.lobbies.setLobbyReady({ lobbyToken });
-  return { lobbyToken };
+	return { lobbyToken };
 }

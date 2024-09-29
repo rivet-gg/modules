@@ -1,9 +1,5 @@
 import { RuntimeError, test, TestContext } from "../module.gen.ts";
-import {
-	assertEquals,
-	assertGreater,
-	assertRejects,
-} from "jsr:@std/assert";
+import { assertEquals, assertGreater, assertRejects } from "jsr:@std/assert";
 import { omit } from "jsr:@std/collections";
 
 test(

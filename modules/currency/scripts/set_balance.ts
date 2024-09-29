@@ -1,4 +1,4 @@
-import { RuntimeError, Query, Database } from "../module.gen.ts";
+import { Database, Query, RuntimeError } from "../module.gen.ts";
 import { ScriptContext } from "../module.gen.ts";
 
 export interface Request {

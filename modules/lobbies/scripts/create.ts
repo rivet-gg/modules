@@ -9,11 +9,14 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
-import { getCaptchaProvider, getRateLimitConfigByEndpoint } from "../utils/captcha_config.ts";
+import {
+	getCaptchaProvider,
+	getRateLimitConfigByEndpoint,
+} from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  	region: string;
+	region: string;
 	tags?: Record<string, string>;
 	maxPlayers: number;
 	maxPlayersDirect: number;
@@ -45,7 +48,7 @@ export async function run(
 			requests: rateLimitConfig.requests,
 			type: "lobbies.create",
 			captchaToken: req.captchaToken,
-			captchaProvider: captchaProvider
+			captchaProvider: captchaProvider,
 		});
 	}
 
@@ -60,7 +63,7 @@ export async function run(
 				lobby: {
 					lobbyId,
 					version: req.version,
-          region: req.region,
+					region: req.region,
 					tags: req.tags,
 					maxPlayers: req.maxPlayers,
 					maxPlayersDirect: req.maxPlayersDirect,

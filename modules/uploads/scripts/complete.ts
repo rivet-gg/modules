@@ -5,12 +5,7 @@ import {
 	keyExists,
 } from "../utils/bucket.ts";
 import { getConfig } from "../utils/config_defaults.ts";
-import {
-	dbToOutput,
-	getKey,
-	UploadWithOptionalFiles,
-	UploadWithoutFiles,
-} from "../utils/types.ts";
+import { dbToOutput, getKey, UploadWithoutFiles } from "../utils/types.ts";
 
 export interface Request {
 	uploadId: string;

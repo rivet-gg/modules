@@ -38,5 +38,5 @@ export async function run(
 		}
 	}
 
-	return await ctx.modules.users.createToken({  userId: id });
+	return await ctx.modules.users.createToken({ userId: id });
 }
