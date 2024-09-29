@@ -2,7 +2,7 @@ import { test, TestContext } from "../module.gen.ts";
 import {
 	assert,
 	assertEquals,
-	assertExists
+	assertExists,
 } from "https://deno.land/std@0.220.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 import { getS3EnvConfig } from "../utils/env.ts";

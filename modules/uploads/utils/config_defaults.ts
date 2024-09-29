@@ -1,5 +1,4 @@
 import { RuntimeError, ScriptContext } from "../module.gen.ts";
-import { Config as UserConfig } from "../config.ts";
 import { getS3EnvConfig, S3Config } from "./env.ts";
 
 import * as defaults from "../config.ts";

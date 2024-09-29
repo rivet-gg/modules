@@ -1,4 +1,4 @@
-import { ScriptContext, Database, Query } from "../module.gen.ts";
+import { Database, Query, ScriptContext } from "../module.gen.ts";
 import { IdentityProviderInfo } from "../utils/types.ts";
 
 export interface Request {
@@ -6,7 +6,7 @@ export interface Request {
 }
 
 export interface Response {
-    identityProviders: IdentityProviderInfo[];
+	identityProviders: IdentityProviderInfo[];
 }
 
 export async function run(
@@ -15,16 +15,18 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-    // Ensure the user token is valid and get the user ID
-    const { userId } = await ctx.modules.users.authenticateTokenInternal({ userToken: req.userToken } );
+	// Ensure the user token is valid and get the user ID
+	const { userId } = await ctx.modules.users.authenticateTokenInternal({
+		userToken: req.userToken,
+	});
 
-    const identityProviders = await ctx.db.query.userIdentities.findMany({
-        where: Query.eq(Database.userIdentities.userId, userId),
-        columns: {
-            identityType: true,
-            identityId: true,
-        }
-    });
+	const identityProviders = await ctx.db.query.userIdentities.findMany({
+		where: Query.eq(Database.userIdentities.userId, userId),
+		columns: {
+			identityType: true,
+			identityId: true,
+		},
+	});
 
-    return { identityProviders };
+	return { identityProviders };
 }

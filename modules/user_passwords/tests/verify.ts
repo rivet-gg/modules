@@ -1,5 +1,9 @@
 import { test, TestContext } from "../module.gen.ts";
-import { assertExists, assertEquals, assertRejects } from "https://deno.land/std@0.217.0/assert/mod.ts";
+import {
+	assertEquals,
+	assertExists,
+	assertRejects,
+} from "https://deno.land/std@0.217.0/assert/mod.ts";
 import { faker } from "https://deno.land/x/deno_faker@v1.0.3/mod.ts";
 import { RuntimeError } from "../module.gen.ts";
 
@@ -35,7 +39,6 @@ test("accept_matching_password", async (ctx: TestContext) => {
 		password: newPass,
 	});
 });
-
 
 test("reject_different_password", async (ctx: TestContext) => {
 	const { user } = await ctx.modules.users.create({

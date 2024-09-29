@@ -1,8 +1,8 @@
-import { RuntimeError, ScriptContext, Database, Query } from "../module.gen.ts";
+import { Database, RuntimeError, ScriptContext } from "../module.gen.ts";
 import {
+	dbToOutput,
 	MultipartUploadFile,
 	PresignedUpload,
-	dbToOutput,
 } from "../utils/types.ts";
 import {
 	getPresignedMultipartUploadUrls,
@@ -127,7 +127,7 @@ export async function run(
 	const presignedInputFiles = await Promise.all(presignedInputFilePromises);
 
 	// TODO: Convert this to a CTE to prevent extra RTT
-	const upload = await ctx.db.transaction(async tx => {
+	const upload = await ctx.db.transaction(async (tx) => {
 		// Create the upload in the database
 		const uploads = await tx.insert(Database.uploads)
 			.values({
