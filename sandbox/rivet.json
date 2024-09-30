@@ -38,7 +38,7 @@
 							},
 							"ports": {
 								"game": {
-									"protocol": "http",
+									"protocol": "https",
 									"internalPort": 7777
 								}
 							},

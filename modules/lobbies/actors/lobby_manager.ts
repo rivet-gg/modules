@@ -38,7 +38,7 @@ const ENABLED_BUILD_TAG = "enabled";
 
 const TICK_INTERVAL = 1000;
 const GC_INTERVAL = 15 * 1000;
-const POLL_SERVERS_INTERVAL = 1 * 1000;
+const POLL_SERVERS_INTERVAL = 1000;
 
 const EVENT_KEYS = {
 	lobbyUpdate(lobbyId: string): string {
@@ -1148,7 +1148,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 		}
 	}
 
-	private tick(ctx: ActorContext) {
+	private async tick(ctx: ActorContext) {
 		this.schedule.after(TICK_INTERVAL, "tick", undefined);
 
 		const now = Date.now();
@@ -1158,7 +1158,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 		}
 		if (now - this.currentState.lastServerPollAt >= POLL_SERVERS_INTERVAL) {
 			this.currentState.lastServerPollAt = now;
-			this.pollServers(ctx);
+			await this.pollServers(ctx);
 		}
 	}
 

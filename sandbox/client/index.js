@@ -36,7 +36,7 @@ window.findOrCreateLobby = async function() {
   const regions = await getBackend().lobbies.listRegions({});
 
   // const region = regions.regions[0].slug;
-  const region = 'lnd-atl';
+  const region = 'atl';
   const tags = {};
   let res = await getBackend().lobbies.findOrCreate({
     version: localStorage.gameVersion ?? "default",
