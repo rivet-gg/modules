@@ -7,6 +7,9 @@
 		}
 	},
 	"modules": {
+		"captcha": {
+			"registry": "local"
+		},
 		"analytics": {
 			"registry": "local"
 		},
@@ -58,10 +61,10 @@
 			"registry": "local",
 			"config": {
 				"lobbies": {
+					"regions": [
+						"test"
+					],
 					"backend": {
-						"regions": [
-							"test"
-						],
 						"test": {}
 					}
 				}
