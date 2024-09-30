@@ -25,7 +25,7 @@ export interface LobbyBackendLocalDevelopmentResponse {
 
 export const REGIONS: Region[] = [
   {
-		id: "local",
+		slug: "local",
 		name: "Local",
 		latitude: 32.232330,
 		longitude: -110.961670,

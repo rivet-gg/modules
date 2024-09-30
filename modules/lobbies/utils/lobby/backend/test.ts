@@ -8,7 +8,7 @@ export type LobbyBackendTestResponse = Record<never, never>;
 
 export const REGIONS: Region[] = [
   {
-		id: "test",
+		slug: "test",
 		name: "Test",
 		latitude: 33.67727501667558, 
 		longitude: -106.47527637325621,

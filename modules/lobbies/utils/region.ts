@@ -9,7 +9,7 @@ import { UnreachableError } from "../module.gen.ts";
 import { LobbyBackend } from "../config.ts";
 
 export interface Region {
-  id: string;
+  slug: string;
   name: string;
   latitude: number;
   longitude: number;

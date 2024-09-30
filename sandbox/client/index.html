@@ -8,36 +8,17 @@
 	<body>
 		<h1>Rivet Modules E2E Test</h1>
 
-		<div>
-			<label for="environmentToggle">Environment:</label>
-			<select id="environmentToggle" onchange="updateEnvironment()">
-				<option value="local">Local</option>
-				<option value="remote">Remote</option>
-			</select>
-		</div>
-
 		<script type="module" src="./index.js"></script>
 
-		<button onclick="findOrCreateLobby()">Find Or Create Lobby</button>
-		<button onclick="fetchState()">Fetch State</button>
-		<button onclick="resetState()">Reset State</button>
-		<button onclick="setAdminToken()">Set Admin Token</button>
-
-		<script>
-			window.addEventListener('load', function() {
-				const urlParams = new URLSearchParams(window.location.search);
-				const environment = urlParams.get('env');
-				if (environment === 'local' || environment === 'remote') {
-					document.getElementById('environmentToggle').value = environment;
-				}
-			});
-
-			function updateEnvironment() {
-				const environment = document.getElementById('environmentToggle').value;
-				const url = new URL(window.location);
-				url.searchParams.set('env', environment);
-				window.location.href = url.toString();
-			}
-		</script>
+    <div>
+      <button onclick="setEndpoint()">Set Endpoint</button>
+      <button onclick="setAdminToken()">Set Admin Token</button>
+      <button onclick="setGameVersion()">Set Game Version</button>
+    </div>
+    <div>
+      <button onclick="findOrCreateLobby()">Find Or Create Lobby</button>
+      <button onclick="fetchState()">Fetch State</button>
+      <button onclick="resetState()">Reset State</button>
+    </div>
 	</body>
 </html>

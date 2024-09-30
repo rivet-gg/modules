@@ -2,10 +2,9 @@
 import { Rivet } from './sdk/index.mjs';
 
 const urlParams = new URLSearchParams(window.location.search);
-const environment = urlParams.get('env') || 'local';
 
 function getBackend() {
-  return new Rivet({ endpoint: localStorage.apiEndpoint ?? "http://localhost:6420" });
+  return new Rivet({ endpoint: localStorage.endpoint });
 }
 
 window.fetchState = async function() {
@@ -21,44 +20,37 @@ window.resetState = async function() {
   });
 };
 
+window.setEndpoint = function() {
+  localStorage.endpoint = prompt("Endpoint", localStorage.endpoint);
+};
+
 window.setAdminToken = function() {
-  let token = prompt("Admin token");
-  localStorage.adminToken = token;
+  localStorage.adminToken = prompt("Admin token", localStorage.adminToken);
+};
+
+window.setGameVersion = function() {
+  localStorage.gameVersion = prompt("Game version", localStorage.gameVersion);
 };
 
 window.findOrCreateLobby = async function() {
-  let res;
-  if (environment == 'local') {
-    res = await getBackend().lobbies.findOrCreate({
-      version: "default",
-      regions: ["local"],
-      tags: {},
-      players: [{}],
+  const regions = await getBackend().lobbies.listRegions({});
 
-      createConfig: {
-        region: "local",
-        tags: {},
-        maxPlayers: 8,
-        maxPlayersDirect: 8,
-      },
-    });
-  } else {
-		const region = "lnd-atl";
-		const tags = {"foo": "bar"};
-    res = await getBackend().lobbies.findOrCreate({
-      version: "2024.09.18-2",
-      regions: [region],
+  // const region = regions.regions[0].slug;
+  const region = 'lnd-atl';
+  const tags = {};
+  let res = await getBackend().lobbies.findOrCreate({
+    version: localStorage.gameVersion ?? "default",
+    regions: [region],
+    tags,
+    players: [{}],
+
+    createConfig: {
+      region,
       tags,
-      players: [{}],
-
-      createConfig: {
-        region,
-        tags,
-        maxPlayers: 8,
-        maxPlayersDirect: 8,
-      },
-    });
-  }
+      maxPlayers: 8,
+      maxPlayersDirect: 8,
+    },
+  });
 
   let { lobby, players } = res;
 
