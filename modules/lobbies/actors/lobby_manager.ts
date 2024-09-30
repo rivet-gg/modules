@@ -317,7 +317,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 				break;
 			case "ready":
 				return newLobby!;
-			case "aborted":
+			case "aborted": {
 				const destroyMeta = this.lobbyDestroyMeta[lobbyId];
 				if (destroyMeta?.cause) {
 					throw destroyMeta.cause;
@@ -326,7 +326,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 						meta: { reason: destroyMeta?.reason },
 					});
 				}
-				break;
+      }
 			default:
 				throw new UnreachableError(status);
 		}
@@ -349,7 +349,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 							unsubscribe();
 							resolve(newLobby!);
 							break;
-						case "aborted":
+						case "aborted": {
 							unsubscribe();
 
 							const destroyMeta = this.lobbyDestroyMeta[lobbyId];
@@ -363,6 +363,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 								);
 							}
 							break;
+            }
 						default:
 							throw new UnreachableError(status);
 					}
@@ -1164,7 +1165,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 	public gc(ctx: ActorContext) {
 		// GC destroy meta
 		let expiredLobbyDestroyMeta = 0;
-		for (let [lobbyId, meta] of Object.entries(this.lobbyDestroyMeta)) {
+		for (const [lobbyId, meta] of Object.entries(this.lobbyDestroyMeta)) {
 			if (Date.now() - meta.destroyedAt > 180_000) {
 				expiredLobbyDestroyMeta++;
 				delete this.lobbyDestroyMeta[lobbyId];
