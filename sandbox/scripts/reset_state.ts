@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run -A
 
-const endpoint = Deno.env.get("BACKEND_ENDPOINT");
+const endpoint = Deno.env.get("RIVET_BACKEND_ENDPOINT");
 
 const res = await fetch(`${endpoint}/modules/lobbies/scripts/reset_lobby_manager_state/call`, {
   method: "POST",

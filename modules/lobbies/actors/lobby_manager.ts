@@ -586,7 +586,7 @@ export class Actor extends ActorBase<undefined, State.StateVersioned> {
 					"LOBBY_ID": lobby.id,
 					"LOBBY_VERSION": lobby.version,
 					"LOBBY_TOKEN": token,
-					"BACKEND_ENDPOINT": ctx.runtime.publicEndpoint,
+					"RIVET_BACKEND_ENDPOINT": ctx.runtime.publicEndpoint,
 				}),
 			},
 			network: {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export BACKEND_ENDPOINT="http://127.0.0.1:6420"
+export RIVET_BACKEND_ENDPOINT="http://127.0.0.1:6420"
 
 # Function to clean up background processes
 cleanup() {
