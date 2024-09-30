@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export BACKEND_ENDPOINT="https://modules-sand-m4z.backend.staging2.gameinc.io"
+./scripts/gen_sdk.sh
 
 # Function to clean up background processes
 cleanup() {

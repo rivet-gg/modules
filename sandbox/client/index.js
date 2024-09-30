@@ -1,27 +1,35 @@
-/// <reference path="./dist/sdk.d.mts" />
-import { Backend } from './dist/sdk.mjs';
+/// <reference path="./sdk/index.d.mts" />
+import { Rivet } from './sdk/index.mjs';
 
 const urlParams = new URLSearchParams(window.location.search);
 const environment = urlParams.get('env') || 'local';
-const API_ENDPOINT = environment === 'remote' ? "https://modules-sand-m4z.backend.staging2.gameinc.io" : "http://localhost:6420";
 
-const backend = new Backend({ endpoint: API_ENDPOINT });
-
-console.log('backend', backend);
+function getBackend() {
+  return new Rivet({ endpoint: localStorage.apiEndpoint ?? "http://localhost:6420" });
+}
 
 window.fetchState = async function() {
-  const { state } = await backend.lobbies.fetchLobbyManagerState({});
+  const { state } = await getBackend().lobbies.fetchLobbyManagerState({
+    adminToken: localStorage.adminToken
+  });
   console.log('State', state);
 };
 
 window.resetState = async function() {
-  await backend.lobbies.resetLobbyManagerState({});
+  await getBackend().lobbies.resetLobbyManagerState({
+    adminToken: localStorage.adminToken
+  });
+};
+
+window.setAdminToken = function() {
+  let token = prompt("Admin token");
+  localStorage.adminToken = token;
 };
 
 window.findOrCreateLobby = async function() {
   let res;
   if (environment == 'local') {
-    res = await backend.lobbies.findOrCreate({
+    res = await getBackend().lobbies.findOrCreate({
       version: "default",
       regions: ["local"],
       tags: {},
@@ -37,7 +45,7 @@ window.findOrCreateLobby = async function() {
   } else {
 		const region = "lnd-atl";
 		const tags = {"foo": "bar"};
-    res = await backend.lobbies.findOrCreate({
+    res = await getBackend().lobbies.findOrCreate({
       version: "2024.09.18-2",
       regions: [region],
       tags,
@@ -112,3 +120,4 @@ function connect(lobby, players) {
     };
   });
 }
+
