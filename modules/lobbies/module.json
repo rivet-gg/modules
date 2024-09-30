@@ -57,25 +57,25 @@
       "description": "Finds an existing lobby with a given query. This will not create a new lobby, see `find_or_create` instead.",
       "public": true
     },
-    "force_gc": {
-      "name": "Force Garbage Collection",
-      "description": "Rarely used. Forces the matchmaker to purge lobbies & players.",
-      "public": false
-    },
     "list_regions": {
       "name": "List Regions",
       "description": "List available regions.",
       "public": true
     },
+    "force_gc": {
+      "name": "Force Garbage Collection",
+      "description": "Rarely used. Forces the matchmaker to purge lobbies & players.",
+      "public": true
+    },
     "fetch_lobby_manager_state": {
       "name": "Fetch Lobby Manager State",
       "description": "See full state of the lobby manager for debugging.",
-      "public": false
+      "public": true
     },
     "reset_lobby_manager_state": {
       "name": "Reset Lobby Manager State",
       "description": "Reset lobby manager state. For debugging only.",
-      "public": false
+      "public": true
     }
   },
   "actors": {
@@ -150,6 +150,11 @@
     "build_not_found": {
       "name": "Build Not Found",
       "description": "Build not found. Check that there is a build with the provided version & that the bulid is enabled.",
+      "internal": false
+    },
+    "forbidden": {
+      "name": "Forbidden",
+      "description": "Cannot access this command.",
       "internal": false
     }
   },
