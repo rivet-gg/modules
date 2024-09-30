@@ -3,8 +3,7 @@ import { Backend } from './dist/sdk.mjs';
 
 const urlParams = new URLSearchParams(window.location.search);
 const environment = urlParams.get('env') || 'local';
-// const API_ENDPOINT = environment === 'remote' ? "https://sandbox-brq--staging.backend.nathan16.gameinc.io" : "http://localhost:6420";
-const API_ENDPOINT = environment === 'remote' ? "https://unity-demo-c8y.backend.nathan16.gameinc.io" : "http://localhost:6420";
+const API_ENDPOINT = environment === 'remote' ? "https://sandbox--staging.backend.rivet.gg" : "http://localhost:6420";
 
 const backend = new Backend({ endpoint: API_ENDPOINT });
 
@@ -39,7 +38,7 @@ window.findOrCreateLobby = async function() {
 		const region = "atl";
 		const tags = {"foo": "bar"};
     res = await backend.lobbies.findOrCreate({
-      version: "2024.08.14-4",
+      version: "2024.09.18-2",
       regions: [region],
       tags,
       players: [{}],
