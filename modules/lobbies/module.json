@@ -70,12 +70,12 @@
     "fetch_lobby_manager_state": {
       "name": "Fetch Lobby Manager State",
       "description": "See full state of the lobby manager for debugging.",
-      "public": true
+      "public": false
     },
     "reset_lobby_manager_state": {
       "name": "Reset Lobby Manager State",
       "description": "Reset lobby manager state. For debugging only.",
-      "public": true
+      "public": false
     }
   },
   "actors": {
