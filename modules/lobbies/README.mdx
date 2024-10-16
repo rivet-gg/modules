@@ -635,6 +635,11 @@ The following environment variables are automatically set for each lobby:
 - `LOBBY_VERSION` The version of the lobby, as specified in the lobby configuration.
 - `LOBBY_TOKEN` A secure token used for authenticating the lobby with the OpenGB backend.
 - `RIVET_BACKEND_ENDPOINT` The public endpoint URL for the OpenGB backend.
+- `RIVET_TAGS` All of the lobby's tags (as described above), in the form of JSON.
+
+As well as a corresponding environment variable in the form `RIVET_TAGS_your_tag=your_tag_value`
+for each of the lobby's tags. If you have the tag `foo` set to the value `bar` on a given lobby,
+that lobby will have the environment variable `RIVET_TAGS_foo` set to `bar`.
 
 {/* ## FAQ
 
