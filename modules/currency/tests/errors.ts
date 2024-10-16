@@ -29,7 +29,10 @@ test(
 		});
 
 		const error = await assertRejects(async () => {
-			await ctx.modules.currency.adjustBalance({ userId: user.id, amount: -150 });
+			await ctx.modules.currency.adjustBalance({
+				userId: user.id,
+				amount: -150,
+			});
 		}, RuntimeError);
 		assertEquals(error.code, "not_enough_funds");
 	},
@@ -43,7 +46,10 @@ test(
 		});
 
 		const error = await assertRejects(async () => {
-			await ctx.modules.currency.adjustBalance({ userId: user.id, amount: NaN });
+			await ctx.modules.currency.adjustBalance({
+				userId: user.id,
+				amount: NaN,
+			});
 		}, RuntimeError);
 		assertEquals(error.code, "invalid_amount");
 	},
@@ -57,7 +63,10 @@ test(
 		});
 
 		const error = await assertRejects(async () => {
-			await ctx.modules.currency.adjustBalance({ userId: user.id, amount: Infinity });
+			await ctx.modules.currency.adjustBalance({
+				userId: user.id,
+				amount: Infinity,
+			});
 		}, RuntimeError);
 		assertEquals(error.code, "invalid_amount");
 	},

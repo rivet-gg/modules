@@ -1,4 +1,4 @@
-import { ScriptContext, Query, Database } from "../module.gen.ts";
+import { Database, Query, ScriptContext } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
 
 export interface Request {

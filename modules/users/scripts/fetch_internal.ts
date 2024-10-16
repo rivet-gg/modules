@@ -1,4 +1,4 @@
-import { ScriptContext, Query, Database } from "../module.gen.ts";
+import { Database, Query, ScriptContext } from "../module.gen.ts";
 import { User } from "../utils/types.ts";
 
 export interface Request {
@@ -13,11 +13,10 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-
-  const users = await ctx.db.query.users.findMany({
-    where: Query.inArray(Database.users.id, req.userIds),
-    orderBy: Query.desc(Database.users.username),
-  });
+	const users = await ctx.db.query.users.findMany({
+		where: Query.inArray(Database.users.id, req.userIds),
+		orderBy: Query.desc(Database.users.username),
+	});
 
 	return { users };
 }

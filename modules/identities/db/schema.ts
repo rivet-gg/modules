@@ -31,5 +31,9 @@ export const userIdentities = schema.table("user_identities", {
 	pk: Query.primaryKey({
 		columns: [table.userId, table.identityType, table.identityId],
 	}),
-	uniqueConstraint: Query.unique().on(table.identityType, table.identityId, table.uniqueData),
+	uniqueConstraint: Query.unique().on(
+		table.identityType,
+		table.identityId,
+		table.uniqueData,
+	),
 }));

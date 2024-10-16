@@ -3,8 +3,8 @@ import * as RivetTypes from "../../rivet/types.ts";
 export interface State {
 	lobbies: Record<string, Lobby>;
 	servers: Record<string, Server>;
-  lastGcAt: number;
-  lastServerPollAt: number;
+	lastGcAt: number;
+	lastServerPollAt: number;
 }
 
 export interface Server {
@@ -13,13 +13,13 @@ export interface Server {
 	createdAt: number;
 
 	/**
-  * Timestamp at which the Rivet create request returned.
-  *
-  * See `data.started_at` for the time at which the server actually started.
-  **/
+	 * Timestamp at which the Rivet create request returned.
+	 *
+	 * See `data.started_at` for the time at which the server actually started.
+	 */
 	createCompleteAt?: number;
 
-  /** Timestamp at which the data last polled. */
+	/** Timestamp at which the data last polled. */
 	polledAt?: number;
 
 	/** If deletee request has been sent to Rivet, this will be set. */

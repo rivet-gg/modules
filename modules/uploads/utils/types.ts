@@ -2,7 +2,8 @@ import { Database } from "../module.gen.ts";
 
 type DatabaseFiles = typeof Database.files.$inferSelect;
 
-interface DatabaseUpload extends Omit<typeof Database.uploads.$inferSelect, "deletedAt"> {
+interface DatabaseUpload
+	extends Omit<typeof Database.uploads.$inferSelect, "deletedAt"> {
 	files: DatabaseFiles[];
 }
 

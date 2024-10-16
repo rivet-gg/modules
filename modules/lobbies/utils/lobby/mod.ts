@@ -22,7 +22,7 @@ export interface LobbyResponse {
 	id: string;
 	version: string;
 	tags: Record<string, string>;
-  region: Region,
+	region: Region;
 
 	createdAt: number;
 	readyAt?: number;

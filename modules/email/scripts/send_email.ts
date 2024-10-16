@@ -35,7 +35,11 @@ export async function run(
 	return {};
 }
 
-async function useSendGrid(ctx: ScriptContext, config: ProviderSendGrid, req: Request) {
+async function useSendGrid(
+	ctx: ScriptContext,
+	config: ProviderSendGrid,
+	req: Request,
+) {
 	const apiKeyVariable = config.apiKeyVariable ?? "SENDGRID_API_KEY";
 	const apiKey = ctx.environment.get(apiKeyVariable);
 	assertExists(apiKey, `Missing environment variable: ${apiKeyVariable}`);
