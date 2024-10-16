@@ -9,10 +9,11 @@ import {
 	PlayerRequest,
 	PlayerResponseWithToken,
 } from "../utils/player.ts";
+import { getCaptchaProvider, getRateLimitConfigByEndpoint } from "../utils/captcha_config.ts";
 
 export interface Request {
 	version: string;
-  region: string;
+  	region: string;
 	tags?: Record<string, string>;
 	maxPlayers: number;
 	maxPlayersDirect: number;
@@ -20,6 +21,8 @@ export interface Request {
 	players: PlayerRequest[];
 
 	noWait?: boolean;
+
+	captchaToken?: string;
 }
 
 export interface Response {
@@ -33,6 +36,19 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
+	const rateLimitConfig = getRateLimitConfigByEndpoint(ctx.config, "create");
+	const captchaProvider = getCaptchaProvider(ctx.config);
+	if (captchaProvider !== null) {
+		await ctx.modules.captcha.guard({
+			key: "default",
+			period: rateLimitConfig.period,
+			requests: rateLimitConfig.requests,
+			type: "lobbies.create",
+			captchaToken: req.captchaToken,
+			captchaProvider: captchaProvider
+		});
+	}
+
 	const lobbyId = crypto.randomUUID();
 
 	const { lobby, players } = await ctx.actors.lobbyManager
