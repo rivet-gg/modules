@@ -1,2 +1,8 @@
-export type ReqOf<T> = T extends (req: infer Req) => Promise<infer Res> ? Req : never;
-export type ResOf<T> = T extends (req: infer Req) => Promise<infer Res> ? Res : never;
+export interface Verification {
+	token: string;
+}
+
+export interface Session {
+	token: string;
+	expireAt: string;
+}
