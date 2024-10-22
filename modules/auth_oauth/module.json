@@ -1,16 +1,69 @@
 {
-  "name": "Social Authentication Provider",
-  "description": "Authenticate users with OAuth 2.0.",
-  "icon": "key",
-  "tags": [
-    "core",
-    "user",
-    "auth"
-  ],
-  "authors": [
-    "rivet-gg"
-  ],
-  "status": "coming_soon",
-  "dependencies": {},
-  "errors": {}
+    "name": "Social Authentication Provider",
+    "description": "Authenticate users with OAuth 2.0.",
+    "icon": "key",
+    "tags": [
+      "core",
+      "user",
+      "auth"
+    ],
+    "authors": [
+        "rivet-gg",
+        "Skyler Calaman"
+    ],
+    "status": "beta",
+    "dependencies": {
+        "rate_limit": {},
+        "identities": {},
+        "users": {},
+        "tokens": {}
+    },
+    "routes": {
+        "login_callback": {
+            "name": "OAuth Redirect Callback",
+            "description": "Verify a user's OAuth login and create a session.",
+            "method": "GET",
+            "pathPrefix": "/callback/"
+        }
+    },
+    "scripts": {
+        "sign_in": {
+            "name": "Sign In",
+            "description": "Start the OAuth login process. Returns a URL to redirect the user to and a flow token.",
+            "public": true
+        },
+        "get_login_status": {
+            "name": "Get Login Status",
+            "description": "Check the status of a OAuth login using the flow token. Returns the status of the login flow.",
+            "public": true
+        },
+        "complete": {
+            "name": "Complete Flow and ",
+            "description": "Perform action requested in sign_in and return a user token",
+            "public": true
+        }
+    },
+    "errors": {
+        "invalid_config": {
+          "name": "Invalid OAuth2 Server Configuration"
+        },
+        "bad_oauth_response": {
+          "name": "Received Invalid Response from OAuth2 Provider"
+        },
+        "missing_token": {
+          "name": "Missing Flow Token in a Flow Action Request"
+        },
+        "invalid_token": {
+          "name": "Invalid Flow Token in a Flow Action Request"
+        },
+        "flow_not_complete": {
+          "name": "Attempted to Complete a Flow Before OAuth Response"
+        },
+        "user_not_found": {
+          "name": "Attempted to Sign In with Unregistered Credentials"
+        },
+        "db_err": {
+          "name": "Unknown Database Error Occured"
+        }
+    }
 }

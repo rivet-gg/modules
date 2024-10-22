@@ -101,6 +101,18 @@
 			"registry": "local"
 		},
 		"auth_oauth": {
+			"config": {
+				"providers": {
+                    "google": "https://accounts.google.com/.well-known/openid-configuration",
+                    "github": {
+                        "authorization": "https://github.com/login/oauth/authorize",
+                        "token": "https://github.com/login/oauth/access_token",
+                        "userinfo": "https://api.github.com/user",
+                        "scopes": "read:user",
+                        "userinfoKey": "id"
+                    }
+				}
+			},
 			"registry": "local"
 		}
 	}
