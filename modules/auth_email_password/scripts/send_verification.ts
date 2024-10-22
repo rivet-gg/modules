@@ -1,6 +1,4 @@
 import { ScriptContext } from "../module.gen.ts";
-import { createVerification } from "../utils/code_management.ts";
-import { Verification } from "../utils/types.ts";
 
 export interface Request {
 	email: string;
@@ -8,8 +6,11 @@ export interface Request {
 }
 
 export interface Response {
-	verification: Verification;
+	token: string;
 }
+
+const HOUR_MS = 60 * 60 * 1000 * 1000;
+const ATTEMPTS = 3;
 
 export async function run(
 	ctx: ScriptContext,
@@ -17,10 +18,11 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	const { code, verification } = await createVerification(
-		ctx,
-		req.email,
-	);
+	const { code, token } = await ctx.modules.verifications.create({
+		data: { email: req.email },
+		expireAt: new Date(Date.now() + HOUR_MS).toISOString(),
+		maxAttempts: ATTEMPTS,
+	});
 
 	// Send email
 	await ctx.modules.email.sendEmail({
@@ -34,5 +36,5 @@ export async function run(
 		html: `Your verification code is: <b>${code}</b>`,
 	});
 
-	return { verification };
+	return { token };
 }
