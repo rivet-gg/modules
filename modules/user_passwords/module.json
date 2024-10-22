@@ -29,6 +29,14 @@
     "update": {
       "name": "Update Password for User",
       "description": "Update a userID/password combination. Errors if user does not have a password."
+    },
+    "meta": {
+      "name": "Check the Password Metadata for a User",
+      "description": "Get the password metadata for users (e.g. whether the user has a password, when the password was last updated, etc)."
+    },
+    "set_raw_hash": {
+      "name": "Set Raw Hash for User",
+      "description": "Register OR update a userID/password HASH combination. Not recommended to be used."
     }
   },
   "errors": {

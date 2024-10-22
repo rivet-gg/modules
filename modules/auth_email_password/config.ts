@@ -1,4 +1,4 @@
 export interface Config {
-    fromEmail?: string;
-    fromName?: string;
+	fromEmail?: string;
+	fromName?: string;
 }

@@ -31,6 +31,7 @@ export async function run(
         .set({
             passwordHash,
             algo,
+            updatedAt: new Date().toISOString(),
         })
         .where(Query.eq(Database.passwords.userId, req.userId));
 
