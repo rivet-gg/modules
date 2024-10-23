@@ -59,9 +59,6 @@
 			"config": {
 				"lobbies": {
 					"backend": {
-						"regions": [
-							"test"
-						],
 						"test": {}
 					}
 				}
@@ -77,6 +74,9 @@
 			"registry": "local"
 		},
 		"tokens": {
+			"registry": "local"
+		},
+		"tournaments": {
 			"registry": "local"
 		},
 		"uploads": {
