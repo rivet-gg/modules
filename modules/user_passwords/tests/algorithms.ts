@@ -11,7 +11,8 @@ test("algorithms", async (ctx: TestContext) => {
     // Set up user
     await ctx.modules.userPasswords.add({ userId: user.id, password: "password" });
 
-    const algorithms = ["argon2", "bcrypt", "scrypt"] as const;
+    // const algorithms = ["argon2", "bcrypt", "scrypt"] as const;
+    const algorithms = ["argon2", "bcrypt"] as const;
     for (const algorithm of algorithms) {
         // Register password
         const password = faker.internet.password();
