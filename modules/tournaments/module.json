@@ -1,13 +1,20 @@
 {
-    "name": "Tournaments",
-    "description": "Tournaments integrated with blumint",
-    "icon": "sword",
-    "tags": [],
-    "authors": [
-      "rivet-gg"
-    ],
-    "status": "beta",
-    "scripts": {},
-    "errors": {}
+	"status": "beta",
+	"name": "Tournaments",
+	"description": "Tournaments integrated with blumint",
+	"icon": "sword",
+	"tags": [],
+	"authors": [
+		"rivet-gg"
+	],
+	"scripts": {
+		"create_match": {
+			"public": false
+		}
+	},
+	"dependencies": {
+		"lobbies": {},
+		"users": {}
+	},
+	"errors": {}
 }
-  

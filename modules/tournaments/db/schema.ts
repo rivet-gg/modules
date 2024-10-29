@@ -14,20 +14,19 @@ export enum BlumintMatchTeamPlayerStatus {
 }
 
 export const blumintMatches = schema.table("matches", {
-    matchId: Query.uuid("match_id").notNull().primaryKey(),
+    id: Query.uuid("match_id").notNull().primaryKey().defaultRandom(),
     lobbyId: Query.uuid("lobby_id").notNull(),
-    tournamentId: Query.uuid("tournament_id").notNull(),
     status: Query.text("status").notNull() // BlumintMatchStatus
 });
 
 
 export const blumintMatchTeams = schema.table("match_teams", {
-    teamId: Query.uuid("team_id").notNull().primaryKey(),
-	matchId: Query.uuid("match_id").notNull().references(() => blumintMatches.matchId)
+    id: Query.uuid("team_id").notNull().primaryKey().defaultRandom(),
+	matchId: Query.uuid("match_id").notNull().references(() => blumintMatches.id)
 });
 
 export const blumintMatchTeamPlayers = schema.table("match_team_players", {
     userId: Query.uuid("user_id").notNull().primaryKey(),
-    teamId: Query.uuid("team_id").notNull().references(() => blumintMatchTeams.teamId),
+    teamId: Query.uuid("team_id").notNull().references(() => blumintMatchTeams.id),
     status: Query.text("status").notNull() // BlumintMatchTeamPlayerStatus
 });
