@@ -1,6 +1,5 @@
-import { BlumintMatchTeamPlayerStatus } from "../db/schema.ts";
-import { BlumintMatchStatus } from "../db/schema.ts";
 import { ScriptContext, Query, Database } from "../module.gen.ts";
+import { BlumintMatchStatus, BlumintMatchTeamPlayerStatus } from "../utils/types.ts";
 
 export interface Request {
 	teams: {
@@ -25,15 +24,18 @@ export async function run(
 	const { lobby } = await ctx.modules.lobbies.create({
 		maxPlayers: allPlayers.length,
 		maxPlayersDirect: allPlayers.length,
-		players: [],
+		// TODO: This only exists so that the lobby can be created
+		// since without players, the lobby auto deletes itself
+		players: [{}],
 		region: "test",
 		version: "lts",
+		noWait: true,
 		tags: {
-			matchSettings: JSON.stringify(req.matchSettings)
+			matchSettings: JSON.stringify(req.matchSettings ?? {})
 		}
 	});
 
-	// TODO: maybe delete lobby if any db failures happen here
+	// (?) Delete lobby if any db failures happen here
 
 	// Create match
 	const [{ matchId }] = await ctx.db.insert(Database.blumintMatches)

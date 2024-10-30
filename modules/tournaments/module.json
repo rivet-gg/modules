@@ -10,11 +10,17 @@
 	"scripts": {
 		"create_match": {
 			"public": false
+		},
+		"get_match_status": {
+			"public": false
+		},
+		"update_match_status": {
+			"public": false
 		}
 	},
+	"errors": {},
 	"dependencies": {
 		"lobbies": {},
 		"users": {}
-	},
-	"errors": {}
+	}
 }
