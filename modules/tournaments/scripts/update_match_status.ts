@@ -49,12 +49,26 @@ export async function run(
 		|| req.status === BlumintMatchStatus.CANCELLED
 	) {
 		await syncFinalStatsWithBlumint(ctx, req.matchId);
+
+		// Force destroy lobby
+		const data = await ctx.db.query.blumintMatches.findFirst({
+			where: Query.eq(Database.blumintMatches.id, req.matchId),
+			columns: {
+				lobbyId: true
+			}
+		});
+		if (data) {
+			await ctx.modules.lobbies.destroy({
+				lobbyId: data.lobbyId,
+				reason: "Match ended"
+			})
+		}
 	} else {
 		await ctx.db.update(Database.blumintMatches).set({
 			status: req.status
 		}).where(
 			Query.eq(Database.blumintMatches.id, req.matchId)
-		);	
+		);
 	}
 
 	return {}
