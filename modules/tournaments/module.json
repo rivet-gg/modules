@@ -18,9 +18,31 @@
 			"public": false
 		}
 	},
-	"errors": {},
+	"routes": {
+		"update_match_status": {
+			"name": "Update Match Status",
+			"description": "Updates the status of a match. Called by lobby",
+			"method": "POST",
+			"path": "/updateMatch"
+		},
+		"create_match": {
+			"name": "Create Match",
+			"description": "Creates a match. Called by blumint",
+			"method": "POST",
+			"path": "/createMatch"
+		}
+	},
+	"errors": {
+		"invalid_request_body": {
+			"name": "Invalid Request Body",
+			"description": "Could not understand the request body",
+			"internal": false
+		}
+	},
 	"dependencies": {
+		"tokens": {},
 		"lobbies": {},
-		"users": {}
+		"users": {},
+		"rate_limit": {}
 	}
 }

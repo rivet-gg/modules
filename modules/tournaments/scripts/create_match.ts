@@ -1,6 +1,14 @@
 import { ScriptContext, Query, Database } from "../module.gen.ts";
 import { BlumintMatchStatus, BlumintMatchTeamPlayerStatus } from "../utils/types.ts";
 
+export interface CreateMatchPlayer {
+	playerId: string;
+}
+
+export interface CreateMatchTeam {
+	players: CreateMatchPlayer[];
+}
+
 export interface Request {
 	teams: {
 		players: {
