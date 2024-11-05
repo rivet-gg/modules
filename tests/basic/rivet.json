@@ -77,7 +77,12 @@
 			"registry": "local"
 		},
 		"tournaments": {
-			"registry": "local"
+			"registry": "local",
+			"config": {
+				"environment": {
+					"test": {}
+				}
+			}
 		},
 		"uploads": {
 			"registry": "local"
@@ -102,14 +107,6 @@
 		},
 		"auth_oauth": {
 			"registry": "local"
-		}
-	},
-	"runtime": {
-		"cors": {
-			"origins": [
-				"http://127.0.0.1:6420",
-				"http://127.0.0.1:5500"
-			]
 		}
 	}
 }

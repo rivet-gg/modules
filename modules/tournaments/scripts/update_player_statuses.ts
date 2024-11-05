@@ -19,18 +19,14 @@ export async function run(
 ): Promise<Response> {
     await ctx.db.transaction(async (db) => {
         for (const player of req.playerUpdates) {
-            try {
-                await db.update(Database.blumintMatchTeamPlayers)
-                .set({
-                    status: player.status
-                })
-                .where(Query.and(
-                    Query.eq(Database.blumintMatchTeamPlayers.userId, player.playerId),
-                    Query.eq(Database.blumintMatchTeamPlayers.matchId, req.matchId)
-                ));
-            } catch (e) {
-                console.log(e.stack)
-            }
+            await db.update(Database.blumintMatchTeamPlayers)
+            .set({
+                status: player.status
+            })
+            .where(Query.and(
+                Query.eq(Database.blumintMatchTeamPlayers.userId, player.playerId),
+                Query.eq(Database.blumintMatchTeamPlayers.matchId, req.matchId)
+            ));
         }
     });
 

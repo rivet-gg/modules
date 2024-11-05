@@ -34,7 +34,7 @@ async function syncFinalStatsWithBlumint(
 		throw new Error("Match not found");
 	}
 
-	await sendFinalStatsToBlumint({
+	await sendFinalStatsToBlumint(ctx, {
 		teams: data.teams,
 		matchId
 	});
