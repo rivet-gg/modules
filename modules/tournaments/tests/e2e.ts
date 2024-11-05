@@ -22,8 +22,10 @@ test("e2e", async (ctx: TestContext) => {
             },
         ]
     });
-    ctx.log.info(Deno.inspect(match.matchId));
+
     await ctx.modules.tournaments.getMatchStatus({
         matchId: match.matchId
     });
+
+    ctx.modules.tournaments.
 });

@@ -1,7 +1,8 @@
 import { RuntimeError } from "../module.gen.ts";
 import { RouteContext, RouteRequest, RouteResponse } from "../module.gen.ts";
+import { PlayerAndStatus } from "../scripts/update_player_statuses.ts";
 import { getMatchIdFromLobby, LobbyReference } from "../utils/common.ts";
-import { BlumintMatchStatus } from "../utils/types.ts";
+import { BlumintMatchTeamPlayerStatus } from "../utils/types.ts";
 
 export async function handle(
     ctx: RouteContext,
@@ -11,10 +12,7 @@ export async function handle(
 
     const lobbyInfo: LobbyReference = {}
 
-    // We don't check & enforce the type to BlumintMatchStatus,
-    // since the internal script will do the check for us
-    let status: string;
-
+    const playerUpdates: PlayerAndStatus[] = []
     try {
         const raw = await req.json();
         if (!raw) throw new RuntimeError("invalid_request_body");
@@ -26,8 +24,17 @@ export async function handle(
         else if (typeof id === "string") lobbyInfo.id = id;
         else throw new RuntimeError("invalid_request_body");
 
-        if (typeof raw.status === "string") status = raw.status;
-        else throw new RuntimeError("invalid_request_body");
+        if (!Array.isArray(raw.playerUpdates)) throw new RuntimeError("invalid_request_body");
+        for (const update of raw.playerUpdates) {
+            if (typeof update.playerId !== "string") throw new RuntimeError("invalid_request_body");
+            if (typeof update.status !== "string") throw new RuntimeError("invalid_request_body");
+            playerUpdates.push({
+                playerId: update.playerId,
+                // We don't check & enforce the type to BlumintMatchTeamPlayerStatus,
+                // since the internal script will do the check for us
+                status: update.status as BlumintMatchTeamPlayerStatus
+            });
+        }
     } catch {
         throw new RuntimeError("invalid_request_body")
     }
@@ -37,10 +44,10 @@ export async function handle(
     }
 
     const matchId = await getMatchIdFromLobby(ctx, lobbyInfo);
-
-    await ctx.modules.tournaments.updateMatchStatus({
+    ctx.log.info(`Updating player statuses for match ${Deno.inspect({ matchId, playerUpdates })}`);
+    await ctx.modules.tournaments.updatePlayerStatuses({
         matchId,
-        status: status as BlumintMatchStatus
+        playerUpdates
     });
 
     return new RouteResponse(

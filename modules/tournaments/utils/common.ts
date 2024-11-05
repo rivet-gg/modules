@@ -1,4 +1,4 @@
-import { RouteContext, ScriptContext } from "../module.gen.ts";
+import { Database, Query, RouteContext, ScriptContext } from "../module.gen.ts";
 
 export interface LobbyReference {
     token?: string;
@@ -16,14 +16,21 @@ async function getLobbyIdFromToken(ctx: ScriptContext | RouteContext, lobbyToken
 export async function getMatchIdFromLobby(
     ctx: ScriptContext | RouteContext,
     lobby: LobbyReference
-) {
+): Promise<string> {
     if (!lobby.token && !lobby.id) {
         throw new Error("Invalid lobby reference");
     }
     const lobbyId = lobby.id || await getLobbyIdFromToken(ctx, lobby.token!);
-    return await ctx.db.query.blumintMatches.findFirst({
-        where: {
-            lobbyId,
+    const matches = await ctx.db.query.blumintMatches.findFirst({
+        where: Query.eq(Database.blumintMatches.lobbyId, lobbyId),
+        columns: {
+            id: true,
         },
     });
+
+    if (!matches) {
+        throw new Error("Match not found");
+    }
+
+    return matches.id;
 }

@@ -10,11 +10,7 @@ export interface CreateMatchTeam {
 }
 
 export interface Request {
-	teams: {
-		players: {
-			playerId: string;
-		}[];
-	}[];
+	teams: CreateMatchTeam[];
 	matchSettings?: Record<string, any>;
 }
 
@@ -67,6 +63,7 @@ export async function run(
 	.values(req.teams.flatMap((t, i) => t.players.map(p => ({
 		userId: p.playerId,
 		teamId: teamIds[i].teamId,
+		matchId: matchId,
 		status: BlumintMatchTeamPlayerStatus.ABSENT
 	}))));
 

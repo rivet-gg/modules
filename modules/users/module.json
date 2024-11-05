@@ -24,7 +24,8 @@
       "name": "Fetch User by Username"
     },
     "create": {
-      "name": "Create User"
+      "name": "Create User",
+      "public": true
     },
     "authenticate_token": {
       "name": "Authenticate User Token",

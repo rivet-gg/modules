@@ -13,7 +13,7 @@ export async function run(
 	ctx: ScriptContext,
 	req: Request,
 ): Promise<Response> {
-	await ctx.modules.rateLimit.throttlePublic({ requests: 2, period: 5 * 60 });
+	// await ctx.modules.rateLimit.throttlePublic({ requests: 2, period: 5 * 60 });
 
 	// Create user
   const rows = await ctx.db.insert(Database.users)

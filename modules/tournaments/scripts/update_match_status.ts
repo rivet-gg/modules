@@ -61,7 +61,7 @@ export async function run(
 			await ctx.modules.lobbies.destroy({
 				lobbyId: data.lobbyId,
 				reason: "Match ended"
-			})
+			});
 		}
 	} else {
 		await ctx.db.update(Database.blumintMatches).set({

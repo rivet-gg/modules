@@ -16,6 +16,9 @@
 		},
 		"update_match_status": {
 			"public": false
+		},
+		"update_player_statuses": {
+			"public": false
 		}
 	},
 	"routes": {
@@ -23,13 +26,25 @@
 			"name": "Update Match Status",
 			"description": "Updates the status of a match. Called by lobby",
 			"method": "POST",
-			"path": "/updateMatch"
+			"path": "/updateMatchStatus"
+		},
+		"update_player_statuses": {
+			"name": "Update Player Statuses",
+			"description": "Updates the statuses of the players. Called by lobby",
+			"method": "POST",
+			"path": "/updatePlayerStatuses"
 		},
 		"create_match": {
 			"name": "Create Match",
 			"description": "Creates a match. Called by blumint",
 			"method": "POST",
 			"path": "/createMatch"
+		},
+		"get_match_status": {
+			"name": "Get Match Status",
+			"description": "Gets the status of a match. Called by blumint",
+			"method": "GET",
+			"path": "/getMatchStatus"
 		}
 	},
 	"errors": {

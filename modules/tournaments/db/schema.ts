@@ -27,6 +27,8 @@ export const matchTeamRelations = Query.relations(blumintMatchTeams, ({ one, man
 export const blumintMatchTeamPlayers = schema.table("match_team_players", {
     userId: Query.uuid("user_id").notNull(),
     teamId: Query.uuid("team_id").notNull().references(() => blumintMatchTeams.id, {onDelete: 'cascade'}),
+    // No casce since team will cascade delete players
+    matchId: Query.uuid("match_id").notNull().references(() => blumintMatches.id),
     status: Query.text("status").notNull() // BlumintMatchTeamPlayerStatus
 }, (table) => ({
     pk: Query.primaryKey({ columns: [table.userId, table.teamId] }),
