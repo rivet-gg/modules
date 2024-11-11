@@ -3,6 +3,7 @@ import { Query, schema } from "./schema.gen.ts";
 export const blumintMatches = schema.table("matches", {
     id: Query.uuid("match_id").notNull().primaryKey().defaultRandom(),
     lobbyId: Query.uuid("lobby_id").notNull(),
+    settings: Query.jsonb("settings").notNull(),
     status: Query.text("status").notNull() // BlumintMatchStatus
 });
 

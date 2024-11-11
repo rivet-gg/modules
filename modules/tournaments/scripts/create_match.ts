@@ -34,9 +34,6 @@ export async function run(
 		region: "test",
 		version: "lts",
 		noWait: true,
-		tags: {
-			matchSettings: JSON.stringify(req.matchSettings ?? {})
-		}
 	});
 
 	// (?) Delete lobby if any db failures happen here
@@ -45,7 +42,8 @@ export async function run(
 	const [{ matchId }] = await ctx.db.insert(Database.blumintMatches)
 	.values({
 		lobbyId: lobby.id,
-		status: BlumintMatchStatus.PENDING
+		status: BlumintMatchStatus.PENDING,
+		settings: req.matchSettings ?? {}
 	}).returning({
 		matchId: Database.blumintMatches.id
 	});

@@ -11,6 +11,9 @@
 		"create_match": {
 			"public": false
 		},
+		"get_match_settings": {
+			"public": false
+		},
 		"get_match_status": {
 			"public": false
 		},
@@ -22,6 +25,12 @@
 		}
 	},
 	"routes": {
+		"get_match_settings": {
+			"name": "Get Match Settings",
+			"description": "Gets the settings for a match. Called by lobby",
+			"method": "GET",
+			"path": "/getMatchSettings"
+		},
 		"update_match_status": {
 			"name": "Update Match Status",
 			"description": "Updates the status of a match. Called by lobby",
