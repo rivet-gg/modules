@@ -20,6 +20,47 @@ export interface BlumintMatchPlayerFinalStats {
     playerId: string;
 }
 
+export const PLAYER_SOCIALS = [
+    "email",
+    "phone",
+    "erc20Address",
+    "apple",
+    "facebook",
+    "google",
+    "twitter",
+    "discord",
+    "epic",
+    "steam"
+] as const;
+
+export type PlayerSocial = typeof PLAYER_SOCIALS[number]
+
+export interface PlayerPossibleIds {
+    email?: string[];
+    phone?: string[];
+    erc20Address?: string[];
+    apple?: string[];
+    facebook?: string[];
+    google?: string[];
+    twitter?: string[];
+    discord?: string[];
+    epic?: string[];
+    steam?: string[];
+}
+
+export interface PlayerAssociations {
+    email?: string[];
+    phone?: string[];
+    erc20Address?: string[];
+    apple?: string[];
+    facebook?: string[];
+    google?: string[];
+    twitter?: string[];
+    discord?: string[];
+    epic?: string[];
+    steam?: string[];
+}
+
 export interface BlumintMatchTeamStats {
     players: BlumintMatchPlayerStats[];
 }

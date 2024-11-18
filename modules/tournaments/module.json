@@ -22,6 +22,9 @@
 		},
 		"update_player_statuses": {
 			"public": false
+		},
+		"lookup_player": {
+			"public": false
 		}
 	},
 	"routes": {
@@ -54,6 +57,12 @@
 			"description": "Gets the status of a match. Called by blumint",
 			"method": "GET",
 			"path": "/getMatchStatus"
+		},
+		"lookup_player": {
+			"name": "Lookup Player",
+			"description": "Looks up a player. Called by blumint",
+			"method": "POST",
+			"path": "/lookupPlayer"
 		}
 	},
 	"errors": {
