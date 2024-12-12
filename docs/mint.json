@@ -1,0 +1,209 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Open Game Backend",
+  "logo": "/logo.svg",
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": true
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#ff4f00",
+    "light": "#ff4f00",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#ff4f00",
+      "to": "#eb4a04"
+    }
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/rivet-gg/modules"
+  },
+  "topbarLinks": [
+    {
+      "name": "Documentation",
+      "url": "/"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "quickstart",
+        "project-config",
+        "modules",
+        "sdk",
+        {
+          "group": "Advanced",
+          "pages": [
+            "registries",
+            "self-hosting",
+            "multiple-games",
+            "environment-variables"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Modules",
+      "pages": [
+        {
+          "icon": "game-board",
+          "group": "Lobbies",
+          "pages": [
+            "modules/lobbies/overview",
+            "modules/lobbies/config",
+            "modules/lobbies/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/lobbies/scripts/create",
+                "modules/lobbies/scripts/destroy",
+                "modules/lobbies/scripts/fetch_lobby_manager_state",
+                "modules/lobbies/scripts/find",
+                "modules/lobbies/scripts/find_or_create",
+                "modules/lobbies/scripts/join",
+                "modules/lobbies/scripts/list",
+                "modules/lobbies/scripts/reset_lobby_manager_state",
+                "modules/lobbies/scripts/set_lobby_ready",
+                "modules/lobbies/scripts/set_player_connected",
+                "modules/lobbies/scripts/set_player_disconnected"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/lobbies/scripts/force_gc",
+                "modules/lobbies/scripts/list_regions"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "gauge-circle-minus",
+          "group": "Rate Limit",
+          "pages": [
+            "modules/rate_limit/overview",
+            "modules/rate_limit/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/rate_limit/scripts/throttle",
+                "modules/rate_limit/scripts/throttle_public"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "lock",
+          "group": "Tokens",
+          "pages": [
+            "modules/tokens/overview",
+            "modules/tokens/errors",
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/tokens/scripts/create",
+                "modules/tokens/scripts/extend",
+                "modules/tokens/scripts/fetch_by_token",
+                "modules/tokens/scripts/fetch",
+                "modules/tokens/scripts/revoke",
+                "modules/tokens/scripts/validate"
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "user",
+          "group": "Users",
+          "pages": [
+            "modules/users/overview",
+            "modules/users/errors",
+            {
+              "group": "Scripts (Public)",
+              "pages": [
+                "modules/users/scripts/authenticate_token",
+                "modules/users/scripts/fetch"
+              ]
+            },
+            {
+              "group": "Scripts (Internal)",
+              "pages": [
+                "modules/users/scripts/create",
+                "modules/users/scripts/create_token",
+                "modules/users/scripts/fetch_by_username"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Developing Modules",
+      "pages": [
+        "build/overview",
+        "build/quickstart",
+        "build/module-config",
+        "build/scripts",
+        "build/database",
+        "build/actors",
+        "build/user-config",
+        "build/errors",
+        "build/publish",
+        {
+          "group": "Advanced",
+          "pages": [
+            "build/conventions",
+            "build/ide",
+            "build/public",
+            "build/logging"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Miscellaneous",
+      "pages": [
+        "enterprise",
+        {
+          "group": "Comparison",
+          "pages": [
+            "comparison/playfab",
+            "comparison/nakama",
+            "comparison/supabase"
+          ]
+        },
+        {
+          "group": "Engine Internals",
+          "pages": [
+            "engine/introduction",
+            "engine/conventions",
+            {
+              "group": "Design Decisions",
+              "pages": [
+                "engine/design/typescript",
+                "engine/design/deno",
+                "engine/design/postgres",
+                "engine/design/drizzle",
+                "engine/design/registries-dependencies",
+                "engine/design/misc"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/rivet_gg",
+    "github": "https://github.com/rivet-gg",
+    "discord": "https://rivet.gg/discord"
+  },
+  "analytics": {
+    "posthog": {
+      "apiHost": "https://ph.rivet.gg/",
+      "apiKey": "phc_6kfTNEAVw7rn1LA51cO3D69FefbKupSWFaM7OUgEpEo"
+    }
+  }
+}

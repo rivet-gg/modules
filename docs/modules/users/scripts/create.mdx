@@ -1,0 +1,51 @@
+---
+title: "Create User"
+description: ""
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.users.create({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property   | Type     |
+| :--------- | :------- |
+| `username` | `string` |
+
+_All properties are optional._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property        | Type                                                                                                                                           |
+| :-------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`user`** (\*) | _Object with properties:_<ul><li>`id`: `string`</li><li>`username`: `string`</li><li>`createdAt`: `Date`</li><li>`updatedAt`: `Date`</li></ul> |
+
+_(\*) Required._
+

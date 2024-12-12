@@ -1,0 +1,92 @@
+---
+title: "Quickstart"
+icon: rocket
+---
+
+import { Version } from "/snippets/version.mdx";
+
+
+<Steps>
+    <Step title="Install Open Game Backend">
+        <Tabs>
+            <Tab title="Install From GitHub (recommended)">
+                1. [Install Git](https://git-scm.com/downloads)
+                2. [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+                3. Install Open Game Backend:
+
+                <Version />
+                
+            </Tab>
+            <Tab title="Build From Source">
+                1. [Install Git](https://git-scm.com/downloads)
+                2. [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+                3. Clone & Build Open Game Backend
+
+                    ``` sh
+                    git clone https://github.com/rivet-gg/opengb.git
+                    cd opengb
+                    deno task cli:install
+                    ```
+            </Tab>
+        </Tabs>
+    </Step>
+    <Step title="Create project">
+        Create a new project by running the following command:
+
+        ```sh
+        opengb init
+        ```
+
+        This creates a `backend.json` config file. See the project configuration [here](/project-config).
+    </Step>
+    <Step title="Add modules">
+        The default project comes with a set of modules preinstalled. For example, install the `lobbies` module by running the following command:
+
+        ```sh
+        opengb module add lobbies
+        ```
+
+        This adds the `lobbies` module to the `backend.json` file. You can also install modules manually by adding them to this config.
+
+    </Step>
+    <Step title="Run development server">
+        The development server is great for testing your scripts locally. This will build & run your backend locally & hot reload when you make changes to the configuration.
+
+        ```sh
+        opengb dev
+        ```
+    </Step>
+    <Step title="Generate SDK (optional)">
+        Open Game Backend will generate an SDK with type-safe methods to call your scripts.
+        
+        Replace `<output>` with the path where you want to generate the SDK. Replace `<target>` with the target language.
+
+        ```sh
+        opengb sdk generate --output <output> <target>
+        ```
+
+        See the [SDK docs](/sdk) for instructions on how to use the generated SDK.
+
+        <Info>
+            Godot, Unity, Unreal, and Rust SDKs coming soon.
+        </Info>
+    </Step>
+    <Step title="Deploy server (optional)">
+        Install the [Rivet CLI](https://github.com/rivet-gg/cli), then run the following:
+
+        ```sh
+        rivet init
+        rivet deploy prod
+        ```
+
+        See self-hosting instructions [here](/self-hosting).
+    </Step>
+    <Step title="Next steps">
+        <CardGroup>
+            <Card title="Learn about registries ->" href="/docs/registries" />
+            <Card title="Learn about the CLI ->" href="/docs/cli" />
+            <Card title="Write your own module ->" href="/docs/build/quickstart" />
+        </CardGroup>
+    </Step>
+
+</Steps>

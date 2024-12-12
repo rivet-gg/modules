@@ -1,0 +1,51 @@
+---
+title: "Validate Token"
+description: "Validate a token. Throws an error if the token is invalid."
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.validate({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property         | Type     |
+| :--------------- | :------- |
+| **`token`** (\*) | `string` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                                                                                                                     |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`token`** (\*) | _Object with properties:_<ul><li>`id`: `string`</li><li>`type`: `string`</li><li>`meta`: `any` (_nullable_)</li><li>`createdAt`: `string`</li><li>`expireAt`: `string` (_nullable_)</li><li>`revokedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+

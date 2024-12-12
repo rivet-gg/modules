@@ -1,0 +1,72 @@
+---
+title: Why Postgres?
+---
+
+## SQL vs Document Stores
+
+Many tools use document store databases (like MongoDB) to make it easier to get started with.
+
+Document stores make it _seem_ like you don't need to worry about these things:
+
+- Schemas & migrations
+- Querying
+- Relationships
+- Performance (sort of, I mean [it's web scale](https://www.youtube.com/watch?v=b2F-DItXtZs) after all)
+
+However, every production ready backend needs to worry about these things for both SQL & document stores. The difference is, SQL forces you to do this up front when you write a schema. Document stores let you shoot yourself in the foot later on when you realize you need to do these things.
+
+Open Game Backend instead opts to force developers to worry about these things up front, but leverage [Prisma](https://prisma.io) to abstract away the complexities of migrations, querying, joining, indexing, etc.
+
+Working with databases in Open Game Backend feels a lot like working in a game engine (which is the goal), but you still have full access to the power of SQL if you need it.
+
+## Postgres vs MySQL
+
+MySQL is old and decrepid. Stop using it if you care about your data and your sanity.
+
+## Postgres vs MySQL + Vitess
+
+Vitess is a well proven way to scale MySQL, but you're still dealing with the same pain points of MySQL. PlanetScale is built on top of Vitess.
+
+Solutions like Citus Data are built on top of Postgres and provide a similar sharding solution.
+
+## Postgres vs CockroachDB
+
+There's a lot to love about CockroachDB.
+
+Cockroach can be more scalable & performant & fault tolerant than Postgres since its architecture was inspired by Google Spanner.
+
+However, Cockroach is licensed under BSL. BSL is not an an OSI-approved license and limits the things you can do with Open Game Backend. For example, companies cannot provide hosting services for Open Game Backend since you need to also serve the Cockroach backend. This is similar to how WordPress hosting services helped grow thep popularity of WP.
+
+Additionally, Cockroach does not benefit from the same extension ecosystem that Postgres has.
+
+Since Cockroach is designed to be _mostly_ compatible with Postgres, it's possible to eventually allow choosing between Postgres & Cockroach. Because Open Game Backend is built on top of Prisma, we can swap the Primsa provider to `cockroachdb` and support multiple backends out of the box. We can then use our extensive testing to certify which modules work on Cockroach without modification.
+
+## Postgres vs KV (DynamoDB/Cassandra)
+
+Many game backends are built on top of KV databases because of their scalability and fault tolerance. This works well since many game backends don't rely on heavily relational data.
+
+However, these databases come at the cost of consistency, schemas, rigid querying, and transactions.
+
+One of the core goals of Open Game Backend is to have guardrails to help prevent common mistakes when building databases & backends. 
+
+Some big pain points that develoeprs using KV databases run in to that Postgres solves:
+
+- **Schemas & constraints** KV databases don't enforce schemas. Postgres provides constraints (e.g. unique usernames, foreign keys, integer ranges) to ensure data integrity.
+- **Transactions** Transactions in KV databases are either very limited or nonexistent. When dealing with important data like currency or inventory, not using transactions can ruin your game's economy and lose developers a lot of money. Postgres supports full transactions out of the box which makes handling important data much easier.
+- **Querying** KV databases are great for simple key-value lookups, but as soon as you need to do anything more complex, you're out of luck. DynamoDB supports secondary indexes and Cassandra has materialized views, but both have tradeoffs. Postgres indexes are much more flexible and powerful.
+
+One big benefit of KV stores is it's hard to write a slow query by design (e.g. Cassandra requires an explicit `ALLOW FILTERING` to run a query that doesn't use the PK or secondary index). Postgres allows you to run queries without an associated index, which makes it really easy to accidentally kill your database. This is something that hopefully Open Game Backend will help prevent in the future.
+
+## Postgres vs ClickHouse
+
+More and more workloads require OLAP capabilities. It's common to turn to a combination of an OLTP database (usually SQL) and an OLAP database (usually a KV store or columnar store like ClickHouse).
+
+We're going to focus specifically on the use case that ClickHouse targets. ClickHouse provides a flexible OLAP database that can run complex queries on large datasets very quickly.
+
+Postgres's extensive extension ecosystem allows you to add OLAP capabilities to Postgres at comparable speeds to ClickHouse. [Read more here.](https://pigsty.io/blog/pg/pg-eat-db-world/)
+
+## Extensions
+
+Postgres has a rich ecosystem of extensions that can add powerful features to your database. See a full list [here](https://neon.tech/docs/extensions/pg-extensions).
+
+Databases are usually the most common point of failure, so adding more types of databases for specialized data types adds more points of failure. Postgres extensions allow you to add specialized data types and features to Postgres without adding more points of failure & a common query interface.

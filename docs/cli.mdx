@@ -1,0 +1,67 @@
+---
+title: CLI
+---
+
+## Start development server
+
+```
+opengb dev
+```
+
+This will automatically restart when files change.
+
+<Tip>
+    You can configure the database url using the `DATABASE_URL` env var. This will
+    default to `postgres://postgres:password@localhost:5432/postgres`
+</Tip>
+
+## Run tests
+
+```
+opengb test
+```
+
+To automatically rerun tests when files change, run:
+
+```
+opengb test --watch
+```
+
+To test a specific file:
+
+```
+opengb test foo
+```
+
+## Creating modules & scripts
+
+Create module:
+
+```
+opengb create module foo
+```
+
+Create script:
+
+```
+opengb create script foo bar
+```
+
+## Generate SDKs
+
+```
+opengb sdk generate --output <output> <target>
+```
+
+## OpenAPI & Postman/Insomnia/Paw
+
+Explore the APIs by opening `.opengb/openapi.json` in Postman/Insomnia/Paw.
+
+## Help
+
+All commands are documented in the CLI:
+
+```
+opengb --help
+opengb create --help
+```

@@ -1,0 +1,52 @@
+---
+title: "Extend Token"
+description: "Extend or remove the expiration date of a token. (Only works on valid tokens.)"
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.extend({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property                 | Type                  |
+| :----------------------- | :-------------------- |
+| **`token`** (\*)         | `string`              |
+| **`newExpiration`** (\*) | `string` (_nullable_) |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                                                                                                                                               |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`token`** (\*) | _Object with properties:_<ul><li>`token`: `string`</li><li>`id`: `string`</li><li>`type`: `string`</li><li>`meta`: `any` (_nullable_)</li><li>`createdAt`: `string`</li><li>`expireAt`: `string` (_nullable_)</li><li>`revokedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+

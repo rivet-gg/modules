@@ -1,0 +1,51 @@
+---
+title: "Throttle"
+description: "Limit the amount of times an request can be made by a given key."
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.rateLimit.throttle({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property            | Type     |
+| :------------------ | :------- |
+| **`type`** (\*)     | `string` |
+| **`key`** (\*)      | `string` |
+| **`requests`** (\*) | `number` |
+| **`period`** (\*)   | `number` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object record with dynamic keys:_
+
+- _keys of type_ `string`
+- _values of type_ `never`
+
