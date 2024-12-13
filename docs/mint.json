@@ -20,12 +20,6 @@
     "type": "github",
     "url": "https://github.com/OpenGameBackend/OpenGameBackend"
   },
-  "topbarLinks": [
-    {
-      "name": "Documentation",
-      "url": "/"
-    }
-  ],
   "navigation": [
     {
       "group": "Getting Started",
