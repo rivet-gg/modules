@@ -18,7 +18,7 @@
   },
   "topbarCtaButton": {
     "type": "github",
-    "url": "https://github.com/rivet-gg/modules"
+    "url": "https://github.com/OpenGameBackend/OpenGameBackend"
   },
   "topbarLinks": [
     {
@@ -226,10 +226,6 @@
     {
       "source": "/docs/custom/modules/:slug*",
       "destination": "/:slug*"
-    },
-    {
-      "source": "/modules/:slug*",
-      "destination": "/"
     }
   ]
 }
