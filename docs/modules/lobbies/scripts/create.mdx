@@ -1,0 +1,131 @@
+---
+title: "Create Lobby"
+description: "Creates a new lobby on-demand."
+---
+
+## Public
+
+Yes
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.lobbies.create({
+  // Request body
+});
+```
+
+
+```javascript JavaScript
+import { Backend } from "opengb-sdk";
+const backend = new Backend({ endpoint: "http://localhost:6420" });
+const data = await backend.lobbies.create({
+  // Request body
+});
+```
+
+```gdscript Godot
+var data = backend.lobbies.create({
+  # Request body
+})
+```
+
+```csharp Unity
+var data = Backend.Lobbies.Create();
+```
+
+```cpp Unreal Engine
+// IMPORTANT: Auto-generated SDK coming soon
+
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Misc/DefaultValueHelper.h"
+
+void UYourClassName::PostRequest()
+{
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
+    Request->SetURL(TEXT("https://localhost:6420/modules/lobbies/scripts/create/call"));
+    Request->SetVerb(TEXT("POST"));
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+    FString Payload = TEXT("{"key":"value"}");
+    Request->SetContentAsString(Payload);
+    Request->ProcessRequest();
+}
+
+void UYourClassName::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    if(!bWasSuccessful || !Response.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Request Failed"));
+        return
+    }
+
+    FString data = Response->GetContentAsString();
+
+    // Success
+}
+```
+
+```rust Rust
+// IMPORTANT: Auto-generated SDK coming soon
+
+let data = reqwest::Client::new()
+    .post("https://localhost:6420/modules/lobbies/scripts/create/call")
+    .json(&body) // Make sure `body` is defined
+    .send()
+    .await?
+    .error_for_status()?
+    .json::<serde_json::Value>()
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://localhost:6420/modules/lobbies/scripts/create/call" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "value" // Your JSON payload here
+  }'
+```
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property                    | Type                               |
+| :-------------------------- | :--------------------------------- |
+| **`version`** (\*)          | `string`                           |
+| **`region`** (\*)           | `string`                           |
+| `tags`                      | `Record<string, string>`           |
+| **`maxPlayers`** (\*)       | `number`                           |
+| **`maxPlayersDirect`** (\*) | `number`                           |
+| **`players`** (\*)          | _Array of objects:_<br /><ul></ul> |
+| `noWait`                    | `boolean`                          |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`lobby`** (\*)   | _Object with properties:_<ul><li>`id`: `string`</li><li>`version`: `string`</li><li>`tags`: `Record<string, string>`</li><li>`createdAt`: `number`</li><li>`readyAt`: `number`</li><li>`players`: `number`</li><li>`maxPlayers`: `number`</li><li>`maxPlayersDirect`: `number`</li><li>`backend`: _Object with properties:_<ul><li>`test`: _Object with properties:_<ul></ul></li></ul>, _Object with properties:_<ul><li>`localDevelopment`: _Object with properties:_<ul><li>`ports`: _Object with dynamic keys of type_ `string` _and values of type_ _Object with properties:_<ul><li>`protocol`: `'http' \| 'tcp' \| 'udp'`</li><li>`hostname`: `string`</li><li>`port`: `number`</li></ul></li></ul></li></ul> _or_ _Object with properties:_<ul><li>`server`: _Object with properties:_<ul><li>`serverId`: `string`</li><li>`ports`: _Object with dynamic keys of type_ `string` _and values of type_ _Object with properties:_<ul><li>`protocol`: `'http' \| 'tcp' \| 'udp' \| 'https' \| 'tcp_tls'`</li><li>`internalPort`: `number`</li><li>`publicHostname`: `string`</li><li>`publicPort`: `number`</li><li>`routing`: _Object with properties:_<ul><li>`game_guard`: `Record<string, never>`</li><li>`host`: `Record<string, never>`</li></ul></li></ul></li></ul></li></ul></li></ul> |
+| **`players`** (\*) | _Array of objects:_<br /><ul><li>`token`: `string`</li><li>`id`: `string`</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+
+_(\*) Required._
+

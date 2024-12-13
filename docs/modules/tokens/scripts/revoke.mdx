@@ -1,0 +1,51 @@
+---
+title: "Revoke Token"
+description: "Revoke a token, preventing it from being used again."
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.revoke({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property            | Type            |
+| :------------------ | :-------------- |
+| **`tokenIds`** (\*) | `Array<string>` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property           | Type                               |
+| :----------------- | :--------------------------------- |
+| **`updates`** (\*) | _Object with properties:_<ul></ul> |
+
+_(\*) Required._
+

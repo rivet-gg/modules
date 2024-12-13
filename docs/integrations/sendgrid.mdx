@@ -1,0 +1,46 @@
+---
+title: SendGrid
+description: Send emails using SendGrid.
+---
+
+<Steps>
+    <Step title="Add email module">
+
+        ```sh
+        opengb module add email
+        ```
+
+    </Step>
+    <Step title="Configure API key">
+
+        ```json backend.json
+        {
+          "modules": {
+            "email": {
+              "config": {
+                "provider": {
+                  "sendgrid": {
+                    "apiKeyVariable": "SENDGRID_API_KEY"
+                  }
+                }
+              }
+            }
+            // ...
+          }
+          // ...
+        }
+        ```
+
+    </Step>
+    <Step title="Run with env var">
+        ```sh
+        export SENDGRID_API_KEY=your-api-key
+        opengb dev
+        ```
+
+        <Tip>
+            We recommend using Infisical to manage your API key. See [here](/integrations/infisical) for more information.
+        </Tip>
+    </Step>
+
+</Steps>

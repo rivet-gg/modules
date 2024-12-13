@@ -1,0 +1,51 @@
+---
+title: "List Regions"
+description: "List available regions."
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.lobbies.listRegions({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property | Type                     |
+| :------- | :----------------------- |
+| `tags`   | `Record<string, string>` |
+
+_All properties are optional._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property           | Type                                                                                                                                          |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`regions`** (\*) | _Array of objects:_<br /><ul><li>`id`: `string`</li><li>`name`: `string`</li><li>`latitude`: `number`</li><li>`longitude`: `number`</li></ul> |
+
+_(\*) Required._
+

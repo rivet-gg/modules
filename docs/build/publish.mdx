@@ -1,0 +1,62 @@
+---
+title: "Publish to Registry"
+description: "Submit your module to the OpenGB registry."
+icon: truck-fast
+---
+
+To publish your module to the [OpenGB module registry](https://github.com/rivet-gg/opengb-modules), follow these steps:
+
+## Guide
+
+<Steps>
+<Step title="Fork & clone the repository">
+1. Go to the [OpenGB modules repository](https://github.com/rivet-gg/opengb-modules)
+2. Click the "Fork" button in the top right to create a copy of the repo in your own GitHub account
+3. Clone your forked repo locally ([more info](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository))
+</Step>
+
+<Step title="Add your module">
+1. Add your module code under a new folder for your module under the `modules/` directory.g. `modules/my_module`. For example:
+
+   ```
+   modules/my_module/
+      ├── module.json
+      └── scripts/
+         ├── fetch.ts
+         └── ...
+   ```
+
+2. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/) 
+   - Include the module name in parenthesis after the commit message, e.g. `feat(my_module): add new script` 
+3. Push your changes to your forked repo ([more info](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository))
+</Step>
+
+<Step title="Open a pull request">
+Open a pull request against the upstream `rivet-gg/opengb-modules` repo (see [GitHub's guide on creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request))
+</Step>
+</Steps>
+
+OpenGB's maintainers will review your PR within 48 hours.
+
+## Release Checklist
+
+Before publishing your module, make sure your module passes all the required checks:
+
+- All tests pass (`opengb test`)
+- All required metadata are filled out in the `module.json`:
+   - `status`: The status of the module
+   - `name`: The human readable name of the module
+   - `description`: A short description of the module
+   - `icon`: The Font Awesome icon name of the module
+   - `tags`: The tags associated with this module
+   - `authors`: The GitHub handle of the authors of the module
+   - `errors`: The errors associated with this module (required)
+   - See [module config](/build/module-config) for more details
+- All exposed scripts have names & descriptions 
+- Custom errors thrown by the module have names and descriptions
+
+## Alternative: Hosting Your Own Registry
+
+You can also [host your own OpenGB module registry](/build/registry). This allows you to maintain complete control over your published modules.
+
+We look forward to your contributions to the OpenGB ecosystem!

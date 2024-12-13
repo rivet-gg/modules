@@ -1,0 +1,124 @@
+---
+title: "Fetch User"
+description: ""
+---
+
+## Public
+
+Yes
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.users.fetch({
+  // Request body
+});
+```
+
+
+```javascript JavaScript
+import { Backend } from "opengb-sdk";
+const backend = new Backend({ endpoint: "http://localhost:6420" });
+const data = await backend.users.fetch({
+  // Request body
+});
+```
+
+```gdscript Godot
+var data = backend.users.fetch({
+  # Request body
+})
+```
+
+```csharp Unity
+var data = Backend.Users.Fetch();
+```
+
+```cpp Unreal Engine
+// IMPORTANT: Auto-generated SDK coming soon
+
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "Misc/DefaultValueHelper.h"
+
+void UYourClassName::PostRequest()
+{
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &UYourClassName::OnResponseReceived);
+    Request->SetURL(TEXT("https://localhost:6420/modules/users/scripts/fetch/call"));
+    Request->SetVerb(TEXT("POST"));
+    Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+    FString Payload = TEXT("{"key":"value"}");
+    Request->SetContentAsString(Payload);
+    Request->ProcessRequest();
+}
+
+void UYourClassName::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    if(!bWasSuccessful || !Response.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Request Failed"));
+        return
+    }
+
+    FString data = Response->GetContentAsString();
+
+    // Success
+}
+```
+
+```rust Rust
+// IMPORTANT: Auto-generated SDK coming soon
+
+let data = reqwest::Client::new()
+    .post("https://localhost:6420/modules/users/scripts/fetch/call")
+    .json(&body) // Make sure `body` is defined
+    .send()
+    .await?
+    .error_for_status()?
+    .json::<serde_json::Value>()
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://localhost:6420/modules/users/scripts/fetch/call" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "value" // Your JSON payload here
+  }'
+```
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property           | Type            |
+| :----------------- | :-------------- |
+| **`userIds`** (\*) | `Array<string>` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property         | Type                                                                                                                                           |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`users`** (\*) | _Array of objects:_<br /><ul><li>`id`: `string`</li><li>`username`: `string`</li><li>`createdAt`: `Date`</li><li>`updatedAt`: `Date`</li></ul> |
+
+_(\*) Required._
+

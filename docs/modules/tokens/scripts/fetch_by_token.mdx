@@ -1,0 +1,51 @@
+---
+title: "Fetch by Token"
+description: "Get a token by its secret token."
+---
+
+## Public
+
+No
+
+## Request
+
+
+<RequestExample>
+
+```typescript OpenGB Script
+const data = await ctx.modules.tokens.fetchByToken({
+  // Request body
+});
+```
+
+
+</RequestExample>
+
+
+
+
+### Request
+
+_Object containing the following properties:_
+
+| Property          | Type            |
+| :---------------- | :-------------- |
+| **`tokens`** (\*) | `Array<string>` |
+
+_(\*) Required._
+
+
+## Response
+
+
+
+### Response
+
+_Object containing the following properties:_
+
+| Property          | Type                                                                                                                                                                                                                                     |
+| :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`tokens`** (\*) | _Array of objects:_<br /><ul><li>`id`: `string`</li><li>`type`: `string`</li><li>`meta`: `any` (_nullable_)</li><li>`createdAt`: `string`</li><li>`expireAt`: `string` (_nullable_)</li><li>`revokedAt`: `string` (_nullable_)</li></ul> |
+
+_(\*) Required._
+

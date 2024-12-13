@@ -1,0 +1,73 @@
+---
+title: Why TypeScript?
+---
+
+TypeScript is the language used for Open Game Backend scripts. Most of the Open Game Backend core is also written in TypeScript, but the performance-sensitive parts are/will be written in Rust and compiled to WASM.
+
+## Goals
+
+- Iteration speed
+- Ease of access
+- Ecosystem
+
+## Built like a game engine: scripts vs core engine
+
+Game engines are often designed with with separate languages for the scripting layer (C# in Unity, GDScript in Godot, Blueprints in Unreal, Lua in Roblox) and the core engine (C++ in Unity & Godot & Unreal & Roblox). In the case of Open Game Backend, the scripting layer is TypeScript and the core engine optimizes the performance sensitive parts using Rust + WASM.
+
+Open Game Backend is designed with the same methodology as game engines for the same reason:
+
+- **Iteration speed** Developers aren't using Open Game Backend to spend time writing code. They're here to get the job done as fast as possible and sleep easy knowing it's written on a solid foundation. High-level logic is defined in scripts and the heavy lifting is done in the core engine.
+
+## Ease of acess
+
+There are not many developers who have not touched TypeScript at some point in their career. It's a language that's easy to pick up and get started with no matter what engine you're using.
+
+## Ecosystem
+
+TypeScript/JavaScript/NPM has arguably the most comprehensive ecosystem of packages available to developers that makes it very easy to plug in to Open Game Backend.
+
+## Serverless deployments on V8 isolates
+
+Game backends need to be both cost-effective and scalable to handle the unpredictable traffic patterns of games. Serverless deployments are the easiest way to achieve this.
+
+Platforms like AWS Lamda, Google Cloud Functions, and Azure Functions often give the idea of "serverless backends" bad reputation for things like coldstart times and cost. These platforms are built to run Docker images, which require a lot of overhead to start up and run.
+
+On the other hand, serverless runtimes like Deno Deploy, Cloudflare Workers, Vercel, and Netlify are built on top of V8 isolates. These runtimes are designed to run JavaScript/TypeScript code in very lightweight environments. Read more [here](https://blog.cloudflare.com/cloud-computing-without-containers/).
+
+V8 serverless environments come at the cost of requiring your backend to be written in JavaScript & WASM, which was a factor in choosing TypeScript for Open Game Backend.
+
+## TypeScript vs Rust
+
+As much as we love Rust and believe it's the best language for writing high-performance code, it has two main problems that prohibited us from using it for Open Game Backend:
+
+- **Steep learning curve** Many developers have a hard time learning Rust. We considered providing proc macros & helper types to make writing Rust easier, but it would still be a barrier to entry for many developers.
+- **Slow iteration speed** The Rust compiler is notoriously slow. We want Open Game Backend to get out of the way of building your game, so iteration speed is a top priority.
+
+## TypeScript vs Go
+
+Go is great for high-performance backends and has a blazing fast compiler, which makes it an interesting candidate for backend scripting. It was also designed by Google to be easy to learn for junior developers.
+
+However, Go has a few problems that prohibited us from choosing it:
+
+- **Pointers** Most game developers coming from Unity, Godot, and HTML are not familiar with the concept of poitners. Go requires understanding pointers and structs in order to use it.
+- **Unique syntax** TypeScript's syntax is very similar to C# & Java. Go's syntax is unique and requires learning a new language.
+- **Difficult to use data structures** Workign with arrays & maps in Go are unnecesarily difficult compared to TypeScript for the use case of Open Game Backend.
+
+## TypeScript vs Java/C#/Python
+
+There are many other widely-used langauges, but none of them provided no tangible advantage over TypeScript. Most importantly, TypeScript has the widest developer audience.
+
+## TypeScript vs esoteric langauge
+
+All three engineers that developed Open Game Backend have all developed their own programming langauges at some point. Believe me, we joked about creating a `.ogb` language for Open Game Backend.
+
+## Future possibility: WASM Open Game Backend modules
+
+Open Game Backend is designed to be interopable as a langauge-agnostic protocol instead of a library. For example, all scripts are interfaced with using JSON schemas. The script calling API is designed to work across language boundaries. 
+
+This was done for two reasons:
+
+1. Ability to optimize by writing performance-sensitive parts in Rust and compiling to WASM
+2. Ability to write scripts in any language that can compile to WASM in the future
+
+At the moment, the project is focused on supporting & providng the best experience for only TypeScript.

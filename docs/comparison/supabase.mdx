@@ -1,0 +1,95 @@
+---
+title: Supabase
+---
+
+[Supabase](https://supabase.com/) was founded in 2020. While not specifically a game backend, it is a rising choice for game developers due to its ease of use and flexibility.
+
+## What Supabase does well
+
+- Open-source (Apache 2.0)
+- Tightly integrated with PostgreSQL
+- Realtime
+- Easy to use UI & API
+- Quick to get started
+
+## How Supabase and Open Game Backend are similar
+
+- Open-source (Apache 2.0)
+- Built on top of PostgreSQL
+- Built on Deno
+
+## How Supabase and Open Game Backend differ
+
+### Secure by default
+
+Games are notorious for the amount of DDoS & botting attacks launched against them. Security needs to be considered early on when developing your backend.
+
+**Supabase**
+
+Supabase Database is designed to let developers iterate quickly, but leaves security as an afterthought.
+
+A few key points:
+
+- Your database is exposed publicly by default without well configured [RLS policies](https://supabase.com/docs/guides/database/postgres/row-level-security). Many developers [miss this key point](https://saifur-rahman.com/supabase-private-schema.html) or have [trouble using RLS correctly](https://maxlynch.com/2023/11/04/tips-for-row-level-security-rls-in-postgres-and-supabase/).
+- Rate limiting is effectively non-existent. Currently, you have to [reverse engineer their API and set up a reverse proxy in front of Supabase in order to implement rate limiting](https://www.reddit.com/r/Supabase/comments/17jxcdc/supabase_security_concerns/). This adds latency, complexity, and a heavy time commitment.
+- Captchas are [only available for auth endpoints](https://supabase.com/docs/guides/platform/going-into-prod#abuse-prevention) and cannot be enabled for other sensitive scripts without manually writing this yourself in an Edge Function.
+- Many developers with mature products on Supabase end up needing to completely rewrite their database logic on the backend to explicitly handle security concerns. Edge Functions are built for this use case, but they're still maturing. ([1](https://github.com/supabase/edge-runtime/issues/212) [2](https://github.com/supabase/supabase/issues/12293#issuecomment-2028699985) [3](https://news.ycombinator.com/item?id=36005966))
+
+**Open Game Backend**
+
+Open Game Backend requires everything to be secure by default:
+
+- All logic is forced to be a server-side script. Never trust the client.
+- Database & scripts are private by default, explicitly specify what's public.
+- Granular rate limiting (per account and/or per IP) is provided out of the box.
+- Captchas are available for all use cases.
+- Strict schemas are enforced on all requests.
+
+### Modularity
+
+**Supabase**
+
+Supabase is built to be a general purpose backend framework. Backend code is not meant to be published as reusable packages or shared across multiple games within a studio.
+
+**Open Game Backend**
+
+Open Game Backend is a combination of two components:
+
+- **OpenGB Engine** Abstracts away backend complexity to make writing [modules](/modules) simple & fast
+- **OpenGB Module Registry** Pre-made [modules](/modules) that can be used to get up and running instantly
+
+OpenGB's modularity lets you use pre-existing [modules](/modules) to get started faster, use modules from the community, and share modules across multiple games.  This allows it to be easily customized and extended to fit the needs of a game.
+
+### Supabase Edge Functions vs OpenGB Scripts
+
+**Supabase**
+
+Supabase [Edge Functions](https://supabase.com/docs/guides/functions/quickstart) are similar in some ways to Open Game Backend's scripts. Both are built on Deno, backed by PostgreSQL, and requests are ephemeral + isolated.
+
+Supabase Edge Functions are intended to be used for simple serverless functions. Most use cases today are for handling a patchwork of functionality that isn't provided by Supabase by default (e.g. webhooks, push notifications, Discord API calls). Edge Functions [still behave like an experimental pre-release feature](https://github.com/supabase/supabase/issues/12293#issuecomment-2028699985).
+
+**Open Game Backend**
+
+Open Game Backend scripts are at the core of the project, so they're built to be easy to use, flexible, and reliable. They're used to power core functionality such as tokens, authentication, and rate limiting. 
+
+### Rigid Core Features vs Flexible Modular Features
+
+**Supabase**
+
+Supabase provides core functionality that cannot be modified, such as: [authentication](https://supabase.com/docs/guides/auth), [storage](https://supabase.com/docs/guides/storage), and [realtime](https://supabase.com/docs/guides/realtime).
+
+**Open Game Backend**
+
+Open Game Backend instead provides these same features as [modules](/modules) that can be modified & extended as needed. For example: authentication and storage modules. These can be customized easily by running the `opengb fork` command.
+
+For example, this is specifically important for games where authentication with platforms like Steam, consoles, and instant gaming platforms don't fit well with Supabase's core authentication features.
+
+### Dashboard
+
+**Supabase**
+
+Supabase has a well built dashboard for managing your database.
+
+**Open Game Backend**
+
+While Open Game Backend does not have a dashboard for interacting with the database (yet), tools like [Beekeeper Studio](https://www.beekeeperstudio.io/) can be used with OpenGB Postgres databases out of the box.
