@@ -24,7 +24,4 @@ See [rivet-gg/opengb](https://github.com/rivet-gg/opengb.git).
 
 **Enterprise**
 
-The following companies provide enterprise support & custom modules for Open Game Backend:
-
-- [Rivet](https://rivet.gg/support)
-- _Create a PR to list your services for Open Game Backend_
+https://calendly.com/nicholas_kissel/rivet-demo
