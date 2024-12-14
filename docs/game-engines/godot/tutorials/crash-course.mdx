@@ -1,0 +1,160 @@
+---
+title: Crash Course
+---
+
+import { PreRivetBranch, WorkInProgress, InstallCli, UnfamiliarWithDockerfiles } from '/snippets/common.mdx';
+
+
+<WorkInProgress/>
+
+This guide will walk you through creating and deploying a multiplayer game with
+Godot 4.2.
+
+If you are using Godot 4.1/4.0/3.x, please be aware that some details may be different.
+
+<Frame>
+<iframe src="https://www.youtube.com/embed/akJ6FP_DYNo" title="YouTube video player" width="100%" height="400px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</Frame>
+
+## Overview
+
+Godot provides great multiplayer capabilities out of the box. We'll be using
+Godot's built-in networking along with Rivet's Godot plugin to build a
+server-authoritative multiplayer game on top of Rivet.
+
+Godot supports ENet, WebSocket, and WebRTC transports. We'll be using ENet for
+this tutorial, but it's easy to swap out.
+
+## Step 1: Set up the Rivet Godot plugin
+
+Follow the instructions on the [Rivet Godot plugin
+repository](https://github.com/rivet-gg/plugin-godot) to install the plugin.
+Once the plugin is open, sign in to link your game to Rivet.
+
+## Step 2: Update game code
+
+Add the following code to the relevant places.
+
+Add this code to where the game is started:
+
+```gdscript
+func _ready():
+	RivetHelper.start_server.connect(start_server)
+	RivetHelper.setup_multiplayer()
+```
+
+The `setup_multiplayer()` call will do a check to properly start a Godot. Add this code wherever the server is started. This function name needs to
+match
+the one used in the `RivetHelper.start_server.connect` call above.
+
+```gdscript
+func start_server():
+	peer = ENetMultiplayerPeer.new()
+	peer.create_server(DEFAULT_PORT, MAX_PEERS)
+	multiplayer.set_multiplayer_peer(peer)
+	await Rivet.matchmaker.lobbies.ready({})
+```
+
+This is an example of how a lobby can be found and joined:
+
+```gdscript
+func join_game(new_player_name):
+	player_name = new_player_name
+
+	var response = await Rivet.matchmaker.lobbies.find({
+		"game_modes": ["default"]
+	})
+
+	if response.result == OK:
+		RivetHelper.set_player_token(response.body.player.token)
+
+		var port = response.body.ports.default
+
+		peer = ENetMultiplayerPeer.new()
+		peer.create_client(port.hostname, port.port)
+		multiplayer.set_multiplayer_peer(peer)
+	else:
+		game_error.emit(response.body)
+```
+
+## Step 3: Deploy to Rivet
+
+### Configure Rivet
+
+Copy the following to `rivet.json`:
+
+```json {{ "file": "rivet.json" }}
+{
+  "engine": {
+    "godot": null
+  },
+  "matchmaker": {
+    "max_players": 12,
+    "docker": {
+      "dockerfile": "Dockerfile",
+      "ports": {
+        "default": {
+          "port": 10567,
+          "protocol": "udp"
+        }
+      }
+    },
+    "game_modes": {
+      "default": {}
+    }
+  }
+}
+```
+
+You can find more information about the Rivet config file [in our
+documentation](https://rivet.gg/docs/general/config).
+
+### Write Dockerfile
+
+Write the following `Dockerfile`
+
+```docker {{ "file": "Dockerfile" }}
+FROM ghcr.io/rivet-gg/godot-docker/godot:4.2 AS builder
+WORKDIR /app
+COPY . .
+RUN mkdir -p build/linux \
+    && godot -v --export-release "Linux/X11" ./build/linux/game.x86_64 --headless
+
+FROM ubuntu:22.04
+RUN apt update -y \
+    && apt install -y expect-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -ms /bin/bash rivet
+
+COPY --from=builder /app/build/linux/ /app
+
+# Change to user rivet
+USER rivet
+
+# Unbuffer output so the logs get flushed
+CMD ["sh", "-c", "unbuffer /app/game.x86_64 --verbose --headless -- --server | cat"]
+```
+
+### Deploy game
+
+In the Rivet plugin, we can go to the deploy tab, and select "Staging" from the
+dropdown. Then, click "Build & Deploy". This will build the Dockerfile we just
+created, and upload the Docker image to Rivet's servers.
+
+### Deploy game client
+
+Now that we've deployed the game to Rivet, we can build a game client that will
+be able to connect to Rivet. First, we need to specify which server we want to
+connect from the "Playtest" tab. To use the settings that we deployed the server
+with above, we need to select "Rivet servers", and set the namespace to
+"Staging".
+
+Note that changing anything under the "Playtest" tab will require
+rebuilding or restarting the game, since the tokens are only set when the game
+is starting. This is also something to verify when shipping builds, you don't
+want to upload a version to Steam that tries to connect to your Staging server!
+
+To build the client we can either build through Godot's export system, or simply
+run the game from the editor. Both are configured to get the tokens needed for
+the namespace you have set. You don't need to change anything with how you would
+export the game normally for this to work!

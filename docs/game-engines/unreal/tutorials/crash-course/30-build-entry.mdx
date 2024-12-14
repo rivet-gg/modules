@@ -1,0 +1,114 @@
+---
+title: Build game menu Ui
+---
+
+We will build a simple menu UI that will allow players to connect to a server. This will be the first thing players see when they start the game. We will also update the default map to be the menu UI instead of the game world.
+
+## Create the menu UI world
+
+1. Create a new level in _File -> New Level..._
+2. Select _Empty Level_
+3. Click _File -> Save Current Level_ or press _Ctrl + S_. Save in _All/Content/Third Person/Maps_ and name it _Entry_.
+4. Change the game mode by clicking the Blueprint dropdown and then clicking _World Override -> Game Mode: Not overridden! -> Select GameModeBase Class -> GameModeBase_ - This will remove the game mode logic to create a pure menu screen
+   ![Set game mode base](./images/set-game-mode-base.png)
+
+## Create the menu widget
+
+1. Open the _Content Drawer_
+2. Open _All/Content/ThirdPerson/UI_
+   - You may have to create this folder
+3. Right-click in the content area and click _User Interface -> Widget Blueprint_
+   <img src="./images/create-widget-blueprint.png" alt='Create widget blueprint' />
+4. Click _User Widget_
+   <img src="./images/user-widget.png" alt='User widget' />
+5. Rename it to _EntryWidget_
+
+## Design menu widget
+
+<CrashCourseUnrealWidget />
+
+1. Open the _EntryWidget_ you created
+2. Construct the following design:
+   <img src="./images/entry-level-blueprint.png" alt='Entry widget design' />
+
+## Write widget blueprint to connect to server when button is clicked
+
+<CrashCourseUnrealBlueprint />
+
+1. Create a development token by running the following command and copying the token. It should look like `dev_staging.XXXX`. Save this for the next step.
+   ```bash
+   rivet token dev create
+   ```
+2. Open the Blueprint code for the _EntryWidget_ you created by clicking _Graph_ in the top right corner
+   - Replace `MY_TOKEN` with the token you just created.
+3. Construct the following Blueprint:
+   <img src="./images/entry-widget-blueprint.png" alt='Entry widget blueprint' />
+4. Press _Compile_
+
+This widget can now be used to connect a player to a server.
+
+
+## Add the menu widget to the entry level
+
+1. Open the level Blueprint by clicking the Blueprint dropdown and then clicking _Open Level Blueprint_
+   <img src="./images/open-level-blueprint.png" alt='Open level blueprint' />
+2. Construct the following Blueprint:
+   <img src="./images/entry-level-blueprint.png" alt='Entry level blueprint' />
+3. Press _Compile_
+
+## Update the default map
+
+Now that we have a new _Entry_ map for the UI, we need to make it the default map.
+
+1. Open _Edit -> Project Settings..._
+2. Click on _Maps & Modes_ under _Projects_ in the sidebar
+   - You can also search for "map" in the search bar
+3. Change _Game Default Map_ to _/Game/ThirdPerson/Maps/Entry_
+3. Change _Advanced > Server Default Map_ to _/Game/ThirdPerson/Maps/ThirdPersonMap_
+
+## Set up play configuration for testing multiplayer
+
+We will configure the play settings to test the game with Rivet locally in your editor.
+
+1. Press the three dots next to the play button and click _Advanced Settings_ to open the _Play In_ settings.
+
+   <img src="./images/play-settings.png" alt='Play settings' />
+
+2. Scroll down to _Multiplayer Options_. Update the following settings:
+
+   - **Launch Separate Server**: False
+   - **Play Net Mode**: Play Standalone
+   - **Run Under One Process**: True
+     <img src="./images/multiplayer-options-settings.png" alt='Multiplayer options settings' />
+
+3. Update the number of players to at least 2.
+
+   <img src="./images/number-players.png" alt='Change number of players' />
+
+<Tip>
+	Learn more about different ways to run your multiplayer game in Unreal Engine [here](/docs/unreal/concepts/run-methods).
+</Tip>
+
+
+
+## Test the game server locally
+
+**Run server**
+
+This will build & run your game server locally and run on port 7777. You must re-run this command whenever you change your server code.
+
+```bash
+rivet unreal start-server
+```
+
+**Run client**
+
+1. Switch to the main editor
+2. Validate that the _Entry_ level is open
+3. Click _Play_ 
+4. Click _Connect_ in each of the game instances created
+5. You should be able to see each player running around in sync
+
+<img src="./images/final-demo.png" alt='Final demo' />
+
+This is using the Rivet development token to mock production APIs. This lets you test with production APIs while still using your local machine.

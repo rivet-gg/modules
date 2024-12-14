@@ -1,0 +1,35 @@
+import imgRunningLobbies from './images/running-lobbies.png';
+
+# Step 4: Deploy to Rivet & distribute game
+
+## Deploy to Rivet
+
+In the root of the project, run the following command:
+
+```bash
+rivet deploy -n prod
+```
+
+This will deploy your project to your game's production namespace.
+
+## Test with remote game server locally
+
+Now that your game is deployed to Rivet, you can test using a production namespace token.
+
+1. Create a new namespace token as described [here](/docs/general/concepts/handling-game-tokens#public-namespace-tokens).
+2. Update the token in the _Entry_ widget blueprint where you set `MY_TOKEN` in the previous step.
+3. Play the project and click your _Connect_ button. Check that you are able to see the other player run around.
+
+Your game is now up and running on Rivet!
+
+You can see the lobbies in the Rivet dashboard. These will automatically scale up and down as players come and go.
+
+<Image src={imgRunningLobbies} alt='Running lobbies' />
+
+## Build & distribute client
+
+You can build & distribute the game client as you like. Rivet provides a [CDN](/docs/cdn) to make this easy.
+
+Make sure to change _Rivet Token_ to [public namespace token](/docs/general/concepts/handling-game-tokens#public-namespace-tokens) when distributing builds, like we did in a previous step.
+
+You can also [use Unreal's config files](/docs/unreal/concepts/token-config) to configure the token.
