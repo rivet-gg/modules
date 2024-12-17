@@ -1,0 +1,44 @@
+---
+title: "Overview"
+---
+
+# Overview
+
+**Estimated time: 15 minutes**
+
+Unreal Engine provides great multiplayer capabilities out of the box. We'll use Unreal's built-in networking to build and deploy a server-authoritative multiplayer game on top of Rivet.
+
+## Goals
+
+- Deploy & distribute a multiplayer Unreal Engine dedicated game server to Rivet
+- Build a basic menu screen for a multiplayer game
+- How to test multiplayer games locally
+
+## Prerequisites
+
+- [Docker](https://www.docker.com/products/docker-desktop/)
+- [Unreal Engine 5 GitHub access](https://www.unrealengine.com/en-US/ue-on-github)
+- [Unreal Engine 5](https://www.unrealengine.com/en-US/download)
+  - This guide was written using Unreal Engine 5.2.1.
+- About 60 GB of free space (for Unreal Engine Linux build)
+
+
+## FAQ
+
+<AccordionGroup>
+    <Accordion title='Does Rivet support Unreal Engine 4?'>
+        This guide is built for Unreal Engine 5.
+
+        If you're using a different version of Unreal Engine and need help, please [reach out](https://discord.gg/BG2vqsJczH)!
+    </Accordion>
+    <Accordion title='Do I need to build the editor from scratch?'>
+        You do **not** need to build the Unreal editor yourself to follow this guide.
+
+        Rivet's build system uses Unreal Docker containers to simplify development & deployment.
+    </Accordion>
+	<Accordion title='What if I want to build Unreal Engine from source instead of using Docker?'>
+		It's also possible to build your dedicated server by [building Unreal Engine from source](https://docs.unrealengine.com/5.0/en-US/building-unreal-engine-from-source/). This requires many more prerequisites with a complicated & error prone setup process, so we use Epic's Docker image instead.
+
+		However, this may be required if using a fork of Unreal Engine. Please [reach out](https://discord.com/invite/BG2vqsJczH) if you need help making this work with Rivet.
+	</Accordion>
+</AccordionGroup>

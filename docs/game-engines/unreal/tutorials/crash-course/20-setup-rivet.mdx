@@ -1,0 +1,176 @@
+---
+title: Integrate Rivet
+---
+
+
+## Install Rivet CLI
+
+[Installation instructions](https://github.com/rivet-gg/cli)
+
+## Initiate project
+
+Run the following in your project's directory and follow the steps.
+
+```bash
+rivet init --unreal --install-plugin
+```
+
+## Add dependency
+
+Add Rivet to `PrivateDependencyModuleNames` in your project `Source/MyProject/MyProject.Build.cs`. For example:
+
+```csharp {{"file": "Source/MyProject/MyProject.Build.cs"}}
+PrivateDependencyModuleNames.AddRange(new string[] { "Rivet" });
+```
+
+## Update `AMyProjectGameMode` class
+
+We will update the game mode code to connect player connect & disconnect events to Rivet.
+
+Update the the game `MyProjectGameMdoe` header & source files to look like the following. Replace `MyProject` with your project name.
+
+<AccordionGroup>
+	<Accordion title='Source/MyProject/MyProjectGameMode.h'>
+	```cpp
+	#pragma once
+
+	#include "CoreMinimal.h"
+	#include "GameFramework/GameModeBase.h"
+
+	#include "RivetClient.h"
+	#include "RivetPlayer.h"
+
+	#include "MyProjectGameMode.generated.h"
+
+	UCLASS(minimalapi)
+	class AMyProjectGameMode : public AGameModeBase
+	{
+		GENERATED_BODY()
+
+	public:
+		AMyProjectGameMode();
+
+		/** Map of player IDs to the associated Rivet player information. */
+		UPROPERTY()
+		TArray<URivetPlayer*> RivetPlayers;
+
+		UPROPERTY()
+		FString RivetToken;
+
+		UPROPERTY()
+		URivetClient* Rivet;
+
+		void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+		APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
+		void Logout(AController* Exiting) override;
+	};
+	```
+	</Accordion>
+
+	<Accordion title='Source/MyProject/MyProjectGameMode.cpp'>
+	```cpp
+	#include "MyProjectGameMode.h"
+	#include "MyProjectCharacter.h"
+	#include "UObject/ConstructorHelpers.h"
+	#include "GameFramework/GameSession.h"
+	#include "GameFramework/PlayerState.h"
+	#include "GenericPlatform/GenericPlatformMisc.h"
+	#include "Kismet/GameplayStatics.h" 
+
+	#include "MatchmakerPlayersConnected.h"
+	#include "MatchmakerPlayersDisconnected.h"
+	#include "MatchmakerLobbiesReady.h"
+
+	AMyProjectGameMode::AMyProjectGameMode()
+	{
+		Rivet = NewObject<URivetClient>();
+
+		// set default pawn class to our Blueprinted character
+		static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+		if (PlayerPawnBPClass.Class != NULL)
+		{
+			DefaultPawnClass = PlayerPawnBPClass.Class;
+		}
+	}
+
+	void AMyProjectGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+	{
+		Super::InitGame(MapName, Options, ErrorMessage);
+
+		// Set lobby as ready
+		FMatchmakerLobbiesReadyRequest Req;
+		FMatchmakerLobbiesReadyDelegate OnSuccess;
+		FRivetHttpRequestFailDelegate OnFailure;
+		Rivet->MatchmakerLobbiesReady(Req, OnSuccess, OnFailure);
+	}
+
+	APlayerController* AMyProjectGameMode::Login(UPlayer *NewPlayer, ENetRole InRemoteRole, const FString &Portal, const FString &Options, const FUniqueNetIdRepl &UniqueId, FString &ErrorMessage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Login: %s"), *Options);
+		
+		// Read player token option
+		auto PlayerToken = UGameplayStatics::ParseOption(Options, "PlayerToken");
+		if (PlayerToken.IsEmpty())
+		{
+			ErrorMessage = TEXT("No PlayerToken option provided");
+			return nullptr;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("Palyer token: %s"), *PlayerToken);
+		
+		// Create player
+		auto PlayerController = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
+		if (!ErrorMessage.IsEmpty()) {
+			UE_LOG(LogTemp, Warning, TEXT("Error connecting player: %s"), *ErrorMessage);
+			return nullptr;
+		}
+
+		// Save the Rivet player information
+		auto RivetPlayer = NewObject<URivetPlayer>();
+		RivetPlayer->PlayerId = PlayerController->PlayerState->GetPlayerId();
+		RivetPlayer->PlayerController = PlayerController;
+		RivetPlayer->PlayerToken = PlayerToken;
+		RivetPlayers.Add(RivetPlayer);
+
+		// Send connection request
+		FMatchmakerPlayersConnectedRequest Req;
+		Req.PlayerToken = PlayerToken;
+
+		FMatchmakerPlayersConnectedDelegate OnSuccess;
+		OnSuccess.BindDynamic(RivetPlayer, &URivetPlayer::OnPlayerConnectedSuccess);
+		
+		FRivetHttpRequestFailDelegate OnFailure;
+		OnFailure.BindDynamic(RivetPlayer, &URivetPlayer::OnPlayerConnectedFailure);
+
+		Rivet->MatchmakerPlayersConnected(Req, OnSuccess, OnFailure);
+
+		return PlayerController;
+	}
+
+	void AMyProjectGameMode::Logout(AController *Exiting)
+	{
+		auto PlayerId = Exiting->PlayerState->GetPlayerId();
+		auto RivetPlayer = *RivetPlayers.FindByPredicate([&](auto X) { return X->PlayerId == PlayerId; });
+		if (RivetPlayer == nullptr) {
+			UE_LOG(LogTemp, Error, TEXT("Could not find RivetPlayer to disconnect for player %d"), PlayerId);
+			return;
+		}
+
+		UE_LOG(LogTemp, Error, TEXT("Logging out player: %d %s"), PlayerId, *RivetPlayer->PlayerToken);
+
+		// Send connection request
+		FMatchmakerPlayersDisconnectedRequest Req;
+		Req.PlayerToken = RivetPlayer->PlayerToken;
+
+		FMatchmakerPlayersDisconnectedDelegate OnSuccess;
+		OnSuccess.BindDynamic(RivetPlayer, &URivetPlayer::OnPlayerDisconnectedSuccess);
+		
+		FRivetHttpRequestFailDelegate OnFailure;
+		OnFailure.BindDynamic(RivetPlayer, &URivetPlayer::OnPlayerDisconnectedFailure);
+
+		Rivet->MatchmakerPlayersDisconnected(Req, OnSuccess, OnFailure);
+	}
+	```
+	</Accordion>
+</AccordionGroup>
+
+Restart Unreal Engine for the new C++ header to take effect.

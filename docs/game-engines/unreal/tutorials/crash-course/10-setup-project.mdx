@@ -1,0 +1,50 @@
+---
+title: "Setup project"
+---
+
+# Step 1: Setup Unreal Engine project
+
+We'll use the third-person template from Unreal Engine. All the components come with networking out of the box. These steps also apply to any other Unreal Engine games.
+
+<Warning>
+  If you're following this guide on an existing project, ensure that your project is version controlled before
+  making any changes.
+</Warning>
+
+## Authenticate with GitHub Container Registry
+
+We need to authenticate with the GitHub Container Registry (GHCR) to be able to pull the Unreal Engine Docker image.
+
+1. Make sure you already have Unreal Engine GitHub Access [here](https://www.unrealengine.com/en-US/ue-on-github).
+2. Authenticate with [these instructions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic).
+
+## Create project from template (or bring your own project)
+
+1. Create a third-person template with the C++ version. We'll create a guide for using Blueprints instead of C++ soon.
+2. Set _Quality Preset_, _Starter Content_, and _Raytracing_ to anything.
+3. Click _Create_.
+	![Third person create dialog](./images/create-third-person-cpp.png)
+4. Open the Visual Studio project by clicking _Tools > Open Visual Studio_.
+	![Open Visual Studio](./images/open-visual-studio.png)
+
+## Add server target
+
+We need to add a target so you can compile your game as a dedicated server to run on Rivet.
+
+Create a file at `Source/MyProjectServer.Target.cs` with the following. Replace `MyProject` with your project's name.
+
+```csharp Source/MyProjectServer.Target.cs
+using UnrealBuildTool;
+using System.Collections.Generic;
+
+public class MyProjectServerTarget : TargetRules
+{
+	public MyProjectServerTarget(TargetInfo Target) : base(Target)
+	{
+		Type = TargetType.Server;
+		DefaultBuildSettings = BuildSettingsVersion.V2;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+		ExtraModuleNames.Add("MyProject");
+	}
+}
+```

@@ -25,16 +25,75 @@
       "group": "Getting Started",
       "pages": [
         "quickstart",
-        "project-config",
-        "modules",
-        "sdk",
         {
-          "group": "Advanced",
+          "group": "Godot",
           "pages": [
-            "registries",
-            "self-hosting",
-            "multiple-games",
-            "environment-variables"
+            {
+              "group": "Concepts",
+              "pages": [
+                "game-engines/godot/concepts/resources"
+              ]
+            },
+            {
+              "group": "Tutorials",
+              "pages": [
+                "game-engines/godot/tutorials/crash-course",
+                "game-engines/godot/tutorials/bomber-demo"
+              ]
+            },
+            "game-engines/godot/plugin"
+          ]
+        },
+        {
+          "group": "Unity",
+          "pages": [
+            "game-engines/unity/tutorials/fishnet/crash-course",
+            "game-engines/unity/plugin"
+          ]
+        },
+        {
+          "group": "Unreal Engine",
+          "pages": [
+            {
+              "group": "Concepts",
+              "pages": [
+                "game-engines/unreal/concepts/resources",
+                "game-engines/unreal/concepts/build-engine-from-source",
+                "game-engines/unreal/concepts/useful-commands"
+              ]
+            },
+            {
+              "group": "Crash Course",
+              "pages": [
+                "game-engines/unreal/tutorials/crash-course",
+                "game-engines/unreal/tutorials/crash-course/10-setup-project",
+                "game-engines/unreal/tutorials/crash-course/20-setup-rivet",
+                "game-engines/unreal/tutorials/crash-course/30-build-entry"
+              ]
+            },
+            {
+              "group": "Troubleshooting",
+              "pages": [
+                "game-engines/unreal/troubleshooting/chmod-error",
+                "game-engines/unreal/troubleshooting/empty-level",
+                "game-engines/unreal/troubleshooting/port-7777-already-taken",
+                "game-engines/unreal/troubleshooting/standalone-wrong-map"
+              ]
+            },
+            "game-engines/unreal/plugin"
+          ]
+        },
+        {
+          "group": "HTML5",
+          "pages": [
+            {
+              "group": "Tutorials",
+              "pages": [
+                "game-engines/html5/tutorials/crash-course",
+                "game-engines/html5/tutorials/tanks-canvas-socketio"
+              ]
+            },
+            "sdk"
           ]
         }
       ]
@@ -134,32 +193,16 @@
       ]
     },
     {
-      "group": "Developing Modules",
+      "group": "Miscellaneous",
       "pages": [
-        "build/overview",
-        "build/quickstart",
-        "build/module-config",
-        "build/scripts",
-        "build/database",
-        "build/actors",
-        "build/user-config",
-        "build/errors",
-        "build/publish",
+        "project-config",
         {
           "group": "Advanced",
           "pages": [
-            "build/conventions",
-            "build/ide",
-            "build/public",
-            "build/logging"
+            "self-hosting",
+            "environment-variables"
           ]
-        }
-      ]
-    },
-    {
-      "group": "Miscellaneous",
-      "pages": [
-        "enterprise",
+        },
         {
           "group": "Comparison",
           "pages": [
@@ -185,7 +228,8 @@
               ]
             }
           ]
-        }
+        },
+        "enterprise"
       ]
     }
   ],

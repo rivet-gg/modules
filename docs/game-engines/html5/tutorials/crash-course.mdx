@@ -1,0 +1,106 @@
+---
+title: Crash Course
+---
+
+
+import { PreRivetBranch, WorkInProgress, InstallCli, UnfamiliarWithDockerfiles, EnvTokenServer, EnvTokenClient, AutomateWithApi } from '/snippets/common.mdx';
+
+
+## Step 1: Setup project
+
+### Create a game on the Rivet Dashboard
+
+Visit the [Rivet Dashboard](https://hub.rivet.gg/) to create a new game.
+
+### Install the [Rivet CLI](https://github.com/rivet-gg/cli)
+
+Follow instructions [here](https://github.com/rivet-gg/cli#installing).
+
+### Initialize the project
+
+Open your project's directory in a terminal and run:
+
+```bash
+rivet init
+```
+
+This will guide you through setting up your project with Rivet.
+
+
+### Write a `Dockerfile` for your server
+
+You'll need a `Dockerfile` to build and run your game server.
+
+<UnfamiliarWithDockerfiles />
+
+## Step 2: Integrate Rivet Matchmaker
+
+### Install the Rivet library
+
+<CodeGroup>
+```bash NPM
+npm install --save @rivet-gg/api 
+```
+
+```bash Yarn
+yarn add @rivet-gg/api
+```
+</CodeGroup>
+
+### Update your client
+
+Copy the following pseudocode into the appropriate places in your source:
+
+```typescript
+import { RivetClient } from '@rivet-gg/api';
+let rivet = new RivetClient({ token: process.env.RIVET_TOKEN });
+
+// Find a lobby (a new lobby will automatically be created on demand if needed)
+let res = await rivet.matchmaker.lobbies.find({ gameModes: ['default'] });
+
+// Connect to the lobby (Rivet automatically manages your SSL)
+let ws = new WebSocket(`wss://${res.ports['default'].host}/?token=${res.player.token}`);
+```
+
+<EnvTokenClient />
+
+### Update your server
+
+Copy the following pseudocode into the appropriate places in your source:
+
+```typescript
+// `RIVET_TOKEN` is automatically added to the environment by Rivet.
+import { RivetClient } from "@rivet-gg/api";
+let rivet = new RivetClient({ token: process.env.RIVET_TOKEN });
+
+// Tell Rivet your server is ready. This gives you time to load maps and
+// other data before accepting players.
+rivet.matchmaker.lobbies.ready().catch(() => process.exit(1));
+
+myGameServer.on("connect", await (socket) => {
+	let playerToken = socket.request.query.token;
+
+	// Notify the matchmaker that the player connected. This can be
+	// called only once per player token. This will throw an error and
+	// close the socket if the player token is already used or invalid.
+	await rivet.matchmaker.players.connected({ playerToken }).catch(err => socket.close());
+
+	socket.on("close", async () => {
+		// Notify the matchmaker that the player disconnected.
+		await rivet.matchmaker.players.disconnected({ playerToken });
+	});
+});
+```
+
+<EnvTokenServer />
+
+## Step 3: Publish your game
+
+```bash
+# Deploy to the production namespace
+rivet deploy prod
+```
+
+<AutomateWithApi />
+
+This will print a URL ending in `rivet.game`. If you are hosting your game on Rivet CDN, visit that URL to play your game.
