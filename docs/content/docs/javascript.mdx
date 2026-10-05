@@ -31,7 +31,7 @@ Returning `undefined`, a function, a symbol, or a circular value fails with
 
 <CodeSnippet file="examples/js-sdk-overview/src/index.ts" />
 
-Executions are ephemeral, so capture stdio only when you want it — `"stderr"` for
+Executions are ephemeral, so capture stdio only when you want it: `"stderr"` for
 diagnostics, `"all"` for both streams. `onStdout`/`onStderr` stream live and work
 independently of capture.
 
@@ -49,7 +49,7 @@ calls.
 
 <CodeSnippet file="examples/js-sdk-overview/src/contexts.ts" />
 
-A context runs one operation at a time — reusing a busy `contextId` fails
+A context runs one operation at a time, so reusing a busy `contextId` fails
 immediately. Files, npm, Bash, and type checks may pass the same id, but they run
 in fresh processes and never touch retained memory.
 
@@ -63,8 +63,9 @@ Create the context explicitly before use; an unknown id fails instead of silentl
 starting fresh state. A context pins to the first inline language that used it,
 though JavaScript and TypeScript intentionally share one isolate.
 
-Contexts live for the VM lifetime. They do not survive actor sleep/wake, because
-the VM is disposed; create them lazily on the first stateful use after wake.
+Contexts live until the VM is disposed. They are in-memory state, so a VM
+recreated from the same `database` starts with no contexts; create them lazily
+on first use.
 
 ## Type check before running
 
@@ -99,14 +100,14 @@ executions.
 <CodeSnippet file="examples/js-sdk-overview/src/platform.ts" />
 
 See [Filesystem](/agentos/docs/filesystem), [Processes & Shells](/agentos/docs/processes), and
-[Networking & Previews](/agentos/docs/networking).
+[Networking](/agentos/docs/networking).
 
 ## Host functions
 
-Guest code invokes [host functions](/agentos/docs/host-functions) as ordinary typed commands, so host
+Guest JavaScript calls [host functions](/agentos/docs/host-functions) as async globals, so host
 credentials stay outside the VM.
 
-<CodeSnippet file="examples/host-functions/exec-javascript.ts" />
+<CodeSnippet file="examples/embedded/host-functions-javascript.ts" />
 
 ## Permissions, limits, and timeouts
 
@@ -117,8 +118,7 @@ Every operation inherits the VM [permission policy](/agentos/docs/permissions) a
 
 ## Embedded API
 
-The examples above already use `AgentOs.create()`. Contexts remain available
-until the host calls `dispose()`; there is no actor sleep cycle to recreate them
-after.
+The examples above use `AgentOs.create()`. Contexts remain available until the
+host calls `dispose()`.
 
 Read more in the [embedded API quickstart](/agentos/docs/quickstart-embedded).

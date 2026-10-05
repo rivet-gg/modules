@@ -15,5 +15,7 @@ APIs in a lightweight VM.
   </Card>
 </CardGroup>
 
-Core owns the VM process, lifecycle, and host bindings. Managed orchestration
-adapters are separate consumers of the same runtime APIs.
+`@rivet-dev/agentos-core` runs VMs inside your Node.js backend. Your application
+owns the VM's lifecycle, persistence, and access to host resources such as
+[host functions](/agentos/docs/host-functions) and
+[mounts](/agentos/docs/filesystem#mounts).

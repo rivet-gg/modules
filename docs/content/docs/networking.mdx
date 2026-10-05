@@ -1,12 +1,29 @@
 ---
-title: "Networking & Previews"
-description: "Proxy HTTP requests into VM ports and create expiring preview routes."
+title: "Networking"
+description: "Send HTTP requests from the host to servers running inside an agentOS VM, and control guest network access."
 ---
 
-`network.httpRequest` proxies one bounded HTTP request to a VM loopback port.
-Streaming helpers provide bounded chunked response delivery.
+Servers inside the VM listen on VM-local ports. They are not exposed on the
+host network. `network.httpRequest` proxies one bounded HTTP request from the
+host to a VM loopback port and returns the buffered response.
 
 <CodeSnippet file="examples/embedded/vm.ts" region="networking" />
 
-Core provides direct HTTP request methods. Public preview routing is owned by
-the hosting service, not the VM runtime.
+`vm.fetch(port, request)` sends a standard `Request` and returns a `Response`.
+`fetchStreamStart`, `fetchStreamRead`, and `fetchStreamCancel` deliver a
+response body in bounded chunks, so the caller owns backpressure for large
+responses.
+
+<CodeSnippet file="examples/js-dev-servers/src/index.ts" />
+
+## Guest network access
+
+Guest listeners and loopback traffic stay inside the VM. Outbound access is
+limited to the sidecar's default allowlist unless the `network`
+[permission](/agentos/docs/permissions) scope allows more. Requests from the
+host through `httpRequest` enter the VM from the host side, so they are subject
+to loopback confinement but not to the guest egress policy.
+
+Core does not create public URLs for VM ports. To expose a VM server to
+browsers, route requests through your application and forward them with
+`httpRequest` or `fetch`.

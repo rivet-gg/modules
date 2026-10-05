@@ -9,17 +9,13 @@ Run bash inside the VM. Shell commands are the simplest agentOS execution
 surface, and share the same execution lifecycle as JavaScript, TypeScript,
 Python, and package workflows.
 
-This page uses embedded Core. For hosted actors, use `process.run` with an
-explicit executable and argument array, or run `sh` with `-c` for shell parsing;
-see [Processes & Terminals](/agentos/docs/processes).
-
 - **`process.exec()`**: Runs a bash command line. Use for pipes, redirects, globs.
 - **`process.execFile()`**: Injection-safe; args are never parsed by a shell.
 - **In-VM only**: Commands run inside the VM, never in the host shell.
 
 For multi-step work, consider [JavaScript](/agentos/docs/javascript) or
-[Python](/agentos/docs/python) instead — one round trip and real data structures
-rather than a chain of shell calls.
+[Python](/agentos/docs/python) instead. One call returns real data structures
+instead of a chain of shell calls.
 
 ## Run commands
 
@@ -45,7 +41,7 @@ projected through the [software registry](/agentos/docs/software).
 [Host functions](/agentos/docs/host-functions) appear as commands, so pipelines use trusted host
 capabilities without putting credentials inside the VM.
 
-<CodeSnippet file="examples/host-functions/exec-bash.ts" />
+<CodeSnippet file="examples/embedded/host-functions-bash.ts" />
 
 ## Permissions, limits, and timeouts
 
@@ -56,7 +52,8 @@ Every command inherits the VM [permission policy](/agentos/docs/permissions) and
 
 ## Embedded API
 
-The examples above already use `AgentOs.create()`. The host owns `dispose()`,
-and filesystem state only outlives the VM when you configure `database`.
+The examples above use `AgentOs.create()`. The host owns `dispose()`, and files
+only outlive the VM when its root filesystem is stored in SQLite; see
+[Persistence](/agentos/docs/persistence).
 
 Read more in the [embedded API quickstart](/agentos/docs/quickstart-embedded).

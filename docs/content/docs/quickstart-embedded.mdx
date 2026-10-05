@@ -4,9 +4,9 @@ description: "Run an agentOS VM directly inside a Node.js application."
 skill: true
 ---
 
-Use `@rivet-dev/agentos-core` when your application owns VM identity,
-persistence, and lifecycle. The embedded API returns a VM handle directly;
-there is no actor server or generated transport client.
+`@rivet-dev/agentos-core` runs VMs inside your Node.js process. Your
+application owns VM identity, persistence, and lifecycle, and
+`AgentOs.create()` returns a VM handle directly.
 
 ## Install
 
@@ -18,21 +18,18 @@ npm install @rivet-dev/agentos-core
 
 <CodeSnippet file="examples/embedded/vm.ts" region="boot" />
 
-The VM remains active until `dispose()` is called. Configure SQLite when its
-filesystem must survive process replacement; omit `database` for an in-memory
-VM.
+The VM remains active until `dispose()` is called. Its filesystem is in memory
+by default; see [Persistence](/agentos/docs/persistence) to keep files across VM
+recreation.
 
-## Embedded-only capabilities
+## Configuration
 
-Embedded Core may use trusted resources that cannot cross the hosted actor
-boundary:
+The embedding process is trusted, so it can also give the VM access to host
+resources:
 
-- host bindings implemented as in-process callbacks;
-- host-directory and callback-backed mounts;
+- [host functions](/agentos/docs/host-functions) implemented as in-process callbacks;
+- host-directory and other [mounts](/agentos/docs/filesystem#mounts);
 - local `.aospkg` paths;
 - explicit ownership of a shared sidecar process.
 
 <CodeSnippet file="examples/embedded/config-reference.ts" />
-
-Managed orchestration layers can wrap this same Core surface without changing
-the VM runtime or its security boundary.

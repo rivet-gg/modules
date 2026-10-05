@@ -1,12 +1,34 @@
 ---
 title: "Crons & Loops"
-description: "Schedule recurring VM commands while an embedded VM is active."
+description: "Schedule recurring and one-shot VM commands while a VM is running."
 skill: true
 ---
 
-Core provides an in-process cron helper. Jobs run while the embedding process
-and VM are alive; a hosting service is responsible for durable scheduling.
+`vm.cron` schedules commands inside the VM. Jobs run while the embedding
+process and the VM are alive. Durable scheduling across process restarts is
+the responsibility of the application that owns the VM.
 
 ## Schedule a command
 
 <CodeSnippet file="examples/embedded/vm.ts" region="cron" />
+
+`schedule` takes a standard cron expression or an ISO 8601 timestamp for a
+one-shot job. `action` is either `{ type: "exec", command, args }`, which runs a
+command in the VM, or `{ type: "callback", fn }`, which calls a function in the
+host process.
+
+`overlap` controls what happens when a job fires while its previous run is
+still going: `"allow"` (the default) starts another run, `"skip"` drops the new
+run, and `"queue"` waits for the previous run to finish.
+
+## Inspect and cancel jobs
+
+- `cron.list()` returns each job's schedule, action, `lastRun`, `nextRun`,
+  `runCount`, and whether it is running.
+- `cron.cancel(id)` cancels a job. The handle returned by `schedule` also has a
+  `cancel()` method.
+- `vm.onCronEvent(handler)` receives `cron:fire`, `cron:complete`, and
+  `cron:error` events.
+
+Pass `scheduleDriver` to `AgentOs.create()` to replace the default timer-based
+driver, for example with one backed by your own durable scheduler.

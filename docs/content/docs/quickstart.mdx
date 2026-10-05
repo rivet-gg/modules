@@ -14,11 +14,22 @@ npm install @rivet-dev/agentos-core
 
 <CodeSnippet file="examples/embedded/vm.ts" region="boot" />
 
-The VM remains active until `dispose()` is called. Omit `database` for an
-ephemeral VM, or configure SQLite-backed storage when state must survive
-process replacement.
+The VM remains active until `dispose()` is called. Its filesystem is in memory
+by default; see [Persistence](/agentos/docs/persistence) to keep files across VM
+recreation.
 
 <Note>
-Core runs in a trusted host process and can use host bindings, host-backed
-mounts, local packages, and remote verified package URLs.
+Core runs in a trusted host process and can use
+[host functions](/agentos/docs/host-functions), host-backed
+[mounts](/agentos/docs/filesystem#mounts), local packages, and remote verified
+package URLs.
 </Note>
+
+## Next steps
+
+- Run commands with [Bash](/agentos/docs/bash), or code with
+  [Node.js](/agentos/docs/javascript) and [Python](/agentos/docs/python).
+- Install tools from the [registry](/agentos/docs/registry) with
+  [Software](/agentos/docs/software).
+- Lock the VM down with [Permissions](/agentos/docs/permissions) and
+  [Resource Limits](/agentos/docs/resource-limits).

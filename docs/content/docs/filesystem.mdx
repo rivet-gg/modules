@@ -1,25 +1,42 @@
 ---
 title: "Filesystem"
-description: "Read and write VM files and configure safe durable filesystems."
+description: "Read and write VM files, and mount host directories, S3, and other filesystem backends."
 ---
 
-The generated actor client exposes file operations under `filesystem`.
-`filesystem.stat` and `filesystem.readdirRecursive` report file lengths as
-`sizeBytes`.
+File operations live under `vm.filesystem`. Every language and shell in the VM
+sees the same filesystem, so files written here are immediately visible to
+Bash, JavaScript, Python, and installed software.
 
 <CodeSnippet file="examples/embedded/vm.ts" region="filesystem" />
 
-The actor's filesystem configuration is a closed registry. By default, each VM
-uses an ephemeral in-memory overlay over the bundled base image. Its writes
-survive for that VM's lifetime but are discarded when the VM is replaced. Use
-a `durable` root or mount when files must survive VM replacement. Unknown
-backends, JavaScript VFS objects, callbacks, and host paths are rejected.
+The namespace also provides batch `readFiles` and `writeFiles`, `stat`,
+`readdirEntries`, `exists`, `move`, `remove`, `export` for a snapshot of the
+root filesystem, and `mount`, `unmount`, and `listMounts` for mounts on a
+running VM. `stat` and `readdirRecursive` report file lengths as `size`.
 
+## Root filesystem
 
-Host-directory, S3, Google Drive, and custom plugins remain available only in
-trusted embedded Core:
+By default, each VM uses an in-memory overlay over the bundled base image.
+Writes survive for the VM's lifetime and are discarded on `dispose()`. See
+[Persistence](/agentos/docs/persistence) to keep files across VM recreation.
+
+## Mounts
+
+Mount additional filesystem backends at any guest path. Native mount plugins
+are identified by an `id` and a `config` object:
+
+| Plugin | Backend |
+|---|---|
+| `host_dir` | A directory on the host, confined to the configured path |
+| `chunked_s3` | An S3 or S3-compatible bucket |
+| `chunked_sqlite` | The VM's SQLite `database` |
+| `google_drive` | A Google Drive folder |
 
 <CodeSnippet file="examples/embedded/mounts.ts" />
 
-Large-file streaming is a follow-up. Current actions enforce bounded payloads
-and fail with a typed limit error.
+Host-backed mounts are confined to their configured root on every operation,
+including symlink and `..` resolution. `nodeModulesMount()` is a shortcut that
+exposes a host `node_modules` tree read-only at `/root/node_modules`.
+
+File transfers are bounded. An operation that exceeds a payload limit fails
+with a typed limit error that names the limit.

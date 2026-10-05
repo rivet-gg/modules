@@ -69,7 +69,7 @@
 					"icon": "faTerminal"
 				},
 				{
-					"title": "Networking & Previews",
+					"title": "Networking",
 					"href": "/agentos/docs/networking",
 					"icon": "faGlobe"
 				},
@@ -195,7 +195,7 @@
 									"href": "/agentos/docs/architecture/limits-and-observability"
 								},
 								{
-									"title": "Persistence & Sleep",
+									"title": "Persistence",
 									"href": "/agentos/docs/persistence"
 								}
 							]

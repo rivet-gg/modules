@@ -4,9 +4,15 @@ import { AgentOs, type AgentOsOptions } from "@rivet-dev/agentos-core";
 
 mkdirSync(".agentos", { recursive: true });
 const options = {
+	// The SQLite file that stores the VM's durable state.
 	database: {
 		type: "sqlite_file",
 		path: resolve(".agentos/agentos.sqlite"),
+	},
+	// Store the root filesystem in that database instead of in memory.
+	rootFilesystem: {
+		type: "native",
+		plugin: { id: "chunked_sqlite", config: {} },
 	},
 } satisfies AgentOsOptions;
 

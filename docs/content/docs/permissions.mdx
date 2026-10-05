@@ -1,13 +1,23 @@
 ---
 title: "Permissions"
-description: "Constrain untrusted guest filesystem, process, and network access."
+description: "Constrain untrusted guest filesystem, process, network, environment, and host function access."
 ---
 
-Pass a serializable permission tree in creation config or a later complete
-`config.set` replacement. The trusted sidecar enforces it for every guest
-operation.
+Pass a permission tree as `permissions` when creating the VM. The trusted
+sidecar enforces it for every guest operation.
 
 <CodeSnippet file="examples/embedded/permissions.ts" />
 
-Host bindings have a separate policy surface in embedded Core. The hosted actor
-does not expose host bindings.
+The tree has one scope per capability: `fs`, `network`, `childProcess`,
+`process`, `env`, and `hostFunction`. A scope can be `"allow"`, `"deny"`, or a
+rule set with a `default` mode and `rules` that match operations and target
+patterns.
+
+Your policy is merged over the default, so an omitted scope keeps its default.
+By default the guest behaves like a sandboxed machine: its virtual filesystem,
+processes, environment, listeners, and loopback networking work, and outbound
+network access is limited to the sidecar's default allowlist. Host functions
+are governed by the `hostFunction` scope.
+
+See the [Security Model](/agentos/docs/security-model) for the trust boundary
+these policies enforce.

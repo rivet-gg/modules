@@ -33,7 +33,7 @@ A value the JSON encoder can't represent fails with
 
 <CodeSnippet file="examples/python-sdk-overview/src/index.ts" />
 
-Executions are ephemeral, so capture stdio only when you want it — `"stderr"` for
+Executions are ephemeral, so capture stdio only when you want it: `"stderr"` for
 diagnostics, `"all"` for both streams. `onStdout`/`onStderr` stream live and work
 independently of capture.
 
@@ -53,7 +53,7 @@ interpreter.
 
 Only inline `execute()`/`evaluate()` retain memory. Files, modules, installs, and
 Bash may pass the same id, but they run fresh. A context runs one operation at a
-time — reusing a busy `contextId` fails immediately.
+time, so reusing a busy `contextId` fails immediately.
 
 ## Files, modules, and async
 
@@ -92,14 +92,14 @@ other executions.
 <CodeSnippet file="examples/python-sdk-overview/src/platform.ts" />
 
 See [Filesystem](/agentos/docs/filesystem), [Processes & Shells](/agentos/docs/processes), and
-[Networking & Previews](/agentos/docs/networking).
+[Networking](/agentos/docs/networking).
 
 ## Host functions
 
 Python calls [host functions](/agentos/docs/host-functions) as normal commands via `subprocess`, so
 host credentials stay outside the VM.
 
-<CodeSnippet file="examples/host-functions/exec-python.ts" />
+<CodeSnippet file="examples/embedded/host-functions-python.ts" />
 
 ## Permissions, limits, and timeouts
 
@@ -110,8 +110,7 @@ Every operation inherits the VM [permission policy](/agentos/docs/permissions) a
 
 ## Embedded API
 
-The examples above already use `AgentOs.create()`. Python contexts remain
-available until the host calls `dispose()`; there is no actor sleep cycle to
-recreate them after.
+The examples above use `AgentOs.create()`. Python contexts remain available
+until the host calls `dispose()`.
 
 Read more in the [embedded API quickstart](/agentos/docs/quickstart-embedded).

@@ -1,9 +1,8 @@
 import { AgentOs } from "@rivet-dev/agentos-core";
 import { z } from "zod";
 
-// Host functions are defined exactly as they are for the actor. Pass them to
-// AgentOs.create() and `execute` runs in this host process, with its input typed
-// by its own schema.
+// Pass host functions to AgentOs.create(). `execute` runs in this host process,
+// with its input typed by its own schema.
 const vm = await AgentOs.create({
 	hostFunctions: {
 		weather: {
