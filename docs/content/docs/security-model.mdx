@@ -39,6 +39,20 @@ If your application lets untrusted users configure VMs, accept only
 serializable configuration from them and resolve it against your own allowlist
 of mounts and software sources.
 
+## Hosted VM restrictions
+
+The hosted `agentOS` actor accepts only serializable configuration. Its
+filesystem descriptors are resolved through a fixed registry, and software
+installation accepts only remote HTTPS `.aospkg` sources. It cannot receive:
+
+- a host filesystem path or host-directory mount;
+- a host function callback, closure, or arbitrary host object;
+- a custom filesystem or software resolver;
+- an unregistered actor implementation or lifecycle hook.
+
+Use [scoped JWTs](/docs/jwt) to give an untrusted client access to exactly one
+hosted VM.
+
 ## Isolation guarantees
 
 - Guest processes are kernel-managed and never become host processes.

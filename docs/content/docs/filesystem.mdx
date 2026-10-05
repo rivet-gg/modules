@@ -40,3 +40,56 @@ exposes a host `node_modules` tree read-only at `/root/node_modules`.
 
 File transfers are bounded. An operation that exceeds a payload limit fails
 with a typed limit error that names the limit.
+
+## Hosted API
+
+Hosted VMs expose the same operations as `v1.filesystem.*` actions. Byte counts
+in `v1.filesystem.stat` and `v1.filesystem.readdirRecursive` are reported as
+`sizeBytes`.
+
+```ts TypeScript @nocheck
+await vm.v1.filesystem.writeFile({
+	path: "/home/agentos/hello.txt",
+	content: "Hello, world!",
+});
+const content = await vm.v1.filesystem.readFile({
+	path: "/home/agentos/hello.txt",
+});
+console.log(new TextDecoder().decode(content));
+
+// Batch writes create parent directories automatically.
+await vm.v1.filesystem.writeFiles({
+	entries: [
+		{ path: "/home/agentos/src/index.ts", content: "console.log('hello');" },
+	],
+});
+
+const tree = await vm.v1.filesystem.readdirRecursive({
+	path: "/home/agentos",
+	exclude: [],
+});
+for (const entry of tree) console.log(entry.type, entry.path, entry.sizeBytes);
+```
+
+A hosted VM's filesystem configuration is a closed registry. By default, each
+VM uses an ephemeral in-memory overlay over the bundled base image. Its writes
+survive for that VM's lifetime but are discarded when the VM is replaced. Use a
+`durable` root or mount in the VM's config when files must survive VM
+replacement:
+
+```ts TypeScript @nocheck
+const vm = client.agentOS.getOrCreate(["my-vm"], {
+	createWithInput: {
+		config: {
+			filesystem: {
+				root: { type: "durable" },
+				mounts: [{ path: "/data", backend: { type: "durable" } }],
+			},
+		},
+	},
+});
+```
+
+Unknown backends, JavaScript VFS objects, callbacks, and host paths are
+rejected, so host-directory and other host-backed mounts are available only
+through the embedded API.

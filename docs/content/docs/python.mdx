@@ -108,6 +108,18 @@ Every operation inherits the VM [permission policy](/agentos/docs/permissions) a
 
 <CodeSnippet file="examples/python-sdk-overview/src/limits.ts" />
 
+## Hosted API
+
+Hosted VMs expose the same operations as `v1.python.*` actions.
+
+```ts TypeScript @nocheck
+const { value } = await vm.v1.python.evaluate({ expression: "21 * 2" });
+await vm.v1.python.install({ options: {} });
+```
+
+Python contexts do not survive actor sleep and wake, because the VM is
+disposed; create them lazily on the first stateful use after wake.
+
 ## Embedded API
 
 The examples above use `AgentOs.create()`. Python contexts remain available

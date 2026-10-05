@@ -90,6 +90,12 @@ Host function calls from guest code invoke your `execute()` functions on the hos
 
 Because handlers run with full host access, do not expose functions that could compromise the host without appropriate safeguards. Use the `hostFunction` [permission](/agentos/docs/permissions) scope to restrict which collections guest code may call.
 
+## Hosted API
+
+Host functions run as in-process callbacks, so they are not available on
+hosted VMs. Hosted guest code reaches external services over the network,
+subject to the VM's permissions.
+
 ## Embedded API
 
 Host functions are passed to `AgentOs.create()` and their handlers run in the

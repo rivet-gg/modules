@@ -21,6 +21,21 @@
 			]
 		},
 		{
+			"title": "Hosted VMs",
+			"pages": [
+				{
+					"title": "Overview",
+					"href": "/agentos/docs/hosted",
+					"icon": "faCloud"
+				},
+				{
+					"title": "Hosted VM API",
+					"href": "/agentos/docs/actor-api",
+					"icon": "faBook"
+				}
+			]
+		},
+		{
 			"title": "Execution",
 			"pages": [
 				{
@@ -185,7 +200,11 @@
 								{
 									"title": "Packages & Command Resolution",
 									"href": "/agentos/docs/architecture/packages-and-command-resolution"
-				},
+								},
+								{
+									"title": "Software Installation & Preloading",
+									"href": "/agentos/docs/architecture/software-cache"
+								},
 								{
 									"title": "Compiler Toolchain",
 									"href": "/agentos/docs/architecture/compiler-toolchain"

@@ -25,3 +25,15 @@ transaction.
 
 The embedding application owns VM identity and decides when to recreate or
 dispose the VM.
+
+## Hosted API
+
+A hosted VM's filesystem is configured with a closed registry. The default root
+is an ephemeral in-memory overlay that is discarded when the VM is replaced.
+Configure a `durable` root or mount for paths that must survive; see
+[Filesystem](/agentos/docs/filesystem#hosted-api).
+
+The actor sleeps when idle and reports `vm.shutdown` with reason `"sleep"`. The
+VM starts lazily on the first agentOS action after wake. Durable files and the
+VM's configuration survive sleep; running processes, terminals, language
+contexts, and open streams do not.

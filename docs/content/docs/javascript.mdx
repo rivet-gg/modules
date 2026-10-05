@@ -116,6 +116,21 @@ Every operation inherits the VM [permission policy](/agentos/docs/permissions) a
 
 <CodeSnippet file="examples/js-sdk-overview/src/limits.ts" />
 
+## Hosted API
+
+Hosted VMs expose the same operations as `v1.javascript.*`, `v1.typescript.*`,
+and `v1.contexts.*` actions.
+
+```ts TypeScript @nocheck
+await vm.v1.javascript.execute({ source: "console.log(1 + 2)" });
+await vm.v1.typescript.check({ source: "const value: number = 1" });
+await vm.v1.javascript.npm.install({});
+```
+
+Contexts live for the VM lifetime. They do not survive actor sleep and wake,
+because the VM is disposed; create them lazily on the first stateful use after
+wake.
+
 ## Embedded API
 
 The examples above use `AgentOs.create()`. Contexts remain available until the

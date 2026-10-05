@@ -55,6 +55,44 @@ Registry software is not installed from npm. Releases upload digest-addressed
 `.aospkg` files and a manifest to object storage; see
 [Publishing Software](/agentos/docs/custom-software/publishing).
 
+## Hosted API
+
+Hosted VMs install software from HTTPS URLs only. Software is part of the VM's
+durable configuration, so `v1.software.install` and `v1.software.uninstall` use
+the same revision checks as `v1.config.patch`.
+
+```ts TypeScript @nocheck
+const installed = await vm.v1.software.install({
+	source: {
+		url: "https://packages.example.com/ripgrep.aospkg",
+		digest: "sha256:<64 lowercase hex characters>",
+	},
+});
+if (installed.config.state === "restart_required") {
+	await vm.v1.vm.restart({});
+}
+
+for (const software of await vm.v1.software.list({})) {
+	console.log(software.packageId, software.commands);
+}
+
+await vm.v1.software.uninstall({ packageId: installed.source.packageId });
+```
+
+Software changes apply live when the VM is ready and its desired configuration
+is fully applied. Otherwise they update desired configuration and report
+`restart_required`; call `v1.vm.restart` to apply it. Uninstalling a desired
+package does not require a working VM or a fresh download.
+
+Both mutations return `{ source, software, config }`. `source` identifies the
+configured package, and `config` reports the new revision and state.
+`v1.software.list` reads the live installed set. Desired package sources live in
+`v1.config.get`.
+
+Hosted workers share a digest-keyed package cache and warm popular packages at
+startup. See
+[Software Installation and Preloading](/agentos/docs/architecture/software-cache).
+
 ## Embedded API
 
 The embedding process is trusted, so `software.install` accepts local package

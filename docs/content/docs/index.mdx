@@ -10,12 +10,21 @@ APIs in a lightweight VM.
   <Card title="Quickstart" href="/agentos/docs/quickstart">
     Run a VM inside a trusted Node.js backend.
   </Card>
+  <Card title="Hosted VMs" href="/agentos/docs/hosted">
+    Create durable VMs by ID and control them over RivetKit or HTTP.
+  </Card>
   <Card title="Software" href="/agentos/docs/software">
     Install immutable `.aospkg` command packages.
   </Card>
 </CardGroup>
 
-`@rivet-dev/agentos-core` runs VMs inside your Node.js backend. Your application
-owns the VM's lifecycle, persistence, and access to host resources such as
-[host functions](/agentos/docs/host-functions) and
-[mounts](/agentos/docs/filesystem#mounts).
+Run agentOS two ways:
+
+- **Embedded:** `@rivet-dev/agentos-core` runs VMs inside your Node.js backend.
+  Your application owns the VM's lifecycle, persistence, and access to host
+  resources such as [host functions](/agentos/docs/host-functions) and
+  [mounts](/agentos/docs/filesystem#mounts).
+- **Hosted:** the prebuilt `agentOS` Rivet Actor gives each VM a durable ID,
+  versioned configuration, replayable output, and expiring previews, controlled
+  from `@rivet-dev/agentos` or plain HTTP. See
+  [Hosted VMs](/agentos/docs/hosted).

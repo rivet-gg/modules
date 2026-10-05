@@ -44,6 +44,29 @@ VMs share a sidecar process by default. Limits that apply to the whole
 process, such as `runtime.executor.maxActiveVms`, are set when creating a
 dedicated sidecar with `AgentOs.createSidecar()`, as in the example above.
 
+## Hosted API
+
+Hosted VMs take the same `limits` tree in their durable config. Set it at
+creation or with `v1.config.set`, and apply changed limits with
+`v1.vm.restart`. Near-limit pressure is reported as the `vm.limitWarning` event.
+
+```ts TypeScript @nocheck
+await vm.v1.config.set({
+	config: {
+		limits: {
+			tls: { maxBufferedBytes: 2048 },
+			execution: { completedTtlMs: 60_000, liveExecutionWarningThreshold: 32 },
+			agentosPackages: { maxMounts: 8192 },
+		},
+	},
+});
+await vm.v1.vm.restart({});
+```
+
+The hosted actor also has a fixed ten-second shutdown wait; raising the sidecar
+deadline does not extend it. Exceeding it reports a timeout, not confirmed
+shutdown.
+
 ## Embedded API
 
 Limits apply to VMs created with `AgentOs.create()` and sidecars created with

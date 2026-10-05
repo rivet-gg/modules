@@ -6,7 +6,8 @@ skill: true
 
 `vm.cron` schedules commands inside the VM. Jobs run while the embedding
 process and the VM are alive. Durable scheduling across process restarts is
-the responsibility of the application that owns the VM.
+the responsibility of the application that owns the VM, or use a
+[hosted VM](#hosted-api), which stores its jobs.
 
 ## Schedule a command
 
@@ -32,3 +33,28 @@ run, and `"queue"` waits for the previous run to finish.
 
 Pass `scheduleDriver` to `AgentOs.create()` to replace the default timer-based
 driver, for example with one backed by your own durable scheduler.
+
+## Hosted API
+
+Hosted VMs schedule commands with `v1.cron.*` actions. Jobs are named and
+stored with the VM.
+
+```ts TypeScript @nocheck
+await vm.v1.cron.schedule({
+	name: "cleanup",
+	expression: "0 * * * *",
+	command: "rm",
+	args: ["-rf", "/tmp/cache"],
+	options: { env: {} },
+});
+
+for (const job of await vm.v1.cron.list({})) {
+	console.log(job.name, job.expression);
+}
+
+await vm.v1.cron.cancel({ name: "cleanup" });
+```
+
+Connected clients receive a `cron.fired` event for each run. A VM holds up to
+1,024 jobs, with names and expressions up to 256 bytes, and retains 32 runs per
+job by default (256 maximum).

@@ -62,3 +62,54 @@ once the sidecar has confirmed the exit. Retention is bounded; see
 it, and returns a `shellId`. Use `terminal.write`, `terminal.resize`,
 `terminal.wait`, and `terminal.close` to drive it, and `vm.onShellData`,
 `vm.onShellStderr`, and `vm.onShellExit` for its live output and exit.
+
+## Hosted API
+
+Hosted VMs run processes with `v1.process.*` actions. `v1.process.run` takes an
+executable and an argument array; there is no shell-string `exec`, so run `sh`
+with `-c` when you need shell parsing.
+
+```ts TypeScript @nocheck
+const result = await vm.v1.process.run({
+	command: "sh",
+	args: ["-c", "echo hello && ls /home/agentos"],
+	options: { env: {}, captureStdio: true },
+});
+console.log(result.stdout, result.status.exitCode);
+
+const conn = vm.connect();
+await conn.ready;
+
+const shell = await conn.v1.process.spawn({ command: "sh", args: [] });
+conn.on("process.output", (data) => {
+	if (data.process.pid !== shell.pid) return;
+	process.stdout.write(new TextDecoder().decode(data.data));
+});
+
+await conn.v1.process.stdin.write({ process: shell, data: "ls -la /home/agentos\n" });
+await conn.v1.process.stdin.close({ process: shell });
+await conn.v1.process.wait({ process: shell });
+
+// Replay retained output after a reconnect.
+const replay = await vm.v1.process.output.read({
+	process: shell,
+	maxEvents: 32,
+	maxBytes: 64 * 1024,
+});
+```
+
+`v1.process.spawn` returns a process handle `{ generation, pid }`. Pass the
+handle to `v1.process.get`, `wait`, `signal`, `stdin.write`, `stdin.close`,
+`pty.resize`, and `output.read`. Handles from before a `v1.vm.restart` fail
+with `stale_generation`. Live events are `process.output` and `process.exit`;
+replay is the authoritative recovery path.
+
+`v1.process.get` and `v1.process.list` report `startedAtMs`. Nodes returned by
+`v1.process.tree` report `startTimeMs`, `exitTimeMs`, and a structured `exit`.
+Guest child processes that were not launched through the API have no process
+handle.
+
+Interactive terminals are separate resources under `v1.terminal.open`,
+`v1.terminal.list`, `v1.terminal.stdin.write`, `v1.terminal.pty.resize`,
+`v1.terminal.output.read`, `v1.terminal.wait`, and `v1.terminal.close`. Their
+live events are `terminal.output` and `terminal.exit`.

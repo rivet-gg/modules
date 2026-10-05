@@ -24,6 +24,35 @@ limited to the sidecar's default allowlist unless the `network`
 host through `httpRequest` enter the VM from the host side, so they are subject
 to loopback confinement but not to the guest egress policy.
 
-Core does not create public URLs for VM ports. To expose a VM server to
-browsers, route requests through your application and forward them with
-`httpRequest` or `fetch`.
+Embedded Core does not create public URLs for VM ports. To expose a VM server
+to browsers, route requests through your application and forward them with
+`httpRequest` or `fetch`, or use a hosted VM's
+[expiring previews](#hosted-api).
+
+## Hosted API
+
+Hosted VMs proxy requests with `v1.network.fetch` and the pull-based
+`v1.network.fetchStream.start`, `read`, and `cancel` actions.
+
+Hosted VMs can also expose any port through an expiring preview. A preview is a
+signed URL path that proxies HTTP to a port inside the VM until it expires or is
+revoked.
+
+```ts TypeScript @nocheck
+await vm.v1.process.spawn({
+	command: "node",
+	args: ["/home/agentos/app.js"],
+});
+
+const preview = await vm.v1.network.preview.create({
+	port: 3000,
+	ttlMs: 60 * 60 * 1_000,
+});
+console.log(preview.path, new Date(Number(preview.expiresAtMs)));
+
+await vm.v1.network.preview.expire({ token: preview.token });
+```
+
+`config.preview.defaultTtlMs` sets the default lifetime. Previews enter the VM
+from the host side, so they are subject to loopback confinement but not to the
+guest egress policy.

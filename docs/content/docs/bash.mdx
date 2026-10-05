@@ -50,6 +50,22 @@ Every command inherits the VM [permission policy](/agentos/docs/permissions) and
 
 <CodeSnippet file="examples/quickstart/bash/limits.ts" />
 
+## Hosted API
+
+Hosted VMs have no shell-string `exec`. Use `v1.process.run` with an explicit
+executable and argument array, or run `sh` with `-c` for shell parsing.
+
+```ts TypeScript @nocheck
+const result = await vm.v1.process.run({
+	command: "sh",
+	args: ["-c", "echo hello && ls /home/agentos"],
+	options: { captureStdio: true },
+});
+console.log(result.stdout, result.status.exitCode);
+```
+
+See [Processes & Shells](/agentos/docs/processes#hosted-api).
+
 ## Embedded API
 
 The examples above use `AgentOs.create()`. The host owns `dispose()`, and files
