@@ -4,7 +4,9 @@ use crate::javascript::{
     JavascriptExecutionEngine, JavascriptExecutionError, JavascriptExecutionEvent,
     JavascriptExecutionLimits, JavascriptSyncRpcRequest, StartJavascriptExecutionRequest,
 };
-use crate::node_import_cache::{NodeImportCache, NODE_IMPORT_CACHE_ASSET_ROOT_ENV};
+use crate::node_import_cache::{
+    bundled_pyodide_file_sha256, NodeImportCache, NODE_IMPORT_CACHE_ASSET_ROOT_ENV,
+};
 use crate::runtime_support::{
     env_flag_enabled, file_fingerprint, resolve_execution_path, warmup_marker_path,
     NODE_DISABLE_COMPILE_CACHE_ENV, NODE_FROZEN_TIME_ENV,
@@ -14,6 +16,7 @@ use agentos_runtime::RuntimeContext;
 use base64::Engine as _;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::fmt;
 use std::fs;
@@ -27,7 +30,6 @@ const NODE_ALLOW_PROCESS_BINDINGS_ENV: &str = "AGENTOS_ALLOW_PROCESS_BINDINGS";
 const NODE_GUEST_PATH_MAPPINGS_ENV: &str = "AGENTOS_GUEST_PATH_MAPPINGS";
 const NODE_SYNC_RPC_DATA_BYTES_ENV: &str = "AGENTOS_NODE_SYNC_RPC_DATA_BYTES";
 const PYODIDE_INDEX_URL_ENV: &str = "AGENTOS_PYODIDE_INDEX_URL";
-const PYODIDE_PACKAGE_BASE_URL_ENV: &str = "AGENTOS_PYODIDE_PACKAGE_BASE_URL";
 const PYODIDE_PACKAGE_CACHE_DIR_ENV: &str = "AGENTOS_PYODIDE_PACKAGE_CACHE_DIR";
 const PYODIDE_GUEST_ROOT: &str = "/__agentos_pyodide";
 const PYODIDE_CACHE_GUEST_ROOT: &str = "/__agentos_pyodide_cache";
@@ -116,7 +118,12 @@ pub struct PythonVfsRpcRequest {
     pub gid: Option<u32>,
     pub atime_ms: Option<u64>,
     pub mtime_ms: Option<u64>,
+    /// `Setattr` length: truncate or extend the file to this many bytes.
+    pub size: Option<u64>,
     pub content_base64: Option<String>,
+    /// `Write` byte offset: write `content_base64` at this offset instead of
+    /// replacing the whole file.
+    pub offset: Option<u64>,
     pub recursive: bool,
     pub url: Option<String>,
     pub http_method: Option<String>,
@@ -221,7 +228,11 @@ struct PythonVfsBridgeRequestWire {
     #[serde(default, rename = "mtimeMs")]
     mtime_ms: Option<f64>,
     #[serde(default)]
+    size: Option<f64>,
+    #[serde(default)]
     content_base64: Option<String>,
+    #[serde(default)]
+    offset: Option<f64>,
     #[serde(default)]
     recursive: bool,
     #[serde(default)]
@@ -1549,14 +1560,6 @@ fn build_python_internal_env(
         String::from(PYODIDE_GUEST_ROOT),
     );
     internal_env.insert(
-        PYODIDE_PACKAGE_BASE_URL_ENV.to_string(),
-        request
-            .env
-            .get(PYODIDE_PACKAGE_BASE_URL_ENV)
-            .cloned()
-            .unwrap_or_else(|| String::from(PYODIDE_GUEST_ROOT)),
-    );
-    internal_env.insert(
         PYODIDE_PACKAGE_CACHE_DIR_ENV.to_string(),
         String::from(PYODIDE_CACHE_GUEST_ROOT),
     );
@@ -1627,7 +1630,7 @@ fn add_python_guest_path_mapping(
     internal_env.insert(String::from(NODE_GUEST_PATH_MAPPINGS_ENV), serialized);
 }
 
-fn pyodide_cache_path(pyodide_dist_path: &Path) -> PathBuf {
+pub(crate) fn pyodide_cache_path(pyodide_dist_path: &Path) -> PathBuf {
     let base = pyodide_dist_path
         .parent()
         .and_then(|parent| {
@@ -1741,7 +1744,9 @@ fn parse_python_bridge_sync_rpc_request(
         gid: wire.gid.map(|value| value as u32),
         atime_ms: wire.atime_ms.map(|value| value as u64),
         mtime_ms: wire.mtime_ms.map(|value| value as u64),
+        size: wire.size.map(|value| value as u64),
         content_base64: wire.content_base64,
+        offset: wire.offset.map(|value| value as u64),
         recursive: wire.recursive,
         url: wire.url,
         http_method: wire.http_method,
@@ -2372,6 +2377,39 @@ fn python_javascript_sync_rpc_action(
                 })),
             }
         }
+        // The guest `fs.readFileSync(path)` polyfill reads in ranged chunks.
+        "fs.readFileRangeSync" => {
+            let (Some(offset), Some(length)) = (
+                request.args.get(1).and_then(Value::as_u64),
+                request.args.get(2).and_then(Value::as_u64),
+            ) else {
+                return Ok(None);
+            };
+            if length > PYTHON_SYNC_RPC_DATA_BYTES as u64 {
+                return Err(PythonExecutionError::RpcResponse(format!(
+                    "managed fs.readFileRangeSync length {length} exceeds {PYTHON_SYNC_RPC_DATA_BYTES} bytes"
+                )));
+            }
+            let mut file = match fs::File::open(&host_path) {
+                Ok(file) => file,
+                Err(error) => {
+                    return python_sync_rpc_fs_action_error(path, "open", error).map(Some);
+                }
+            };
+            file.seek(SeekFrom::Start(offset))
+                .map_err(PythonExecutionError::PrepareRuntime)?;
+            let mut bytes = Vec::new();
+            file.take(length)
+                .read_to_end(&mut bytes)
+                .map_err(PythonExecutionError::PrepareRuntime)?;
+            if request.raw_bytes_args.contains_key(&usize::MAX) {
+                PythonJavascriptSyncRpcAction::RawSuccess(bytes)
+            } else {
+                PythonJavascriptSyncRpcAction::Success(Value::String(
+                    v8_runtime::base64_encode_pub(&bytes),
+                ))
+            }
+        }
         "fs.statSync" | "fs.promises.stat" => match fs::metadata(&host_path) {
             Ok(metadata) => {
                 PythonJavascriptSyncRpcAction::Success(python_host_stat_value(&metadata))
@@ -2414,6 +2452,24 @@ fn python_javascript_sync_rpc_action(
         }
         "fs.writeFileSync" | "fs.promises.writeFile" => {
             let contents = python_sync_rpc_bytes_arg(&request.args, 1)?;
+            // Pyodide stores each downloaded lockfile package in its package
+            // cache. Only bytes that match the sha256 pinned by the bundled
+            // pyodide-lock.json may enter the cache.
+            if matches!(path_kind.kind, PythonManagedPathKind::GuestCache) {
+                let file_name = host_path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or("");
+                let digest = format!("{:x}", Sha256::digest(&contents));
+                if bundled_pyodide_file_sha256(file_name) != Some(digest.as_str()) {
+                    return Ok(Some(PythonJavascriptSyncRpcAction::Error {
+                        code: "EIO",
+                        message: format!(
+                            "EIO: {file_name} does not match the sha256 pinned in pyodide-lock.json, write '{path}'"
+                        ),
+                    }));
+                }
+            }
             if let Some(parent) = host_path.parent() {
                 fs::create_dir_all(parent).map_err(PythonExecutionError::PrepareRuntime)?;
             }

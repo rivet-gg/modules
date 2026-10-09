@@ -1,4 +1,4 @@
-import { closeSync, createReadStream, mkdirSync, readFileSync, readSync, writeSync } from 'node:fs';
+import { closeSync, createReadStream, mkdirSync, readdirSync, readFileSync, readSync, writeSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import * as moduleBuiltin from 'node:module';
 import { performance as realPerformance } from 'node:perf_hooks';
@@ -22,15 +22,12 @@ const PYTHON_PREWARM_ONLY_ENV = 'AGENTOS_PYTHON_PREWARM_ONLY';
 const RETAIN_LANGUAGE_CONTEXT_ENV = 'AGENTOS_RETAIN_LANGUAGE_CONTEXT';
 const PYTHON_WARMUP_DEBUG_ENV = 'AGENTOS_PYTHON_WARMUP_DEBUG';
 const PYTHON_WARMUP_METRICS_PREFIX = '__AGENTOS_PYTHON_WARMUP_METRICS__:';
-const PYTHON_PRELOAD_PACKAGES_ENV = 'AGENTOS_PYTHON_PRELOAD_PACKAGES';
 const PYTHON_VFS_RPC_REQUEST_FD_ENV = 'AGENTOS_PYTHON_VFS_RPC_REQUEST_FD';
 const PYTHON_VFS_RPC_RESPONSE_FD_ENV = 'AGENTOS_PYTHON_VFS_RPC_RESPONSE_FD';
 const FORWARD_KERNEL_STDIN_RPC_ENV = 'AGENTOS_FORWARD_KERNEL_STDIN_RPC';
 const INTERNAL_ENV = globalThis.__agentOSPythonInternalEnv ?? Object.create(null);
 const ALLOW_PROCESS_BINDINGS = readRunnerEnv('AGENTOS_ALLOW_PROCESS_BINDINGS') === '1';
 const STDIN_FD = 0;
-const SUPPORTED_PRELOAD_PACKAGES = ['numpy', 'pandas'];
-const SUPPORTED_PRELOAD_PACKAGE_SET = new Set(SUPPORTED_PRELOAD_PACKAGES);
 const DENIED_BUILTINS = new Set([
   'child_process',
   'cluster',
@@ -415,8 +412,6 @@ function emitPythonStartupMetrics({
   prewarmOnly,
   startupMs,
   loadPyodideMs,
-  packageLoadMs,
-  packageCount,
   source,
 }) {
   if (readRunnerEnv(PYTHON_WARMUP_DEBUG_ENV) !== '1') {
@@ -430,57 +425,9 @@ function emitPythonStartupMetrics({
       prewarmOnly,
       startupMs,
       loadPyodideMs,
-      packageLoadMs,
-      packageCount,
       source,
     })}`,
   );
-}
-
-function parsePreloadPackages(value) {
-  if (value == null || value.trim() === '') {
-    return [];
-  }
-
-  let parsed;
-  try {
-    parsed = JSON.parse(value);
-  } catch (error) {
-    throw new Error(
-      `${PYTHON_PRELOAD_PACKAGES_ENV} must be a JSON array of package names: ${formatError(error)}`,
-    );
-  }
-
-  if (!Array.isArray(parsed)) {
-    throw new Error(`${PYTHON_PRELOAD_PACKAGES_ENV} must be a JSON array of package names`);
-  }
-
-  const packages = [];
-  const seen = new Set();
-
-  for (const entry of parsed) {
-    if (typeof entry !== 'string') {
-      throw new Error(`${PYTHON_PRELOAD_PACKAGES_ENV} entries must be strings`);
-    }
-
-    const name = entry.trim();
-    if (name.length === 0) {
-      throw new Error(`${PYTHON_PRELOAD_PACKAGES_ENV} entries must not be empty`);
-    }
-
-    if (!SUPPORTED_PRELOAD_PACKAGE_SET.has(name)) {
-      throw new Error(
-        `Unsupported bundled Python package "${name}". Available packages: ${SUPPORTED_PRELOAD_PACKAGES.join(', ')}`,
-      );
-    }
-
-    if (!seen.has(name)) {
-      seen.add(name);
-      packages.push(name);
-    }
-  }
-
-  return packages;
 }
 
 function parseOptionalFd(name) {
@@ -558,10 +505,13 @@ function createPythonBridgeRpcBridge() {
     async fsRead(path) {
       return this.fsReadSync(path);
     },
-    fsWriteSync(path, content) {
+    // Without `offset` the content replaces the whole file; with it, the
+    // content is written at that byte offset.
+    fsWriteSync(path, content, offset) {
       requestSync('fsWrite', {
         path,
         contentBase64: normalizeWriteContent(content),
+        ...(offset === undefined ? {} : { offset }),
       });
     },
     async fsWrite(path, content) {
@@ -782,10 +732,13 @@ function createPythonFdRpcBridge() {
     async fsRead(path) {
       return this.fsReadSync(path);
     },
-    fsWriteSync(path, content) {
+    // Without `offset` the content replaces the whole file; with it, the
+    // content is written at that byte offset.
+    fsWriteSync(path, content, offset) {
       requestSync('fsWrite', {
         path,
         contentBase64: normalizeWriteContent(content),
+        ...(offset === undefined ? {} : { offset }),
       });
     },
     async fsWrite(path, content) {
@@ -1557,6 +1510,11 @@ function installPythonKernelRpcShims(pyodide) {
   pyodide.runPython(PYTHON_KERNEL_RPC_SHIMS_SOURCE);
 }
 
+// PEP 503 normalization, which is also how pyodide-lock.json keys packages.
+function normalizePythonPackageName(name) {
+  return String(name).toLowerCase().replace(/[-_.]+/g, '-');
+}
+
 function installPythonMicropipCompat(pyodide) {
   if (typeof pyodide?.registerJsModule !== 'function') {
     return;
@@ -1604,9 +1562,22 @@ function installPythonMicropipCompat(pyodide) {
     lockfile_info: pyodide?._api?.lockfile_info,
     lockfile_packages: pyodide?._api?.lockfile_packages,
   };
+  // Pyodide's loadPackage() logs a package that fails to load and resolves
+  // anyway. Reject instead so micropip.install() does not report success.
+  const loadPackage = async (names) => {
+    const loaded = await pyodide.loadPackage(names);
+    const loadedNames = new Set(Object.keys(pyodide.loadedPackages).map(normalizePythonPackageName));
+    const missing = Array.from(names).filter(
+      (name) => !loadedNames.has(normalizePythonPackageName(name)),
+    );
+    if (missing.length > 0) {
+      throw new Error(`Failed to load Pyodide packages: ${missing.join(', ')}`);
+    }
+    return loaded;
+  };
   pyodide.registerJsModule('agentos_internal_pyodide_js', {
     loadedPackages: pyodide.loadedPackages,
-    loadPackage: pyodide.loadPackage?.bind(pyodide),
+    loadPackage,
     lockfileBaseUrl: pyodide?._api?.config?.packageBaseUrl ?? '',
     _api: pyodideApiCompat,
   });
@@ -1785,17 +1756,12 @@ function installPythonWorkspaceFs(pyodide, bridge) {
 
     node.mode = stat.mode;
     node.timestamp = Date.now();
-    if (FS.isFile(stat.mode) && !node.agentOSDirty) {
-      node.agentOSRemoteSize = stat.size;
-    }
   }
 
   function createWorkspaceNode(parent, name, mode, dev, guestPath) {
     const node = MEMFS.createNode(parent, name, mode, dev);
     node.agentOSGuestPath = guestPath;
-    node.agentOSDirty = false;
     node.agentOSLoaded = FS.isDir(mode);
-    node.agentOSRemoteSize = 0;
     if (FS.isDir(mode)) {
       node.node_ops = workspaceDirNodeOps;
       node.stream_ops = workspaceDirStreamOps;
@@ -1808,60 +1774,22 @@ function installPythonWorkspaceFs(pyodide, bridge) {
     return node;
   }
 
-  function syncDirectory(node) {
-    const guestPath = nodeGuestPath(node);
-    const entries = withFsErrors(() => bridge.fsReaddirSync(guestPath));
-    const remoteNames = new Set(entries);
-
+  // Drops cached children the VM no longer has, for example files another
+  // process deleted. Children that exist are created lazily by `lookup`.
+  function pruneMissingChildren(node, remoteNames) {
     for (const name of Object.keys(node.contents || {})) {
       if (remoteNames.has(name)) {
         continue;
       }
-
-      const child = node.contents[name];
-      if (FS.isDir(child.mode)) {
+      if (FS.isDir(node.contents[name].mode)) {
         memfsDirNodeOps.rmdir(node, name);
       } else {
         memfsDirNodeOps.unlink(node, name);
       }
     }
-
-    for (const name of entries) {
-      const childPath = joinGuestPath(guestPath, name);
-      // lstat (don't follow) so a host symlink is created as a link node.
-      const stat = withFsErrors(() => bridge.fsLstatSync(childPath));
-      const existing = node.contents[name];
-
-      if (existing) {
-        const existingIsDir = FS.isDir(existing.mode);
-        const remoteIsDir = Boolean(stat?.isDirectory);
-        if (existingIsDir !== remoteIsDir) {
-          if (existingIsDir) {
-            memfsDirNodeOps.rmdir(node, name);
-          } else {
-            memfsDirNodeOps.unlink(node, name);
-          }
-        } else {
-          existing.agentOSGuestPath = childPath;
-          updateNodeFromRemoteStat(existing, stat);
-          if (FS.isFile(existing.mode) && !existing.agentOSDirty) {
-            existing.agentOSLoaded = false;
-          }
-          continue;
-        }
-      }
-
-      const mode = stat?.mode ?? (stat?.isDirectory ? 0o040755 : 0o100644);
-      const child = createWorkspaceNode(node, name, mode, 0, childPath);
-      updateNodeFromRemoteStat(child, stat);
-    }
   }
 
   function loadFileContents(node) {
-    if (node.agentOSDirty) {
-      return;
-    }
-
     const stat = withFsErrors(() => bridge.fsStatSync(nodeGuestPath(node)));
     updateNodeFromRemoteStat(node, stat);
     const contentBase64 = withFsErrors(() => bridge.fsReadSync(nodeGuestPath(node)));
@@ -1869,21 +1797,18 @@ function installPythonWorkspaceFs(pyodide, bridge) {
     node.contents = bytes;
     node.usedBytes = bytes.length;
     node.agentOSLoaded = true;
-    node.agentOSRemoteSize = bytes.length;
   }
 
   function persistFile(node) {
     const contents = node.contents ? MEMFS.getFileDataAsTypedArray(node) : new Uint8Array(0);
     withFsErrors(() => bridge.fsWriteSync(nodeGuestPath(node), contents));
-    node.agentOSDirty = false;
     node.agentOSLoaded = true;
-    node.agentOSRemoteSize = contents.length;
     node.timestamp = Date.now();
   }
 
   function makeStat(node, stat) {
     const mode = stat?.mode ?? node.mode;
-    const size = FS.isDir(mode) ? 4096 : (node.agentOSDirty ? node.usedBytes : (stat?.size ?? node.usedBytes ?? 0));
+    const size = FS.isDir(mode) ? 4096 : (stat?.size ?? node.usedBytes ?? 0);
     const timestamp = new Date(node.timestamp || Date.now());
 
     return {
@@ -1915,6 +1840,7 @@ function installPythonWorkspaceFs(pyodide, bridge) {
   function propagateSetattrToHost(node, attr) {
     if (!attr) return;
     const payload = {};
+    if (attr.size != null) payload.size = attr.size;
     if (attr.mode != null) payload.mode = attr.mode & 0o7777;
     // `os.chown(p, uid, -1)` keeps a side; never forward a negative sentinel
     // (it would saturate to 0 = root on the host).
@@ -1949,21 +1875,21 @@ function installPythonWorkspaceFs(pyodide, bridge) {
 
   const workspaceFileNodeOps = {
     getattr(node) {
-      const stat = node.agentOSDirty
-        ? null
-        : withFsErrors(() => bridge.fsStatSync(nodeGuestPath(node)));
-      if (stat) {
-        updateNodeFromRemoteStat(node, stat);
-      }
+      const stat = withFsErrors(() => bridge.fsStatSync(nodeGuestPath(node)));
+      updateNodeFromRemoteStat(node, stat);
       return makeStat(node, stat);
     },
     setattr(node, attr) {
+      // Truncating to a non-zero length keeps a prefix of the current
+      // contents, so load them before resizing the in-isolate copy.
+      if (attr?.size && !node.agentOSLoaded) {
+        loadFileContents(node);
+      }
       // Host first (see link setattr) so a failed host op leaves the in-isolate
       // node untouched.
       propagateSetattrToHost(node, attr);
       memfsFileNodeOps.setattr(node, attr);
       if (attr?.size != null) {
-        node.agentOSDirty = true;
         node.agentOSLoaded = true;
       }
     },
@@ -1974,29 +1900,36 @@ function installPythonWorkspaceFs(pyodide, bridge) {
       return memfsFileStreamOps.llseek(stream, offset, whence);
     },
     read(stream, buffer, offset, length, position) {
-      if (!stream.node.agentOSLoaded && !stream.node.agentOSDirty) {
+      if (!stream.node.agentOSLoaded) {
         loadFileContents(stream.node);
       }
       return memfsFileStreamOps.read(stream, buffer, offset, length, position);
     },
     write(stream, buffer, offset, length, position, canOwn) {
-      if (!stream.node.agentOSLoaded && !stream.node.agentOSDirty) {
+      if (!stream.node.agentOSLoaded) {
         loadFileContents(stream.node);
       }
       const written = memfsFileStreamOps.write(stream, buffer, offset, length, position, canOwn);
-      stream.node.agentOSDirty = true;
-      persistFile(stream.node);
+      // Send only the written range so a file written in many chunks costs
+      // O(bytes written), not O(file size) per chunk.
+      withFsErrors(() =>
+        bridge.fsWriteSync(
+          nodeGuestPath(stream.node),
+          buffer.subarray(offset, offset + written),
+          position,
+        ),
+      );
+      stream.node.timestamp = Date.now();
       return written;
     },
     mmap(stream, length, position, prot, flags) {
-      if (!stream.node.agentOSLoaded && !stream.node.agentOSDirty) {
+      if (!stream.node.agentOSLoaded) {
         loadFileContents(stream.node);
       }
       return memfsFileStreamOps.mmap(stream, length, position, prot, flags);
     },
     msync(stream, buffer, offset, length, mmapFlags) {
       const result = memfsFileStreamOps.msync(stream, buffer, offset, length, mmapFlags);
-      stream.node.agentOSDirty = true;
       persistFile(stream.node);
       return result;
     },
@@ -2013,22 +1946,18 @@ function installPythonWorkspaceFs(pyodide, bridge) {
       propagateSetattrToHost(node, attr);
       memfsDirNodeOps.setattr(node, attr);
     },
+    // Emscripten calls `lookup` only for names it has not cached, so one lstat
+    // of that name is enough.
     lookup(parent, name) {
-      syncDirectory(parent);
-      try {
-        return memfsDirNodeOps.lookup(parent, name);
-      } catch (error) {
-        if (!(error instanceof FS.ErrnoError) || error.errno !== ERRNO_CODES.ENOENT) {
-          throw error;
-        }
-
-        const guestPath = joinGuestPath(nodeGuestPath(parent), name);
-        // lstat (don't follow) so a directly-looked-up host symlink is a link node.
-        const stat = withFsErrors(() => bridge.fsLstatSync(guestPath));
-        const child = createWorkspaceNode(parent, name, stat.mode, 0, guestPath);
-        updateNodeFromRemoteStat(child, stat);
-        return child;
+      const guestPath = joinGuestPath(nodeGuestPath(parent), name);
+      // lstat (don't follow) so a directly-looked-up host symlink is a link node.
+      const stat = withFsErrors(() => bridge.fsLstatSync(guestPath));
+      if (!stat) {
+        throw new FS.ErrnoError(ERRNO_CODES.ENOENT);
       }
+      const child = createWorkspaceNode(parent, name, stat.mode, 0, guestPath);
+      updateNodeFromRemoteStat(child, stat);
+      return child;
     },
     mknod(parent, name, mode, dev) {
       const guestPath = joinGuestPath(nodeGuestPath(parent), name);
@@ -2038,7 +1967,6 @@ function installPythonWorkspaceFs(pyodide, bridge) {
       } else if (FS.isFile(mode)) {
         node.contents = new Uint8Array(0);
         node.usedBytes = 0;
-        node.agentOSDirty = true;
         persistFile(node);
       }
       return node;
@@ -2069,8 +1997,9 @@ function installPythonWorkspaceFs(pyodide, bridge) {
       }
     },
     readdir(node) {
-      syncDirectory(node);
-      return memfsDirNodeOps.readdir(node);
+      const entries = withFsErrors(() => bridge.fsReaddirSync(nodeGuestPath(node)));
+      pruneMissingChildren(node, new Set(entries));
+      return ['.', '..', ...entries];
     },
     symlink(parent, newName, oldPath) {
       const guestPath = joinGuestPath(nodeGuestPath(parent), newName);
@@ -2086,9 +2015,7 @@ function installPythonWorkspaceFs(pyodide, bridge) {
     mount(mount) {
       const root = MEMFS.mount(mount);
       root.agentOSGuestPath = mount.mountpoint;
-      root.agentOSDirty = false;
       root.agentOSLoaded = true;
-      root.agentOSRemoteSize = 0;
       root.node_ops = workspaceDirNodeOps;
       root.stream_ops = workspaceDirStreamOps;
       return root;
@@ -2351,16 +2278,85 @@ function installPythonVfsSitePackages(pyodide) {
   }
 }
 
+// Bundled wheels (pandas, numpy, and their dependencies) are importable without
+// an install step. `pyodide.loadPackage()` is async and an import statement
+// cannot wait for it, so this finder unpacks the bundled wheel and its bundled
+// dependencies synchronously the first time the guest imports one of its
+// top-level modules. Extension modules then load through the regular dlopen
+// path on import.
+//
+// Returns a predicate that tells whether a distribution is bundled.
+function installPythonBundledPackages(pyodide, bundledDir) {
+  const lockfilePackages = pyodide?.lockfile?.packages;
+  if (typeof pyodide?.runPython !== 'function' || !lockfilePackages) {
+    return () => false;
+  }
+
+  const bundledFiles = new Set(readdirSync(bundledDir));
+  const packageByImport = new Map(
+    Object.entries(lockfilePackages).flatMap(([key, entry]) =>
+      entry.imports.map((importName) => [importName, key]),
+    ),
+  );
+  const sitePackages = pyodide.runPython('import site; site.getsitepackages()[0]');
+  const unpackBundledPackage = (key) => {
+    const entry = lockfilePackages[key];
+    if (Object.prototype.hasOwnProperty.call(pyodide.loadedPackages, entry.name)) {
+      return true;
+    }
+    if (!bundledFiles.has(entry.file_name) || !entry.depends.every(unpackBundledPackage)) {
+      return false;
+    }
+    const wheel = readFileSync(path.join(bundledDir, entry.file_name));
+    pyodide.unpackArchive(new Uint8Array(wheel.buffer, wheel.byteOffset, wheel.byteLength), 'whl', {
+      extractDir: sitePackages,
+    });
+    pyodide.loadedPackages[entry.name] = 'default channel';
+    return true;
+  };
+  const unpackForImport = (importName) => {
+    const key = packageByImport.get(importName);
+    return key !== undefined && unpackBundledPackage(key);
+  };
+
+  pyodide.globals.set('__agentos_unpack_for_import', unpackForImport);
+  try {
+    pyodide.runPython(`
+def _agentos_install_bundled_finder(unpack_for_import):
+    import importlib, importlib.machinery, sys
+
+    class AgentOsBundledPackageFinder:
+        def find_spec(self, fullname, path=None, target=None):
+            if path is not None or not unpack_for_import(fullname):
+                return None
+            importlib.invalidate_caches()
+            return importlib.machinery.PathFinder.find_spec(fullname)
+
+    sys.meta_path.append(AgentOsBundledPackageFinder())
+
+_agentos_install_bundled_finder(__agentos_unpack_for_import)
+del _agentos_install_bundled_finder
+`);
+  } finally {
+    pyodide.globals.delete('__agentos_unpack_for_import');
+  }
+
+  return (distributionName) =>
+    bundledFiles.has(lockfilePackages[normalizePythonPackageName(distributionName)]?.file_name);
+}
+
 // `pip` / `python -m pip`: emulate the common pip CLI via Pyodide's micropip,
 // which fetches wheels through the runner's kernel-backed fetch (so egress is
 // governed by the VM network policy, never an ambient host fetch). Installed
 // packages are copied into the persistent VFS site-packages so they survive the
 // per-process interpreter and can be imported by a later `python` invocation.
-async function runPythonPip(pyodide) {
+// Bundled packages are importable in every process, so they are not copied.
+async function runPythonPip(pyodide, isBundledPackage) {
   pyodide.globals.set('__agentos_vfs_site', PYTHON_VFS_SITE_PACKAGES);
+  pyodide.globals.set('__agentos_is_bundled_package', isBundledPackage);
   try {
     await pyodide.runPythonAsync(`
-import os, shutil, site, sys
+import importlib.metadata, os, shutil, site, sys
 _agentos_pip_args = sys.argv[1:]
 if _agentos_pip_args and _agentos_pip_args[0] == "install":
     import micropip
@@ -2370,12 +2366,22 @@ if _agentos_pip_args and _agentos_pip_args[0] == "install":
         sys.exit(1)
     _agentos_sp = site.getsitepackages()[0]
     _agentos_before = set(os.listdir(_agentos_sp)) if os.path.isdir(_agentos_sp) else set()
-    await micropip.install(_agentos_pip_pkgs)
+    try:
+        await micropip.install(_agentos_pip_pkgs)
+    except Exception as _agentos_error:
+        print(f"ERROR: {_agentos_error}", file=sys.stderr)
+        sys.exit(1)
     # Persist whatever micropip extracted into the in-isolate site-packages into
     # the VFS-backed site-packages so it survives this process.
     os.makedirs(__agentos_vfs_site, exist_ok=True)
     _agentos_after = set(os.listdir(_agentos_sp)) if os.path.isdir(_agentos_sp) else set()
-    for _agentos_name in sorted(_agentos_after - _agentos_before):
+    _agentos_bundled = {
+        _agentos_file.parts[0]
+        for _agentos_dist in importlib.metadata.distributions(path=[_agentos_sp])
+        if __agentos_is_bundled_package(_agentos_dist.name)
+        for _agentos_file in _agentos_dist.files or ()
+    }
+    for _agentos_name in sorted(_agentos_after - _agentos_before - _agentos_bundled):
         _agentos_src = os.path.join(_agentos_sp, _agentos_name)
         _agentos_dst = os.path.join(__agentos_vfs_site, _agentos_name)
         if os.path.isdir(_agentos_src):
@@ -2396,6 +2402,7 @@ else:
   } finally {
     try {
       pyodide.globals.delete('__agentos_vfs_site');
+      pyodide.globals.delete('__agentos_is_bundled_package');
     } catch (error) {
       writeStream(
         process.stderr,
@@ -2440,15 +2447,15 @@ try {
   emitWarmupStage('startup');
   emitWarmupStage(`python-rpc-bridge:${bridgePythonRpc ? 'on' : 'off'}`);
   const { indexPath, indexUrl } = resolveIndexLocation(requiredEnv(PYODIDE_INDEX_URL_ENV));
-  const bundledPackageBaseUrl = normalizeBaseUrl(indexPath);
-  const packageBaseUrl = normalizeBaseUrl(
-    readRunnerEnv(PYODIDE_PACKAGE_BASE_URL_ENV) ?? bundledPackageBaseUrl,
-  );
+  // Without a configured base URL, Pyodide downloads lockfile packages from its
+  // own CDN for the bundled runtime version.
+  const configuredPackageBaseUrl = readRunnerEnv(PYODIDE_PACKAGE_BASE_URL_ENV);
+  const packageBaseUrl =
+    configuredPackageBaseUrl == null ? undefined : normalizeBaseUrl(configuredPackageBaseUrl);
   const packageCacheDir = resolvePyodidePackageCacheDir();
   emitWarmupStage(`package-cache-dir:${packageCacheDir}`);
   const prewarmOnly = readRunnerEnv(PYTHON_PREWARM_ONLY_ENV) === '1';
   retainLanguageContext = readRunnerEnv(RETAIN_LANGUAGE_CONTEXT_ENV) === '1';
-  const preloadPackages = parsePreloadPackages(readRunnerEnv(PYTHON_PRELOAD_PACKAGES_ENV));
   const lockFileContents = await readLockFileContents(indexPath, indexUrl).catch((error) => {
     throw wrapPythonStartupError('lock file read', { indexPath, indexUrl }, error);
   });
@@ -2475,8 +2482,6 @@ try {
       prewarmOnly: true,
       startupMs: realPerformance.now() - startupStarted,
       loadPyodideMs: 0,
-      packageLoadMs: 0,
-      packageCount: 0,
       source: 'prewarm',
     });
     process.exitCode = 0;
@@ -2489,7 +2494,7 @@ try {
   const pyodide = await loadPyodide({
     indexURL: indexPath,
     lockFileContents,
-    packageBaseUrl: bundledPackageBaseUrl,
+    packageBaseUrl,
     packageCacheDir,
     env: buildPythonRuntimeEnv(),
     stdout: writePyodideStdout,
@@ -2501,7 +2506,6 @@ try {
         indexPath,
         indexUrl,
         packageBaseUrl,
-        bundledPackageBaseUrl,
         packageCacheDir,
         pyodideModuleUrl,
       },
@@ -2514,36 +2518,17 @@ try {
   restorePyodideShellCompat();
   emitWarmupStage('after-load-pyodide');
   const loadPyodideMs = realPerformance.now() - loadPyodideStarted;
-  let packageLoadMs = 0;
 
   installPythonStdin(pyodide);
   installPythonWorkspaceFs(pyodide, pythonVfsRpcBridge);
   installPythonVfsSitePackages(pyodide);
   installPythonGuestLoaderHooks();
-  if (pyodide?._api?.config) {
-    pyodide._api.config.packageBaseUrl = bundledPackageBaseUrl;
-    emitWarmupStage(`pyodide-package-base:${pyodide._api.config.packageBaseUrl}`);
-  }
-  const canLoadPackages = typeof pyodide?.loadPackage === 'function';
-  if (!canLoadPackages && preloadPackages.length > 0) {
-    throw new Error('Pyodide loadPackage() is required to preload Python packages');
-  }
-  if (canLoadPackages) {
+  if (typeof pyodide?.loadPackage === 'function') {
     emitWarmupStage('before-load-micropip');
     await pyodide.loadPackage(['micropip']);
     emitWarmupStage('after-load-micropip');
-    if (preloadPackages.length > 0) {
-      emitWarmupStage('before-load-preload-packages');
-      const packageLoadStarted = realPerformance.now();
-      await pyodide.loadPackage(preloadPackages);
-      packageLoadMs = realPerformance.now() - packageLoadStarted;
-      emitWarmupStage('after-load-preload-packages');
-    }
   }
-  if (pyodide?._api?.config) {
-    pyodide._api.config.packageBaseUrl = packageBaseUrl;
-    emitWarmupStage(`micropip-package-base:${pyodide._api.config.packageBaseUrl}`);
-  }
+  const isBundledPackage = installPythonBundledPackages(pyodide, indexPath);
   installPythonMicropipCompat(pyodide);
   installPythonKernelRpcShims(pyodide);
   installPythonGuestProcessHardening();
@@ -2566,12 +2551,10 @@ try {
     prewarmOnly: false,
     startupMs: realPerformance.now() - startupStarted,
     loadPyodideMs,
-    packageLoadMs,
-    packageCount: preloadPackages.length,
     source,
   });
   if (moduleName === 'pip') {
-    await runPythonPip(pyodide);
+    await runPythonPip(pyodide, isBundledPackage);
   } else if (moduleName) {
     pyodide.globals.set('__agentos_module', moduleName);
     try {

@@ -936,10 +936,12 @@ where
                                 path
                             ))
                         })?;
-                    vm.kernel
-                        .write_file(&path, bytes)
-                        .map(|()| PythonVfsRpcResponsePayload::Empty)
-                        .map_err(kernel_error)
+                    match request.offset {
+                        Some(offset) => vm.kernel.pwrite_file(&path, offset, bytes),
+                        None => vm.kernel.write_file(&path, bytes),
+                    }
+                    .map(|()| PythonVfsRpcResponsePayload::Empty)
+                    .map_err(kernel_error)
                 }
                 PythonVfsRpcMethod::Stat => vm
                     .kernel
@@ -1040,8 +1042,8 @@ where
                     .read_link(&path)
                     .map(|target| PythonVfsRpcResponsePayload::SymlinkTarget { target })
                     .map_err(kernel_error),
-                // `setattr` carries any of mode/uid/gid/atime+mtime; apply each
-                // present field to the host VFS.
+                // `setattr` carries any of size/mode/uid/gid/atime+mtime; apply
+                // each present field to the host VFS.
                 PythonVfsRpcMethod::Setattr => {
                     (|| -> Result<PythonVfsRpcResponsePayload, SidecarError> {
                         // Mirror metadata into the host shadow only when the entry
@@ -1051,6 +1053,9 @@ where
                         // guest file (that resurrected empty content).
                         let mirror = !is_non_root_mount_path(&vm.kernel, &path)
                             && shadow_host_path_for_guest(&vm.cwd, &path).exists();
+                        if let Some(size) = request.size {
+                            vm.kernel.truncate(&path, size).map_err(kernel_error)?;
+                        }
                         if let Some(mode) = request.mode {
                             vm.kernel.chmod(&path, mode).map_err(kernel_error)?;
                             if mirror {

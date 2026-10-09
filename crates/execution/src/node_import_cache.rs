@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fs;
 use std::io;
@@ -11,6 +11,8 @@ use agentos_runtime::RuntimeContext;
 use tokio::sync::Mutex as AsyncMutex;
 use tokio::time;
 
+use crate::python::pyodide_cache_path;
+
 pub(crate) const NODE_IMPORT_CACHE_DEBUG_ENV: &str = "AGENTOS_NODE_IMPORT_CACHE_DEBUG";
 pub(crate) const NODE_IMPORT_CACHE_METRICS_PREFIX: &str = "__AGENTOS_NODE_IMPORT_CACHE_METRICS__:";
 pub(crate) const NODE_IMPORT_CACHE_ASSET_ROOT_ENV: &str = "AGENTOS_NODE_IMPORT_CACHE_ASSET_ROOT";
@@ -21,7 +23,7 @@ const NODE_IMPORT_CACHE_SCHEMA_VERSION: &str = "1";
 const NODE_IMPORT_CACHE_LOADER_VERSION: &str = "8";
 // Upstream reached 104 while the reactor branch independently changed bundled
 // assets; use a new generation so no stale materialization survives the merge.
-const NODE_IMPORT_CACHE_ASSET_VERSION: &str = "106";
+const NODE_IMPORT_CACHE_ASSET_VERSION: &str = "111";
 const NODE_IMPORT_CACHE_DIR_PREFIX: &str = "agentos-node-import-cache";
 const DEFAULT_NODE_IMPORT_CACHE_MATERIALIZE_TIMEOUT: Duration = Duration::from_secs(30);
 const NODE_IMPORT_CACHE_BLOCKING_JOB_RESERVATION_BYTES: usize = 64 * 1024;
@@ -2699,6 +2701,7 @@ impl NodeImportCacheMaterialization {
         fs::create_dir_all(self.asset_root.join("denied"))?;
         fs::create_dir_all(self.asset_root.join("polyfills"))?;
         fs::create_dir_all(&self.pyodide_dist_path)?;
+        fs::create_dir_all(pyodide_cache_path(&self.pyodide_dist_path))?;
         fs::create_dir_all(&self.prewarm_marker_dir)?;
 
         write_file_if_changed(&self.loader_path, &render_loader_source())?;
@@ -2755,9 +2758,13 @@ impl NodeImportCacheMaterialization {
             &self.pyodide_dist_path.join("python_stdlib.zip"),
             BUNDLED_PYTHON_STDLIB_ZIP,
         )?;
+        // Pyodide loads a lockfile package from its package cache before it
+        // downloads it, so seeding the cache keeps bundled packages offline.
+        let pyodide_cache_path = pyodide_cache_path(&self.pyodide_dist_path);
         for asset in BUNDLED_PYODIDE_PACKAGE_ASSETS {
             check_materialization_cancelled(&cancelled)?;
             write_bytes_if_changed(&self.pyodide_dist_path.join(asset.file_name), asset.bytes)?;
+            write_bytes_if_changed(&pyodide_cache_path.join(asset.file_name), asset.bytes)?;
         }
         check_materialization_cancelled(&cancelled)?;
         write_file_if_changed(
@@ -2766,6 +2773,30 @@ impl NodeImportCacheMaterialization {
         )?;
         Ok(())
     }
+}
+
+/// Returns the sha256 that the bundled `pyodide-lock.json` pins for a package
+/// file, or `None` when the file is not a lockfile package.
+pub(crate) fn bundled_pyodide_file_sha256(file_name: &str) -> Option<&'static str> {
+    static DIGESTS: OnceLock<BTreeMap<String, String>> = OnceLock::new();
+    DIGESTS
+        .get_or_init(|| {
+            let lockfile: serde_json::Value = serde_json::from_slice(BUNDLED_PYODIDE_LOCK)
+                .expect("bundled pyodide-lock.json is valid JSON");
+            lockfile["packages"]
+                .as_object()
+                .into_iter()
+                .flatten()
+                .filter_map(|(_, entry)| {
+                    Some((
+                        entry["file_name"].as_str()?.to_owned(),
+                        entry["sha256"].as_str()?.to_owned(),
+                    ))
+                })
+                .collect()
+        })
+        .get(file_name)
+        .map(String::as_str)
 }
 
 fn check_materialization_cancelled(cancelled: &AtomicBool) -> Result<(), io::Error> {
@@ -3757,6 +3788,7 @@ mod tests {
         NODE_IMPORT_CACHE_TEST_MATERIALIZE_DELAY_MS, NODE_WASM_RUNNER_SOURCE,
     };
     use crate::host_node::node_binary;
+    use crate::python::pyodide_cache_path;
     use serde_json::Value;
     use std::collections::BTreeSet;
     use std::fs;
@@ -3801,7 +3833,12 @@ mod tests {
             .env("AGENTOS_PYODIDE_INDEX_URL", pyodide_index_url)
             .env(
                 "AGENTOS_PYODIDE_PACKAGE_CACHE_DIR",
-                pyodide_index_url.join("pyodide-package-cache"),
+                // Bundled wheels are seeded into the real distribution's package cache.
+                if pyodide_index_url == import_cache.pyodide_dist_path() {
+                    pyodide_cache_path(pyodide_index_url)
+                } else {
+                    pyodide_index_url.join("pyodide-package-cache")
+                },
             )
             .env("AGENTOS_PYTHON_CODE", code);
 
@@ -4262,115 +4299,6 @@ print(json.dumps({
             parsed["iso"],
             Value::String(String::from("2024-01-01T00:00:00.123+00:00")),
             "stdout: {stdout}"
-        );
-    }
-
-    #[test]
-    fn materialized_python_runner_preloads_bundled_packages_from_local_disk() {
-        assert_node_available();
-
-        let import_cache = NodeImportCache::default();
-        import_cache
-            .ensure_materialized()
-            .expect("materialize node import cache");
-
-        let pyodide_dir = tempdir().expect("create pyodide fixture dir");
-        write_fixture(
-            &pyodide_dir.path().join("pyodide.mjs"),
-            r#"
-export async function loadPyodide(options) {
-  return {
-    setStdin(_stdin) {},
-    async loadPackage(packages) {
-      options.stdout(`packages:${packages.join(',')}`);
-      options.stderr(`base:${options.packageBaseUrl}`);
-    },
-    async runPythonAsync(code) {
-      options.stdout(`code:${code}`);
-    },
-  };
-}
-"#,
-        );
-        write_fixture(
-            &pyodide_dir.path().join("pyodide-lock.json"),
-            "{\"packages\":[]}\n",
-        );
-
-        let output = run_python_runner_with_env(
-            &import_cache,
-            pyodide_dir.path(),
-            "print('hello')",
-            &[("AGENTOS_PYTHON_PRELOAD_PACKAGES", "[\"numpy\",\"pandas\"]")],
-        );
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        let expected_package_base = format!(
-            "base:{}{}",
-            pyodide_dir.path().display(),
-            std::path::MAIN_SEPARATOR
-        );
-
-        assert_eq!(output.status.code(), Some(0));
-        assert_eq!(
-            stdout,
-            "packages:micropip\npackages:numpy,pandas\ncode:print('hello')\n"
-        );
-        assert!(
-            stderr.contains(&expected_package_base),
-            "expected local package base path in stderr, got: {stderr}"
-        );
-    }
-
-    #[test]
-    fn materialized_python_runner_rejects_unknown_preload_packages() {
-        assert_node_available();
-
-        let import_cache = NodeImportCache::default();
-        import_cache
-            .ensure_materialized()
-            .expect("materialize node import cache");
-
-        let pyodide_dir = tempdir().expect("create pyodide fixture dir");
-        write_fixture(
-            &pyodide_dir.path().join("pyodide.mjs"),
-            r#"
-export async function loadPyodide() {
-  return {
-    setStdin(_stdin) {},
-    async loadPackage() {
-      throw new Error('loadPackage should not be called');
-    },
-    async runPythonAsync(_code) {},
-  };
-}
-"#,
-        );
-        write_fixture(
-            &pyodide_dir.path().join("pyodide-lock.json"),
-            "{\"packages\":[]}\n",
-        );
-
-        let output = run_python_runner_with_env(
-            &import_cache,
-            pyodide_dir.path(),
-            "print('hello')",
-            &[("AGENTOS_PYTHON_PRELOAD_PACKAGES", "[\"requests\"]")],
-        );
-        let stderr = String::from_utf8_lossy(&output.stderr);
-
-        assert_eq!(output.status.code(), Some(1));
-        assert!(
-            stderr.contains("Unsupported bundled Python package \"requests\""),
-            "unexpected stderr: {stderr}"
-        );
-        assert!(
-            stderr.contains("Available packages: numpy, pandas"),
-            "unexpected stderr: {stderr}"
-        );
-        assert!(
-            !stderr.contains("loadPackage should not be called"),
-            "runner should validate packages before calling loadPackage: {stderr}"
         );
     }
 
