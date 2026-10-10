@@ -102,4 +102,20 @@ describe("code mode execution", () => {
 
 		expect(result.outcome).toBe("timed_out");
 	}, 30_000);
+
+	test("one allocation past the heap limit fails only its own script", async () => {
+		const result = await vm.javascript.evaluate(
+			"'a'.repeat(256 * 1024 * 1024).toUpperCase().length",
+			{ timeoutMs: 10_000, output: { capture: "stderr" } },
+		);
+
+		expect(result.outcome).toBe("failed");
+		expect(result.stderr).toContain(
+			"Script execution exceeded the V8 heap limit (limits.jsRuntime.v8HeapLimitMb)",
+		);
+		expect(await vm.javascript.evaluate("1 + 1")).toMatchObject({
+			outcome: "succeeded",
+			value: 2,
+		});
+	}, 30_000);
 });

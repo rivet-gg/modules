@@ -2,7 +2,8 @@
 
 use std::collections::HashMap;
 use std::ffi::c_void;
-use std::sync::{mpsc, Mutex, Once};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{mpsc, Arc, Mutex, Once};
 use std::thread;
 
 use crate::ipc::ExecutionError;
@@ -167,12 +168,32 @@ pub fn prepare_current_thread() {
     unsafe { agentos_v8_set_default_thread_isolation_permissions() };
 }
 
-// Headroom granted to V8 when the near-heap-limit callback fires. V8 fatal-aborts
-// the whole process (SIGTRAP) if the callback does not raise the limit, so we must
-// hand back a larger limit to give the engine room to unwind. Termination has
-// already been requested, so this extra budget only covers propagation of the
-// uncatchable termination exception, not continued guest allocation.
+// Headroom granted to V8 above the current heap size when the near-heap-limit
+// callback fires. V8 fatal-aborts the whole process (SIGTRAP) if the returned
+// limit is still below the heap size, so we must hand back a larger limit to give
+// the engine room to unwind. Termination has already been requested, so this
+// extra budget only covers propagation of the uncatchable termination exception,
+// not continued guest allocation.
 const NEAR_HEAP_LIMIT_HEADROOM_BYTES: usize = 16 * 1024 * 1024;
+
+/// State the near-heap-limit callback needs for one isolate.
+struct HeapLimitGuard {
+    handle: v8::IsolateHandle,
+    isolate: *mut v8::Isolate,
+    exceeded: Arc<AtomicBool>,
+}
+
+/// Isolate slot that records whether the near-heap-limit callback terminated the
+/// running script, so the session can report the heap limit as the cause.
+struct HeapLimitExceeded(Arc<AtomicBool>);
+
+/// Returns true once if the near-heap-limit callback terminated the script that
+/// last ran on this isolate, and clears the flag for the next execution.
+pub fn take_heap_limit_exceeded(isolate: &v8::Isolate) -> bool {
+    isolate
+        .get_slot::<HeapLimitExceeded>()
+        .is_some_and(|flag| flag.0.swap(false, Ordering::AcqRel))
+}
 
 /// Default per-isolate heap cap applied when the caller passes no explicit limit.
 ///
@@ -186,21 +207,29 @@ pub const DEFAULT_HEAP_LIMIT_MB: u32 = 128;
 /// Invoked by V8 when heap usage approaches the configured limit. Instead of
 /// letting V8 fatal-abort the (process-global) runtime, request termination of the
 /// offending isolate and return a raised limit so V8 can propagate the uncatchable
-/// termination exception cleanly. `data` is a leaked `Box<v8::IsolateHandle>` for
-/// the isolate this callback was registered on.
+/// termination exception cleanly. `data` is a leaked `Box<HeapLimitGuard>` for the
+/// isolate this callback was registered on.
 extern "C" fn near_heap_limit_callback(
     data: *mut c_void,
     current_heap_limit: usize,
     initial_heap_limit: usize,
 ) -> usize {
+    let mut heap_size = 0;
     if !data.is_null() {
         // Safety: `data` is the pointer produced by `Box::into_raw` in
         // `install_heap_limit_guard` and lives for the entire lifetime of the
-        // isolate.
-        let handle = unsafe { &*(data as *const v8::IsolateHandle) };
+        // isolate. V8 runs this callback on the isolate's own thread.
+        let guard = unsafe { &*(data as *const HeapLimitGuard) };
         // Terminate any JS currently running on this isolate. This unwinds the
         // guest with an uncatchable exception rather than crashing the process.
-        handle.terminate_execution();
+        guard.handle.terminate_execution();
+        guard.exceeded.store(true, Ordering::Release);
+        // One large allocation (for example a 256 MiB string) can take the heap
+        // far past the limit before this callback runs, so size the new limit
+        // from the heap, not from the old limit.
+        let mut statistics = v8::HeapStatistics::default();
+        unsafe { (*guard.isolate).get_heap_statistics(&mut statistics) };
+        heap_size = statistics.total_heap_size();
     }
     warn_limit_exhausted(
         TrackedLimit::V8HeapBytes,
@@ -211,6 +240,7 @@ extern "C" fn near_heap_limit_callback(
     // takes effect. We never shrink below the current limit.
     current_heap_limit
         .max(initial_heap_limit)
+        .max(heap_size)
         .saturating_add(NEAR_HEAP_LIMIT_HEADROOM_BYTES)
 }
 
@@ -223,11 +253,18 @@ extern "C" fn near_heap_limit_callback(
 /// regardless of whether it was built fresh or restored from a snapshot.
 pub fn install_heap_limit_guard(isolate: &mut v8::OwnedIsolate) {
     // The callback needs a thread-safe handle to request termination of this very
-    // isolate. The handle is leaked so it outlives the callback registration; the
-    // number of isolates per process is bounded, so this is not an unbounded leak,
-    // and the memory is reclaimed when the process exits.
-    let handle = Box::new(isolate.thread_safe_handle());
-    let data = Box::into_raw(handle) as *mut c_void;
+    // isolate and the isolate itself to read its heap size. The guard is leaked so
+    // it outlives the callback registration; the number of isolates per process is
+    // bounded, so this is not an unbounded leak, and the memory is reclaimed when
+    // the process exits.
+    let exceeded = Arc::new(AtomicBool::new(false));
+    isolate.set_slot(HeapLimitExceeded(Arc::clone(&exceeded)));
+    let guard = Box::new(HeapLimitGuard {
+        handle: isolate.thread_safe_handle(),
+        isolate: &mut **isolate,
+        exceeded,
+    });
+    let data = Box::into_raw(guard) as *mut c_void;
     isolate.add_near_heap_limit_callback(near_heap_limit_callback, data);
 }
 

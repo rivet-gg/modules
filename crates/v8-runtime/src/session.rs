@@ -3088,12 +3088,34 @@ fn session_thread(
                             exports = None;
                             error = None;
                         }
-                        if terminated || cpu_budget_exceeded || wall_clock_timed_out {
+                        // The near-heap-limit callback terminates the script itself,
+                        // so it records the cause on the isolate instead of the
+                        // execution abort state.
+                        let heap_limit_exceeded = isolate::take_heap_limit_exceeded(iso);
+                        if terminated
+                            || cpu_budget_exceeded
+                            || wall_clock_timed_out
+                            || heap_limit_exceeded
+                        {
                             iso.cancel_terminate_execution();
                         }
 
                         // Send ExecutionResult
-                        let result_frame = if cpu_budget_exceeded {
+                        let result_frame = if heap_limit_exceeded {
+                            RuntimeEvent::ExecutionResult {
+                                session_id,
+                                exit_code: 1,
+                                exports: None,
+                                error: Some(ExecutionErrorBin {
+                                    error_type: "Error".into(),
+                                    message: "Script execution exceeded the V8 heap limit \
+                                         (limits.jsRuntime.v8HeapLimitMb)"
+                                        .into(),
+                                    stack: String::new(),
+                                    code: "ERR_SCRIPT_HEAP_LIMIT_EXCEEDED".into(),
+                                }),
+                            }
+                        } else if cpu_budget_exceeded {
                             if let Some(budget_ms) = cpu_time_limit_ms {
                                 let capacity = budget_ms as usize;
                                 warn_limit_exhausted(TrackedLimit::V8CpuTimeMs, capacity, capacity);
