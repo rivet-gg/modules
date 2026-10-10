@@ -275,89 +275,94 @@ pub(super) fn spawn_host_function_process_events(request: HostFunctionProcessEve
     let failure_event_bytes_limit = Arc::clone(&pending_event_bytes_limit);
     let failure_vm_event_bytes_budget = Arc::clone(&vm_pending_event_bytes_budget);
     let failure_notify = Arc::clone(&event_notify);
-    let submit_result =
-        runtime_context
-            .blocking()
-            .submit(HOST_FUNCTION_CALL_BLOCKING_JOB_BYTES, move || {
-                let enqueue = |event| {
-                    send_host_function_process_event_and_notify(
-                        &cancelled,
-                        &pending_events,
-                        &event_overflow_reason,
-                        &pending_event_bytes,
-                        &pending_event_count_limit,
-                        &pending_event_bytes_limit,
-                        &vm_pending_event_bytes_budget,
-                        &event_notify,
-                        event,
-                    )
-                };
-                match host_function_resolution {
-                    HostFunctionCommandResolution::Failure(message) => {
-                        if enqueue(ActiveExecutionEvent::Stderr(
-                            format_host_function_failure_output(&message),
-                        )) {
-                            let _ = enqueue(ActiveExecutionEvent::Exited(1));
-                        }
-                    }
-                    HostFunctionCommandResolution::Invoke { request, timeout } => {
-                        let response = sidecar_requests.invoke(
-                            OwnershipScope::vm(connection_id, session_id, vm_id),
-                            SidecarRequestPayload::HostCallback(request),
-                            timeout,
-                        );
-                        if cancelled.load(Ordering::Acquire) {
-                            return;
-                        }
-                        let (output, exit_code, stdout) = match response {
-                            Ok(crate::protocol::SidecarResponsePayload::HostCallbackResult(
-                                result,
-                            )) => {
-                                if let Some(value) = result.result {
-                                    let value: serde_json::Value = serde_json::from_str(&value)
-                                        .unwrap_or(serde_json::Value::String(value));
-                                    let output = serde_json::to_vec(&json!({
-                                        "ok": true,
-                                        "result": value,
-                                    }))
-                                    .unwrap_or_else(|error| {
-                                        format_host_function_failure_output(&format!(
-                                            "failed to serialize host function result: {error}"
-                                        ))
-                                    });
-                                    (output, 0, true)
-                                } else {
-                                    let message = result.error.unwrap_or_else(|| {
-                                        String::from("host function invocation returned no result")
-                                    });
-                                    (format_host_function_failure_output(&message), 1, false)
-                                }
-                            }
-                            Ok(_) => (
-                                format_host_function_failure_output(
-                                    "unexpected sidecar host function response",
-                                ),
-                                1,
-                                false,
-                            ),
-                            Err(error) => (
-                                format_host_function_failure_output(&error.to_string()),
-                                1,
-                                false,
-                            ),
-                        };
-                        let output_event = if stdout {
-                            ActiveExecutionEvent::Stdout(output)
-                        } else {
-                            ActiveExecutionEvent::Stderr(output)
-                        };
-                        if enqueue(output_event) {
-                            let _ = enqueue(ActiveExecutionEvent::Exited(exit_code));
-                        }
-                    }
+    // The host callback is an async round trip to the client. Running it as a
+    // task, not a blocking job, keeps a slow callback from holding one of the
+    // few blocking threads and capping how many calls run at once.
+    let spawn_result = runtime_context.spawn(agentos_runtime::TaskClass::Runtime, async move {
+        let enqueue = |event| {
+            send_host_function_process_event_and_notify(
+                &cancelled,
+                &pending_events,
+                &event_overflow_reason,
+                &pending_event_bytes,
+                &pending_event_count_limit,
+                &pending_event_bytes_limit,
+                &vm_pending_event_bytes_budget,
+                &event_notify,
+                event,
+            )
+        };
+        match host_function_resolution {
+            HostFunctionCommandResolution::Failure(message) => {
+                if enqueue(ActiveExecutionEvent::Stderr(
+                    format_host_function_failure_output(&message),
+                )) {
+                    let _ = enqueue(ActiveExecutionEvent::Exited(1));
                 }
-            });
-    if let Err(error) = submit_result {
+            }
+            HostFunctionCommandResolution::Invoke { request, timeout } => {
+                // A call whose process was killed (for example when the
+                // calling script timed out) must never reach the host.
+                if cancelled.load(Ordering::Acquire) {
+                    return;
+                }
+                let response = sidecar_requests
+                    .invoke_async(
+                        OwnershipScope::vm(connection_id, session_id, vm_id),
+                        SidecarRequestPayload::HostCallback(request),
+                        timeout,
+                    )
+                    .await;
+                if cancelled.load(Ordering::Acquire) {
+                    return;
+                }
+                let (output, exit_code, stdout) = match response {
+                    Ok(crate::protocol::SidecarResponsePayload::HostCallbackResult(result)) => {
+                        if let Some(value) = result.result {
+                            let value: serde_json::Value = serde_json::from_str(&value)
+                                .unwrap_or(serde_json::Value::String(value));
+                            let output = serde_json::to_vec(&json!({
+                                "ok": true,
+                                "result": value,
+                            }))
+                            .unwrap_or_else(|error| {
+                                format_host_function_failure_output(&format!(
+                                    "failed to serialize host function result: {error}"
+                                ))
+                            });
+                            (output, 0, true)
+                        } else {
+                            let message = result.error.unwrap_or_else(|| {
+                                String::from("host function invocation returned no result")
+                            });
+                            (format_host_function_failure_output(&message), 1, false)
+                        }
+                    }
+                    Ok(_) => (
+                        format_host_function_failure_output(
+                            "unexpected sidecar host function response",
+                        ),
+                        1,
+                        false,
+                    ),
+                    Err(error) => (
+                        format_host_function_failure_output(&error.to_string()),
+                        1,
+                        false,
+                    ),
+                };
+                let output_event = if stdout {
+                    ActiveExecutionEvent::Stdout(output)
+                } else {
+                    ActiveExecutionEvent::Stderr(output)
+                };
+                if enqueue(output_event) {
+                    let _ = enqueue(ActiveExecutionEvent::Exited(exit_code));
+                }
+            }
+        }
+    });
+    if let Err(error) = spawn_result {
         let enqueue_failure = |event| {
             send_host_function_process_event_and_notify(
                 &failure_cancelled,

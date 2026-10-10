@@ -322,8 +322,6 @@ fn listener_accept_capacity(backlog: Option<u32>, limits: ReactorIoLimits) -> us
         .min(socket_completion_capacity(limits))
 }
 
-const HOST_FUNCTION_CALL_BLOCKING_JOB_BYTES: usize = 64 * 1024;
-
 pub(crate) const MAX_PER_PROCESS_STATE_HANDLES: usize = 1024;
 const HTTP_LOOPBACK_REQUEST_TIMEOUT_MS_ENV: &str = "AGENTOS_TEST_HTTP_LOOPBACK_REQUEST_TIMEOUT_MS";
 
