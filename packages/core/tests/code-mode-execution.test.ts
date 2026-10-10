@@ -73,4 +73,25 @@ describe("code mode execution", () => {
 		expect(result.outcome).toBe("timed_out");
 		expect(callStarts.filter((startedAt) => startedAt > settledAt)).toEqual([]);
 	}, 30_000);
+
+	test("aborting a busy script stops it without the cancel grace period", async () => {
+		const controller = new AbortController();
+		setTimeout(() => controller.abort(), 200);
+		const startedAt = Date.now();
+		const result = await vm.javascript.evaluate(
+			"(() => { while (true) {} })()",
+			{
+				timeoutMs: 30_000,
+				signal: controller.signal,
+			},
+		);
+
+		expect(result.outcome).toBe("cancelled");
+		// Cancellation falls back to a forced stop after a 1 s grace period.
+		expect(Date.now() - startedAt).toBeLessThan(900);
+		expect(await vm.javascript.evaluate("1 + 1")).toMatchObject({
+			outcome: "succeeded",
+			value: 2,
+		});
+	}, 30_000);
 });

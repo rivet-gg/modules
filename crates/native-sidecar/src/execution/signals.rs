@@ -227,6 +227,17 @@ pub(crate) fn canonical_signal_name(signal: i32) -> Option<&'static str> {
     agentos_native_sidecar_core::canonical_signal_name(signal)
 }
 
+/// Signals whose handlers the guest `process` polyfill reports to the sidecar
+/// and whose default action exits the guest (`_trackedProcessSignalEvents` in
+/// `bridge-src/builtins/process.ts`). For other signals the sidecar cannot tell
+/// whether the guest installed a handler.
+fn guest_javascript_exits_on_default_signal(signal: i32) -> bool {
+    matches!(
+        signal,
+        libc::SIGHUP | libc::SIGINT | libc::SIGUSR1 | libc::SIGALRM | libc::SIGTERM
+    )
+}
+
 pub(super) fn dispatch_v8_process_signal(
     process: &ActiveProcess,
     signal: i32,
@@ -676,8 +687,13 @@ where
             _ if process.execution.uses_shared_v8_runtime() && signal == libc::SIGCONT => {
                 KillBehavior::SharedV8Continue
             }
+            // A busy guest never reaches its event loop to run the default
+            // action, so the sidecar applies it when the guest has no handler.
             ActiveExecution::Javascript(execution)
-                if execution.uses_shared_v8_runtime() && signal == SIGKILL =>
+                if execution.uses_shared_v8_runtime()
+                    && (signal == SIGKILL
+                        || (signal_action == SignalDispositionAction::Default
+                            && guest_javascript_exits_on_default_signal(signal))) =>
             {
                 KillBehavior::SharedV8Terminate
             }
@@ -761,9 +777,10 @@ where
                 process.exit_signal = (signal != 0).then_some(signal);
                 process.exit_core_dumped = false;
                 process.execution.terminate()?;
-                let needs_synthetic_exit = matches!(process.execution, ActiveExecution::Wasm(_))
-                    || (signal == SIGKILL
-                        && matches!(process.execution, ActiveExecution::Javascript(_)));
+                let needs_synthetic_exit = matches!(
+                    process.execution,
+                    ActiveExecution::Wasm(_) | ActiveExecution::Javascript(_)
+                );
                 if signal != 0 && needs_synthetic_exit {
                     process.queue_pending_execution_event(ActiveExecutionEvent::Exited(
                         128 + signal,
