@@ -124,7 +124,7 @@ it("ordinary Core output callbacks preserve sidecar replay identity without dupl
 	const proxy = createProxy(stub.client);
 	const core = Reflect.construct(AgentOs, [
 		proxy, {}, [], [], {}, {},
-		{ onEvent: () => () => {} }, session, vm,
+		{ onEvent: () => () => {}, onClose: () => () => {} }, session, vm,
 	]) as AgentOs;
 	const output = vi.fn();
 	const stdout = vi.fn();
@@ -168,6 +168,7 @@ it.each([false, true])("replay reconciles a missed exit after observation failur
 	const core = Reflect.construct(AgentOs, [
 		proxy, {}, [], [], {}, {}, {
 			onEvent: () => () => {},
+			onClose: () => () => {},
 			sendVmRequest: async () => ({ type: "process_output_page", response: {
 				events: [], nextCursor: null, hasMore: false, truncated: false, exitCode: 23,
 			} }),

@@ -2628,6 +2628,9 @@ export class AgentOs {
 		string,
 		Set<(event: InternalExecutionCompletedEvent) => void>
 	>();
+	// No completion event can arrive after the sidecar exits, so its close
+	// rejects every execution still waiting for one.
+	private _pendingCompletionRejects = new Set<(error: Error) => void>();
 	private _shells = new Map<string, ShellEntry>();
 	// Value is the recorded exit code (undefined until/unless the exit
 	// resolves) so waitShell can still report it after the entry is dropped.
@@ -2653,6 +2656,7 @@ export class AgentOs {
 	private readonly _sidecarSession: AuthenticatedSession;
 	private readonly _sidecarVm: CreatedVm;
 	private readonly _disposeSidecarEventListener: () => void;
+	private readonly _disposeSidecarCloseListener: () => void;
 	private readonly _limitWarningHandler?: LimitWarningHandler;
 	private readonly _disposeHooks: Array<() => void | Promise<void>> = [];
 
@@ -2788,6 +2792,9 @@ export class AgentOs {
 		this._limitWarningHandler = limitWarningHandler;
 		this._disposeSidecarEventListener = this._sidecarClient.onEvent((event) => {
 			this._handleSidecarEvent(event);
+		});
+		this._disposeSidecarCloseListener = this._sidecarClient.onClose((error) => {
+			for (const reject of this._pendingCompletionRejects) reject(error);
 		});
 		agentOsRuntimeAdmins.set(this, {
 			kernel,
@@ -3175,10 +3182,11 @@ export class AgentOs {
 		let executionId: string | undefined;
 		const earlyOutput: InternalExecutionOutputEvent[] = [];
 		const completedBeforeAdmission = new Set<string>();
-		let resolveCompletion: (() => void) | undefined;
-		const completion = new Promise<void>((resolve) => {
-			resolveCompletion = resolve;
-		});
+		const {
+			completion,
+			resolve: resolveCompletion,
+			release: releaseCompletion,
+		} = this._pendingCompletion();
 		let warnedAboutEarlyEvents = false;
 		const warnAboutEarlyEvents = () => {
 			if (warnedAboutEarlyEvents) return;
@@ -3209,7 +3217,7 @@ export class AgentOs {
 			}
 			if (event.executionId === executionId) {
 				completed = true;
-				resolveCompletion?.();
+				resolveCompletion();
 			}
 		});
 		let response: Awaited<ReturnType<SidecarProcess["sendVmRequest"]>>;
@@ -3222,11 +3230,13 @@ export class AgentOs {
 		} catch (error) {
 			unsubscribeOutput();
 			unsubscribeCompleted();
+			releaseCompletion();
 			throw error;
 		}
 		if (response.type !== "execution_accepted") {
 			unsubscribeOutput();
 			unsubscribeCompleted();
+			releaseCompletion();
 			throw new Error(`unexpected execution response: ${response.type}`);
 		}
 		const descriptor = response.response.execution;
@@ -3235,7 +3245,7 @@ export class AgentOs {
 			if (event.executionId === executionId) deliverOutput(event);
 		}
 		completed = completedBeforeAdmission.has(executionId);
-		if (completed) resolveCompletion?.();
+		if (completed) resolveCompletion();
 		const abort = () => {
 			// Admitted executions report cancellation through their structured result.
 			void this._cancelExecution(response.response.operationId).catch(
@@ -3249,6 +3259,7 @@ export class AgentOs {
 		const cleanup = () => {
 			unsubscribeOutput();
 			unsubscribeCompleted();
+			releaseCompletion();
 			options.signal?.removeEventListener("abort", abort);
 		};
 		if (background) {
@@ -3960,12 +3971,13 @@ export class AgentOs {
 	private async _waitExecutionResult(
 		executionId: string,
 	): Promise<MappedExecutionResult> {
-		let resolveCompletion: (() => void) | undefined;
-		const completion = new Promise<void>((resolve) => {
-			resolveCompletion = resolve;
-		});
+		const {
+			completion,
+			resolve: resolveCompletion,
+			release: releaseCompletion,
+		} = this._pendingCompletion();
 		const unsubscribe = this._onExecutionCompleted(executionId, () => {
-			resolveCompletion?.();
+			resolveCompletion();
 		});
 		let response: Awaited<ReturnType<SidecarProcess["sendVmRequest"]>>;
 		try {
@@ -3991,6 +4003,7 @@ export class AgentOs {
 			}
 		} finally {
 			unsubscribe();
+			releaseCompletion();
 		}
 		if (response.type !== "execution_completed") {
 			throw new Error(`unexpected waitExecution response: ${response.type}`);
@@ -4148,6 +4161,29 @@ export class AgentOs {
 			handlers.delete(handler);
 			if (handlers.size === 0)
 				this._executionOutputHandlers.delete(executionId);
+		};
+	}
+
+	/** A completion signal that rejects if the sidecar exits before it resolves. */
+	private _pendingCompletion(): {
+		completion: Promise<void>;
+		resolve: () => void;
+		release: () => void;
+	} {
+		let resolve!: () => void;
+		let reject!: (error: Error) => void;
+		const completion = new Promise<void>((res, rej) => {
+			resolve = res;
+			reject = rej;
+		});
+		// Callers await the signal only on some paths; an unawaited rejection
+		// must not surface as an unhandled rejection.
+		completion.catch(() => {});
+		this._pendingCompletionRejects.add(reject);
+		return {
+			completion,
+			resolve,
+			release: () => this._pendingCompletionRejects.delete(reject),
 		};
 	}
 
@@ -5715,6 +5751,7 @@ export class AgentOs {
 		this._executionCompletedHandlers.clear();
 
 		this._disposeSidecarEventListener();
+		this._disposeSidecarCloseListener();
 
 		const sidecarLease = this._sidecarLease;
 		this._sidecarLease = null;

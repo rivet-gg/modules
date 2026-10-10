@@ -17,6 +17,7 @@ describe("bounded Core output replay", () => {
 					receive = handler;
 					return () => {};
 				},
+				onClose: () => () => {},
 			},
 			{ connectionId: "connection", sessionId: "session" },
 			{ vmId: "own" },
@@ -91,6 +92,7 @@ describe("bounded Core output replay", () => {
 			{},
 			{
 				onEvent: () => () => {},
+				onClose: () => () => {},
 				sendVmRequest,
 			},
 			{},
@@ -122,7 +124,7 @@ describe("bounded Core output replay", () => {
 			[],
 			{},
 			{},
-			{ onEvent: () => () => {} },
+			{ onEvent: () => () => {}, onClose: () => () => {} },
 			{},
 			{},
 		]) as AgentOs;
@@ -185,7 +187,7 @@ describe("bounded Core output replay", () => {
 			[],
 			{},
 			{},
-			{ onEvent: () => () => {}, sendVmRequest },
+			{ onEvent: () => () => {}, onClose: () => () => {}, sendVmRequest },
 			{},
 			{},
 		]) as AgentOs;

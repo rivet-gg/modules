@@ -21,6 +21,7 @@ type ExecutionAgent = {
 	_pendingProcessRegistrations: number;
 	_executionOutputHandlers: Map<string, Set<(event: unknown) => void>>;
 	_executionCompletedHandlers: Map<string, Set<ExecutionCompletedHandler>>;
+	_pendingCompletionRejects: Set<(error: Error) => void>;
 	_sidecarClient: {
 		sendVmRequest: ReturnType<typeof vi.fn>;
 	};
@@ -46,6 +47,7 @@ function createExecutionAgent() {
 	agent._pendingProcessRegistrations = 0;
 	agent._executionOutputHandlers = new Map();
 	agent._executionCompletedHandlers = new Map();
+	agent._pendingCompletionRejects = new Set();
 	agent._sidecarSession = {};
 	agent._sidecarVm = {};
 	agent._sidecarClient = {

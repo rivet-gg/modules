@@ -32,6 +32,10 @@ class MemorySidecarTransport implements SidecarProcessTransport {
 		};
 	}
 
+	onClose(): () => void {
+		return () => {};
+	}
+
 	async sendRequest(input: {
 		ownership: LiveOwnershipScope;
 		payload: LiveRequestPayload;

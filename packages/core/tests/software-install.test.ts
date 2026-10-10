@@ -12,6 +12,7 @@ function createAgent() {
 	};
 	const client = {
 		onEvent: () => () => {},
+		onClose: () => () => {},
 		installPackage: vi.fn(async () => ({
 			package: metadata,
 			projected_commands: [],

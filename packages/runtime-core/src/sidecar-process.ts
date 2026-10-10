@@ -386,6 +386,11 @@ export class SidecarProcess {
 		return this.protocolClient.onEvent(handler);
 	}
 
+	/** Runs `handler` once when the sidecar exits or its connection fails. */
+	onClose(handler: (error: Error) => void): () => void {
+		return this.protocolClient.onClose(handler);
+	}
+
 	async authenticateAndOpenSession(
 		sessionMetadata: Record<string, string> = {},
 	): Promise<AuthenticatedSession> {

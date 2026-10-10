@@ -145,6 +145,10 @@ export class StdioSidecarProtocolClient implements SidecarProcessTransport {
 		return this.protocolClient.onEvent(handler);
 	}
 
+	onClose(handler: (error: Error) => void): () => void {
+		return this.protocolClient.onClose(handler);
+	}
+
 	async sendRequest(input: {
 		ownership: LiveOwnershipScope;
 		payload: LiveRequestPayload;

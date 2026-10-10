@@ -91,6 +91,7 @@ export class SidecarProtocolClient {
 		LiveSidecarRequestFrame
 	>;
 	private closedError: Error | null = null;
+	private readonly closeListeners = new Set<(error: Error) => void>();
 	private readonly eventWaiters = new Set<{
 		matches: (event: LiveEventFrame) => boolean;
 		resolve: (event: LiveEventFrame) => void;
@@ -187,6 +188,18 @@ export class SidecarProtocolClient {
 		this.eventListeners.add(handler);
 		return () => {
 			this.eventListeners.delete(handler);
+		};
+	}
+
+	/** Runs `handler` once when the connection to the sidecar fails for good. */
+	onClose(handler: (error: Error) => void): () => void {
+		if (this.closedError) {
+			handler(this.closedError);
+			return () => {};
+		}
+		this.closeListeners.add(handler);
+		return () => {
+			this.closeListeners.delete(handler);
 		};
 	}
 
@@ -304,9 +317,16 @@ export class SidecarProtocolClient {
 				return;
 			}
 		}
+		const firstFailure = this.closedError === null;
 		this.closedError = error;
 		this.stopSilenceWatchdog();
 		this.rejectPending(error);
+		if (firstFailure) {
+			for (const handler of this.closeListeners) {
+				handler(error);
+			}
+			this.closeListeners.clear();
+		}
 	}
 
 	dispose(): void {
