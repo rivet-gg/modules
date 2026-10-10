@@ -94,4 +94,12 @@ describe("code mode execution", () => {
 			value: 2,
 		});
 	}, 30_000);
+
+	test("a promise that never settles times out", async () => {
+		const result = await vm.javascript.evaluate("new Promise(() => {})", {
+			timeoutMs: 1_000,
+		});
+
+		expect(result.outcome).toBe("timed_out");
+	}, 30_000);
 });

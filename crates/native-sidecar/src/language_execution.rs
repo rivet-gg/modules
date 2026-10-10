@@ -599,8 +599,11 @@ fn lower_operation(payload: RequestPayload) -> Result<LoweredOperation, SidecarE
             let module = payload.format == Some(JavaScriptModuleFormat::Module);
             let result_path = semantic_result_path();
             let mut source = inline_inputs_prefix(payload.inputs, false);
+            // The interval keeps the event loop alive until the evaluated promise
+            // settles, so a promise that never settles ends at `timeoutMs`
+            // instead of the guest exiting without a result.
             source.push_str(&format!(
-                "Promise.resolve((async () => ({}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }});",
+                "{{ const keepAlive = setInterval(() => {{}}, 2147483647); Promise.resolve((async () => ({}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }}).finally(() => clearInterval(keepAlive)); }}",
                 payload.expression,
                 serde_json::to_string(&result_path)
                     .expect("semantic result path serialization cannot fail")
@@ -650,8 +653,11 @@ fn lower_operation(payload: RequestPayload) -> Result<LoweredOperation, SidecarE
                 .file_path
                 .unwrap_or_else(|| String::from("agentos-evaluation.ts"));
             let mut source = inline_inputs_prefix(payload.inputs, false);
+            // The interval keeps the event loop alive until the evaluated promise
+            // settles, so a promise that never settles ends at `timeoutMs`
+            // instead of the guest exiting without a result.
             source.push_str(&format!(
-                "Promise.resolve((async () => ({}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }});",
+                "{{ const keepAlive = setInterval(() => {{}}, 2147483647); Promise.resolve((async () => ({}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }}).finally(() => clearInterval(keepAlive)); }}",
                 payload.expression,
                 serde_json::to_string(&result_path)
                     .expect("semantic result path serialization cannot fail")
