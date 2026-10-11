@@ -1829,6 +1829,7 @@ where
             | ActiveExecutionEvent::PythonVfsRpcRequest(_)
             | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
             | ActiveExecutionEvent::SignalState { .. }
+            | ActiveExecutionEvent::LimitExceeded(_)
             | ActiveExecutionEvent::Exited(_) => false,
         }
     }
@@ -6431,6 +6432,7 @@ mod prepared_request_tests {
                 value_kind: crate::state::ExecutionValueKind::None,
                 semantic_result_path: None,
                 pending_outcome: None,
+                limit_exceeded: None,
                 deadline_ms: None,
                 expires_at_ms,
                 deadline_task: None,

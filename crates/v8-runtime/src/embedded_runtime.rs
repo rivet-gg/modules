@@ -1516,6 +1516,7 @@ mod tests {
                     exit_code: 0,
                     exports: None,
                     error: None,
+                    limit_exceeded: None,
                 },
             ),
             &session_outputs,

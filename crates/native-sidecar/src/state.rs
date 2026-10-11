@@ -16,9 +16,9 @@ use agentos_bridge::{
     BridgeTypes, FilesystemSnapshot,
 };
 use agentos_execution::{
-    v8_host::V8SessionHandle, JavascriptExecution, JavascriptExecutionEngine,
-    JavascriptSyncRpcRequest, PythonExecution, PythonExecutionEngine, PythonVfsRpcRequest,
-    PythonVfsRpcResponder, WasmExecution, WasmExecutionEngine,
+    v8_host::V8SessionHandle, v8_ipc::ExecutionLimit, JavascriptExecution,
+    JavascriptExecutionEngine, JavascriptSyncRpcRequest, PythonExecution, PythonExecutionEngine,
+    PythonVfsRpcRequest, PythonVfsRpcResponder, WasmExecution, WasmExecutionEngine,
 };
 use agentos_kernel::fd_table::TransferredFd;
 use agentos_kernel::kernel::{KernelProcessHandle, KernelVm};
@@ -3399,6 +3399,9 @@ pub(crate) struct ManagedLanguageExecution {
     pub(crate) value_kind: ExecutionValueKind,
     pub(crate) semantic_result_path: Option<String>,
     pub(crate) pending_outcome: Option<crate::protocol::ExecutionOutcome>,
+    /// Set by the runtime, never by the guest, when it stopped the current
+    /// operation at a limit.
+    pub(crate) limit_exceeded: Option<ExecutionLimit>,
     pub(crate) deadline_ms: Option<u64>,
     pub(crate) expires_at_ms: Option<u64>,
     pub(crate) deadline_task: Option<tokio::task::JoinHandle<()>>,
@@ -3469,6 +3472,9 @@ pub(crate) enum ActiveExecutionEvent {
         signal: u32,
         registration: SignalHandlerRegistration,
     },
+    /// The runtime stopped the script at one of its limits. Arrives just before
+    /// `Exited`.
+    LimitExceeded(ExecutionLimit),
     Exited(i32),
 }
 

@@ -1,4 +1,4 @@
-use crate::ipc_binary::{BinaryFrame, ExecutionErrorBin};
+use crate::ipc_binary::{BinaryFrame, ExecutionErrorBin, ExecutionLimit};
 use agentos_runtime::readiness::ReadyFlags;
 use std::io;
 use std::sync::Arc;
@@ -147,6 +147,7 @@ pub enum RuntimeEvent {
         exit_code: i32,
         exports: Option<Vec<u8>>,
         error: Option<ExecutionErrorBin>,
+        limit_exceeded: Option<ExecutionLimit>,
     },
     Log {
         session_id: String,
@@ -298,11 +299,13 @@ impl From<RuntimeEvent> for BinaryFrame {
                 exit_code,
                 exports,
                 error,
+                limit_exceeded,
             } => BinaryFrame::ExecutionResult {
                 session_id,
                 exit_code,
                 exports,
                 error,
+                limit_exceeded,
             },
             RuntimeEvent::Log {
                 session_id,

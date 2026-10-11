@@ -802,6 +802,7 @@ fn wait_with_host_child_process_bridge(
                 stderr.extend(chunk);
                 no_progress_deadline = Instant::now() + Duration::from_secs(5);
             }
+            Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SignalState { .. }) => {
                 no_progress_deadline = Instant::now() + Duration::from_secs(5);
             }
@@ -1449,7 +1450,8 @@ process.stdin.once("data", (chunk) => {
         {
             Some(JavascriptExecutionEvent::Stdout(chunk)) => stdout.extend(chunk),
             Some(JavascriptExecutionEvent::Stderr(chunk)) => stderr.extend(chunk),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 panic!("unexpected pending sync RPC request: {}", request.id);
             }
@@ -1514,7 +1516,8 @@ process.stdout.write("after exit\n");
             Some(JavascriptExecutionEvent::Stderr(chunk)) => {
                 panic!("unexpected stderr: {}", String::from_utf8_lossy(&chunk));
             }
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 panic!("unexpected pending sync RPC request: {}", request.id);
             }
@@ -4799,7 +4802,8 @@ fn javascript_execution_v8_event_channel_backpressures_instead_of_destroying_ses
         match event {
             Some(JavascriptExecutionEvent::Stdout(chunk)) => stdout.extend(chunk),
             Some(JavascriptExecutionEvent::Stderr(chunk)) => stderr.extend(chunk),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 // No host RPCs are expected on this path; service module RPCs if
                 // any surface and answer anything else with null so a stray RPC
@@ -4944,7 +4948,8 @@ console.log("ORDER_OK:" + trace);
         {
             Some(JavascriptExecutionEvent::Stdout(chunk)) => stdout.extend(chunk),
             Some(JavascriptExecutionEvent::Stderr(chunk)) => stderr.extend(chunk),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)
@@ -5074,7 +5079,8 @@ console.log("BACKPRESSURE_OK");
         {
             Some(JavascriptExecutionEvent::Stdout(bytes)) => stdout.extend(bytes),
             Some(JavascriptExecutionEvent::Stderr(bytes)) => stderr.extend(bytes),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)
@@ -5231,7 +5237,8 @@ console.log("NET_UNREF_IO_OK");
         {
             Some(JavascriptExecutionEvent::Stdout(bytes)) => stdout.extend(bytes),
             Some(JavascriptExecutionEvent::Stderr(bytes)) => stderr.extend(bytes),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)
@@ -5366,7 +5373,8 @@ console.log("NET_WRITE_TAIL_OK");
         {
             Some(JavascriptExecutionEvent::Stdout(bytes)) => stdout.extend(bytes),
             Some(JavascriptExecutionEvent::Stderr(bytes)) => stderr.extend(bytes),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)
@@ -5437,7 +5445,8 @@ console.log("NET_WRITE_TAIL_OK");
         {
             Some(JavascriptExecutionEvent::Stdout(bytes)) => stdout.extend(bytes),
             Some(JavascriptExecutionEvent::Stderr(bytes)) => stderr.extend(bytes),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)
@@ -5480,7 +5489,8 @@ console.log("NET_WRITE_TAIL_OK");
         {
             Some(JavascriptExecutionEvent::Stdout(bytes)) => stdout.extend(bytes),
             Some(JavascriptExecutionEvent::Stderr(bytes)) => stderr.extend(bytes),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)
@@ -5678,7 +5688,8 @@ console.log("NET_LIFECYCLE_WAKE_OK");
         {
             Some(JavascriptExecutionEvent::Stdout(bytes)) => stdout.extend(bytes),
             Some(JavascriptExecutionEvent::Stderr(bytes)) => stderr.extend(bytes),
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             Some(JavascriptExecutionEvent::SyncRpcRequest(request)) => {
                 if execution
                     .try_service_standalone_module_sync_rpc(&request)

@@ -13,6 +13,7 @@ use crate::state::{
     SharedSidecarRequestClient, VmHandle, VmState,
 };
 use crate::NativeSidecarBridge;
+use agentos_execution::v8_ipc::ExecutionLimit;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_codegen::Codegen;
@@ -1628,6 +1629,7 @@ where
                     value_kind: ExecutionValueKind::None,
                     semantic_result_path: None,
                     pending_outcome: None,
+                    limit_exceeded: None,
                     deadline_ms: None,
                     expires_at_ms: None,
                     deadline_task: None,
@@ -1668,6 +1670,7 @@ where
             execution.value_kind = operation.value_kind;
             execution.semantic_result_path = operation.semantic_result_path.clone();
             execution.pending_outcome = None;
+            execution.limit_exceeded = None;
             execution.expires_at_ms = None;
             execution.deadline_ms = operation
                 .timeout_ms
@@ -2077,6 +2080,7 @@ where
                         value_kind: ExecutionValueKind::None,
                         semantic_result_path: None,
                         pending_outcome: None,
+                        limit_exceeded: None,
                         deadline_ms: None,
                         expires_at_ms: None,
                         deadline_task: None,
@@ -2707,6 +2711,24 @@ where
         Ok(())
     }
 
+    pub(crate) fn record_public_execution_limit(
+        &mut self,
+        vm_id: &str,
+        process_id: &str,
+        limit: ExecutionLimit,
+    ) {
+        let Some(mut vm) = self.vms.get_mut(vm_id) else {
+            return;
+        };
+        let vm = &mut *vm;
+        let Some(execution_id) = vm.execution_processes.get(process_id) else {
+            return;
+        };
+        if let Some(execution) = vm.executions.get_mut(execution_id) {
+            execution.limit_exceeded = Some(limit);
+        }
+    }
+
     pub(crate) fn record_public_execution_output(
         &mut self,
         vm_id: &str,
@@ -2887,6 +2909,7 @@ where
         execution.expires_at_ms = (execution.public && !execution.context)
             .then(|| now_ms().saturating_add(vm.limits.execution.completed_ttl_ms));
 
+        let limit_exceeded = execution.limit_exceeded.take();
         let error = if let Some(message) = evaluation_error {
             Some(ExecutionErrorData {
                 code: String::from("evaluation_serialization_failed"),
@@ -2897,6 +2920,8 @@ where
             })
         } else if outcome == ExecutionOutcome::Succeeded {
             None
+        } else if let Some(limit) = limit_exceeded.filter(|_| outcome == ExecutionOutcome::Failed) {
+            Some(execution_limit_error(limit))
         } else {
             Some(ExecutionErrorData {
                 code: match outcome {
@@ -3054,6 +3079,32 @@ fn failed_result(
         stderr_truncated: None,
         evaluation_value: None,
         type_script_check_result: None,
+    }
+}
+
+/// The error for a script the runtime stopped at a limit. The text is fixed, so
+/// guest output can never shape it.
+fn execution_limit_error(limit: ExecutionLimit) -> ExecutionErrorData {
+    let (code, message) = match limit {
+        ExecutionLimit::V8Heap => (
+            "execution_heap_limit_exceeded",
+            "script exceeded the V8 heap limit; raise limits.jsRuntime.v8HeapLimitMb to allow more memory",
+        ),
+        ExecutionLimit::CpuTime => (
+            "execution_cpu_time_limit_exceeded",
+            "script exceeded the CPU-time limit; raise limits.jsRuntime.cpuTimeLimitMs to allow more CPU time",
+        ),
+        ExecutionLimit::WallClock => (
+            "execution_wall_clock_limit_exceeded",
+            "script exceeded the wall-clock limit; raise limits.jsRuntime.wallClockLimitMs to allow more time",
+        ),
+    };
+    ExecutionErrorData {
+        code: String::from(code),
+        name: String::from("ExecutionError"),
+        message: String::from(message),
+        stack: None,
+        details: None,
     }
 }
 

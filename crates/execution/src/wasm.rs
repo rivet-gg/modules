@@ -901,6 +901,8 @@ impl WasmExecution {
                         registration: registration.into(),
                     });
             }
+            // WASM reports its runner's limit errors through stderr.
+            JavascriptExecutionEvent::LimitExceeded(_) => {}
             JavascriptExecutionEvent::Exited(code) => {
                 if let Some(original) = self.pending_v8_stack_overflow.take() {
                     let chunk = if code != 0 {
@@ -3748,7 +3750,8 @@ fn prewarm_wasm_path(
                     });
                 }
             }
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             None => {
                 if let Err(error) = prewarm_execution.terminate() {
                     eprintln!(
@@ -3891,7 +3894,8 @@ async fn prewarm_wasm_path_async(
                     });
                 }
             }
-            Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+            Some(JavascriptExecutionEvent::SignalState { .. })
+            | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
             None => {
                 if let Err(error) = prewarm_execution.terminate() {
                     eprintln!(

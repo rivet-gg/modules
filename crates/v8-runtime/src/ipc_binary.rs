@@ -35,6 +35,7 @@ const MSG_STREAM_CALLBACK: u8 = 0x84;
 // ExecutionResult flags
 const FLAG_HAS_EXPORTS: u8 = 0x01;
 const FLAG_HAS_ERROR: u8 = 0x02;
+const FLAG_LIMIT_EXCEEDED: u8 = 0x04;
 
 /// A decoded binary frame — all fields are borrowed or owned depending on use.
 #[derive(Debug, Clone, PartialEq)]
@@ -101,6 +102,7 @@ pub enum BinaryFrame {
         exit_code: i32,
         exports: Option<Vec<u8>>,
         error: Option<ExecutionErrorBin>,
+        limit_exceeded: Option<ExecutionLimit>,
     },
     Log {
         session_id: String,
@@ -121,6 +123,37 @@ pub struct ExecutionErrorBin {
     pub message: String,
     pub stack: String,
     pub code: String, // empty string = no code
+}
+
+/// A runtime limit that stopped the script. The runtime sets this from its own
+/// state, never from guest values, so callers can trust it to name the cause.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExecutionLimit {
+    V8Heap,
+    CpuTime,
+    WallClock,
+}
+
+impl ExecutionLimit {
+    pub fn to_wire(self) -> u8 {
+        match self {
+            Self::V8Heap => 1,
+            Self::CpuTime => 2,
+            Self::WallClock => 3,
+        }
+    }
+
+    pub fn from_wire(value: u8) -> io::Result<Self> {
+        match value {
+            1 => Ok(Self::V8Heap),
+            2 => Ok(Self::CpuTime),
+            3 => Ok(Self::WallClock),
+            other => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("unknown ExecutionResult limit: {other}"),
+            )),
+        }
+    }
 }
 
 /// Encode a binary frame into a provided buffer (length prefix + body).
@@ -325,6 +358,7 @@ fn encode_body(buf: &mut Vec<u8>, frame: &BinaryFrame) -> io::Result<()> {
             exit_code,
             exports,
             error,
+            limit_exceeded,
         } => {
             buf.push(MSG_EXECUTION_RESULT);
             write_session_id(buf, session_id)?;
@@ -336,6 +370,9 @@ fn encode_body(buf: &mut Vec<u8>, frame: &BinaryFrame) -> io::Result<()> {
             if error.is_some() {
                 flags |= FLAG_HAS_ERROR;
             }
+            if limit_exceeded.is_some() {
+                flags |= FLAG_LIMIT_EXCEEDED;
+            }
             buf.push(flags);
             if let Some(exp) = exports {
                 buf.extend_from_slice(&(exp.len() as u32).to_be_bytes());
@@ -346,6 +383,9 @@ fn encode_body(buf: &mut Vec<u8>, frame: &BinaryFrame) -> io::Result<()> {
                 write_len_prefixed_u16(buf, &err.message)?;
                 write_len_prefixed_u16(buf, &err.stack)?;
                 write_len_prefixed_u16(buf, &err.code)?;
+            }
+            if let Some(limit) = limit_exceeded {
+                buf.push(limit.to_wire());
             }
         }
         BinaryFrame::Log {
@@ -492,7 +532,7 @@ fn decode_body(buf: &[u8]) -> io::Result<BinaryFrame> {
         MSG_EXECUTION_RESULT => {
             let exit_code = read_i32(buf, &mut pos)?;
             let flags = read_u8(buf, &mut pos)?;
-            if flags & !(FLAG_HAS_EXPORTS | FLAG_HAS_ERROR) != 0 {
+            if flags & !(FLAG_HAS_EXPORTS | FLAG_HAS_ERROR | FLAG_LIMIT_EXCEEDED) != 0 {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     format!("unknown ExecutionResult flags: 0x{flags:02x}"),
@@ -519,12 +559,18 @@ fn decode_body(buf: &[u8]) -> io::Result<BinaryFrame> {
             } else {
                 None
             };
+            let limit_exceeded = if flags & FLAG_LIMIT_EXCEEDED != 0 {
+                Some(ExecutionLimit::from_wire(read_u8(buf, &mut pos)?)?)
+            } else {
+                None
+            };
             ensure_frame_consumed(buf, pos)?;
             Ok(BinaryFrame::ExecutionResult {
                 session_id,
                 exit_code,
                 exports,
                 error,
+                limit_exceeded,
             })
         }
         MSG_LOG => {
@@ -839,6 +885,7 @@ mod tests {
             exit_code: 0,
             exports: Some(vec![0xc0]),
             error: None,
+            limit_exceeded: None,
         });
     }
 
@@ -854,6 +901,7 @@ mod tests {
                 stack: "TypeError: Cannot read properties of undefined\n    at main.js:1:5".into(),
                 code: "".into(),
             }),
+            limit_exceeded: None,
         });
     }
 
@@ -870,6 +918,7 @@ mod tests {
                     .into(),
                 code: "ERR_MODULE_NOT_FOUND".into(),
             }),
+            limit_exceeded: None,
         });
     }
 
@@ -885,6 +934,7 @@ mod tests {
                 stack: "".into(),
                 code: "".into(),
             }),
+            limit_exceeded: None,
         });
     }
 
@@ -895,6 +945,7 @@ mod tests {
             exit_code: 0,
             exports: None,
             error: None,
+            limit_exceeded: None,
         });
     }
 
@@ -1202,6 +1253,7 @@ mod tests {
                 exit_code: 0,
                 exports: None,
                 error: None,
+                limit_exceeded: None,
             },
             BinaryFrame::Log {
                 session_id: "sess-log".into(),
@@ -1335,6 +1387,7 @@ mod tests {
                     exit_code: 0,
                     exports: None,
                     error: None,
+                    limit_exceeded: None,
                 },
                 0x82,
             ),
@@ -1386,6 +1439,7 @@ mod tests {
             exit_code: 0,
             exports: Some(vec![0xAA, 0xBB]),
             error: None,
+            limit_exceeded: None,
         };
         let bytes = frame_to_bytes(&frame).expect("frame_to_bytes");
         let mut cursor = std::io::Cursor::new(&bytes);
@@ -1452,6 +1506,7 @@ mod tests {
             exit_code: 0,
             exports: Some(vec![0x01, 0x02]),
             error: None,
+            limit_exceeded: None,
         };
         let expected = frame_to_bytes(&frame).expect("frame_to_bytes");
         let mut buf = Vec::new();

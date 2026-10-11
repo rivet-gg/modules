@@ -1351,7 +1351,9 @@ impl ActiveExecutionEvent {
             | Self::JavascriptSyncRpcCompletion(_)
             | Self::PythonVfsRpcRequest(_)
             | Self::PythonSocketConnectCompletion(_) => 4 * 1024,
-            Self::SignalState { .. } | Self::Exited(_) => std::mem::size_of::<Self>(),
+            Self::SignalState { .. } | Self::LimitExceeded(_) | Self::Exited(_) => {
+                std::mem::size_of::<Self>()
+            }
         }
     }
 }
@@ -1851,6 +1853,9 @@ impl ActiveExecution {
                             signal,
                             registration: map_node_signal_registration(registration),
                         },
+                        JavascriptExecutionEvent::LimitExceeded(limit) => {
+                            ActiveExecutionEvent::LimitExceeded(limit)
+                        }
                         JavascriptExecutionEvent::Exited(code) => {
                             ActiveExecutionEvent::Exited(code)
                         }
@@ -1926,6 +1931,9 @@ impl ActiveExecution {
                             signal,
                             registration: map_node_signal_registration(registration),
                         },
+                        JavascriptExecutionEvent::LimitExceeded(limit) => {
+                            ActiveExecutionEvent::LimitExceeded(limit)
+                        }
                         JavascriptExecutionEvent::Exited(code) => {
                             ActiveExecutionEvent::Exited(code)
                         }

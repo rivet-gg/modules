@@ -461,11 +461,13 @@ fn from_runtime_event(event: RuntimeEvent) -> BinaryFrame {
             exit_code,
             exports,
             error,
+            limit_exceeded,
         } => BinaryFrame::ExecutionResult {
             session_id,
             exit_code,
             exports,
             error: error.map(from_runtime_execution_error),
+            limit_exceeded,
         },
         RuntimeEvent::Log {
             session_id,

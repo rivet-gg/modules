@@ -32,6 +32,7 @@ const MSG_STREAM_CALLBACK: u8 = 0x84;
 // ExecutionResult flags
 const FLAG_HAS_EXPORTS: u8 = 0x01;
 const FLAG_HAS_ERROR: u8 = 0x02;
+const FLAG_LIMIT_EXCEEDED: u8 = 0x04;
 
 /// A decoded binary frame.
 #[derive(Debug, Clone, PartialEq)]
@@ -93,6 +94,7 @@ pub enum BinaryFrame {
         exit_code: i32,
         exports: Option<Vec<u8>>,
         error: Option<ExecutionErrorBin>,
+        limit_exceeded: Option<ExecutionLimit>,
     },
     Log {
         session_id: String,
@@ -114,6 +116,8 @@ pub struct ExecutionErrorBin {
     pub stack: String,
     pub code: String,
 }
+
+pub use agentos_v8_runtime::ipc_binary::ExecutionLimit;
 
 /// Encode a frame into a byte buffer (length prefix + body).
 pub fn encode_frame(frame: &BinaryFrame) -> io::Result<Vec<u8>> {
@@ -257,11 +261,17 @@ pub fn decode_frame(buf: &[u8]) -> io::Result<BinaryFrame> {
             } else {
                 None
             };
+            let limit_exceeded = if flags & FLAG_LIMIT_EXCEEDED != 0 {
+                Some(ExecutionLimit::from_wire(read_u8(buf, &mut pos)?)?)
+            } else {
+                None
+            };
             Ok(BinaryFrame::ExecutionResult {
                 session_id,
                 exit_code,
                 exports,
                 error,
+                limit_exceeded,
             })
         }
         MSG_LOG => {
@@ -394,6 +404,7 @@ fn encode_body(buf: &mut Vec<u8>, frame: &BinaryFrame) -> io::Result<()> {
             exit_code,
             exports,
             error,
+            limit_exceeded,
         } => {
             buf.push(MSG_EXECUTION_RESULT);
             write_session_id(buf, session_id)?;
@@ -405,6 +416,9 @@ fn encode_body(buf: &mut Vec<u8>, frame: &BinaryFrame) -> io::Result<()> {
             if error.is_some() {
                 flags |= FLAG_HAS_ERROR;
             }
+            if limit_exceeded.is_some() {
+                flags |= FLAG_LIMIT_EXCEEDED;
+            }
             buf.push(flags);
             if let Some(exp) = exports {
                 buf.extend_from_slice(&(exp.len() as u32).to_be_bytes());
@@ -415,6 +429,9 @@ fn encode_body(buf: &mut Vec<u8>, frame: &BinaryFrame) -> io::Result<()> {
                 write_len_prefixed_u16(buf, &err.message)?;
                 write_len_prefixed_u16(buf, &err.stack)?;
                 write_len_prefixed_u16(buf, &err.code)?;
+            }
+            if let Some(limit) = limit_exceeded {
+                buf.push(limit.to_wire());
             }
         }
         BinaryFrame::Log {
@@ -595,6 +612,7 @@ mod tests {
                 stack: "at foo:1:1".into(),
                 code: "ERR_TEST".into(),
             }),
+            limit_exceeded: None,
         };
         let bytes = encode_frame(&frame).unwrap();
         let decoded = decode_frame(&bytes[4..]).unwrap();

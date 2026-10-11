@@ -8,7 +8,7 @@ use crate::runtime_support::{
 };
 use crate::signal::NodeSignalHandlerRegistration;
 use crate::v8_host::{V8RuntimeHost, V8SessionFrameReceiver, V8SessionHandle};
-use crate::v8_ipc::BinaryFrame;
+use crate::v8_ipc::{BinaryFrame, ExecutionLimit};
 use crate::v8_runtime;
 use agentos_bridge::queue_tracker::{register_queue, TrackedLimit};
 use agentos_runtime::RuntimeContext;
@@ -552,6 +552,9 @@ pub enum JavascriptExecutionEvent {
         signal: u32,
         registration: NodeSignalHandlerRegistration,
     },
+    /// The runtime stopped the script at one of its limits. Sent just before
+    /// `Exited`.
+    LimitExceeded(ExecutionLimit),
     Exited(i32),
 }
 
@@ -2235,7 +2238,8 @@ impl JavascriptExecution {
                     }
                     return Err(JavascriptExecutionError::PendingSyncRpcRequest(request.id));
                 }
-                Ok(JavascriptExecutionEvent::SignalState { .. }) => {}
+                Ok(JavascriptExecutionEvent::SignalState { .. })
+                | Ok(JavascriptExecutionEvent::LimitExceeded(_)) => {}
                 Ok(JavascriptExecutionEvent::Exited(exit_code)) => {
                     // Join the V8 executor while this method still owns the
                     // event receiver. That keeps terminal diagnostics
@@ -4080,7 +4084,10 @@ fn spawn_v8_event_bridge(
                         }
                     }
                     BinaryFrame::ExecutionResult {
-                        exit_code, error, ..
+                        exit_code,
+                        error,
+                        limit_exceeded,
+                        ..
                     } => {
                         exited.store(true, Ordering::Release);
                         let phase_start = Instant::now();
@@ -4113,6 +4120,18 @@ fn spawn_v8_event_bridge(
                                 &event_gauge,
                                 event_notify.as_deref(),
                                 JavascriptExecutionEvent::Stderr(error_msg.into_bytes()),
+                            )
+                            .await
+                            {
+                                break;
+                            }
+                        }
+                        if let Some(limit) = limit_exceeded {
+                            if !send_javascript_event_async(
+                                &sender,
+                                &event_gauge,
+                                event_notify.as_deref(),
+                                JavascriptExecutionEvent::LimitExceeded(limit),
                             )
                             .await
                             {

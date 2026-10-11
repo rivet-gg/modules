@@ -1073,6 +1073,12 @@ where
                     }),
                 )))
             }
+            ActiveExecutionEvent::LimitExceeded(limit) => {
+                if public_execution {
+                    self.record_public_execution_limit(vm_id, process_id, limit);
+                }
+                Ok(None)
+            }
             ActiveExecutionEvent::Exited(exit_code) => {
                 self.record_ordinary_process_exit(vm_id, process_id, exit_code);
                 record_execute_response_to_exit_milestone(
@@ -1641,6 +1647,12 @@ where
                     .entry(process_id.to_owned())
                     .or_default()
                     .insert(signal, registration);
+                Ok(None)
+            }
+            ActiveExecutionEvent::LimitExceeded(limit) => {
+                if public_execution {
+                    self.record_public_execution_limit(vm_id, process_id, limit);
+                }
                 Ok(None)
             }
             ActiveExecutionEvent::Exited(exit_code) => {

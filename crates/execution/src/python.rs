@@ -848,6 +848,8 @@ impl PythonExecution {
             }
             JavascriptExecutionEvent::Exited(code) => Ok(Some(PythonExecutionEvent::Exited(code))),
             JavascriptExecutionEvent::SignalState { .. } => Ok(None),
+            // Python reports its runner's limit errors through stderr.
+            JavascriptExecutionEvent::LimitExceeded(_) => Ok(None),
             JavascriptExecutionEvent::SyncRpcRequest(request) => {
                 if request.method == "_pythonRpc" {
                     let request = parse_python_bridge_sync_rpc_request(&request)?;
@@ -1955,7 +1957,8 @@ fn handle_python_prewarm_event(
                 stderr: std::mem::take(&mut output.stderr),
             }));
         }
-        Some(JavascriptExecutionEvent::SignalState { .. }) => {}
+        Some(JavascriptExecutionEvent::SignalState { .. })
+        | Some(JavascriptExecutionEvent::LimitExceeded(_)) => {}
         Some(JavascriptExecutionEvent::SyncRpcRequest(sync_request)) => {
             output.sync_rpc_log.push(format!(
                 "{} {} {:?}",

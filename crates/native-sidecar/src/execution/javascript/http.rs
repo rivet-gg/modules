@@ -2710,7 +2710,8 @@ where
             | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
             | ActiveExecutionEvent::PythonVfsRpcRequest(_)
             | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-            | ActiveExecutionEvent::SignalState { .. } => {}
+            | ActiveExecutionEvent::SignalState { .. }
+            | ActiveExecutionEvent::LimitExceeded(_) => {}
         }
     }
 }

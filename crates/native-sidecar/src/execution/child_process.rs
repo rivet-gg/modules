@@ -2805,6 +2805,7 @@ where
                                     Some(
                                         ActiveExecutionEvent::Stdout(_)
                                         | ActiveExecutionEvent::Stderr(_)
+                                        | ActiveExecutionEvent::LimitExceeded(_)
                                         | ActiveExecutionEvent::Exited(_),
                                     ) => false,
                                     // The parent's poll queues every supervisor-owned event, but a
@@ -3601,6 +3602,9 @@ where
                                 ),
                             );
                         }
+                        // Only a public execution reports its limit; a nested
+                        // child's limit error reaches its parent through stderr.
+                        ActiveExecutionEvent::LimitExceeded(_) => drop(reservation),
                         ActiveExecutionEvent::SignalState {
                             signal,
                             registration,
@@ -9641,6 +9645,12 @@ where
                         completion.request_id,
                         completion.result,
                     )?;
+                }
+                // Only a public execution reports its limit; a nested child's
+                // limit error reaches its parent through stderr.
+                ActiveExecutionEvent::LimitExceeded(_) => {
+                    drop(reservation);
+                    return Ok(Value::Null);
                 }
                 ActiveExecutionEvent::SignalState {
                     signal,

@@ -29,7 +29,7 @@ use crate::host_call::{BridgeCallContext, ChannelRuntimeEventSender};
 use crate::host_call::{CallIdRouter, SharedCallIdCounter};
 use crate::ipc::ExecutionError;
 #[cfg(not(test))]
-use crate::ipc_binary::ExecutionErrorBin;
+use crate::ipc_binary::{ExecutionErrorBin, ExecutionLimit};
 use crate::runtime_protocol::{
     BridgeResponse, RuntimeEvent, SessionMessage, StreamEvent, WarmSessionHint,
 };
@@ -2414,6 +2414,7 @@ fn session_thread(
                                 session_id,
                                 exit_code: 1,
                                 exports: None,
+                                limit_exceeded: None,
                                 error: Some(ExecutionErrorBin {
                                     error_type: "Error".into(),
                                     message,
@@ -2566,6 +2567,7 @@ fn session_thread(
                                     session_id,
                                     exit_code: 1,
                                     exports: None,
+                                    limit_exceeded: None,
                                     error: Some(ExecutionErrorBin {
                                         error_type: error.error_type,
                                         message: error.message,
@@ -2598,6 +2600,7 @@ fn session_thread(
                                     session_id,
                                     exit_code: 1,
                                     exports: None,
+                                    limit_exceeded: None,
                                     error: Some(ExecutionErrorBin {
                                         error_type: String::from("Error"),
                                         message: String::from("Execution terminated"),
@@ -2664,6 +2667,7 @@ fn session_thread(
                                     session_id,
                                     exit_code: prs_code,
                                     exports: None,
+                                    limit_exceeded: None,
                                     error: prs_err.map(|e| ExecutionErrorBin {
                                         error_type: e.error_type,
                                         message: e.message,
@@ -2689,6 +2693,7 @@ fn session_thread(
                                     session_id,
                                     exit_code: 1,
                                     exports: None,
+                                    limit_exceeded: None,
                                     error: Some(ExecutionErrorBin {
                                         error_type: "Error".into(),
                                         message: "failed to install __agentOSWasmModuleBytes"
@@ -2731,6 +2736,7 @@ fn session_thread(
                                             session_id,
                                             exit_code: 1,
                                             exports: None,
+                                            limit_exceeded: None,
                                             error: Some(ExecutionErrorBin {
                                                 error_type: "Error".into(),
                                                 message: format!(
@@ -2765,6 +2771,7 @@ fn session_thread(
                                             session_id,
                                             exit_code: 1,
                                             exports: None,
+                                            limit_exceeded: None,
                                             error: Some(ExecutionErrorBin {
                                                 error_type: "Error".into(),
                                                 message,
@@ -2811,6 +2818,7 @@ fn session_thread(
                                             session_id,
                                             exit_code: 1,
                                             exports: None,
+                                            limit_exceeded: None,
                                             error: Some(ExecutionErrorBin {
                                                 error_type: "Error".into(),
                                                 message,
@@ -3106,6 +3114,7 @@ fn session_thread(
                                 session_id,
                                 exit_code: 1,
                                 exports: None,
+                                limit_exceeded: Some(ExecutionLimit::V8Heap),
                                 error: Some(ExecutionErrorBin {
                                     error_type: "Error".into(),
                                     message: "Script execution exceeded the V8 heap limit \
@@ -3124,6 +3133,7 @@ fn session_thread(
                                 session_id,
                                 exit_code: 1,
                                 exports: None,
+                                limit_exceeded: Some(ExecutionLimit::CpuTime),
                                 error: Some(ExecutionErrorBin {
                                     error_type: "Error".into(),
                                     message: "Script execution exceeded the CPU-time budget \
@@ -3146,6 +3156,7 @@ fn session_thread(
                                 session_id,
                                 exit_code: 1,
                                 exports: None,
+                                limit_exceeded: Some(ExecutionLimit::WallClock),
                                 error: Some(ExecutionErrorBin {
                                     error_type: "Error".into(),
                                     message: "Script execution exceeded the wall-clock limit \
@@ -3160,6 +3171,7 @@ fn session_thread(
                                 session_id,
                                 exit_code: 1,
                                 exports: None,
+                                limit_exceeded: None,
                                 error: Some(ExecutionErrorBin {
                                     error_type: "Error".into(),
                                     message: "Execution terminated".into(),
@@ -3172,6 +3184,7 @@ fn session_thread(
                                 session_id,
                                 exit_code: code,
                                 exports,
+                                limit_exceeded: None,
                                 error: error.map(|e| ExecutionErrorBin {
                                     error_type: e.error_type,
                                     message: e.message,

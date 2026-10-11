@@ -2792,7 +2792,8 @@ console.log(JSON.stringify({ status: "ok", summary }));
                         | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
                         | ActiveExecutionEvent::PythonVfsRpcRequest(_)
                         | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-                        | ActiveExecutionEvent::SignalState { .. } => {}
+                        | ActiveExecutionEvent::SignalState { .. }
+                        | ActiveExecutionEvent::LimitExceeded(_) => {}
                     }
                     block_on_sidecar!(
                         sidecar,
@@ -3663,7 +3664,8 @@ console.log(JSON.stringify({ status: "ok", summary }));
                     | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
                     | ActiveExecutionEvent::PythonVfsRpcRequest(_)
                     | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-                    | ActiveExecutionEvent::SignalState { .. } => {}
+                    | ActiveExecutionEvent::SignalState { .. }
+                    | ActiveExecutionEvent::LimitExceeded(_) => {}
                 }
 
                 block_on_sidecar!(
@@ -16225,7 +16227,8 @@ console.log(
                     | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
                     | ActiveExecutionEvent::PythonVfsRpcRequest(_)
                     | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-                    | ActiveExecutionEvent::SignalState { .. } => {}
+                    | ActiveExecutionEvent::SignalState { .. }
+                    | ActiveExecutionEvent::LimitExceeded(_) => {}
                 }
 
                 block_on_sidecar!(
@@ -19907,7 +19910,8 @@ console.log(JSON.stringify({ lookup, resolve4 }));
                     | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
                     | ActiveExecutionEvent::PythonVfsRpcRequest(_)
                     | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-                    | ActiveExecutionEvent::SignalState { .. } => {}
+                    | ActiveExecutionEvent::SignalState { .. }
+                    | ActiveExecutionEvent::LimitExceeded(_) => {}
                 }
 
                 block_on_sidecar!(
@@ -20104,7 +20108,8 @@ process.exit(0);
                     | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
                     | ActiveExecutionEvent::PythonVfsRpcRequest(_)
                     | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-                    | ActiveExecutionEvent::SignalState { .. } => {}
+                    | ActiveExecutionEvent::SignalState { .. }
+                    | ActiveExecutionEvent::LimitExceeded(_) => {}
                 }
 
                 block_on_sidecar!(
@@ -20804,7 +20809,8 @@ process.exit(0);
                     | ActiveExecutionEvent::JavascriptSyncRpcCompletion(_)
                     | ActiveExecutionEvent::PythonVfsRpcRequest(_)
                     | ActiveExecutionEvent::PythonSocketConnectCompletion(_)
-                    | ActiveExecutionEvent::SignalState { .. } => {}
+                    | ActiveExecutionEvent::SignalState { .. }
+                    | ActiveExecutionEvent::LimitExceeded(_) => {}
                 }
 
                 block_on_sidecar!(
