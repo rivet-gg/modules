@@ -113,6 +113,7 @@ vendor:
 		cargo vendor \
 			--sync "$(RUST_STD_SRC)/library/std/Cargo.toml" \
 			--sync "$(RUST_STD_SRC)/library/test/Cargo.toml" \
+			--sync test-programs/fd-mapping-contract/Cargo.toml \
 			vendor > .cargo/config.toml; \
 	else \
 		echo "vendor/ exists — skipping (run 'make clean-vendor' to re-vendor)"; \
@@ -128,6 +129,8 @@ vendor:
 		echo "Run 'make clean-vendor && make vendor' to regenerate."; \
 		exit 1; \
 	}
+	@cargo metadata --manifest-path test-programs/fd-mapping-contract/Cargo.toml \
+		--locked --offline --format-version 1 > /dev/null
 
 # Apply crate-level patches to vendored sources
 patch-vendor: vendor
