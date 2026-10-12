@@ -9,13 +9,13 @@
 					"icon": "faSquareInfo"
 				},
 				{
-					"title": "Quickstart (Library)",
-					"href": "/agentos/docs/quickstart",
+					"title": "Quickstart (Hosted)",
+					"href": "/agentos/docs/quickstart-hosted",
 					"icon": "faForwardFast"
 				},
 				{
-					"title": "Quickstart (Hosted)",
-					"href": "/agentos/docs/quickstart-hosted",
+					"title": "Quickstart (Library)",
+					"href": "/agentos/docs/quickstart",
 					"icon": "faForwardFast"
 				},
 				{

@@ -10,16 +10,16 @@ durable VMs by ID and control them over HTTP instead, see the
 
 ## Which one should I use?
 
-|  | [Library](/agentos/docs/quickstart) | [Hosted](/agentos/docs/quickstart-hosted) |
+|  | [Hosted](/agentos/docs/quickstart-hosted) | [Library](/agentos/docs/quickstart) |
 |---|---|---|
-| **Runs** | Inside your Node.js process | As the prebuilt `agentOS` Rivet Actor |
-| **Package** | `@rivet-dev/agentos-core` | `@rivet-dev/agentos`, or plain HTTP |
-| **VM identity** | A handle your process owns until `dispose()` | A durable VM you create by key and reach by ID |
-| **Configuration** | Passed to `AgentOs.create()` | Stored with the VM and versioned |
-| **Clients** | Your backend | Your backend, or browsers with a scoped JWT |
-| **Host access** | Host functions, host mounts, external sandboxes | None; configuration is serializable only |
-| **Previews** | None | Expiring preview URLs |
-| **Best for** | Embedding VMs in an existing backend | Long-lived VMs shared across clients |
+| **Runs** | As the prebuilt `agentOS` Rivet Actor | Inside your Node.js process |
+| **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
+| **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
+| **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
+| **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
+| **Host access** | None; configuration is serializable only | Host functions, host mounts, external sandboxes |
+| **Previews** | Expiring preview URLs | None |
+| **Best for** | Long-lived VMs shared across clients | Embedding VMs in an existing backend |
 
 ## Install
 
