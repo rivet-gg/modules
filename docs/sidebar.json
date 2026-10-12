@@ -116,7 +116,7 @@
 			"title": "Reference",
 			"pages": [
 				{
-					"title": "Hosted VM HTTP API",
+					"title": "Hosted HTTP API",
 					"href": "/agentos/docs/hosted-api"
 				},
 				{

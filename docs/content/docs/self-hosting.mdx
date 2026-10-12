@@ -3,9 +3,26 @@ title: "Self-Hosting"
 description: "Run hosted agentOS VMs on your own infrastructure with the Rivet control plane and the agentOS worker image."
 ---
 
-Hosted VMs run on Rivet Cloud or on your own infrastructure. Self-hosting needs
-two processes: the Rivet control plane, and the agentOS worker that runs the
-`agentOS` actor and its VMs.
+Self-hosting runs the hosted agentOS API on your own infrastructure instead of
+Rivet Cloud. It needs two processes: the Rivet control plane, and the agentOS
+worker that runs the `agentOS` actor and its VMs. If you only need VMs inside
+your own Node.js process, use the [library](/agentos/docs/quickstart) instead;
+it needs neither.
+
+## Which one should I use?
+
+|  | [Hosted](/agentos/docs/quickstart-hosted) | [Library](/agentos/docs/quickstart) |
+|---|---|---|
+| **Runs** | As the prebuilt `agentOS` Rivet Actor on Rivet Cloud or [self-hosted](/agentos/docs/self-hosting) | Inside your Node.js process |
+| **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
+| **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
+| **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
+| **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
+| **Host access** | None; configuration is serializable only | Host functions, host mounts, external sandboxes |
+| **Previews** | Expiring preview URLs | None |
+| **Best for** | Long-lived VMs shared across clients | Embedding VMs in an existing backend |
+
+## Run it
 
 <Steps>
 <Step title="Run the Rivet control plane">
@@ -45,6 +62,6 @@ const vm = client.agentOS.getOrCreate(["my-vm"]);
 </Steps>
 
 Everything in the [hosted quickstart](/agentos/docs/quickstart-hosted) and the
-[Hosted VM HTTP API](/agentos/docs/hosted-api) works the same way. Use
+[Hosted HTTP API](/agentos/docs/hosted-api) works the same way. Use
 `http://localhost:6420`, or wherever your control plane is reachable, as the
 base URL instead of `https://api.rivet.dev`.
