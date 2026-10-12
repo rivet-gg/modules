@@ -13,7 +13,7 @@ VMs inside your own Node.js process instead, see the
 
 |  | [Hosted](/agentos/docs/quickstart-hosted) | [Library](/agentos/docs/quickstart) |
 |---|---|---|
-| **Runs** | As the prebuilt `agentOS` Rivet Actor | Inside your Node.js process |
+| **Runs** | As the prebuilt `agentOS` Rivet Actor on Rivet Cloud or [self-hosted](/agentos/docs/self-hosting) | Inside your Node.js process |
 | **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
 | **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
 | **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
@@ -35,11 +35,7 @@ npm install @rivet-dev/agentos
 ```ts TypeScript @nocheck
 import { createAgentOsClient } from "@rivet-dev/agentos";
 
-const client = createAgentOsClient({
-	endpoint: "https://api.rivet.dev",
-	namespace: process.env.RIVET_NAMESPACE,
-	token: process.env.RIVET_TOKEN,
-});
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
 
 const vm = client.agentOS.getOrCreate(["my-vm"]);
 const vmId = await vm.resolve();
@@ -58,6 +54,10 @@ curl -X PUT "https://api.rivet.dev/actors?namespace=$RIVET_NAMESPACE" \
 ```
 
 </CodeGroup>
+
+The client reads `RIVET_NAMESPACE` and `RIVET_TOKEN` from the environment. To
+run your own control plane and worker instead of Rivet Cloud, see
+[Self-Hosting](/agentos/docs/self-hosting).
 
 The VM is durable: calling `getOrCreate` with the same key reaches the same VM.
 The cURL examples below call it as `$VM_ID` with a token in `$VM_TOKEN`; see
@@ -234,5 +234,5 @@ VM's configuration with `v1.config.patch`; filesystem changes apply after
 
 - See the [Hosted VM HTTP API](/agentos/docs/hosted-api) for authentication,
   configuration, events, errors, and every action.
-- Expose a VM port with [expiring previews](/agentos/docs/networking#hosted-api).
-- Schedule commands with [Crons & Loops](/agentos/docs/cron#hosted-api).
+- Expose a VM port with [expiring previews](/agentos/docs/networking#previews).
+- Schedule commands with [Crons & Loops](/agentos/docs/cron).

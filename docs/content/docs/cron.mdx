@@ -1,60 +1,68 @@
 ---
 title: "Crons & Loops"
-description: "Schedule recurring and one-shot VM commands while a VM is running."
+description: "Schedule recurring and one-shot VM commands."
 skill: true
 ---
 
-`vm.cron` schedules commands inside the VM. Jobs run while the embedding
-process and the VM are alive. Durable scheduling across process restarts is
-the responsibility of the application that owns the VM, or use a
-[hosted VM](#hosted-api), which stores its jobs.
+Schedule commands to run inside the VM on a cron expression. Hosted VMs store
+their jobs with the VM. Library jobs run while the embedding process and the VM
+are alive, so durable scheduling across process restarts is up to the
+application that owns the VM.
 
 ## Schedule a command
 
-<CodeSnippet file="examples/embedded/vm.ts" region="cron" />
+<CodeGroup>
 
-`schedule` takes a standard cron expression or an ISO 8601 timestamp for a
-one-shot job. `action` is either `{ type: "exec", command, args }`, which runs a
-command in the VM, or `{ type: "callback", fn }`, which calls a function in the
-host process.
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
 
-`overlap` controls what happens when a job fires while its previous run is
-still going: `"allow"` (the default) starts another run, `"skip"` drops the new
-run, and `"queue"` waits for the previous run to finish.
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
 
-## Inspect and cancel jobs
-
-- `cron.list()` returns each job's schedule, action, `lastRun`, `nextRun`,
-  `runCount`, and whether it is running.
-- `cron.cancel(id)` cancels a job. The handle returned by `schedule` also has a
-  `cancel()` method.
-- `vm.onCronEvent(handler)` receives `cron:fire`, `cron:complete`, and
-  `cron:error` events.
-
-Pass `scheduleDriver` to `AgentOs.create()` to replace the default timer-based
-driver, for example with one backed by your own durable scheduler.
-
-## Hosted API
-
-Hosted VMs schedule commands with `v1.cron.*` actions. Jobs are named and
-stored with the VM.
-
-```ts TypeScript @nocheck
-await vm.v1.cron.schedule({
+const job = await vm.v1.cron.schedule({
 	name: "cleanup",
 	expression: "0 * * * *",
 	command: "rm",
 	args: ["-rf", "/tmp/cache"],
 	options: { env: {} },
 });
+console.log("Scheduled:", job.name);
 
-for (const job of await vm.v1.cron.list({})) {
-	console.log(job.name, job.expression);
+const conn = vm.connect();
+await conn.ready;
+conn.on("cron.fired", (event) => {
+	console.log("Cron event:", event);
+});
+
+for (const scheduled of await vm.v1.cron.list({})) {
+	console.log(scheduled.name, scheduled.expression);
 }
-
-await vm.v1.cron.cancel({ name: "cleanup" });
 ```
 
-Connected clients receive a `cron.fired` event for each run. A VM holds up to
-1,024 jobs, with names and expressions up to 256 bytes, and retains 32 runs per
-job by default (256 maximum).
+<CodeSnippet file="examples/embedded/vm.ts" region="cron" title="Library" />
+
+</CodeGroup>
+
+Hosted jobs are identified by `name` and run a command with arguments. A hosted
+VM holds up to 1,024 jobs, with names and expressions up to 256 bytes, and
+retains 32 runs per job by default (256 maximum).
+
+In the library, `schedule` takes a standard cron expression or an ISO 8601
+timestamp for a one-shot job. `action` is either `{ type: "exec", command, args }`,
+which runs a command in the VM, or `{ type: "callback", fn }`, which calls a
+function in the host process. `overlap` controls what happens when a job fires
+while its previous run is still going: `"allow"` (the default) starts another
+run, `"skip"` drops the new run, and `"queue"` waits for the previous run to
+finish.
+
+## Inspect and cancel jobs
+
+| Operation | Hosted | Library |
+|---|---|---|
+| List jobs | `v1.cron.list` | `cron.list()`, with `lastRun`, `nextRun`, `runCount`, and `running` |
+| Cancel a job | `v1.cron.cancel({ name })` | `cron.cancel(id)`, or `cancel()` on the returned job |
+| Run events | `cron.fired` | `vm.onCronEvent` with `cron:fire`, `cron:complete`, and `cron:error` |
+
+In the library, pass `scheduleDriver` to `AgentOs.create()` to replace the
+default timer-based driver, for example with one backed by your own durable
+scheduler.

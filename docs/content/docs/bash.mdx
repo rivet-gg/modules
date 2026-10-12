@@ -9,8 +9,11 @@ Run bash inside the VM. Shell commands are the simplest agentOS execution
 surface, and share the same execution lifecycle as JavaScript, TypeScript,
 Python, and package workflows.
 
-- **`process.exec()`**: Runs a bash command line. Use for pipes, redirects, globs.
-- **`process.execFile()`**: Injection-safe; args are never parsed by a shell.
+- **Hosted `v1.process.run`** takes an executable and an argument array. Run
+  `sh` with `-c` for pipes, redirects, and globs.
+- **Library `process.exec()`** runs a bash command line, and
+  **`process.execFile()`** runs an executable whose arguments are never parsed
+  by a shell.
 - **In-VM only**: Commands run inside the VM, never in the host shell.
 
 For multi-step work, consider [JavaScript](/agentos/docs/javascript) or
@@ -19,57 +22,112 @@ instead of a chain of shell calls.
 
 ## Run commands
 
-<CodeSnippet file="examples/quickstart/bash/index.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+// Pipes, redirects, and globs need a shell, so run `sh -c`.
+const piped = await vm.v1.process.run({
+	command: "sh",
+	args: ["-c", "echo 'hello world' | tr a-z A-Z"],
+	options: { captureStdio: true },
+});
+console.log(piped.stdout.trim()); // "HELLO WORLD"
+
+// Arguments are passed verbatim, so nothing is parsed by a shell.
+const raw = await vm.v1.process.run({
+	command: "echo",
+	args: ["$(whoami)"],
+	options: { captureStdio: true },
+});
+console.log(raw.stdout.trim(), raw.status.exitCode); // "$(whoami)" 0
+```
+
+<CodeSnippet file="examples/quickstart/bash/index.ts" title="Library" />
+
+</CodeGroup>
 
 ## Background and interactive work
 
-`spawn` starts a long-lived process and returns a `pid`. From there you get
+`spawn` starts a long-lived process and returns a handle. From there you get
 stdin, a PTY, output replay, signals, and waiting.
 
-<CodeSnippet file="examples/quickstart/bash/spawn.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const shell = await vm.v1.process.spawn({ command: "sh", args: [] });
+
+await vm.v1.process.stdin.write({ process: shell, data: "echo from the background\n" });
+await vm.v1.process.stdin.close({ process: shell });
+
+await vm.v1.process.wait({ process: shell });
+const replay = await vm.v1.process.output.read({ process: shell });
+console.log(replay.events.length);
+```
+
+<CodeSnippet file="examples/quickstart/bash/spawn.ts" title="Library" />
+
+</CodeGroup>
 
 ## Files and software
 
-Shell commands see the persistent [filesystem](/agentos/docs/filesystem) shared by
+Shell commands see the same [filesystem](/agentos/docs/filesystem) as
 JavaScript and Python. Common POSIX commands ship by default; more is
 projected through the [software registry](/agentos/docs/software).
 
-<CodeSnippet file="examples/quickstart/bash/files.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+await vm.v1.process.run({
+	command: "sh",
+	args: ["-c", "printf 'a\\nb\\nc\\n' > /workspace/out.txt"],
+});
+
+const lines = await vm.v1.process.run({
+	command: "sh",
+	args: ["-c", "cat /workspace/out.txt | wc -l"],
+	options: { captureStdio: true },
+});
+console.log(lines.stdout.trim()); // "3"
+```
+
+<CodeSnippet file="examples/quickstart/bash/files.ts" title="Library" />
+
+</CodeGroup>
 
 ## Host functions
 
-[Host functions](/agentos/docs/host-functions) appear as commands, so pipelines use trusted host
-capabilities without putting credentials inside the VM.
+[Host functions](/agentos/docs/host-functions) appear as commands, so pipelines
+use trusted host capabilities without putting credentials inside the VM. Host
+functions are library-only.
 
-<CodeSnippet file="examples/embedded/host-functions-bash.ts" />
+<CodeSnippet file="examples/embedded/host-functions-bash.ts" title="Library" />
 
 ## Permissions, limits, and timeouts
 
 Every command inherits the VM [permission policy](/agentos/docs/permissions) and
 [resource limits](/agentos/docs/resource-limits).
 
-<CodeSnippet file="examples/quickstart/bash/limits.ts" />
-
-## Hosted API
-
-Hosted VMs have no shell-string `exec`. Use `v1.process.run` with an explicit
-executable and argument array, or run `sh` with `-c` for shell parsing.
-
-```ts TypeScript @nocheck
-const result = await vm.v1.process.run({
-	command: "sh",
-	args: ["-c", "echo hello && ls /home/agentos"],
-	options: { captureStdio: true },
-});
-console.log(result.stdout, result.status.exitCode);
-```
-
-See [Processes & Shells](/agentos/docs/processes#hosted-api).
+<CodeSnippet file="examples/quickstart/bash/limits.ts" title="Library" />
 
 ## Embedded API
 
-The examples above use `AgentOs.create()`. The host owns `dispose()`, and files
-only outlive the VM when its root filesystem is stored in SQLite; see
+The library examples use `AgentOs.create()`. The host owns `dispose()`, and
+files only outlive the VM when its root filesystem is stored in SQLite; see
 [Persistence](/agentos/docs/persistence).
 
 Read more in the [embedded API quickstart](/agentos/docs/quickstart-embedded).

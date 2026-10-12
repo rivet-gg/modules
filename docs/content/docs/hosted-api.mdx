@@ -18,7 +18,7 @@ The contract is in alpha (`agentos-sdk.dev/v1alpha1`). The actor and the
 
 | Field | Value |
 |---|---|
-| **Base URL** | `https://api.rivet.dev` |
+| **Base URL** | `https://api.rivet.dev`, or your control plane when [self-hosting](/agentos/docs/self-hosting) |
 | **Actor name** | `agentOS` |
 | **Create a VM** | `PUT /actors?namespace={namespace}` |
 | **Call an action** | `POST /gateway/{vm_id}/action/v1.{group}.{action}` |
@@ -49,11 +49,7 @@ input on first creation:
 ```ts TypeScript @nocheck
 import { createAgentOsClient } from "@rivet-dev/agentos";
 
-const client = createAgentOsClient({
-	endpoint: "https://api.rivet.dev",
-	namespace: process.env.RIVET_NAMESPACE,
-	token: process.env.RIVET_TOKEN,
-});
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
 
 const vm = client.agentOS.getOrCreate(["my-vm"], {
 	createWithInput: { config: { environment: { CI: "true" } } },
@@ -128,13 +124,14 @@ Process, terminal, context, and network stream handles carry the VM generation,
 for example `{ "generation": 1, "pid": 42 }` for a process. The hosted contract
 has no agent sessions and no shell-string `process.exec`.
 
-Each capability page documents its actions under **Hosted API**:
-[Filesystem](/agentos/docs/filesystem#hosted-api),
-[Processes & Shells](/agentos/docs/processes#hosted-api),
-[Networking](/agentos/docs/networking#hosted-api),
-[Software](/agentos/docs/software#hosted-api),
-[Crons & Loops](/agentos/docs/cron#hosted-api), and
-[Resource Limits](/agentos/docs/resource-limits#hosted-api).
+Each capability page shows its hosted actions in the **Hosted** tab of its
+examples:
+[Filesystem](/agentos/docs/filesystem),
+[Processes & Shells](/agentos/docs/processes),
+[Networking & Previews](/agentos/docs/networking),
+[Software](/agentos/docs/software),
+[Crons & Loops](/agentos/docs/cron), and
+[Resource Limits](/agentos/docs/resource-limits).
 
 ## Configuration
 
@@ -168,7 +165,7 @@ The config contains, among others:
 | `filesystem` | Root and mounts from the hosted registry, such as `{ "root": { "type": "durable" } }`. |
 | `software` | Package sources, such as `[{ "url": "https://…/tool.aospkg" }]`. |
 | `preview` | Preview defaults, such as `{ "defaultTtlMs": 30000 }`. |
-| `limits` | [Resource limits](/agentos/docs/resource-limits#hosted-api). |
+| `limits` | [Resource limits](/agentos/docs/resource-limits). |
 
 Creation input is used only when the actor is first created. Calling
 `getOrCreate` with different input for an existing key does not reconfigure

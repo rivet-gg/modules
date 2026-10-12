@@ -1,0 +1,50 @@
+---
+title: "Self-Hosting"
+description: "Run hosted agentOS VMs on your own infrastructure with the Rivet control plane and the agentOS worker image."
+---
+
+Hosted VMs run on Rivet Cloud or on your own infrastructure. Self-hosting needs
+two processes: the Rivet control plane, and the agentOS worker that runs the
+`agentOS` actor and its VMs.
+
+<Steps>
+<Step title="Run the Rivet control plane">
+
+```sh
+docker run -p 6420:6420 rivetdev/engine
+```
+
+See the [self-hosting guides](/docs/deploy/) for other ways to run it.
+
+</Step>
+<Step title="Run the agentOS worker">
+
+The worker is what actually runs your VMs. It connects to the control plane:
+
+```sh
+docker run \
+  --add-host=host.docker.internal:host-gateway \
+  -e RIVET_ENDPOINT=http://host.docker.internal:6420 \
+  rivetdev/services
+```
+
+</Step>
+<Step title="Point your client at it">
+
+Create a client pointed at your control plane, then create a VM by ID:
+
+```ts TypeScript @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "http://localhost:6420" });
+
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+```
+
+</Step>
+</Steps>
+
+Everything in the [hosted quickstart](/agentos/docs/quickstart-hosted) and the
+[Hosted VM HTTP API](/agentos/docs/hosted-api) works the same way. Use
+`http://localhost:6420`, or wherever your control plane is reachable, as the
+base URL instead of `https://api.rivet.dev`.

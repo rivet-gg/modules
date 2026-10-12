@@ -74,7 +74,7 @@
 					"icon": "faTerminal"
 				},
 				{
-					"title": "Networking",
+					"title": "Networking & Previews",
 					"href": "/agentos/docs/networking",
 					"icon": "faGlobe"
 				},
@@ -118,6 +118,10 @@
 				{
 					"title": "Hosted VM HTTP API",
 					"href": "/agentos/docs/hosted-api"
+				},
+				{
+					"title": "Self-Hosting",
+					"href": "/agentos/docs/self-hosting"
 				},
 				{
 					"title": "Custom Software",
@@ -208,7 +212,7 @@
 									"href": "/agentos/docs/architecture/limits-and-observability"
 								},
 								{
-									"title": "Persistence",
+									"title": "Persistence & Sleep",
 									"href": "/agentos/docs/persistence"
 								}
 							]

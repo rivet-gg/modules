@@ -1,53 +1,20 @@
 ---
 title: "Filesystem"
-description: "Read and write VM files, and mount host directories, S3, and other filesystem backends."
+description: "Read and write VM files, and mount durable storage, host directories, S3, and other filesystem backends."
 ---
 
-File operations live under `vm.filesystem`. Every language and shell in the VM
-sees the same filesystem, so files written here are immediately visible to
-Bash, JavaScript, Python, and installed software.
+Every language and shell in the VM sees the same filesystem, so files written
+here are immediately visible to Bash, JavaScript, Python, and installed
+software.
 
-<CodeSnippet file="examples/embedded/vm.ts" region="filesystem" />
+<CodeGroup>
 
-The namespace also provides batch `readFiles` and `writeFiles`, `stat`,
-`readdirEntries`, `exists`, `move`, `remove`, `export` for a snapshot of the
-root filesystem, and `mount`, `unmount`, and `listMounts` for mounts on a
-running VM. `stat` and `readdirRecursive` report file lengths as `size`.
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
 
-## Root filesystem
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
 
-By default, each VM uses an in-memory overlay over the bundled base image.
-Writes survive for the VM's lifetime and are discarded on `dispose()`. See
-[Persistence](/agentos/docs/persistence) to keep files across VM recreation.
-
-## Mounts
-
-Mount additional filesystem backends at any guest path. Native mount plugins
-are identified by an `id` and a `config` object:
-
-| Plugin | Backend |
-|---|---|
-| `host_dir` | A directory on the host, confined to the configured path |
-| `chunked_s3` | An S3 or S3-compatible bucket |
-| `chunked_sqlite` | The VM's SQLite `database` |
-| `google_drive` | A Google Drive folder |
-
-<CodeSnippet file="examples/embedded/mounts.ts" />
-
-Host-backed mounts are confined to their configured root on every operation,
-including symlink and `..` resolution. `nodeModulesMount()` is a shortcut that
-exposes a host `node_modules` tree read-only at `/root/node_modules`.
-
-File transfers are bounded. An operation that exceeds a payload limit fails
-with a typed limit error that names the limit.
-
-## Hosted API
-
-Hosted VMs expose the same operations as `v1.filesystem.*` actions. Byte counts
-in `v1.filesystem.stat` and `v1.filesystem.readdirRecursive` are reported as
-`sizeBytes`.
-
-```ts TypeScript @nocheck
 await vm.v1.filesystem.writeFile({
 	path: "/home/agentos/hello.txt",
 	content: "Hello, world!",
@@ -57,32 +24,71 @@ const content = await vm.v1.filesystem.readFile({
 });
 console.log(new TextDecoder().decode(content));
 
-// Batch writes create parent directories automatically.
+await vm.v1.filesystem.mkdir({ path: "/home/agentos/src", recursive: false });
 await vm.v1.filesystem.writeFiles({
 	entries: [
-		{ path: "/home/agentos/src/index.ts", content: "console.log('hello');" },
+		{ path: "/home/agentos/src/index.ts", content: "console.log('hi');" },
+		{
+			path: "/home/agentos/src/utils.ts",
+			content: "export const add = (a: number, b: number) => a + b;",
+		},
 	],
 });
 
-const tree = await vm.v1.filesystem.readdirRecursive({
+const entries = await vm.v1.filesystem.readdirRecursive({
 	path: "/home/agentos",
 	exclude: [],
 });
-for (const entry of tree) console.log(entry.type, entry.path, entry.sizeBytes);
+for (const entry of entries) {
+	console.log(entry.type, entry.path);
+}
 ```
 
-A hosted VM's filesystem configuration is a closed registry. By default, each
-VM uses an ephemeral in-memory overlay over the bundled base image. Its writes
-survive for that VM's lifetime but are discarded when the VM is replaced. Use a
-`durable` root or mount in the VM's config when files must survive VM
-replacement:
+<CodeSnippet file="examples/embedded/vm.ts" region="filesystem" title="Library" />
 
-```ts TypeScript @nocheck
+</CodeGroup>
+
+Both APIs also provide batch `readFiles`, `stat`, `readdir`, `readdirEntries`,
+`exists`, `move`, `remove`, `export` for a snapshot of the root filesystem, and
+`listMounts`. Hosted VMs report byte counts in `stat` and `readdirRecursive` as
+`sizeBytes`; the library reports them as `size`. The library can also `mount`
+and `unmount` filesystems on a running VM.
+
+## Root filesystem
+
+By default, each VM uses an in-memory overlay over the bundled base image.
+Writes survive for the VM's lifetime and are discarded when the VM is replaced
+or disposed. See [Persistence](/agentos/docs/persistence) to keep files across
+VM recreation.
+
+## Mounts
+
+Mount additional filesystem backends at any guest path.
+
+Hosted VMs resolve filesystem configuration through a closed registry, such as
+`durable` storage. Unknown backends, JavaScript VFS objects, callbacks, and host
+paths are rejected. The library accepts native mount plugins, each identified
+by an `id` and a `config` object:
+
+| Plugin | Backend |
+|---|---|
+| `host_dir` | A directory on the host, confined to the configured path |
+| `chunked_s3` | An S3 or S3-compatible bucket |
+| `chunked_sqlite` | The VM's SQLite `database` |
+| `google_drive` | A Google Drive folder |
+
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+
+// Mount durable storage at /data when the VM is first created.
 const vm = client.agentOS.getOrCreate(["my-vm"], {
 	createWithInput: {
 		config: {
 			filesystem: {
-				root: { type: "durable" },
 				mounts: [{ path: "/data", backend: { type: "durable" } }],
 			},
 		},
@@ -90,6 +96,14 @@ const vm = client.agentOS.getOrCreate(["my-vm"], {
 });
 ```
 
-Unknown backends, JavaScript VFS objects, callbacks, and host paths are
-rejected, so host-directory and other host-backed mounts are available only
-through the embedded API.
+<CodeSnippet file="examples/embedded/mounts.ts" title="Library" />
+
+</CodeGroup>
+
+Host-backed mounts are confined to their configured root on every operation,
+including symlink and `..` resolution. `nodeModulesMount()` is a library
+shortcut that exposes a host `node_modules` tree read-only at
+`/root/node_modules`.
+
+File transfers are bounded. An operation that exceeds a payload limit fails
+with a typed limit error that names the limit.

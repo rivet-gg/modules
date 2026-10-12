@@ -3,10 +3,11 @@ title: "Permissions"
 description: "Constrain untrusted guest filesystem, process, network, environment, and host function access."
 ---
 
-Pass a permission tree as `permissions` when creating the VM. The trusted
-sidecar enforces it for every guest operation.
+Pass a permission tree when creating the VM. The trusted sidecar enforces it
+for every guest operation. Hosted VMs take the same serializable tree in their
+creation config or a later complete `v1.config.set` replacement.
 
-<CodeSnippet file="examples/embedded/permissions.ts" />
+<CodeSnippet file="examples/embedded/permissions.ts" title="Library" />
 
 The tree has one scope per capability: `fs`, `network`, `childProcess`,
 `process`, `env`, and `hostFunction`. A scope can be `"allow"`, `"deny"`, or a
@@ -16,14 +17,9 @@ patterns.
 Your policy is merged over the default, so an omitted scope keeps its default.
 By default the guest behaves like a sandboxed machine: its virtual filesystem,
 processes, environment, listeners, and loopback networking work, and outbound
-network access is limited to the sidecar's default allowlist. Host functions
-are governed by the `hostFunction` scope.
+network access is limited to the sidecar's default allowlist. Library host
+functions are governed by the `hostFunction` scope.
 
 See the [Security Model](/agentos/docs/security-model) for the trust boundary
 these policies enforce.
 
-## Hosted API
-
-Hosted VMs take the same serializable permission tree in their creation config
-or a later complete `v1.config.set` replacement. Hosted VMs do not expose host
-functions.

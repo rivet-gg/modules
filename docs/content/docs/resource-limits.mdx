@@ -3,10 +3,35 @@ title: "Resource Limits"
 description: "Configure bounded VM, process, JavaScript, Python, and WASM resources."
 ---
 
-Pass `limits` when creating the VM. The sidecar applies them during VM creation,
-and `onLimitWarning` reports near-limit pressure to the embedding process.
+Pass a `limits` tree in the VM's configuration. The sidecar applies it when the
+VM starts. Near-limit pressure is reported as the `vm.limitWarning` event on a
+hosted VM, or through `onLimitWarning` in the library.
 
-<CodeSnippet file="examples/embedded/limits.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+await vm.v1.config.set({
+	config: {
+		limits: {
+			tls: { maxBufferedBytes: 2048 },
+			execution: { completedTtlMs: 60_000, liveExecutionWarningThreshold: 32 },
+			agentosPackages: { maxMounts: 8192 },
+		},
+	},
+});
+
+// Changed limits apply to the next VM generation.
+await vm.v1.vm.restart({});
+```
+
+<CodeSnippet file="examples/embedded/limits.ts" title="Library" />
+
+</CodeGroup>
 
 Use `limits.tls.maxBufferedBytes` to bound TLS plaintext buffering.
 `limits.execution.completedTtlMs` and `limits.execution.maxCompletedExecutions`
@@ -35,37 +60,16 @@ a clean stop. Close completion can no longer be confirmed, so the VM stays
 quarantined until the sidecar process restarts, even if local resource counts
 reach zero. Quarantined VMs count toward VM admission capacity.
 
-Limits are fixed for the life of a VM. To change them, dispose the VM and
-create a new one with the new limits.
+Limits are fixed for the life of a VM. To change them on a hosted VM, update
+the config and call `v1.vm.restart`. In the library, dispose the VM and create
+a new one with the new limits. The hosted actor also has a fixed ten-second
+shutdown wait; raising the sidecar deadline does not extend it.
 
 ## Sidecar limits
 
-VMs share a sidecar process by default. Limits that apply to the whole
+Library VMs share a sidecar process by default. Limits that apply to the whole
 process, such as `runtime.executor.maxActiveVms`, are set when creating a
 dedicated sidecar with `AgentOs.createSidecar()`, as in the example above.
-
-## Hosted API
-
-Hosted VMs take the same `limits` tree in their durable config. Set it at
-creation or with `v1.config.set`, and apply changed limits with
-`v1.vm.restart`. Near-limit pressure is reported as the `vm.limitWarning` event.
-
-```ts TypeScript @nocheck
-await vm.v1.config.set({
-	config: {
-		limits: {
-			tls: { maxBufferedBytes: 2048 },
-			execution: { completedTtlMs: 60_000, liveExecutionWarningThreshold: 32 },
-			agentosPackages: { maxMounts: 8192 },
-		},
-	},
-});
-await vm.v1.vm.restart({});
-```
-
-The hosted actor also has a fixed ten-second shutdown wait; raising the sidecar
-deadline does not extend it. Exceeding it reports a timeout, not confirmed
-shutdown.
 
 ## Embedded API
 

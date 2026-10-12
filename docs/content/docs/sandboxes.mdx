@@ -4,7 +4,8 @@ description: "Mount a full external sandbox into an agentOS VM for workloads tha
 ---
 
 When a workload needs a full Linux environment, attach an external sandbox to
-the VM with the `sandbox` option. agentOS mounts the sandbox filesystem into
+a library VM with the `sandbox` option. External sandboxes rely on trusted host
+callbacks and mounts, so they are not available on hosted VMs. agentOS mounts the sandbox filesystem into
 the VM at `/mnt/sandbox` and registers `agentos-sandbox` host functions for
 running commands and listing processes in the sandbox.
 
@@ -19,7 +20,3 @@ process, so credentials for the sandbox provider stay on the host.
 See [agentOS vs Sandbox](/agentos/docs/versus-sandbox) to decide when a
 workload needs one.
 
-## Hosted API
-
-External sandboxes rely on trusted host callbacks and mounts, so they are not
-available on hosted VMs.

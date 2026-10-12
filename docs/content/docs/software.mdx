@@ -1,78 +1,46 @@
 ---
 title: "Software"
-description: "Install immutable .aospkg command packages at boot or while a VM is running."
+description: "Install immutable .aospkg command packages when a VM is created or while it is running."
 ---
 
 agentOS software ships as immutable `.aospkg` packages containing real compiled
 tools. Installed packages are projected read-only under
 `/opt/agentos/pkgs/<name>/<version>`, and their commands are linked under
 `/opt/agentos/bin`. Every VM includes a default bundle with `sh`, coreutils, and
-the standard CLI tools programs rely on. Pass `defaultSoftware: false` for a bare
-VM with only the software you list.
+the standard CLI tools programs rely on.
 
 Browse the available packages in the [registry](/agentos/docs/registry).
 
-## Install at boot
-
-Pass packages in `software` when creating the VM. Each entry is a
-`{ packagePath }` reference to a packed `.aospkg` file, which is what the
-`@agentos-software/*` packages in the agentOS repository export.
-
-<CodeSnippet file="examples/embedded/software.ts" />
-
-## Install while running
-
-`software.install` adds a package to a running VM. The source is either a remote
-HTTPS URL or a trusted local path, each with an optional exact
-`sha256:<64 lowercase hex>` digest. New commands are available on
-`/opt/agentos/bin` as soon as the call returns.
+## Registry packages
 
 Registry packages are published with each release under
 `https://releases.rivet.dev/agent-os/<version>/software/`, or `latest` for the
 newest release. Its `manifest.json` lists each package's name, digest, size,
-and path relative to the manifest.
+and path relative to the manifest. Registry software is not installed from npm;
+see [Publishing Software](/agentos/docs/custom-software/publishing).
 
-<CodeSnippet file="examples/embedded/software-install.ts" />
+## Install while running
 
-- `software.install(source)` returns the installed package's `packageId`,
-  `digest`, `sizeBytes`, `packageName`, `version`, and `commands`.
-- `software.uninstall(packageId)` removes a package installed through
-  `software.install` and its command links.
-- `software.installed()` lists packages installed through `software.install`.
-- `software.list()` reports every package that provides commands in the VM,
-  including boot-time and default software.
+Install a package into a running VM from an HTTPS URL, with an optional exact
+`sha256:<64 lowercase hex>` digest. The library also accepts a trusted local
+path.
 
-Only one software or mount mutation runs at a time per VM. A concurrent call
-fails with `invalid_state` instead of queueing.
+<CodeGroup>
 
-## Verification and caching
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
 
-The sidecar downloads a URL source under strict size, time, and redirect
-limits, verifies the bytes against the expected digest when one is given, and
-validates the package format before projecting it. The verified content digest
-is the package identity.
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
 
-Packages are cached per sidecar process by content digest, so VMs that share a
-sidecar reuse one verified copy. Repeat installs of the same bytes skip the
-download, and the bytes are always verified before projection.
+// Registry software is published as digest-addressed .aospkg files next to a
+// manifest. Use a release version, or `latest`.
+const base = "https://releases.rivet.dev/agent-os/latest/software/";
+const { artifacts } = await (await fetch(`${base}manifest.json`)).json();
+const ripgrep = artifacts.find((artifact) => artifact.name === "ripgrep");
 
-Registry software is not installed from npm. Each release uploads
-digest-addressed `.aospkg` files and a manifest to
-`releases.rivet.dev`; see
-[Publishing Software](/agentos/docs/custom-software/publishing).
-
-## Hosted API
-
-Hosted VMs install software from HTTPS URLs only. Software is part of the VM's
-durable configuration, so `v1.software.install` and `v1.software.uninstall` use
-the same revision checks as `v1.config.patch`.
-
-```ts TypeScript @nocheck
 const installed = await vm.v1.software.install({
-	source: {
-		url: "https://packages.example.com/ripgrep.aospkg",
-		digest: "sha256:<64 lowercase hex characters>",
-	},
+	source: { url: new URL(ripgrep.path, base).href, digest: ripgrep.digest },
 });
 if (installed.config.state === "restart_required") {
 	await vm.v1.vm.restart({});
@@ -85,18 +53,65 @@ for (const software of await vm.v1.software.list({})) {
 await vm.v1.software.uninstall({ packageId: installed.source.packageId });
 ```
 
-Software changes apply live when the VM is ready and its desired configuration
-is fully applied. Otherwise they update desired configuration and report
-`restart_required`; call `v1.vm.restart` to apply it. Uninstalling a desired
-package does not require a working VM or a fresh download.
+<CodeSnippet file="examples/embedded/software-install.ts" title="Library" />
 
-Both mutations return `{ source, software, config }`. `source` identifies the
-configured package, and `config` reports the new revision and state.
-`v1.software.list` reads the live installed set. Desired package sources live in
+</CodeGroup>
+
+On hosted VMs, software is part of the VM's durable configuration, so install
+and uninstall use the same revision checks as `v1.config.patch`. A change
+applies live when the VM is ready and its desired configuration is fully
+applied; otherwise it reports `restart_required`, and `v1.vm.restart` applies
+it. Both mutations return `{ source, software, config }`. `v1.software.list`
+reads the live installed set, and the desired package sources live in
 `v1.config.get`.
 
-Hosted workers share a digest-keyed package cache and warm popular packages at
-startup. See
+In the library, `software.install(source)` returns the installed package's
+`packageId`, `digest`, `sizeBytes`, `packageName`, `version`, and `commands`.
+`software.installed()` lists packages installed through `software.install`, and
+`software.list()` reports every package that provides commands in the VM. Only
+one software or mount mutation runs at a time per VM; a concurrent call fails
+with `invalid_state` instead of queueing.
+
+## Install when the VM is created
+
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+
+const vm = client.agentOS.getOrCreate(["my-vm"], {
+	createWithInput: {
+		config: {
+			software: [
+				{
+					url: "https://releases.rivet.dev/agent-os/latest/software/packages/git/<sha256>.aospkg",
+				},
+			],
+		},
+	},
+});
+```
+
+<CodeSnippet file="examples/embedded/software.ts" title="Library" />
+
+</CodeGroup>
+
+Hosted VMs take package URLs in their `software` config. The library takes
+`{ packagePath }` references to packed `.aospkg` files, which is what the
+`@agentos-software/*` packages in the agentOS repository export, and
+`defaultSoftware: false` for a bare VM with only the software you list.
+
+## Verification and caching
+
+Each URL source is downloaded under strict size, time, and redirect limits,
+verified against the expected digest when one is given, and validated before
+it is projected. The verified content digest is the package identity.
+
+Packages are cached by content digest, so VMs that share a worker or sidecar
+reuse one verified copy, and repeat installs of the same bytes skip the
+download. Hosted workers also warm popular packages at startup; see
 [Software Installation and Preloading](/agentos/docs/architecture/software-cache).
 
 ## Embedded API
