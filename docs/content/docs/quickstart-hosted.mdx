@@ -13,7 +13,7 @@ process instead, see the [library quickstart](/agentos/docs/quickstart).
 
 |  | [Hosted](/agentos/docs/quickstart-hosted) | [Library](/agentos/docs/quickstart) |
 |---|---|---|
-| **Runs** | As a durable Rivet Actor on Rivet Cloud or a [self-hosted](/agentos/docs/self-hosting) Docker image | Ephemeral, embedded inside your process as a library |
+| **Runs** | As a durable instance on Rivet Cloud or a [self-hosted](/agentos/docs/self-hosting) Docker image | Ephemeral, embedded inside your process as a library |
 | **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
 | **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
 | **Lifecycle** | Durable, sleeps when idle unless a process is running; see [actor lifecycle](/actors/docs/lifecycle) | Ephemeral, runs until `dispose()` or process exit |
