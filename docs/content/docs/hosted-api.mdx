@@ -130,7 +130,7 @@ examples:
 [Processes & Shells](/agentos/docs/processes),
 [Networking & Previews](/agentos/docs/networking),
 [Software](/agentos/docs/software),
-[Crons & Loops](/agentos/docs/cron), and
+[Crons & Schedules](/agentos/docs/cron), and
 [Resource Limits](/agentos/docs/resource-limits).
 
 ## Configuration
@@ -187,8 +187,8 @@ while the active generation reports that a restart is required.
 new generation from the latest desired config. Handles from an older
 generation fail with `stale_generation`.
 
-The actor sleeps when idle. The VM starts lazily on the first action after the
-actor wakes. Durable files and configuration survive sleep; running processes,
+The VM sleeps when idle unless a process is running, and starts lazily on the
+first action after it wakes; see [actor lifecycle](/actors/docs/lifecycle). Durable files and configuration survive sleep; running processes,
 terminals, contexts, and open streams do not.
 
 ## Events and replay

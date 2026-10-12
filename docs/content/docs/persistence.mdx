@@ -43,9 +43,10 @@ language contexts, open streams, and live subscriptions do not.
 
 ## Sleep
 
-A hosted VM's actor sleeps when idle and reports `vm.shutdown` with reason
-`"sleep"`. The VM starts lazily on the first action after wake. Durable files,
-configuration, and cron jobs survive sleep.
+A hosted VM sleeps when idle unless a process is running, and reports
+`vm.shutdown` with reason `"sleep"`. The VM starts lazily on the first action
+after wake. Durable files, configuration, and cron jobs survive sleep. See
+[actor lifecycle](/actors/docs/lifecycle).
 
 Library durable state uses `agentos_core_*` tables and filesystem storage uses
 `agentos_fs_*`. Each owner has an independent schema version and migration

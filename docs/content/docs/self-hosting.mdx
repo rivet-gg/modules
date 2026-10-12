@@ -16,6 +16,7 @@ it needs neither.
 | **Runs** | As the prebuilt `agentOS` Rivet Actor on Rivet Cloud or [self-hosted](/agentos/docs/self-hosting) | Inside your Node.js process |
 | **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
 | **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
+| **Lifecycle** | Sleeps when idle unless a process is running; see [actor lifecycle](/actors/docs/lifecycle) | Runs until `dispose()` |
 | **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
 | **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
 | **Host access** | None; configuration is serializable only | Host functions, host mounts, external sandboxes |

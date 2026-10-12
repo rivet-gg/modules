@@ -15,6 +15,7 @@ durable VMs by ID and control them over HTTP instead, see the
 | **Runs** | As the prebuilt `agentOS` Rivet Actor on Rivet Cloud or [self-hosted](/agentos/docs/self-hosting) | Inside your Node.js process |
 | **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
 | **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
+| **Lifecycle** | Sleeps when idle unless a process is running; see [actor lifecycle](/actors/docs/lifecycle) | Runs until `dispose()` |
 | **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
 | **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
 | **Host access** | None; configuration is serializable only | Host functions, host mounts, external sandboxes |
@@ -33,36 +34,45 @@ npm install @rivet-dev/agentos-core
 
 The VM runs until `dispose()` is called.
 
-## Files and processes
+## Show me the code
 
-<CodeSnippet file="examples/embedded/quickstart.ts" region="files-processes" />
+These examples continue from the `vm` above.
 
-`process.execFile` takes an executable and an argument array. Use
-`process.exec` when you need shell parsing.
+### Run Bash Commands
 
-## Output survives reconnects
+<CodeSnippet file="examples/embedded/quickstart.ts" region="bash" />
 
-Retain a process's output in the VM, then page through it with a cursor
-instead of losing it.
+### Work With the Filesystem
 
-<CodeSnippet file="examples/embedded/quickstart.ts" region="output" />
+<CodeSnippet file="examples/embedded/quickstart.ts" region="filesystem" />
 
-## Language runtimes
+### Run a Dev Server
+
+Start a Node.js server in the VM, then send it a request from your process.
+The listener is not exposed on the host network.
+
+<CodeSnippet file="examples/embedded/quickstart.ts" region="dev-server" />
+
+### Use the Language Runtimes
 
 Run JavaScript, TypeScript, and Python directly, with npm and pip installs
 built in.
 
 <CodeSnippet file="examples/embedded/quickstart.ts" region="languages" />
 
-## Install software
+### Schedule Cron Jobs
 
-Install tools from the [registry](/agentos/docs/registry) while the VM is
-running. Packages are verified against their digest before their commands
-appear on `/opt/agentos/bin`.
+<CodeSnippet file="examples/embedded/quickstart.ts" region="cron" />
+
+### Install Software
+
+Install tools from the [software registry](/agentos/docs/registry/software)
+while the VM is running. Packages are verified against their digest before
+their commands appear on `/opt/agentos/bin`.
 
 <CodeSnippet file="examples/embedded/quickstart.ts" region="software" />
 
-## Persist files
+### Persist Files
 
 The filesystem is in memory by default. Store the root filesystem in SQLite to
 keep files across VM recreation.
@@ -71,8 +81,6 @@ keep files across VM recreation.
 
 ## Next steps
 
-- Run commands with [Bash](/agentos/docs/bash), or code with
-  [Node.js](/agentos/docs/javascript) and [Python](/agentos/docs/python).
 - Expose your own functions to guest code with
   [host functions](/agentos/docs/host-functions).
 - Lock the VM down with [Permissions](/agentos/docs/permissions) and
