@@ -25,10 +25,6 @@ process instead, see the [library quickstart](/agentos/docs/quickstart).
 
 ## Create a VM
 
-The VM is durable: calling `getOrCreate` with the same key reaches the same VM.
-It sleeps when idle unless a process is running, and wakes on the next request;
-see [actor lifecycle](/actors/docs/lifecycle).
-
 ### Rivet Cloud
 
 <Steps>
@@ -82,10 +78,6 @@ infrastructure.
 
 ## Show me the code
 
-These examples continue from the `vm` above. Each cURL example calls the same
-action over HTTP at `/gateway/$VM_ID/action/<action>`, with a token in
-`x-rivet-token`; see the [Hosted HTTP API](/agentos/docs/hosted-api).
-
 ### Run Bash Commands
 
 <CodeGroup>
@@ -100,7 +92,7 @@ const result = await vm.v1.process.run({
 console.log(result.stdout);
 ```
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.run" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
@@ -127,7 +119,7 @@ const file = await vm.v1.filesystem.readFile({
 });
 ```
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.filesystem.writeFile" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
@@ -171,7 +163,7 @@ const preview = await vm.v1.network.preview.create({
 await vm.v1.network.preview.expire({ token: preview.token });
 ```
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.filesystem.writeFile" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
@@ -213,7 +205,7 @@ const { value } = await vm.v1.python.evaluate({
 });
 ```
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.javascript.execute" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{"source": "console.log(1 + 2)"}]}'
@@ -238,7 +230,7 @@ await vm.v1.cron.schedule({
 });
 ```
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.cron.schedule" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
@@ -273,7 +265,7 @@ if (installed.config.state === "restart_required") {
 }
 ```
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.software.install" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
@@ -311,7 +303,7 @@ const userClient = createAgentOsClient({
 const userVm = userClient.getForId("agentOS", vmId);
 ```
 
-```bash cURL
+```bash HTTP
 curl -X POST "https://api.rivet.dev/auth/tokens" \
   -H "Authorization: Bearer $RIVET_TOKEN" \
   --json @- <<EOF

@@ -28,7 +28,7 @@ The contract is in alpha (`agentos-sdk.dev/v1alpha1`). The actor and the
 
 ## Create a VM
 
-```bash cURL
+```bash HTTP
 curl -X PUT "https://api.rivet.dev/actors?namespace=$RIVET_NAMESPACE" \
   -H "Authorization: Bearer $RIVET_TOKEN" \
   --json '{
@@ -63,7 +63,7 @@ Keep your admin token on the backend. To let a browser or other untrusted
 client call one VM directly, issue a JWT scoped to that VM. See
 [JWTs](/docs/jwt).
 
-```bash cURL
+```bash HTTP
 curl -X POST "https://api.rivet.dev/auth/tokens" \
   -H "Authorization: Bearer $RIVET_TOKEN" \
   --json @- <<EOF
@@ -90,7 +90,7 @@ Every public action is versioned under `v1`. Send the action's input as the
 single element of `args`. See [Call Action](/docs/api/gateway/call-action) for
 the gateway's routing options.
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.run" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
@@ -148,7 +148,7 @@ Setting a property to `null` removes the override, which selects its default.
 Both mutations accept `expectedRevision` for compare-and-set updates; a stale
 revision fails without changing durable state.
 
-```bash cURL
+```bash HTTP
 curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.config.patch" \
   -H "x-rivet-token: $VM_TOKEN" \
   --json '{"args": [{
