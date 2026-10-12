@@ -54,6 +54,7 @@ test("Rust crate publish order satisfies internal dependencies", () => {
 	assertBefore("agentos-execution", "agentos-native-sidecar");
 	assertBefore("agentos-native-sidecar-core", "agentos-native-sidecar");
 	assertBefore("agentos-sidecar-client", "agentos-native-sidecar");
+	assertBefore("agentos-client", "agentos-native-sidecar");
 });
 
 test("browser migration crates stay excluded from real publish discovery", () => {
@@ -84,8 +85,8 @@ test("discovers the publishable Rust crate subset from a workspace", () => {
 		}
 
 		assert.deepEqual(discoverRustCrates(root), [
-			"agentos-native-sidecar",
 			"agentos-client",
+			"agentos-native-sidecar",
 		]);
 	});
 });

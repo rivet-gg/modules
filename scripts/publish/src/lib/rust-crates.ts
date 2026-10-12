@@ -16,8 +16,8 @@ export const RUST_CRATE_ORDER = [
 	"agentos-execution",
 	"agentos-native-sidecar-core",
 	"agentos-sidecar-client",
-	"agentos-native-sidecar",
 	"agentos-client",
+	"agentos-native-sidecar",
 ] as const;
 
 export type PublishableRustCrate = (typeof RUST_CRATE_ORDER)[number];
