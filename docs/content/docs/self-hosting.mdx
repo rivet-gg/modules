@@ -1,5 +1,5 @@
 ---
-title: "Self-Hosting"
+title: "Self-Hosting (Hosted)"
 description: "Run hosted agentOS VMs on your own infrastructure with the Rivet control plane and the agentOS worker image."
 ---
 
@@ -49,15 +49,31 @@ docker run \
 </Step>
 <Step title="Point your client at it">
 
-Create a client pointed at your control plane, then create a VM by ID:
+Create a VM by ID on your control plane from TypeScript or plain HTTP:
+
+<CodeGroup>
 
 ```ts TypeScript @nocheck
+// npm install @rivet-dev/agentos
 import { createAgentOsClient } from "@rivet-dev/agentos";
 
 const client = createAgentOsClient({ endpoint: "http://localhost:6420" });
 
 const vm = client.agentOS.getOrCreate(["my-vm"]);
 ```
+
+```bash HTTP
+curl -X PUT "http://localhost:6420/actors?namespace=default" \
+  --json '{
+    "name": "agentOS",
+    "key": "my-vm",
+    "runner_name_selector": "services",
+    "crash_policy": "sleep"
+  }'
+# → { "actor": { "actor_id": "…" }, "created": true }
+```
+
+</CodeGroup>
 
 </Step>
 </Steps>

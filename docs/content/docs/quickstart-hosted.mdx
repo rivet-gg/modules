@@ -23,12 +23,6 @@ process instead, see the [library quickstart](/agentos/docs/quickstart).
 | **Previews** | Expiring preview URLs | None |
 | **Best for** | Long-lived VMs shared across clients | Embedding VMs in an existing backend |
 
-## Install
-
-```bash
-npm install @rivet-dev/agentos
-```
-
 ## Create a VM
 
 ### Rivet Cloud
@@ -46,9 +40,13 @@ When creating the project, choose agentOS as the product.
 </Step>
 <Step title="Point your client at it">
 
-Set `RIVET_NAMESPACE` and `RIVET_TOKEN` from your project, then create a VM by ID:
+Set `RIVET_NAMESPACE` and `RIVET_TOKEN` from your project, then create a VM by
+ID from TypeScript or plain HTTP:
+
+<CodeGroup>
 
 ```ts TypeScript @nocheck
+// npm install @rivet-dev/agentos
 import { createAgentOsClient } from "@rivet-dev/agentos";
 
 const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
@@ -56,14 +54,27 @@ const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
 const vm = client.agentOS.getOrCreate(["my-vm"]);
 ```
 
+```bash HTTP
+curl -X PUT "https://api.rivet.dev/actors?namespace=$RIVET_NAMESPACE" \
+  -H "Authorization: Bearer $RIVET_TOKEN" \
+  --json '{
+    "name": "agentOS",
+    "key": "my-vm",
+    "runner_name_selector": "services",
+    "crash_policy": "sleep"
+  }'
+# → { "actor": { "actor_id": "…" }, "created": true }
+```
+
+</CodeGroup>
+
 </Step>
 </Steps>
 
 ### Self-hosting
 
-Run the Rivet control plane and the agentOS worker on your own infrastructure,
-then create the client with `endpoint: "http://localhost:6420"`. See
-[Self-Hosting](/agentos/docs/self-hosting).
+See [Self-Hosting (Hosted)](/agentos/docs/self-hosting) to run hosted VMs on your own
+infrastructure.
 
 The VM is durable: calling `getOrCreate` with the same key reaches the same VM.
 It sleeps when idle unless a process is running, and wakes on the next request;
