@@ -28,11 +28,30 @@ it needs neither.
 <Steps>
 <Step title="Run the Rivet control plane">
 
+<Note>
+The control plane requires an admin token. See [Admin token](/docs/deploy/self-host/control-plane/configuration#admin-token).
+</Note>
+
 ```sh
-docker run -p 6420:6420 rivetdev/engine
+export RIVET_ADMIN_TOKEN=$(openssl rand -hex 32)
+
+docker run -p 6420:6420 \
+  -e RIVET__AUTH__ADMIN_TOKEN="$RIVET_ADMIN_TOKEN" \
+  rivetdev/engine
 ```
 
 See the [self-hosting guides](/docs/deploy/) for other ways to run it.
+
+</Step>
+<Step title="Register the agentOS worker pool">
+
+The agentOS worker connects to a pool named `services`:
+
+```sh
+curl -X PUT "http://localhost:6420/runner-configs/services?namespace=default" \
+  -H "Authorization: Bearer $RIVET_ADMIN_TOKEN" \
+  --json '{"datacenters": {"default": {"normal": {}}}}'
+```
 
 </Step>
 <Step title="Run the agentOS worker">
@@ -43,13 +62,15 @@ The worker is what actually runs your VMs. It connects to the control plane:
 docker run \
   --add-host=host.docker.internal:host-gateway \
   -e RIVET_ENDPOINT=http://host.docker.internal:6420 \
-  rivetdev/services
+  -e RIVET_TOKEN="$RIVET_ADMIN_TOKEN" \
+  rivetdev/services:0.2.0
 ```
 
 </Step>
 <Step title="Point your client at it">
 
-Create a VM by ID on your control plane from TypeScript or plain HTTP:
+Set `RIVET_TOKEN` to the admin token, then create a VM by ID on your control
+plane from TypeScript or plain HTTP:
 
 <CodeGroup>
 
@@ -64,6 +85,7 @@ const vm = client.agentOS.getOrCreate(["my-vm"]);
 
 ```bash HTTP
 curl -X PUT "http://localhost:6420/actors?namespace=default" \
+  -H "Authorization: Bearer $RIVET_ADMIN_TOKEN" \
   --json '{
     "name": "agentOS",
     "key": "my-vm",

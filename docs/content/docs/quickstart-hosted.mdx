@@ -127,18 +127,26 @@ curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.filesystem.writeFile" \
     "content": "Hello, world!"
   }]}'
 
-curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.filesystem.readFile" \
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.run" \
   -H "x-rivet-token: $VM_TOKEN" \
-  --json '{"args": [{"path": "/home/agentos/hello.txt"}]}'
+  --json '{"args": [{
+    "command": "cat",
+    "args": ["/home/agentos/hello.txt"],
+    "options": { "captureStdio": true }
+  }]}'
 ```
 
 </CodeGroup>
+
+`v1.filesystem.readFile` returns raw bytes, which the JSON encoding of the HTTP
+API cannot carry, so the HTTP example reads the file through a process.
 
 ### Run a Dev Server & Create Preview URLs
 
 Start a Node.js server in the VM, then expose its port through a signed URL
 that expires on its own, or revoke it early. A running server keeps the VM
-awake.
+awake. Open the preview at `/gateway/$VM_ID@$VM_TOKEN/request` followed by the
+returned `path`, with a token that can reach the VM.
 
 <CodeGroup>
 
@@ -255,7 +263,7 @@ their commands appear on `/opt/agentos/bin`.
 // Registry packages are published next to a manifest with each release.
 const base = "https://releases.rivet.dev/agent-os/latest/software/";
 const { artifacts } = await (await fetch(`${base}manifest.json`)).json();
-const ripgrep = artifacts.find((artifact) => artifact.name === "ripgrep");
+const ripgrep = artifacts.find((artifact: { name: string }) => artifact.name === "ripgrep");
 
 const installed = await vm.v1.software.install({
 	source: { url: new URL(ripgrep.path, base).href, digest: ripgrep.digest },
@@ -289,10 +297,22 @@ nothing else.
 ```ts TypeScript @nocheck
 // Backend: issue a token for this VM only
 const vmId = await vm.resolve();
-const { token } = await vm.issueToken({
-	subject: "user-123",
-	expiresIn: 3600,
+const response = await fetch("https://api.rivet.dev/auth/tokens", {
+	method: "POST",
+	headers: {
+		Authorization: `Bearer ${process.env.RIVET_TOKEN}`,
+		"Content-Type": "application/json",
+	},
+	body: JSON.stringify({
+		namespace: process.env.RIVET_NAMESPACE,
+		subject: "user-123",
+		duration: 3600,
+		grants: [
+			{ resource: "actor_gateway", target: { id: vmId }, operations: ["read"] },
+		],
+	}),
 });
+const { token } = await response.json();
 
 // Client: call the VM directly
 const userClient = createAgentOsClient({

@@ -37,7 +37,7 @@ const vm = client.agentOS.getOrCreate(["my-vm"]);
 // manifest. Use a release version, or `latest`.
 const base = "https://releases.rivet.dev/agent-os/latest/software/";
 const { artifacts } = await (await fetch(`${base}manifest.json`)).json();
-const ripgrep = artifacts.find((artifact) => artifact.name === "ripgrep");
+const ripgrep = artifacts.find((artifact: { name: string }) => artifact.name === "ripgrep");
 
 const installed = await vm.v1.software.install({
 	source: { url: new URL(ripgrep.path, base).href, digest: ripgrep.digest },
@@ -50,7 +50,8 @@ for (const software of await vm.v1.software.list({})) {
 	console.log(software.packageId, software.commands);
 }
 
-await vm.v1.software.uninstall({ packageId: installed.source.packageId });
+const { packageId } = installed.source;
+if (packageId) await vm.v1.software.uninstall({ packageId });
 ```
 
 <CodeSnippet file="examples/embedded/software-install.ts" title="Library" />
