@@ -76,8 +76,8 @@ EOF
 # → { "token": "…", "expires_ts": … }
 ```
 
-In TypeScript, `vm.issueToken({ subject, expiresIn })` issues the same token,
-and `client.getForId("agentOS", vmId)` reaches the VM with it.
+A client created with that token reaches the VM with
+`client.getForId("agentOS", vmId)`.
 
 ## Call an action
 

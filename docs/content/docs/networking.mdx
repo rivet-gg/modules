@@ -45,6 +45,11 @@ Hosted VMs can expose any port through an expiring preview. A preview is a
 signed URL path that proxies HTTP to a port inside the VM until it expires or is
 revoked. `config.preview.defaultTtlMs` sets the default lifetime.
 
+Requests reach a preview through the VM's gateway at
+`https://api.rivet.dev/gateway/{vm_id}@{token}/request{path}`, where `path` is
+the preview's returned path and `token` can reach the VM, such as a
+[scoped JWT](/agentos/docs/hosted-api#authentication).
+
 ```ts Hosted @nocheck
 import { createAgentOsClient } from "@rivet-dev/agentos";
 
