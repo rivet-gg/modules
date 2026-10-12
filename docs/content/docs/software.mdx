@@ -27,6 +27,11 @@ HTTPS URL or a trusted local path, each with an optional exact
 `sha256:<64 lowercase hex>` digest. New commands are available on
 `/opt/agentos/bin` as soon as the call returns.
 
+Registry packages are published with each release under
+`https://releases.rivet.dev/agent-os/<version>/software/`, or `latest` for the
+newest release. Its `manifest.json` lists each package's name, digest, size,
+and path relative to the manifest.
+
 <CodeSnippet file="examples/embedded/software-install.ts" />
 
 - `software.install(source)` returns the installed package's `packageId`,
@@ -51,8 +56,9 @@ Packages are cached per sidecar process by content digest, so VMs that share a
 sidecar reuse one verified copy. Repeat installs of the same bytes skip the
 download, and the bytes are always verified before projection.
 
-Registry software is not installed from npm. Releases upload digest-addressed
-`.aospkg` files and a manifest to object storage; see
+Registry software is not installed from npm. Each release uploads
+digest-addressed `.aospkg` files and a manifest to
+`releases.rivet.dev`; see
 [Publishing Software](/agentos/docs/custom-software/publishing).
 
 ## Hosted API
