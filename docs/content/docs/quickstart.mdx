@@ -22,17 +22,24 @@ durable VMs by ID and control them over HTTP instead, see the
 | **Previews** | Expiring preview URLs | None |
 | **Best for** | Long-lived VMs shared across clients | Embedding VMs in an existing backend |
 
-## Install
+## Create a VM
+
+<Steps>
+<Step title="Install the library">
 
 ```bash
 npm install @rivet-dev/agentos-core
 ```
 
-## Create a VM
+</Step>
+<Step title="Create a VM">
 
 <CodeSnippet file="examples/embedded/quickstart.ts" region="create" />
 
-The VM runs until `dispose()` is called.
+The VM runs until `dispose()` is called or your process exits.
+
+</Step>
+</Steps>
 
 ## Show me the code
 
