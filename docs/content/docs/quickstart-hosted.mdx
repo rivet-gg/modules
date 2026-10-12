@@ -1,0 +1,238 @@
+---
+title: "Quickstart: Hosted"
+description: "Create durable agentOS VMs by ID and control them from the RivetKit client or plain HTTP."
+skill: true
+---
+
+Hosted agentOS VMs run as the prebuilt `agentOS` Rivet Actor. Create a VM by
+key, then control it from the `@rivet-dev/agentos` client or plain HTTP. To run
+VMs inside your own Node.js process instead, see the
+[library quickstart](/agentos/docs/quickstart).
+
+## Which one should I use?
+
+|  | [Library](/agentos/docs/quickstart) | [Hosted](/agentos/docs/quickstart-hosted) |
+|---|---|---|
+| **Runs** | Inside your Node.js process | As the prebuilt `agentOS` Rivet Actor |
+| **Package** | `@rivet-dev/agentos-core` | `@rivet-dev/agentos`, or plain HTTP |
+| **VM identity** | A handle your process owns until `dispose()` | A durable VM you create by key and reach by ID |
+| **Configuration** | Passed to `AgentOs.create()` | Stored with the VM and versioned |
+| **Clients** | Your backend | Your backend, or browsers with a scoped JWT |
+| **Host access** | Host functions, host mounts, external sandboxes | None; configuration is serializable only |
+| **Previews** | None | Expiring preview URLs |
+| **Best for** | Embedding VMs in an existing backend | Long-lived VMs shared across clients |
+
+## Install
+
+```bash
+npm install @rivet-dev/agentos
+```
+
+## Create a VM
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({
+	endpoint: "https://api.rivet.dev",
+	namespace: process.env.RIVET_NAMESPACE,
+	token: process.env.RIVET_TOKEN,
+});
+
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+const vmId = await vm.resolve();
+```
+
+```bash cURL
+curl -X PUT "https://api.rivet.dev/actors?namespace=$RIVET_NAMESPACE" \
+  -H "Authorization: Bearer $RIVET_TOKEN" \
+  --json '{
+    "name": "agentOS",
+    "key": "my-vm",
+    "runner_name_selector": "services",
+    "crash_policy": "sleep"
+  }'
+# → { "actor": { "actor_id": "…" }, "created": true }
+```
+
+</CodeGroup>
+
+The VM is durable: calling `getOrCreate` with the same key reaches the same VM.
+The cURL examples below call it as `$VM_ID` with a token in `$VM_TOKEN`; see
+[authentication](/agentos/docs/hosted-api#authentication).
+
+## Files and processes
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+await vm.v1.filesystem.writeFile({
+	path: "/home/agentos/hello.txt",
+	content: "Hello, world!",
+});
+
+const result = await vm.v1.process.run({
+	command: "cat",
+	args: ["/home/agentos/hello.txt"],
+	options: { captureStdio: true },
+});
+console.log(result.stdout);
+```
+
+```bash cURL
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.filesystem.writeFile" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{
+    "path": "/home/agentos/hello.txt",
+    "content": "Hello, world!"
+  }]}'
+
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.run" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{
+    "command": "cat",
+    "args": ["/home/agentos/hello.txt"],
+    "options": { "captureStdio": true }
+  }]}'
+```
+
+</CodeGroup>
+
+`v1.process.run` takes an executable and an argument array. Run `sh` with `-c`
+when you need shell parsing.
+
+## Output survives reconnects
+
+Process output is retained in the VM. After a disconnect, page through it with
+a cursor instead of losing it.
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+const server = await vm.v1.process.spawn({
+	command: "node",
+	args: ["/home/agentos/server.js"],
+});
+
+// Later, from any client
+const { events, nextCursor } = await vm.v1.process.output.read({
+	process: server,
+});
+```
+
+```bash cURL
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.spawn" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{
+    "command": "node",
+    "args": ["/home/agentos/server.js"]
+  }]}'
+# → { "output": { "generation": 1, "pid": 42 } }
+
+# Later, from any client
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.output.read" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{"process": {"generation": 1, "pid": 42}}]}'
+```
+
+</CodeGroup>
+
+## Language runtimes
+
+Run JavaScript, TypeScript, and Python directly, with npm and pip installs
+built in.
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+await vm.v1.javascript.execute({ source: "console.log(1 + 2)" });
+
+const { value } = await vm.v1.python.evaluate({ expression: "21 * 2" });
+```
+
+```bash cURL
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.javascript.execute" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{"source": "console.log(1 + 2)"}]}'
+
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.python.evaluate" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{"expression": "21 * 2"}]}'
+```
+
+</CodeGroup>
+
+## Install software
+
+Install tools from the [registry](/agentos/docs/registry) while the VM is
+running. Packages are verified against their digest before their commands
+appear on `/opt/agentos/bin`.
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+// Registry packages are published next to a manifest with each release.
+const base = "https://releases.rivet.dev/agent-os/latest/software/";
+const { artifacts } = await (await fetch(`${base}manifest.json`)).json();
+const ripgrep = artifacts.find((artifact) => artifact.name === "ripgrep");
+
+const installed = await vm.v1.software.install({
+	source: { url: new URL(ripgrep.path, base).href, digest: ripgrep.digest },
+});
+if (installed.config.state === "restart_required") {
+	await vm.v1.vm.restart({});
+}
+```
+
+```bash cURL
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.software.install" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{
+    "source": {
+      "url": "https://releases.rivet.dev/agent-os/latest/software/packages/ripgrep/<sha256>.aospkg",
+      "digest": "sha256:<sha256>"
+    }
+  }]}'
+```
+
+</CodeGroup>
+
+## Persist files
+
+The filesystem is in memory by default. Give the VM a durable root when you
+create it to keep files across VM replacement.
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+const vm = client.agentOS.getOrCreate(["my-vm"], {
+	createWithInput: {
+		config: { filesystem: { root: { type: "durable" } } },
+	},
+});
+```
+
+```bash cURL
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.config.patch" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{"patch": {"filesystem": {"root": {"type": "durable"}}}}]}'
+
+curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.vm.restart" \
+  -H "x-rivet-token: $VM_TOKEN" \
+  --json '{"args": [{}]}'
+```
+
+</CodeGroup>
+
+Creation input is used only when the VM is first created. Change an existing
+VM's configuration with `v1.config.patch`; filesystem changes apply after
+`v1.vm.restart`.
+
+## Next steps
+
+- See the [Hosted VM HTTP API](/agentos/docs/hosted-api) for authentication,
+  configuration, events, errors, and every action.
+- Expose a VM port with [expiring previews](/agentos/docs/networking#hosted-api).
+- Schedule commands with [Crons & Loops](/agentos/docs/cron#hosted-api).

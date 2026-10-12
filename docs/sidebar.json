@@ -9,29 +9,19 @@
 					"icon": "faSquareInfo"
 				},
 				{
-					"title": "Quickstart",
+					"title": "Quickstart: Library",
 					"href": "/agentos/docs/quickstart",
 					"icon": "faForwardFast"
+				},
+				{
+					"title": "Quickstart: Hosted",
+					"href": "/agentos/docs/quickstart-hosted",
+					"icon": "faCloud"
 				},
 				{
 					"title": "agentOS vs Sandbox",
 					"href": "/agentos/docs/versus-sandbox",
 					"icon": "faScaleBalanced"
-				}
-			]
-		},
-		{
-			"title": "Hosted VMs",
-			"pages": [
-				{
-					"title": "Overview",
-					"href": "/agentos/docs/hosted",
-					"icon": "faCloud"
-				},
-				{
-					"title": "Hosted VM API",
-					"href": "/agentos/docs/actor-api",
-					"icon": "faBook"
 				}
 			]
 		},
@@ -125,6 +115,10 @@
 		{
 			"title": "Reference",
 			"pages": [
+				{
+					"title": "Hosted VM HTTP API",
+					"href": "/agentos/docs/hosted-api"
+				},
 				{
 					"title": "Custom Software",
 					"collapsible": true,
