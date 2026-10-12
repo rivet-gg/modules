@@ -1,5 +1,5 @@
 import type { ChildProcess } from "node:child_process";
-import { SidecarProcessExited } from "@rivet-dev/agentos-runtime-core/sidecar-client";
+import { SidecarProcessExited } from "../src/sidecar-errors.js";
 import { expect, test } from "vitest";
 import { AgentOs } from "../src/index.js";
 

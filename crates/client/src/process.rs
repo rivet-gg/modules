@@ -314,7 +314,28 @@ impl Drop for ExecRunCleanup {
 /// `on_stdout`/`on_stderr` mirror the TS `ExecOptions.onStdout`/`onStderr` raw-byte streaming
 /// callbacks. For `exec` they fire for the duration of the call; for `spawn` they are seeded into the
 /// stdout/stderr fan-out at spawn time (matching the TS initial-handler-set behavior).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StandaloneWasmBackend {
+    #[serde(rename = "v8")]
+    V8,
+    #[serde(rename = "wasmtime")]
+    Wasmtime,
+    #[serde(rename = "wasmtime-threads")]
+    WasmtimeThreads,
+}
+
+impl From<StandaloneWasmBackend> for wire::StandaloneWasmBackend {
+    fn from(value: StandaloneWasmBackend) -> Self {
+        match value {
+            StandaloneWasmBackend::V8 => Self::V8,
+            StandaloneWasmBackend::Wasmtime => Self::Wasmtime,
+            StandaloneWasmBackend::WasmtimeThreads => Self::WasmtimeThreads,
+        }
+    }
+}
+
 pub struct ExecOptions {
+    pub wasm_backend: Option<StandaloneWasmBackend>,
     pub env: BTreeMap<String, String>,
     pub cwd: Option<String>,
     pub stdin: Option<StdinInput>,
@@ -330,6 +351,7 @@ pub struct ExecOptions {
 impl Default for ExecOptions {
     fn default() -> Self {
         Self {
+            wasm_backend: None,
             env: BTreeMap::new(),
             cwd: Some(DEFAULT_EXEC_CWD.to_string()),
             stdin: None,
@@ -365,6 +387,7 @@ pub enum SpawnStdio {
 /// Callback-free options for portable `spawn`.
 #[derive(Default)]
 pub struct SpawnOptions {
+    pub wasm_backend: Option<StandaloneWasmBackend>,
     pub env: BTreeMap<String, String>,
     pub cwd: Option<String>,
     pub stdio: Option<SpawnStdio>,
@@ -567,6 +590,7 @@ impl AgentOs {
                     env,
                     cwd,
                     false,
+                    options.wasm_backend,
                 )
                 .await
         });
@@ -783,7 +807,7 @@ impl AgentOs {
     /// Spawn a process. SYNC; returns `{ pid }` only. Installs stdout/stderr fan-out over broadcast
     /// channels and wires exit via a background event-pump task. The user-facing `pid` is the
     /// SDK-allocated map key (the wire `process_id` is held inside the [`ProcessEntry`]).
-    pub fn spawn_process(
+    pub fn spawn(
         &self,
         command: &str,
         args: Vec<String>,
@@ -850,52 +874,20 @@ impl AgentOs {
         Ok(SpawnHandle { pid })
     }
 
-    /// Write to a spawned process's stdin. SYNC. Errors with `ProcessNotFound`.
-    pub fn write_process_stdin(
-        &self,
-        pid: u32,
-        data: StdinInput,
-    ) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
-        let chunk: Vec<u8> = stdin_to_bytes(data);
-        let this = self.clone();
-        tokio::spawn(async move {
-            if let Err(error) = this.write_wire_stdin(&process_id, chunk).await {
-                tracing::warn!(?error, pid, "write_process_stdin failed");
-            }
-        });
-        Ok(())
-    }
-
     /// Write stdin and wait for the sidecar acknowledgement.
-    pub async fn write_process_stdin_awaited(
+    pub async fn write_process_stdin(
         &self,
         pid: u32,
         data: StdinInput,
     ) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
+        let process_id = self.wait_for_process_start(pid).await?;
         self.write_wire_stdin(&process_id, stdin_to_bytes(data))
             .await
     }
 
-    /// Close a spawned process's stdin. SYNC. Errors with `ProcessNotFound`.
-    pub fn close_process_stdin(&self, pid: u32) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
-        let this = self.clone();
-        tokio::spawn(async move {
-            if let Err(error) = this.close_wire_stdin(&process_id).await {
-                tracing::warn!(?error, pid, "close_process_stdin failed");
-            }
-        });
-        Ok(())
-    }
-
     /// Close stdin and wait for the sidecar acknowledgement.
-    pub async fn close_process_stdin_awaited(
-        &self,
-        pid: u32,
-    ) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
+    pub async fn close_process_stdin(&self, pid: u32) -> std::result::Result<(), ClientError> {
+        let process_id = self.wait_for_process_start(pid).await?;
         self.close_wire_stdin(&process_id).await
     }
 
@@ -1565,7 +1557,54 @@ impl AgentOs {
             .ok_or(ClientError::ProcessNotFound(pid))
     }
 
+    async fn wait_for_process_start(&self, pid: u32) -> std::result::Result<String, ClientError> {
+        let (process_id, mut started, mut outcome) = self
+            .inner()
+            .processes
+            .read(&pid, |_, entry| {
+                (
+                    entry.process_id.clone(),
+                    entry.kernel_pid.subscribe(),
+                    entry.exit_tx.subscribe(),
+                )
+            })
+            .ok_or(ClientError::ProcessNotFound(pid))?;
+        loop {
+            if started.borrow().is_some() {
+                return Ok(process_id);
+            }
+            if let Some(result) = outcome.borrow().wait_result() {
+                return match result {
+                    Err(error) => Err(error),
+                    Ok(_) => Err(ClientError::Kernel {
+                        code: String::from("EPIPE"),
+                        message: format!("process {pid} exited before stdin was available"),
+                    }),
+                };
+            }
+            tokio::select! {
+                result = started.changed() => {
+                    if result.is_err() {
+                        return Err(ClientError::TerminationFailed {
+                            process_id,
+                            reason: String::from("process start observation closed before launch settled"),
+                        });
+                    }
+                }
+                result = outcome.changed() => {
+                    if result.is_err() {
+                        return Err(ClientError::TerminationFailed {
+                            process_id,
+                            reason: String::from("process outcome observation closed before launch settled"),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     /// Send the `Execute` wire request, mapping a rejection into [`ClientError::Kernel`].
+    #[allow(clippy::too_many_arguments)] // Keep the explicit wire fields together at this transport boundary.
     async fn send_execute(
         &self,
         process_id: &str,
@@ -1574,6 +1613,7 @@ impl AgentOs {
         env: BTreeMap<String, String>,
         cwd: Option<String>,
         retain_output: bool,
+        wasm_backend: Option<StandaloneWasmBackend>,
     ) -> std::result::Result<wire::ProcessStartedResponse, ClientError> {
         let ownership = self.vm_scope();
         let response = self
@@ -1590,6 +1630,7 @@ impl AgentOs {
                     cwd,
                     wasm_permission_tier: None,
                     retain_output,
+                    wasm_backend: wasm_backend.map(Into::into),
                 }),
             )
             .await?;
@@ -1800,14 +1841,19 @@ impl AgentOs {
         exit_tx: watch::Sender<ProcessOutcome>,
         kernel_pid_tx: watch::Sender<Option<u32>>,
     ) {
+        let mut env = options.env.clone();
+        if options.stream_stdin.unwrap_or(true) {
+            env.insert(String::from("AGENTOS_KEEP_STDIN_OPEN"), String::from("1"));
+        }
         match self
             .send_execute(
                 &process_id,
                 Some(command),
                 args,
-                options.env.clone(),
+                env,
                 options.cwd.clone(),
                 options.retain_output,
+                options.wasm_backend,
             )
             .await
         {
