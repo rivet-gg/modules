@@ -323,6 +323,12 @@ jobs:
             --source "$GITHUB_WORKSPACE/software-artifacts" --sha "$SHA" --name software
           pnpm --filter=publish exec tsx src/ci/bin.ts copy-r2 \
             --sha "$SHA" --version "$VERSION" --latest "$LATEST" --name software
+          curl --fail --silent --show-error --head --retry 6 --retry-delay 5 --retry-all-errors \
+            "https://releases.rivet.dev/agent-os/${VERSION}/software/default-software.json" >/dev/null
+          if [ "$LATEST" = "true" ]; then
+            curl --fail --silent --show-error --head --retry 6 --retry-delay 5 --retry-all-errors \
+              "https://releases.rivet.dev/agent-os/latest/software/default-software.json" >/dev/null
+          fi
 
   release-assets:
     needs: [context, build-sidecar, build-sidecar-darwin]
@@ -395,16 +401,19 @@ jobs:
           SHA: ${{ needs.context.outputs.sha }}
           LATEST: ${{ needs.context.outputs.latest }}
         run: |
-          set -uo pipefail
-          if [ -z "${R2_RELEASES_ACCESS_KEY_ID:-}" ] || [ -z "${R2_RELEASES_SECRET_ACCESS_KEY:-}" ]; then
-            echo "R2 credentials not configured; skipping R2 upload."
-            exit 0
-          fi
-          set -e
+          set -euo pipefail
+          test -n "$R2_RELEASES_ACCESS_KEY_ID"
+          test -n "$R2_RELEASES_SECRET_ACCESS_KEY"
           pnpm --filter=publish exec tsx src/ci/bin.ts upload-r2 \
             --source "$GITHUB_WORKSPACE/release-assets" --sha "$SHA"
           pnpm --filter=publish exec tsx src/ci/bin.ts copy-r2 \
             --sha "$SHA" --version "$VERSION" --latest "$LATEST"
+          curl --fail --silent --show-error --head --retry 6 --retry-delay 5 --retry-all-errors \
+            "https://releases.rivet.dev/agent-os/${VERSION}/sidecar/agentos-native-sidecar-x86_64-unknown-linux-gnu" >/dev/null
+          if [ "$LATEST" = "true" ]; then
+            curl --fail --silent --show-error --head --retry 6 --retry-delay 5 --retry-all-errors \
+              "https://releases.rivet.dev/agent-os/latest/sidecar/agentos-native-sidecar-x86_64-unknown-linux-gnu" >/dev/null
+          fi
 
   publish-crates:
     needs: [context, build-sidecar, release-assets]
