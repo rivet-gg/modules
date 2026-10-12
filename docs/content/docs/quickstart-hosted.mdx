@@ -25,6 +25,10 @@ process instead, see the [library quickstart](/agentos/docs/quickstart).
 
 ## Create a VM
 
+The VM is durable: calling `getOrCreate` with the same key reaches the same VM.
+It sleeps when idle unless a process is running, and wakes on the next request;
+see [actor lifecycle](/actors/docs/lifecycle).
+
 ### Rivet Cloud
 
 <Steps>
@@ -75,10 +79,6 @@ curl -X PUT "https://api.rivet.dev/actors?namespace=$RIVET_NAMESPACE" \
 
 See [Self-Hosting (Hosted)](/agentos/docs/self-hosting) to run hosted VMs on your own
 infrastructure.
-
-The VM is durable: calling `getOrCreate` with the same key reaches the same VM.
-It sleeps when idle unless a process is running, and wakes on the next request;
-see [actor lifecycle](/actors/docs/lifecycle).
 
 ## Show me the code
 
