@@ -3,9 +3,9 @@ title: "Architecture"
 description: "How Core, the sidecar, kernel, VFS, and executors fit together."
 ---
 
-`@rivet-dev/agentos-core` controls the same runtime from a trusted Node.js
-process. It may retain host-only state such as callbacks, binding handlers,
-mount plugins, local package paths, and custom scheduling.
+`@rivet-dev/agentos-core` controls the runtime from a trusted Node.js process.
+It may retain host-only state such as host function handlers, mount plugins,
+local package paths, and custom scheduling.
 
 ## Runtime boundary
 
@@ -31,5 +31,5 @@ Each owner advances only its own migration ladder. There is no legacy storage
 adoption path.
 
 The default VM root is an ephemeral in-memory overlay over the bundled base
-image. Configure durable filesystem storage for files that must survive VM
-replacement.
+image. Store the root filesystem in the VM's SQLite database for files that
+must survive VM recreation; see [Persistence](/agentos/docs/persistence).

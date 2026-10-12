@@ -22,7 +22,21 @@ driving [Bash](/agentos/docs/bash):
 
 `evaluate()` returns a JSON-serializable value.
 
-<CodeSnippet file="examples/python-quickstart/src/index.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const result = await vm.v1.python.evaluate({ expression: "21 * 2" });
+console.log(result.value); // 42
+```
+
+<CodeSnippet file="examples/python-quickstart/src/index.ts" title="Library" />
+
+</CodeGroup>
 
 A value the JSON encoder can't represent fails with
 `evaluation_serialization_failed` rather than silently losing the value.
@@ -31,40 +45,57 @@ A value the JSON encoder can't represent fails with
 
 `execute()` runs source and captures its output instead of returning a value.
 
-<CodeSnippet file="examples/python-sdk-overview/src/index.ts" />
+<CodeGroup>
 
-Executions are ephemeral, so capture stdio only when you want it — `"stderr"` for
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const result = await vm.v1.python.execute({
+	source: `print("hello from agentOS")`,
+});
+console.log(result);
+```
+
+<CodeSnippet file="examples/python-sdk-overview/src/index.ts" title="Library" />
+
+</CodeGroup>
+
+Executions are ephemeral, so capture stdio only when you want it: `"stderr"` for
 diagnostics, `"all"` for both streams. `onStdout`/`onStderr` stream live and work
 independently of capture.
 
 ## Pass data into code
 
-`inputs` hands host values to the guest as real objects, so data never gets
+In the library, `inputs` hands host values to the guest as real objects, so data never gets
 interpolated into source.
 
-<CodeSnippet file="examples/python-sdk-overview/src/inputs.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/inputs.ts" title="Library" />
 
 ## Keep state between calls
 
 Pass a `contextId` to keep globals, functions, imports, and modules alive in one
 interpreter.
 
-<CodeSnippet file="examples/python-sdk-overview/src/contexts.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/contexts.ts" title="Library" />
 
 Only inline `execute()`/`evaluate()` retain memory. Files, modules, installs, and
 Bash may pass the same id, but they run fresh. A context runs one operation at a
-time — reusing a busy `contextId` fails immediately.
+time, so reusing a busy `contextId` fails immediately. Contexts do not survive
+a hosted VM's sleep and wake; create them lazily on first use.
 
 ## Files, modules, and async
 
-<CodeSnippet file="examples/python-sdk-overview/src/modules.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/modules.ts" title="Library" />
 
 Awaited work counts against the deadline; unawaited `asyncio` tasks are not
 promised to survive between operations.
 
 ## Install packages
 
-<CodeSnippet file="examples/python-sdk-overview/src/packages.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/packages.ts" title="Library" />
 
 Installs modify the VM-wide filesystem, so a package installed once is importable
 by every later execution in that VM, in any language. Only one npm/Python
@@ -78,10 +109,10 @@ host: Pyodide builds of compiled packages such as Pillow come from
 
 ## Background processes and web servers
 
-`spawn*` starts a long-lived process and returns a `pid`. From there you get
+`spawn*` starts a long-lived process and returns a handle. From there you get
 stdin, output, signals, and waiting.
 
-<CodeSnippet file="examples/python-sdk-overview/src/spawn.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/spawn.ts" title="Library" />
 
 ## A full Linux environment underneath
 
@@ -89,29 +120,28 @@ There is a real Linux environment behind all of this, shared by every language.
 Files and installed packages are immediately visible to Bash, JavaScript, and
 other executions.
 
-<CodeSnippet file="examples/python-sdk-overview/src/platform.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/platform.ts" title="Library" />
 
 See [Filesystem](/agentos/docs/filesystem), [Processes & Shells](/agentos/docs/processes), and
-[Networking & Previews](/agentos/docs/networking).
+[Networking](/agentos/docs/networking).
 
 ## Host functions
 
 Python calls [host functions](/agentos/docs/host-functions) as normal commands via `subprocess`, so
-host credentials stay outside the VM.
+host credentials stay outside the VM. Host functions are library-only.
 
-<CodeSnippet file="examples/host-functions/exec-python.ts" />
+<CodeSnippet file="examples/embedded/host-functions-python.ts" title="Library" />
 
 ## Permissions, limits, and timeouts
 
 Every operation inherits the VM [permission policy](/agentos/docs/permissions) and
 [resource limits](/agentos/docs/resource-limits).
 
-<CodeSnippet file="examples/python-sdk-overview/src/limits.ts" />
+<CodeSnippet file="examples/python-sdk-overview/src/limits.ts" title="Library" />
 
 ## Embedded API
 
-The examples above already use `AgentOs.create()`. Python contexts remain
-available until the host calls `dispose()`; there is no actor sleep cycle to
-recreate them after.
+The library examples use `AgentOs.create()`. Python contexts remain available
+until the host calls `dispose()`.
 
 Read more in the [embedded API quickstart](/agentos/docs/quickstart-embedded).

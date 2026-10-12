@@ -52,15 +52,15 @@ The shared Core package-source model is closed:
 
 - `Url { url, expected_digest? }` downloads a remote artifact under strict
   size, time, and redirect limits;
-- `Path { path, expected_digest? }` reads a trusted local artifact and is
-  available only to embedded Core callers.
+- `Path { path, expected_digest? }` reads a trusted local artifact from the
+  host.
 
-The hosted actor accepts only `Url`. It cannot construct a host path, mount a
-package from the host filesystem, or receive a custom resolver callback.
+There is no custom resolver callback. A host that installs packages on behalf
+of untrusted users should accept only `Url` sources from them.
 
 Both variants verify the bytes before publishing them into the same
 process-local content-addressed cache. Cache identity is the content digest,
-not the URL. Installed packages are pinned while a VM generation uses them and
+not the URL. Installed packages are pinned while a VM uses them and
 otherwise participate in bounded LRU eviction.
 
 ## Command execution

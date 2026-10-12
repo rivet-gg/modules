@@ -20,6 +20,6 @@ payload.
 Commands are projected under `/opt/agentos/pkgs/<name>/<version>` and linked
 under `/opt/agentos/bin`. The sidecar reads the package projection live.
 
-The package format contains no hosted action, callback, or host-path metadata.
-The hosted actor accepts an HTTPS URL and optional exact digest; embedded Core
-also accepts a trusted local path.
+The package format contains no callback or host-path metadata. Install a package
+from an HTTPS URL or a trusted local path, each with an optional exact digest;
+see [Software](/agentos/docs/software).

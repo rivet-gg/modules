@@ -20,7 +20,21 @@ driving [Bash](/agentos/docs/bash):
 
 `evaluate()` returns a JSON-serializable value.
 
-<CodeSnippet file="examples/js-quickstart/src/index.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const sum = await vm.v1.javascript.evaluate({ expression: "1 + 2" });
+console.log(sum.value); // 3
+```
+
+<CodeSnippet file="examples/js-quickstart/src/index.ts" title="Library" />
+
+</CodeGroup>
 
 Returning `undefined`, a function, a symbol, or a circular value fails with
 `evaluation_serialization_failed` rather than silently losing the value.
@@ -29,27 +43,43 @@ Returning `undefined`, a function, a symbol, or a circular value fails with
 
 `execute()` runs source and captures its output instead of returning a value.
 
-<CodeSnippet file="examples/js-sdk-overview/src/index.ts" />
+<CodeGroup>
 
-Executions are ephemeral, so capture stdio only when you want it — `"stderr"` for
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const result = await vm.v1.javascript.execute({
+	source: `console.log("hello from agentOS")`,
+});
+console.log(result);
+```
+
+<CodeSnippet file="examples/js-sdk-overview/src/index.ts" title="Library" />
+
+</CodeGroup>
+
+Executions are ephemeral, so capture stdio only when you want it: `"stderr"` for
 diagnostics, `"all"` for both streams. `onStdout`/`onStderr` stream live and work
 independently of capture.
 
 ## Pass data into code
 
-`inputs` hands host values to the guest as real objects, so data never gets
+In the library, `inputs` hands host values to the guest as real objects, so data never gets
 interpolated into source.
 
-<CodeSnippet file="examples/js-sdk-overview/src/inputs.ts" />
+<CodeSnippet file="examples/js-sdk-overview/src/inputs.ts" title="Library" />
 
 ## Keep state between calls
 
 Pass a `contextId` to keep one V8 isolate and its global state alive across
 calls.
 
-<CodeSnippet file="examples/js-sdk-overview/src/contexts.ts" />
+<CodeSnippet file="examples/js-sdk-overview/src/contexts.ts" title="Library" />
 
-A context runs one operation at a time — reusing a busy `contextId` fails
+A context runs one operation at a time, so reusing a busy `contextId` fails
 immediately. Files, npm, Bash, and type checks may pass the same id, but they run
 in fresh processes and never touch retained memory.
 
@@ -63,19 +93,50 @@ Create the context explicitly before use; an unknown id fails instead of silentl
 starting fresh state. A context pins to the first inline language that used it,
 though JavaScript and TypeScript intentionally share one isolate.
 
-Contexts live for the VM lifetime. They do not survive actor sleep/wake, because
-the VM is disposed; create them lazily on the first stateful use after wake.
+Contexts live until the VM is disposed. They are in-memory state, so they do
+not survive a library VM recreated from the same `database`, or a hosted VM's
+sleep and wake. Create them lazily on first use.
 
 ## Type check before running
 
 Executing TypeScript transpiles it without a semantic check, so validate
 generated code explicitly.
 
-<CodeSnippet file="examples/js-typescript/src/index.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+// Type checking validates generated code before it executes.
+const checked = await vm.v1.typescript.check({
+	source: `const total: number = "not a number";`,
+});
+console.log(checked);
+```
+
+<CodeSnippet file="examples/js-typescript/src/index.ts" title="Library" />
+
+</CodeGroup>
 
 ## Install npm packages
 
-<CodeSnippet file="examples/js-sdk-overview/src/npm.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+await vm.v1.javascript.npm.install({});
+```
+
+<CodeSnippet file="examples/js-sdk-overview/src/npm.ts" title="Library" />
+
+</CodeGroup>
 
 Installs modify the VM-wide filesystem, so a package installed once is importable
 by every later execution in that VM, in any language. Only one npm/Python
@@ -83,10 +144,37 @@ mutation runs at a time per VM; a concurrent install fails with `execution_busy`
 
 ## Background processes and web servers
 
-`spawn` starts a long-lived process and returns a `pid`. From there you get
+`spawn` starts a long-lived process and returns a handle. From there you get
 stdin, output, signals, and waiting.
 
-<CodeSnippet file="examples/js-dev-servers/src/index.ts" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const server = await vm.v1.javascript.spawn({
+	source: `
+		import http from "node:http";
+		http.createServer((req, res) => res.end("ok")).listen(3000, "127.0.0.1");
+		await new Promise(() => {});
+	`,
+});
+
+// The listener stays inside the VM. No host port is exposed.
+const response = await vm.v1.network.fetch({
+	request: { port: 3000, path: "/health" },
+});
+console.log(response.status); // 200
+
+await vm.v1.process.signal({ process: server, signal: "SIGTERM" });
+```
+
+<CodeSnippet file="examples/js-dev-servers/src/index.ts" title="Library" />
+
+</CodeGroup>
 
 Spawned processes always start with fresh state, so they take no `contextId`.
 
@@ -96,29 +184,28 @@ There is a real Linux environment behind all of this, shared by every language.
 Files and installed packages are immediately visible to Bash, Python, and other
 executions.
 
-<CodeSnippet file="examples/js-sdk-overview/src/platform.ts" />
+<CodeSnippet file="examples/js-sdk-overview/src/platform.ts" title="Library" />
 
 See [Filesystem](/agentos/docs/filesystem), [Processes & Shells](/agentos/docs/processes), and
-[Networking & Previews](/agentos/docs/networking).
+[Networking](/agentos/docs/networking).
 
 ## Host functions
 
-Guest code invokes [host functions](/agentos/docs/host-functions) as ordinary typed commands, so host
-credentials stay outside the VM.
+Guest JavaScript calls [host functions](/agentos/docs/host-functions) as async globals, so host
+credentials stay outside the VM. Host functions are library-only.
 
-<CodeSnippet file="examples/host-functions/exec-javascript.ts" />
+<CodeSnippet file="examples/embedded/host-functions-javascript.ts" title="Library" />
 
 ## Permissions, limits, and timeouts
 
 Every operation inherits the VM [permission policy](/agentos/docs/permissions) and
 [resource limits](/agentos/docs/resource-limits).
 
-<CodeSnippet file="examples/js-sdk-overview/src/limits.ts" />
+<CodeSnippet file="examples/js-sdk-overview/src/limits.ts" title="Library" />
 
 ## Embedded API
 
-The examples above already use `AgentOs.create()`. Contexts remain available
-until the host calls `dispose()`; there is no actor sleep cycle to recreate them
-after.
+The library examples use `AgentOs.create()`. Contexts remain available until
+the host calls `dispose()`.
 
 Read more in the [embedded API quickstart](/agentos/docs/quickstart-embedded).

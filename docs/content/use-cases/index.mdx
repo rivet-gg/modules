@@ -22,7 +22,7 @@ Purpose-built for agents that write, test, and deploy code autonomously.
 
 Run long-lived commands asynchronously and observe their bounded output.
 
-- Durable files survive actor sleep and restart
+- Durable files survive VM recreation
 - Spawn and signal independent guest processes
 - Recover bounded output by sequence cursor
 - Monitor progress in real-time
@@ -58,7 +58,7 @@ generates reports on a schedule.
 Use agentOS as the execution layer beneath an external workflow system.
 
 - Isolated command execution
-- Durable files and configuration
+- Durable files
 - Scheduled command runs
 - Typed failures and resource limits
 

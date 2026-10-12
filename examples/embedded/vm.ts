@@ -1,17 +1,8 @@
 // docs:start boot
-import { mkdirSync } from "node:fs";
-import { resolve } from "node:path";
 import { AgentOs } from "@rivet-dev/agentos-core";
 
-// Embed a VM with the agentOS package. There is no actor runtime or
-// client/server split. `AgentOs.create()` returns a handle to the VM.
-mkdirSync(".agentos", { recursive: true });
-const vm = await AgentOs.create({
-	database: {
-		type: "sqlite_file",
-		path: resolve(".agentos/agentos.sqlite"),
-	},
-});
+// `AgentOs.create()` boots a VM inside this process and returns a handle to it.
+const vm = await AgentOs.create();
 
 const result = await vm.process.exec("echo hello");
 console.log(result.stdout); // "hello\n"

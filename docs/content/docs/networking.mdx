@@ -1,12 +1,77 @@
 ---
 title: "Networking & Previews"
-description: "Proxy HTTP requests into VM ports and create expiring preview routes."
+description: "Send HTTP requests to servers running inside an agentOS VM, expose them through expiring previews, and control guest network access."
 ---
 
-`network.httpRequest` proxies one bounded HTTP request to a VM loopback port.
-Streaming helpers provide bounded chunked response delivery.
+Servers inside the VM listen on VM-local ports. They are not exposed on the
+host network. Send a bounded HTTP request to a VM port and get the buffered
+response back.
 
-<CodeSnippet file="examples/embedded/vm.ts" region="networking" />
+<CodeGroup>
 
-Core provides direct HTTP request methods. Public preview routing is owned by
-the hosting service, not the VM runtime.
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+// Start a server inside the VM
+await vm.v1.filesystem.writeFile({
+	path: "/tmp/app.mjs",
+	content: 'import http from "http"; http.createServer((req, res) => res.end("hello")).listen(3000);',
+});
+await vm.v1.process.spawn({ command: "node", args: ["/tmp/app.mjs"] });
+
+// fetch reaches services running in the VM.
+const response = await vm.v1.network.fetch({
+	request: { port: 3000, path: "/", method: "GET", headers: {} },
+});
+console.log(response.status);
+```
+
+<CodeSnippet file="examples/embedded/vm.ts" region="networking" title="Library" />
+
+</CodeGroup>
+
+For large responses, hosted VMs stream the body with the pull-based
+`v1.network.fetchStream.start`, `read`, and `cancel` actions. The library
+provides `vm.fetch(port, request)` with standard `Request` and `Response`
+objects, and `fetchStreamStart`, `fetchStreamRead`, and `fetchStreamCancel` for
+bounded chunks. Either way, the caller owns backpressure.
+
+## Previews
+
+Hosted VMs can expose any port through an expiring preview. A preview is a
+signed URL path that proxies HTTP to a port inside the VM until it expires or is
+revoked. `config.preview.defaultTtlMs` sets the default lifetime.
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+await vm.v1.process.spawn({ command: "node", args: ["/home/agentos/app.js"] });
+
+// Create a preview URL for port 3000, valid for 1 hour
+const preview = await vm.v1.network.preview.create({
+	port: 3000,
+	ttlMs: 60 * 60 * 1_000,
+});
+console.log(preview.path, new Date(Number(preview.expiresAtMs)));
+
+// Revoke it early
+await vm.v1.network.preview.expire({ token: preview.token });
+```
+
+The library does not create public URLs. To expose a library VM's server to
+browsers, route requests through your application and forward them with
+`httpRequest` or `fetch`.
+
+## Guest network access
+
+Guest listeners and loopback traffic stay inside the VM. Outbound access is
+limited to the sidecar's default allowlist unless the `network`
+[permission](/agentos/docs/permissions) scope allows more. Requests from the
+host and previews enter the VM from the host side, so they are subject to
+loopback confinement but not to the guest egress policy.

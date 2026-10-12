@@ -9,7 +9,12 @@
 					"icon": "faSquareInfo"
 				},
 				{
-					"title": "Quickstart",
+					"title": "Quickstart (Hosted)",
+					"href": "/agentos/docs/quickstart-hosted",
+					"icon": "faForwardFast"
+				},
+				{
+					"title": "Quickstart (Library)",
 					"href": "/agentos/docs/quickstart",
 					"icon": "faForwardFast"
 				},
@@ -41,16 +46,6 @@
 			]
 		},
 		{
-			"title": "Scheduling",
-			"pages": [
-				{
-					"title": "Crons & Loops",
-					"href": "/agentos/docs/cron",
-					"icon": "faClock"
-				}
-			]
-		},
-		{
 			"title": "Operating System",
 			"pages": [
 				{
@@ -67,6 +62,11 @@
 					"title": "Processes & Shells",
 					"href": "/agentos/docs/processes",
 					"icon": "faTerminal"
+				},
+				{
+					"title": "Crons & Schedules",
+					"href": "/agentos/docs/cron",
+					"icon": "faClock"
 				},
 				{
 					"title": "Networking & Previews",
@@ -110,6 +110,14 @@
 		{
 			"title": "Reference",
 			"pages": [
+				{
+					"title": "Hosted HTTP API",
+					"href": "/agentos/docs/hosted-api"
+				},
+				{
+					"title": "Self-Hosting (Hosted)",
+					"href": "/agentos/docs/self-hosting"
+				},
 				{
 					"title": "Custom Software",
 					"collapsible": true,
@@ -185,7 +193,11 @@
 								{
 									"title": "Packages & Command Resolution",
 									"href": "/agentos/docs/architecture/packages-and-command-resolution"
-				},
+								},
+								{
+									"title": "Software Installation & Preloading",
+									"href": "/agentos/docs/architecture/software-cache"
+								},
 								{
 									"title": "Compiler Toolchain",
 									"href": "/agentos/docs/architecture/compiler-toolchain"

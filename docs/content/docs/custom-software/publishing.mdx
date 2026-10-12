@@ -22,6 +22,15 @@ Run the credential-free release staging path locally:
 just software-artifacts-dry-run
 ```
 
-The release workflow uploads the same directory through the configured
-S3-compatible endpoint under immutable commit and version prefixes. Consumers
-pass the resulting artifact URL and digest directly to `software.install`.
+The release workflow uploads the same directory under immutable commit and
+version prefixes, and copies the newest release to `latest`:
+
+```text
+https://releases.rivet.dev/agent-os/<version>/software/manifest.json
+https://releases.rivet.dev/agent-os/latest/software/manifest.json
+```
+
+The same directory also holds `default-software.json`, the manifest of the
+packages every VM installs by default. Consumers pass an artifact URL and
+digest from the manifest directly to `software.install`; see
+[Software](/agentos/docs/software#install-while-running).

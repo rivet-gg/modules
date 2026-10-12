@@ -1,12 +1,68 @@
 ---
-title: "Crons & Loops"
-description: "Schedule recurring VM commands while an embedded VM is active."
+title: "Crons & Schedules"
+description: "Schedule recurring and one-shot VM commands."
 skill: true
 ---
 
-Core provides an in-process cron helper. Jobs run while the embedding process
-and VM are alive; a hosting service is responsible for durable scheduling.
+Schedule commands to run inside the VM on a cron expression. Hosted VMs store
+their jobs with the VM. Library jobs run while the embedding process and the VM
+are alive, so durable scheduling across process restarts is up to the
+application that owns the VM.
 
 ## Schedule a command
 
-<CodeSnippet file="examples/embedded/vm.ts" region="cron" />
+<CodeGroup>
+
+```ts Hosted @nocheck
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+
+const job = await vm.v1.cron.schedule({
+	name: "cleanup",
+	expression: "0 * * * *",
+	command: "rm",
+	args: ["-rf", "/tmp/cache"],
+	options: { env: {} },
+});
+console.log("Scheduled:", job.name);
+
+const conn = vm.connect();
+await conn.ready;
+conn.on("cron.fired", (event) => {
+	console.log("Cron event:", event);
+});
+
+for (const scheduled of await vm.v1.cron.list({})) {
+	console.log(scheduled.name, scheduled.expression);
+}
+```
+
+<CodeSnippet file="examples/embedded/vm.ts" region="cron" title="Library" />
+
+</CodeGroup>
+
+Hosted jobs are identified by `name` and run a command with arguments. A hosted
+VM holds up to 1,024 jobs, with names and expressions up to 256 bytes, and
+retains 32 runs per job by default (256 maximum).
+
+In the library, `schedule` takes a standard cron expression or an ISO 8601
+timestamp for a one-shot job. `action` is either `{ type: "exec", command, args }`,
+which runs a command in the VM, or `{ type: "callback", fn }`, which calls a
+function in the host process. `overlap` controls what happens when a job fires
+while its previous run is still going: `"allow"` (the default) starts another
+run, `"skip"` drops the new run, and `"queue"` waits for the previous run to
+finish.
+
+## Inspect and cancel jobs
+
+| Operation | Hosted | Library |
+|---|---|---|
+| List jobs | `v1.cron.list` | `cron.list()`, with `lastRun`, `nextRun`, `runCount`, and `running` |
+| Cancel a job | `v1.cron.cancel({ name })` | `cron.cancel(id)`, or `cancel()` on the returned job |
+| Run events | `cron.fired` | `vm.onCronEvent` with `cron:fire`, `cron:complete`, and `cron:error` |
+
+In the library, pass `scheduleDriver` to `AgentOs.create()` to replace the
+default timer-based driver, for example with one backed by your own durable
+scheduler.

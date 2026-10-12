@@ -1,12 +1,12 @@
 ---
 title: "Networking"
-description: "Explore the agentOS kernel socket table, JavaScript and WASM traffic, DNS, egress policy, loopback isolation, and preview routing."
+description: "Explore the agentOS kernel socket table, JavaScript and WASM traffic, DNS, egress policy, and loopback isolation."
 skill: true
 ---
 
 <Note>These internal architecture docs are mostly generated and maintained by LLMs, then reviewed by humans. They are intentionally verbose; use your preferred LLM to ask focused questions about the architecture as needed.</Note>
 
-This is the internals view of agentOS networking: the kernel socket table, the layers a request crosses, and where policy is enforced. For the user-facing API (`httpRequest`, preview URLs, the confinement model from a caller's perspective), see [Networking & Previews](/agentos/docs/networking). For the trust boundary this all sits inside, see [Architecture](/agentos/docs/architecture).
+This is the internals view of agentOS networking: the kernel socket table, the layers a request crosses, and where policy is enforced. For the user-facing API (`httpRequest`, `fetch`, the confinement model from a caller's perspective), see [Networking](/agentos/docs/networking). For the trust boundary this all sits inside, see [Architecture](/agentos/docs/architecture).
 
 The governing rule for TCP is that there is exactly **one authoritative transport for everything VM-local**: the kernel socket table. No untrusted guest code opens a host socket directly. Guest `fetch()`, `node:http`, TCP `node:net`, WASM TCP clients and servers, and host-into-guest requests (`httpRequest` / `rt.fetch`) all target the same listener table. The trusted sidecar implements `AF_UNIX` streams with a separate, per-VM private host transport while keeping pathname inodes and permissions authoritative in the guest VFS.
 
@@ -118,20 +118,9 @@ Every guest connect, listen, read, and write passes through sidecar ownership an
 
 <Note>Host-to-guest requests bypass egress, not the table. `httpRequest` / `rt.fetch` terminate at the guest's loopback listener and never leave the VM, so they work even when guest egress (layer 3) or outbound `connect` (layer 1) is denied. They are host control-plane traffic, not guest egress, and only ever reach VM-owned listeners, while still going through the same kernel socket table as everything else.</Note>
 
-## Preview URLs
-
-A preview URL is port forwarding for a VM service: a time-limited, signed, publicly reachable URL that proxies HTTP to a port inside the VM. Mechanically it reuses the host-to-guest path:
-
-- A signed token is minted for a `(VM, port)` pair with an expiration, capped by `preview.maxExpiresInSeconds`. Tokens are stored in SQLite, survive sleep/wake cycles, and expired ones are cleaned up automatically. Active tokens are bounded by `preview.maxActiveTokens` (1,024 by default); creation fails with a limit error that names the option when the bound is reached.
-- An incoming request to the preview path is authenticated against the token, then proxied into the VM exactly like `httpRequest`: resolve the port to a VM-owned kernel listener, connect over loopback, frame HTTP/1.1, drive the target process, and return the bounded buffered response. The same fail-closed, VM-owned-listener-only rules apply.
-- CORS is enabled so browsers can reach preview URLs from any origin.
-- Revocation (`network.preview.expire`) invalidates the token immediately, after which the proxy refuses the request before touching the socket table.
-
-Because previews ride the host fetch path, they are subject to loopback confinement at the kernel but **not** to the guest egress allowlist: the request enters the listener from the host side and never becomes guest outbound traffic.
-
 ## Where to go next
 
-- [Networking & Previews](/agentos/docs/networking): the `httpRequest` and preview URL API, with usage examples.
+- [Networking](/agentos/docs/networking): the `httpRequest` and `fetch` API, with usage examples.
 - [JavaScript Executor & Socket Reactor](/agentos/docs/architecture/javascript-executor): how Tokio readiness wakes V8, how the channel lanes are separated, and how Node stream backpressure reaches the transport.
 - [Architecture](/agentos/docs/architecture): the client / sidecar / executor trust boundary this stack lives inside.
 - [Security Model](/agentos/docs/security-model): the full in-scope and out-of-scope threat model.

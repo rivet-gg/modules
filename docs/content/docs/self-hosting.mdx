@@ -1,0 +1,84 @@
+---
+title: "Self-Hosting (Hosted)"
+description: "Run hosted agentOS VMs on your own infrastructure with the Rivet control plane and the agentOS worker image."
+---
+
+Self-hosting runs the hosted agentOS API on your own infrastructure instead of
+Rivet Cloud. It needs two processes: the Rivet control plane, and the agentOS
+worker that runs the `agentOS` actor and its VMs. If you only need VMs inside
+your own Node.js process, use the [library](/agentos/docs/quickstart) instead;
+it needs neither.
+
+## Which one should I use?
+
+|  | [Hosted](/agentos/docs/quickstart-hosted) | [Library](/agentos/docs/quickstart) |
+|---|---|---|
+| **Runs** | As a durable instance on Rivet Cloud or a [self-hosted](/agentos/docs/self-hosting) Docker image | Embedded inside your process as a library |
+| **Lifecycle** | Durable, sleeps when idle unless a process is running; see [actor lifecycle](/actors/docs/lifecycle) | Ephemeral, runs until `dispose()` or process exit |
+| **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
+| **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
+| **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
+| **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
+| **Host access** | None | Host functions, host mounts, external sandboxes |
+| **Previews** | Expiring preview URLs | None |
+| **Best for** | Long-lived VMs shared across clients | Embedding VMs in an existing backend |
+
+## Run it
+
+<Steps>
+<Step title="Run the Rivet control plane">
+
+```sh
+docker run -p 6420:6420 rivetdev/engine
+```
+
+See the [self-hosting guides](/docs/deploy/) for other ways to run it.
+
+</Step>
+<Step title="Run the agentOS worker">
+
+The worker is what actually runs your VMs. It connects to the control plane:
+
+```sh
+docker run \
+  --add-host=host.docker.internal:host-gateway \
+  -e RIVET_ENDPOINT=http://host.docker.internal:6420 \
+  rivetdev/services
+```
+
+</Step>
+<Step title="Point your client at it">
+
+Create a VM by ID on your control plane from TypeScript or plain HTTP:
+
+<CodeGroup>
+
+```ts TypeScript @nocheck
+// npm install @rivet-dev/agentos
+import { createAgentOsClient } from "@rivet-dev/agentos";
+
+const client = createAgentOsClient({ endpoint: "http://localhost:6420" });
+
+const vm = client.agentOS.getOrCreate(["my-vm"]);
+```
+
+```bash HTTP
+curl -X PUT "http://localhost:6420/actors?namespace=default" \
+  --json '{
+    "name": "agentOS",
+    "key": "my-vm",
+    "runner_name_selector": "services",
+    "crash_policy": "sleep"
+  }'
+# → { "actor": { "actor_id": "…" }, "created": true }
+```
+
+</CodeGroup>
+
+</Step>
+</Steps>
+
+Everything in the [hosted quickstart](/agentos/docs/quickstart-hosted) and the
+[Hosted HTTP API](/agentos/docs/hosted-api) works the same way. Use
+`http://localhost:6420`, or wherever your control plane is reachable, as the
+base URL instead of `https://api.rivet.dev`.

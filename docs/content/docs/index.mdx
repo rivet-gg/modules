@@ -7,7 +7,10 @@ agentOS provides isolated filesystem, process, terminal, language, and networkin
 APIs in a lightweight VM.
 
 <CardGroup>
-  <Card title="Quickstart" href="/agentos/docs/quickstart">
+  <Card title="Quickstart (Hosted)" href="/agentos/docs/quickstart-hosted">
+    Create durable VMs by ID and control them over RivetKit or HTTP.
+  </Card>
+  <Card title="Quickstart (Library)" href="/agentos/docs/quickstart">
     Run a VM inside a trusted Node.js backend.
   </Card>
   <Card title="Software" href="/agentos/docs/software">
@@ -15,5 +18,14 @@ APIs in a lightweight VM.
   </Card>
 </CardGroup>
 
-Core owns the VM process, lifecycle, and host bindings. Managed orchestration
-adapters are separate consumers of the same runtime APIs.
+Run agentOS two ways:
+
+- **Hosted:** the prebuilt `agentOS` Rivet Actor gives each VM a durable ID,
+  versioned configuration, replayable output, and expiring previews, controlled
+  from `@rivet-dev/agentos` or plain HTTP.
+- **Library:** `@rivet-dev/agentos-core` runs VMs inside your Node.js backend.
+  Your application owns the VM's lifecycle, persistence, and access to host
+  resources such as [host functions](/agentos/docs/host-functions) and
+  [mounts](/agentos/docs/filesystem#mounts).
+
+See [which one to use](/agentos/docs/quickstart-hosted#which-one-should-i-use).
