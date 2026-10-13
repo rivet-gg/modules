@@ -7,7 +7,7 @@
   </a>
   <br/>
   <br/>
-  <h3>Tiny, fast Linux sandboxes. Powered by WebAssembly.</h3>
+  <h3>Tiny, fast, Linux-compatible sandboxes. Powered by WebAssembly.</h3>
   <p>
     92× faster cold starts, 47× less memory, 254× cheaper to run.<br/>
     Each agent gets files, processes, shell, and networking in one lightweight OS.
