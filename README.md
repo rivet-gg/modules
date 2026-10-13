@@ -45,9 +45,10 @@ Cloudflare Workers. Linux with POSIX files, processes, and networking.
 | Cost per execution-second, shell workload | $0.000000073 | $0.000018 | 254× cheaper |
 | Cost per execution-second, coding agent | $0.00000058 | $0.000018 | 32× cheaper |
 
-- **Cold start:** time from requesting an execution to first code running. agentOS was measured over 10,000 runs (100 iterations × 100 samples) on an Intel i7-12700KF. Baseline: E2B, the fastest mainstream sandbox provider as of March 30, 2026.
-- **Memory:** memory added per concurrent execution. The shell workload runs simple commands; the coding agent workload is a Pi coding agent session with MCP servers and mounted file systems. Baseline: Daytona's default sandbox, 1 vCPU and 1 GiB RAM.
-- **Cost:** server price per second divided by concurrent executions per server, self-hosted on AWS ARM ($0.0084/hour, 1 GiB) at 70% utilization. Baseline: Daytona, the cheapest mainstream sandbox provider as of March 30, 2026, at $0.0504/vCPU-hour + $0.0162/GiB-hour.
+Baselines are E2B for cold starts and Daytona for memory and cost. See the
+[benchmark details](https://rivet.dev/agentos#bench-cold-start) for methodology,
+or [Performance](https://rivet.dev/agentos/docs/performance) to run the
+benchmarks yourself.
 
 ## Architecture
 
