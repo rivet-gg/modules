@@ -1034,7 +1034,10 @@ impl AgentOs {
         // completing secondary cleanup. The transport is shared across
         //      VMs on the same sidecar, so it is only torn down when this was the last VM (matching
         //      the TS lease/shared-sidecar lifecycle); otherwise sibling VMs keep using it.
-        let mut disposal_result = if self.inner.vm_disposed.load(Ordering::SeqCst) {
+        // A VM dies with its sidecar process, so a lost transport leaves nothing to dispose.
+        let mut disposal_result = if self.inner.vm_disposed.load(Ordering::SeqCst)
+            || self.transport().is_disconnected()
+        {
             Ok(())
         } else {
             self.transport()

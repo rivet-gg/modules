@@ -191,6 +191,9 @@ pub struct AgentOsSidecar {
     /// The shared sidecar process + authenticated connection, established on the first VM `create`
     /// against this sidecar and reused by every subsequent VM in the same (shared) sidecar.
     pub(crate) connection: tokio::sync::Mutex<Option<SharedConnection>>,
+    /// The transport in `connection`, readable without waiting for that lock, so a health check
+    /// sees a lost process even while another caller holds the connection.
+    live_transport: parking_lot::Mutex<Option<Arc<SidecarProcess>>>,
 }
 
 impl AgentOsSidecar {
@@ -211,6 +214,7 @@ impl AgentOsSidecar {
             lifecycle: tokio::sync::Mutex::new(()),
             sidecar_binary_path,
             connection: tokio::sync::Mutex::new(None),
+            live_transport: parking_lot::Mutex::new(None),
         }
     }
 
@@ -228,6 +232,11 @@ impl AgentOsSidecar {
             ));
         }
         if let Some(existing) = guard.as_ref() {
+            if existing.transport.is_disconnected() {
+                return Err(ClientError::SidecarExited(
+                    "its VMs are gone; create a new VM".into(),
+                ));
+            }
             if !existing.authenticated {
                 return Err(ClientError::Sidecar(
                     "sidecar authentication did not complete; dispose this sidecar before retrying"
@@ -249,6 +258,7 @@ impl AgentOsSidecar {
         .await?;
         // Retain ownership before the authentication await, so errors or
         // cancellation cannot orphan a child that holds the cache directory.
+        *self.live_transport.lock() = Some(transport.clone());
         *guard = Some(SharedConnection {
             transport: transport.clone(),
             connection_id: String::new(),
@@ -306,6 +316,7 @@ impl AgentOsSidecar {
         }
         // Keep the transport reachable if termination fails or is cancelled.
         connection.take();
+        self.live_transport.lock().take();
         Ok(())
     }
 
@@ -320,7 +331,12 @@ impl AgentOsSidecar {
         package: bool,
     ) -> Result<AgentOsSidecarVmLease, ClientError> {
         let _lifecycle = self.lifecycle.lock().await;
-        if self.state.load(Ordering::SeqCst) != SidecarState::Ready.as_u8() {
+        if self.process_lost() {
+            return Err(ClientError::SidecarExited(
+                "its VMs are gone; create a new VM".into(),
+            ));
+        }
+        if self.current_state() != SidecarState::Ready {
             return Err(ClientError::Sidecar(
                 "sidecar is disposing or disposed".into(),
             ));
@@ -441,9 +457,27 @@ impl AgentOsSidecar {
         AgentOsSidecarDescription {
             sidecar_id: self.sidecar_id.clone(),
             placement: self.placement.clone(),
-            state: SidecarState::from_u8(self.state.load(Ordering::SeqCst)),
+            state: self.current_state(),
             active_vm_count: self.active_vm_count.load(Ordering::SeqCst),
         }
+    }
+
+    /// The lifecycle state, reported as `Disposed` once the sidecar process is gone: its VMs died
+    /// with it, and it can never host another VM. A shared pool then spawns a fresh sidecar.
+    fn current_state(&self) -> SidecarState {
+        let state = SidecarState::from_u8(self.state.load(Ordering::SeqCst));
+        if state == SidecarState::Ready && self.process_lost() {
+            SidecarState::Disposed
+        } else {
+            state
+        }
+    }
+
+    fn process_lost(&self) -> bool {
+        self.live_transport
+            .lock()
+            .as_ref()
+            .is_some_and(|transport| transport.is_disconnected())
     }
 
     /// Dispose the sidecar. Idempotent; disposes active leases and aggregates errors.

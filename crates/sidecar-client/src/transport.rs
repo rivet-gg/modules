@@ -9,7 +9,7 @@
 //! echo the id allocated by the sidecar.
 
 use std::process::Stdio;
-use std::sync::atomic::{AtomicI64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI64, AtomicUsize, Ordering};
 use std::sync::{Arc, Weak};
 
 #[cfg(unix)]
@@ -87,6 +87,9 @@ pub struct SidecarTransport {
     control_writer_tx: mpsc::Sender<Vec<u8>>,
     /// When the reader last received any inbound frame; the silence watchdog reads it.
     last_inbound_at: parking_lot::Mutex<std::time::Instant>,
+    /// Set once the transport loses its sidecar: an inbound lane ended or broke protocol, or the
+    /// silence watchdog killed the child. No request can succeed after this.
+    disconnected: AtomicBool,
 }
 
 impl SidecarTransport {
@@ -178,6 +181,7 @@ impl SidecarTransport {
             request_writer_tx,
             control_writer_tx,
             last_inbound_at: parking_lot::Mutex::new(std::time::Instant::now()),
+            disconnected: AtomicBool::new(false),
         });
 
         tokio::spawn(run_writer(
@@ -242,6 +246,11 @@ impl SidecarTransport {
         payload: wire::RequestPayload,
         max_frame_bytes: Option<usize>,
     ) -> Result<wire::ResponsePayload, TransportError> {
+        if self.is_disconnected() {
+            return Err(TransportError::Disconnected(
+                "request sent after the sidecar process was lost".to_string(),
+            ));
+        }
         let request_id = self.next_request_id();
         let frame = wire::ProtocolFrame::RequestFrame(wire::RequestFrame {
             schema: wire::protocol_schema(),
@@ -257,13 +266,13 @@ impl SidecarTransport {
 
         if self.request_writer_tx.send(bytes).await.is_err() {
             self.pending.remove(&request_id);
-            return Err(TransportError::Sidecar(
+            return Err(TransportError::Disconnected(
                 "sidecar transport closed".to_string(),
             ));
         }
 
         rx.await
-            .map_err(|_| TransportError::Sidecar("sidecar transport disconnected".to_string()))
+            .map_err(|_| TransportError::Disconnected("sidecar transport disconnected".to_string()))
     }
 
     /// Subscribe to structured/lifecycle/process events using generated wire protocol types.
@@ -282,6 +291,12 @@ impl SidecarTransport {
     /// Return the currently negotiated max frame size.
     pub fn max_frame_bytes(&self) -> usize {
         self.max_frame_bytes.load(Ordering::Relaxed)
+    }
+
+    /// Whether this transport lost its sidecar process. A lost transport never recovers; callers
+    /// must spawn a new sidecar.
+    pub fn is_disconnected(&self) -> bool {
+        self.disconnected.load(Ordering::SeqCst)
     }
 
     /// Update the negotiated max frame size after authentication.
@@ -458,6 +473,7 @@ impl SidecarTransport {
     }
 
     fn disconnect(&self) {
+        self.disconnected.store(true, Ordering::SeqCst);
         self.kill_child();
         self.fail_all_pending();
     }
@@ -669,8 +685,7 @@ async fn run_silence_watchdog(transport: Weak<SidecarTransport>, timeout: std::t
             silence_ms = silence.as_millis() as u64,
             "sidecar unresponsive: no protocol frames or heartbeats; killing sidecar",
         );
-        transport.kill_child();
-        transport.fail_all_pending();
+        transport.disconnect();
         return;
     }
 }
@@ -767,6 +782,7 @@ mod tests {
             request_writer_tx,
             control_writer_tx,
             last_inbound_at: parking_lot::Mutex::new(std::time::Instant::now()),
+            disconnected: AtomicBool::new(false),
         }
     }
 
@@ -1113,6 +1129,7 @@ mod tests {
             request_writer_tx,
             control_writer_tx,
             last_inbound_at: parking_lot::Mutex::new(std::time::Instant::now()),
+            disconnected: AtomicBool::new(false),
         };
 
         transport
