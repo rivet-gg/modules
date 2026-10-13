@@ -67,10 +67,12 @@ sidecar over the HTTP API.
 The sidecar's trusted kernel owns the process table, the virtual filesystem and
 its mounts, the socket table, and permissions and resource limits.
 
-Guest code runs untrusted inside the same process: JavaScript and TypeScript in
-V8 isolates, and the shell, coreutils, and Python as WebAssembly. Every file,
-process, and network operation is a syscall into the kernel, so guest code
-never touches a host file, process, or socket directly. See
+Guest code runs untrusted inside the sidecar: JavaScript and TypeScript in V8
+isolates, and the shell, coreutils, and Python as WebAssembly. The entire kernel
+is virtualized. Every file, process, and network operation is a syscall into
+it, so by default guest code never touches the host: no host files, processes,
+environment variables, or network access. Host access exists only where you opt
+in, through mounts, host functions, and network permissions. See
 [Architecture](https://rivet.dev/agentos/docs/architecture) for details.
 
 ## Quickstart
