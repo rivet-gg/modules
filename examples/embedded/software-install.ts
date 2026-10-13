@@ -1,4 +1,4 @@
-import { AgentOs } from "@rivet-dev/agentos-core";
+import { AgentOs } from "@rivet-dev/agentos";
 
 // Registry software is published as digest-addressed .aospkg files next to a
 // manifest. Use a release version, or `latest`.

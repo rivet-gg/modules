@@ -1,5 +1,5 @@
 // docs:start create
-import { AgentOs } from "@rivet-dev/agentos-core";
+import { AgentOs } from "@rivet-dev/agentos";
 
 // `AgentOs.create()` boots a VM inside this process and returns a handle to it.
 const vm = await AgentOs.create();
