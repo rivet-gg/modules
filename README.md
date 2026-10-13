@@ -52,21 +52,20 @@ the benchmarks yourself.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./.github/media/architecture-dark.svg">
-    <img src="./.github/media/architecture-light.svg" alt="@rivet-dev/agentos-core or the hosted agentOS Actor controls a trusted sidecar that owns processes, the filesystem, networking, and permissions. Untrusted executors run guest code in V8 isolates, WebAssembly, and Pyodide, and reach the sidecar only through syscalls." width="560">
+    <img src="./.github/media/architecture-light.svg" alt="@rivet-dev/agentos-core or the agentOS Actor controls the agentOS sidecar process. Its trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates and WebAssembly and reaches the kernel only through syscalls." width="440">
   </picture>
 </p>
 
 Your code controls a VM through `@rivet-dev/agentos-core` in your backend, or
-through the agentOS Actor when hosted. Both drive a trusted Rust sidecar that
-owns the kernel: the process table, the virtual filesystem and its mounts, the
-socket table, and permissions and resource limits.
+through the agentOS Actor when hosted. Both drive the agentOS sidecar, a Rust
+process whose trusted kernel owns the process table, the virtual filesystem
+and its mounts, the socket table, and permissions and resource limits.
 
-Guest code runs in untrusted executors: JavaScript and TypeScript in V8
-isolates, the shell, coreutils, and other tools as WebAssembly, and Python on
-Pyodide. Every file, process, and network operation is a syscall into the
-sidecar's kernel, so guest code never touches a host file, process, or socket
-directly. See [Architecture](https://rivet.dev/agentos/docs/architecture) for
-details.
+Guest code runs untrusted inside the same process: JavaScript and TypeScript in
+V8 isolates, and the shell, coreutils, and Python as WebAssembly. Every file,
+process, and network operation is a syscall into the kernel, so guest code
+never touches a host file, process, or socket directly. See
+[Architecture](https://rivet.dev/agentos/docs/architecture) for details.
 
 ## Quickstart
 
