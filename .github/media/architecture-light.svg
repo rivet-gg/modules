@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 372" width="440" height="372" role="img" aria-label="agentOS architecture. The library, @rivet-dev/agentos-core, or the HTTP API connects to the agentOS sidecar process over stdio and a Unix socket. Inside it, the trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates for JavaScript and TypeScript and in WebAssembly for the shell, coreutils, and Python, and reaches the kernel only through syscalls across the security boundary." style="font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 372" width="440" height="372" role="img" aria-label="agentOS architecture. The library or the HTTP API connects to the agentOS sidecar process over stdio and a Unix socket. Inside it, the trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates for JavaScript and TypeScript and in WebAssembly for the shell, coreutils, and Python, and reaches the kernel only through syscalls across the security boundary." style="font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
   <defs>
     <marker id="architecture-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2E4034"/></marker>
   </defs>
 
-  <rect x="110" y="8" width="220" height="44" rx="7" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
-  <text x="220" y="27" text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">Library or HTTP API</text>
-  <text x="220" y="43" text-anchor="middle" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">@rivet-dev/agentos-core</text>
+  <rect x="110" y="14" width="220" height="38" rx="7" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
+  <text x="220" y="37" text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">Library or HTTP API</text>
   <line x1="220" y1="52" x2="220" y2="83" stroke="#2E4034" stroke-width="1.3" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
   <text x="228" y="72" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">stdio + Unix socket</text>
 
