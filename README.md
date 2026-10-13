@@ -256,6 +256,20 @@ const vm = client.agentOS.getOrCreate(["my-vm"], {
 
 			// Environment variables for guest processes.
 			environment: { NODE_ENV: "production" },
+
+			// Deny network access except to one host.
+			permissions: {
+				network: {
+					default: "deny",
+					rules: [
+						{
+							mode: "allow",
+							operations: ["*"],
+							patterns: ["dns://api.example.com", "tcp://api.example.com:*"],
+						},
+					],
+				},
+			},
 		},
 	},
 });
@@ -264,8 +278,8 @@ const vm = client.agentOS.getOrCreate(["my-vm"], {
 await vm.v1.config.patch({ patch: { environment: { DEBUG: "1" } } });
 ```
 
-See the [hosted quickstart](https://rivet.dev/agentos/docs/quickstart-hosted),
-[Persistence](https://rivet.dev/agentos/docs/persistence), and the
+See [Persistence](https://rivet.dev/agentos/docs/persistence),
+[Permissions](https://rivet.dev/agentos/docs/permissions), and the
 [Hosted HTTP API](https://rivet.dev/agentos/docs/hosted-api) for every config
 field.
 
