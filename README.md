@@ -7,7 +7,7 @@
   </a>
   <br/>
   <br/>
-  <h3>Run Linux in sandboxes that boot in milliseconds. Powered by WebAssembly.</h3>
+  <h3>Tiny, fast Linux sandboxes. Powered by WebAssembly.</h3>
   <p>
     92× faster cold starts, 47× less memory, 254× cheaper to run.<br/>
     Each agent gets files, processes, shell, and networking in one lightweight OS.
@@ -33,12 +33,51 @@ Cloudflare Workers. Linux with POSIX files, processes, and networking.
 - **One process, not a VM per agent.** Many isolated agent operating systems share one compact runtime instead of duplicating a full microVM stack.
 - **Runs anywhere, no nested virtualization.** Deploy on standard Linux infrastructure without a hypervisor or nested virtualization.
 
+## Benchmarks
+
+| Metric | agentOS | Sandbox baseline | Difference |
+|---|---|---|---|
+| Cold start, p50 | 4.8 ms | 440 ms | 92× faster |
+| Cold start, p95 | 5.6 ms | 950 ms | 170× faster |
+| Cold start, p99 | 6.1 ms | 3,150 ms | 516× faster |
+| Memory, shell workload | ~22 MB | 1,024 MB | 47× less |
+| Memory, coding agent | ~131 MB | 1,024 MB | 8× less |
+| Cost per execution-second, shell workload | $0.000000073 | $0.000018 | 254× cheaper |
+| Cost per execution-second, coding agent | $0.00000058 | $0.000018 | 32× cheaper |
+
+- **Cold start:** time from requesting an execution to first code running. agentOS was measured over 10,000 runs (100 iterations × 100 samples) on an Intel i7-12700KF. Baseline: E2B, the fastest mainstream sandbox provider as of March 30, 2026.
+- **Memory:** memory added per concurrent execution. The shell workload runs simple commands; the coding agent workload is a Pi coding agent session with MCP servers and mounted file systems. Baseline: Daytona's default sandbox, 1 vCPU and 1 GiB RAM.
+- **Cost:** server price per second divided by concurrent executions per server, self-hosted on AWS ARM ($0.0084/hour, 1 GiB) at 70% utilization. Baseline: Daytona, the cheapest mainstream sandbox provider as of March 30, 2026, at $0.0504/vCPU-hour + $0.0162/GiB-hour.
+
+## Architecture
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/media/architecture-dark.svg">
+    <img src="./.github/media/architecture-light.svg" alt="Your backend or the hosted agentOS Actor controls a trusted Rust sidecar that owns processes, the filesystem, networking, and permissions. Untrusted executors run guest code in V8 isolates, WebAssembly, and Pyodide, and reach the sidecar only through syscalls." width="560">
+  </picture>
+</p>
+
+Your code controls a VM through `@rivet-dev/agentos-core` in your backend, or
+through the agentOS Actor when hosted. Both drive a trusted Rust sidecar that
+owns the kernel: the process table, the virtual filesystem and its mounts, the
+socket table, and permissions and resource limits.
+
+Guest code runs in untrusted executors: JavaScript and TypeScript in V8
+isolates, the shell, coreutils, and other tools as WebAssembly, and Python on
+Pyodide. Every file, process, and network operation is a syscall into the
+sidecar's kernel, so guest code never touches a host file, process, or socket
+directly. See [Architecture](https://rivet.dev/agentos/docs/architecture) for
+details.
+
 ## Quickstart
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./.github/media/library-vs-hosted-dark.svg">
-  <img src="./.github/media/library-vs-hosted-light.svg" alt="Library: agentOS runs as a VM inside your backend. Hosted: your backend and frontend call an agentOS VM over HTTP." width="560">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/media/library-vs-hosted-dark.svg">
+    <img src="./.github/media/library-vs-hosted-light.svg" alt="Library: agentOS runs as a VM inside your backend. Or hosted: your backend and frontend call an agentOS VM over HTTP." width="590">
+  </picture>
+</p>
 
 |  | Library | Hosted |
 |---|---|---|
@@ -68,31 +107,21 @@ const vm = await AgentOs.create();
 
 ```ts
 try {
+	// Bash
 	const result = await vm.process.exec("echo hello && ls /home/agentos", {
 		output: { capture: "all" },
 	});
 	console.log(result.stdout);
 
+	// Filesystem
 	await vm.filesystem.writeFile("/home/agentos/hello.txt", "Hello, world!");
 	const file = await vm.filesystem.readFile("/home/agentos/hello.txt");
 
-	// Start a server. The listener stays inside the VM; send it a request from the host.
-	await vm.filesystem.writeFile(
-		"/home/agentos/server.js",
-		`require("node:http").createServer((req, res) => res.end("hello")).listen(3000);`,
-	);
-	await vm.process.spawn("node", ["/home/agentos/server.js"]);
-	const response = await vm.network.httpRequest({ port: 3000, path: "/" });
-
+	// JavaScript
 	await vm.javascript.execute("console.log(1 + 2)");
-	await vm.typescript.execute("const n: number = 3; console.log(n)");
-	const answer = await vm.python.evaluate<number>("21 * 2");
 
-	vm.cron.schedule({
-		id: "cleanup",
-		schedule: "0 * * * *",
-		action: { type: "exec", command: "rm", args: ["-rf", "/tmp/cache"] },
-	});
+	// Python
+	const answer = await vm.python.evaluate<number>("21 * 2");
 } finally {
 	await vm.dispose();
 }
@@ -148,8 +177,6 @@ await vm.v1.filesystem.writeFile({
 });
 await vm.v1.process.spawn({ command: "node", args: ["/home/agentos/server.js"] });
 const preview = await vm.v1.network.preview.create({ port: 3000, ttlMs: 60 * 60 * 1_000 });
-
-await vm.v1.python.evaluate({ expression: "21 * 2" });
 ```
 
 The client is optional. Every action is a plain HTTP call: create the VM by
@@ -189,24 +216,25 @@ issue it a JWT scoped to that VM. See the
 
 ## API Overview
 
-Both modes expose the same capability groups. Hosted actions live under
-`vm.v1.<group>` and take a single input object; library methods live under
-`vm.<group>` and take positional arguments.
+Library methods live under `vm.<group>`. Hosted actions live under
+`vm.v1.<group>`, or `POST /gateway/{vm_id}/action/v1.<group>.<action>` over
+HTTP. The table lists every method across both. A few exist in only one mode,
+and hosted uses dotted names for some, such as `stdin.write` for `writeStdin`.
 
-| Group | What it does | Hosted (`vm.v1.*`) | Library (`vm.*`) |
-|---|---|---|---|
-| `process` | Run commands and manage child processes | `run`, `spawn`, `get`, `list`, `tree`, `wait`, `signal`, `stdin.write`, `stdin.close`, `pty.resize`, `output.read` | `exec`, `execFile`, `spawn`, `get`, `list`, `tree`, `wait`, `signal`, `kill`, `writeStdin`, `closeStdin`, `resizePty`, `readOutput` |
-| `terminal` | Interactive PTY sessions | `open`, `list`, `stdin.write`, `pty.resize`, `output.read`, `wait`, `close` | `open`, `write`, `resize`, `wait`, `close` |
-| `filesystem` | Read, write, and list files; manage mounts | `readFile`, `writeFile`, `readFiles`, `writeFiles`, `stat`, `exists`, `mkdir`, `readdir`, `readdirEntries`, `readdirRecursive`, `move`, `remove`, `listMounts`, `export` | Same, plus `mount` and `unmount` |
-| `javascript` | Run Node.js code and npm | `execute`, `evaluate`, `executeFile`, `spawn`, `spawnFile`, `npm.install`, `npm.runScript`, `npm.runPackage` | Same |
-| `typescript` | Run and type-check TypeScript | `execute`, `evaluate`, `executeFile`, `spawn`, `spawnFile`, `check`, `checkProject` | Same |
-| `python` | Run Python code and pip | `execute`, `evaluate`, `executeFile`, `executeModule`, `spawn`, `spawnFile`, `spawnModule`, `install` | Same |
-| `contexts` | Persistent language execution contexts | `create`, `get`, `list`, `reset`, `delete` | `get`, `list`, `reset`, `delete` |
-| `network` | Reach servers running in the VM | `fetch`, `fetchStream.*`, `preview.create`, `preview.expire` | `httpRequest` |
-| `software` | Install `.aospkg` command packages | `install`, `uninstall`, `list` | `install`, `uninstall`, `list`, `installed`, `link` |
-| `cron` | Scheduled commands | `schedule`, `list`, `cancel` | `schedule`, `list`, `cancel` |
-| `config` | Stored, versioned VM configuration | `get`, `set`, `patch` | Passed to `AgentOs.create()` |
-| `vm` | VM status and restart | `status`, `restart` | `AgentOs.create()`, `dispose()` |
+| Group | What it does | Methods |
+|---|---|---|
+| `vm` | Create, inspect, and stop VMs | `create`, `status`, `restart`, `dispose` |
+| `config` | Stored, versioned VM configuration | `get`, `set`, `patch` |
+| `process` | Run commands and manage child processes | `exec`, `execFile`, `run`, `spawn`, `get`, `list`, `tree`, `wait`, `signal`, `kill`, `writeStdin`, `closeStdin`, `resizePty`, `readOutput` |
+| `terminal` | Interactive PTY sessions | `open`, `list`, `write`, `resize`, `readOutput`, `wait`, `close` |
+| `filesystem` | Read, write, and list files; manage mounts | `readFile`, `writeFile`, `readFiles`, `writeFiles`, `stat`, `exists`, `mkdir`, `readdir`, `readdirEntries`, `readdirRecursive`, `move`, `remove`, `mount`, `unmount`, `listMounts`, `export` |
+| `javascript` | Run Node.js code and npm | `execute`, `evaluate`, `executeFile`, `spawn`, `spawnFile`, `npm.install`, `npm.runScript`, `npm.runPackage` |
+| `typescript` | Run and type-check TypeScript | `execute`, `evaluate`, `executeFile`, `spawn`, `spawnFile`, `check`, `checkProject` |
+| `python` | Run Python code and pip | `execute`, `evaluate`, `executeFile`, `executeModule`, `spawn`, `spawnFile`, `spawnModule`, `install` |
+| `contexts` | Persistent language execution contexts | `create`, `get`, `list`, `reset`, `delete` |
+| `network` | Reach servers running in the VM | `httpRequest`, `fetch`, `fetchStream`, `preview.create`, `preview.expire` |
+| `software` | Install `.aospkg` command packages | `install`, `uninstall`, `list`, `installed`, `link` |
+| `cron` | Scheduled commands | `schedule`, `list`, `cancel` |
 
 Software packages are immutable `.aospkg` artifacts, verified against their
 digest and linked under `/opt/agentos/bin`. Hosted VMs install from a URL;
