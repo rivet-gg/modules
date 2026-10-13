@@ -213,27 +213,6 @@ digest and linked under `/opt/agentos/bin`. Hosted VMs install from a URL;
 the library also accepts trusted local package paths. Runtime software is not
 resolved from npm.
 
-## Repository
-
-This repository owns the native sidecar, VM kernel and VFS, language execution,
-the software package format and cache, the TypeScript and Rust Core clients,
-and the docs. Hosted orchestration adapters live in the services repository.
-
-```bash
-pnpm install --frozen-lockfile
-pnpm build
-pnpm check-types
-cargo check --workspace
-```
-
-Rebuild the complete command catalog and stage the local object-store release
-layout with:
-
-```bash
-just tools-rebuild
-just software-artifacts-dry-run
-```
-
 ## License
 
 See [LICENSE](LICENSE).
