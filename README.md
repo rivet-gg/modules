@@ -43,10 +43,9 @@ Cloudflare Workers. Linux with POSIX files, processes, and networking.
 | Memory, shell workload | ~22 MB | 1,024 MB | 47× less |
 | Cost per execution-second, shell workload | $0.000000073 | $0.000018 | 254× cheaper |
 
-Baselines are E2B for cold starts and Daytona for memory and cost. See the
-[benchmark details](https://rivet.dev/agentos#bench-cold-start) for methodology,
-or [Performance](https://rivet.dev/agentos/docs/performance) to run the
-benchmarks yourself.
+See the [benchmark details](https://rivet.dev/agentos#bench-cold-start) for
+methodology, or [Performance](https://rivet.dev/agentos/docs/performance) to run
+the benchmarks yourself.
 
 ## Architecture
 
