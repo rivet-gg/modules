@@ -2634,6 +2634,14 @@ pub(super) fn apply_child_process_argv0(
     }
 }
 
+/// Outcome of `service_owned_descendant_kernel_wait`.
+enum OwnedDescendantKernelWait {
+    /// The wait is not ready; it stays parked on the child.
+    Parked,
+    /// The child received its response.
+    Answered,
+}
+
 fn javascript_rpc_requires_owned_supervisor(method: &str) -> bool {
     matches!(
         method,
@@ -7360,6 +7368,32 @@ where
         let _ = wait_ms;
         let mut child_path = current_process_path.to_vec();
         child_path.push(child_process_id.to_owned());
+        let parent_path = current_process_path
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+        // A wait parked by an earlier poll is answered only by a recheck.
+        vm.try_command("recheck owned descendant kernel wait", |state| {
+            let parked = state
+                .active_processes
+                .get(process_id)
+                .and_then(|root| Self::active_process_by_path(root, &parent_path))
+                .and_then(|parent| parent.child_processes.get(child_process_id))
+                .and_then(|child| child.deferred_kernel_wait_rpc.as_ref())
+                .map(|(request, _)| request.clone());
+            match parked {
+                Some(request) => Self::service_child_kernel_wait_rpc_in_vm(
+                    state,
+                    Arc::clone(&process_event_notify),
+                    process_id,
+                    &parent_path,
+                    child_process_id,
+                    &request,
+                )
+                .map(drop),
+                None => Ok(()),
+            }
+        })?;
         loop {
             let polled = vm.try_command("poll owned descendant process", |state| {
                 let path = current_process_path
@@ -7502,6 +7536,30 @@ where
                         })?;
                         process_event_notify.notify_one();
                         return Ok(Value::Null);
+                    }
+                    let kernel_wait =
+                        vm.try_command("service owned descendant kernel wait", |state| {
+                            Self::service_owned_descendant_kernel_wait(
+                                state,
+                                &process_event_notify,
+                                process_id,
+                                &parent_path,
+                                child_process_id,
+                                &request,
+                            )
+                        })?;
+                    match kernel_wait {
+                        // The child stays blocked; return so the parent can
+                        // service its siblings. The next poll rechecks the wait.
+                        Some(OwnedDescendantKernelWait::Parked) => {
+                            drop(reservation);
+                            return Ok(Value::Null);
+                        }
+                        Some(OwnedDescendantKernelWait::Answered) => {
+                            drop(reservation);
+                            continue;
+                        }
+                        None => {}
                     }
                     service_owned_javascript_sync_rpc_request(
                         bridge,
@@ -8173,7 +8231,27 @@ where
         let Some(mut vm) = self.vms.get_mut(vm_id) else {
             return Ok(true);
         };
-        let vm = &mut *vm;
+        Self::service_child_kernel_wait_rpc_in_vm(
+            &mut vm,
+            event_notify,
+            process_id,
+            current_process_path,
+            child_process_id,
+            request,
+        )
+    }
+
+    /// `service_child_kernel_wait_rpc` on VM state that the caller already
+    /// holds, so a parent's owned `child_process.poll` can park a child's wait
+    /// the same way the sidecar actor does.
+    fn service_child_kernel_wait_rpc_in_vm(
+        vm: &mut VmState,
+        event_notify: Arc<tokio::sync::Notify>,
+        process_id: &str,
+        current_process_path: &[&str],
+        child_process_id: &str,
+        request: &JavascriptSyncRpcRequest,
+    ) -> Result<bool, SidecarError> {
         let operation_deadline_ms = vm.limits.reactor.operation_deadline_ms;
         let runtime = vm.runtime_context.clone();
         let kernel = &mut vm.kernel;
@@ -8510,6 +8588,76 @@ where
             }
         }
         Ok(json!(written))
+    }
+
+    /// Answer or park a child's blocking kernel read, poll, or pipe write from
+    /// the parent's owned `child_process.poll`. Awaiting the wait there would
+    /// hold the parent's poll, so the parent could not service the sibling
+    /// that ends the wait, such as the reader that drains a full pipe. Returns
+    /// `None` for a request the normal handler answers instead.
+    fn service_owned_descendant_kernel_wait(
+        state: &mut VmState,
+        event_notify: &Arc<tokio::sync::Notify>,
+        process_id: &str,
+        parent_path: &[&str],
+        child_process_id: &str,
+        request: &JavascriptSyncRpcRequest,
+    ) -> Result<Option<OwnedDescendantKernelWait>, SidecarError> {
+        let wait_request = {
+            let VmState {
+                kernel,
+                active_processes,
+                ..
+            } = &mut *state;
+            let Some(child) = active_processes
+                .get_mut(process_id)
+                .and_then(|root| Self::active_process_by_path_mut(root, parent_path))
+                .and_then(|parent| parent.child_processes.get_mut(child_process_id))
+            else {
+                return Ok(None);
+            };
+            let wait_request =
+                match deferred_kernel_wait_request_for_process(request, kernel, child) {
+                    Ok(Some(wait_request)) => wait_request,
+                    Ok(None) | Err(_) => return Ok(None),
+                };
+            // The normal handler answers a request whose arguments do not
+            // parse with the errno, instead of failing the parent's poll.
+            let parks_here = match wait_request.method.as_str() {
+                "__kernel_poll" => parse_kernel_poll_args(&wait_request).is_ok(),
+                "__kernel_stdin_read" => parse_kernel_stdin_read_args(&wait_request).is_ok(),
+                _ => true,
+            };
+            if !parks_here {
+                return Ok(None);
+            }
+            wait_request
+        };
+        if !Self::service_child_kernel_wait_rpc_in_vm(
+            state,
+            Arc::clone(event_notify),
+            process_id,
+            parent_path,
+            child_process_id,
+            &wait_request,
+        )? {
+            return Ok(None);
+        }
+        if javascript_sync_rpc_may_make_fd_writable(&wait_request) {
+            Self::wake_ready_deferred_fd_writes(state)?;
+        }
+        let parked = state
+            .active_processes
+            .get(process_id)
+            .and_then(|root| Self::active_process_by_path(root, parent_path))
+            .and_then(|parent| parent.child_processes.get(child_process_id))
+            .and_then(|child| child.deferred_kernel_wait_rpc.as_ref())
+            .is_some_and(|(parked, _)| parked.id == wait_request.id);
+        Ok(Some(if parked {
+            OwnedDescendantKernelWait::Parked
+        } else {
+            OwnedDescendantKernelWait::Answered
+        }))
     }
 
     /// Re-check a child's parked kernel-wait RPC (see

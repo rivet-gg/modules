@@ -259,6 +259,41 @@ async fn a_guest_waiting_on_stdin_does_not_stall_the_shared_sidecar() {
     result.unwrap();
 }
 
+/// A pipeline writer fills its pipe before the reader starts, then waits for room. The wait must
+/// end when the reader drains the pipe, as on Linux, not when the writer's wait times out.
+#[tokio::test]
+async fn a_pipeline_writer_resumes_when_a_late_reader_drains_the_pipe() {
+    const TEST: &str = "a_pipeline_writer_resumes_when_a_late_reader_drains_the_pipe";
+    if !common::require_sidecar(TEST) {
+        return;
+    }
+    let Some(vm) = common::new_vm_with_commands().await else {
+        if common::allow_local_e2e_skips() {
+            eprintln!("skipping {TEST}: coreutils package absent");
+            return;
+        }
+        panic!("{TEST}: coreutils package absent");
+    };
+    // 200 KB is several pipe buffers. Linux finishes in about a second.
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(8),
+        vm.exec_process(
+            "head -c 200000 /dev/zero | { sleep 1; wc -c; }",
+            ExecOptions::default(),
+        ),
+    )
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), vm.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    let result = result
+        .expect("the pipeline must finish once its reader drains the pipe")
+        .expect("pipeline runs");
+    assert_eq!(result.exit_code, 0, "{result:?}");
+    assert_eq!(result.stdout.trim(), "200000", "{result:?}");
+}
+
 #[tokio::test]
 async fn exec_argv_timeout_confirms_node_guest_exit() {
     if !common::require_sidecar("exec_argv_timeout_confirms_node_guest_exit") {
