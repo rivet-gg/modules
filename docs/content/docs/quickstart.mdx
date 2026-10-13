@@ -10,17 +10,12 @@ durable VMs by ID and control them over HTTP instead, see the
 
 ## Which one should I use?
 
-|  | [Hosted](/agentos/docs/quickstart-hosted) | [Library](/agentos/docs/quickstart) |
+|  | [Library](/agentos/docs/quickstart) | [Hosted](/agentos/docs/quickstart-hosted) |
 |---|---|---|
-| **Runs** | As a durable instance on Rivet Cloud or a [self-hosted](/agentos/docs/self-hosting) Docker image | Embedded inside your process as a library |
-| **Lifecycle** | Durable, sleeps when idle unless a process is running; see [actor lifecycle](/actors/docs/lifecycle) | Ephemeral, runs until `dispose()` or process exit |
-| **Package** | `@rivet-dev/agentos`, or plain HTTP | `@rivet-dev/agentos-core` |
-| **VM identity** | A durable VM you create by key and reach by ID | A handle your process owns until `dispose()` |
-| **Configuration** | Stored with the VM and versioned | Passed to `AgentOs.create()` |
-| **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
-| **Host access** | None | Host functions, host mounts, external sandboxes |
-| **Previews** | Expiring preview URLs | None |
-| **Best for** | Long-lived VMs shared across clients | Embedding VMs in an existing backend |
+| **Runs** | Inside your process | Durable instance on Rivet Cloud or [self-hosted](/agentos/docs/self-hosting) |
+| **Lifecycle** | Runs until `dispose()` or process exit | Sleeps when idle unless a process is running |
+| **Clients** | Your backend | Your backend, or browsers with a scoped JWT |
+| **Preview URLs** | None | Expiring preview URLs |
 
 ## Create a VM
 
@@ -32,61 +27,32 @@ npm install @rivet-dev/agentos-core
 ```
 
 </Step>
-<Step title="Create a VM">
+<Step title="Create a VM and use it">
 
-<CodeSnippet file="examples/embedded/quickstart.ts" region="create" />
+<CodeSnippet file="examples/embedded/quickstart.ts" />
 
 The VM runs until `dispose()` is called or your process exits.
 
 </Step>
+<Step title="Configure the VM">
+
+The filesystem is in memory by default. Pass options to `AgentOs.create()` to
+persist it, attach other filesystems, and lock the VM down.
+
+<CodeSnippet file="examples/embedded/quickstart-configure.ts" />
+
+See [Filesystem](/agentos/docs/filesystem),
+[Persistence](/agentos/docs/persistence),
+[Permissions](/agentos/docs/permissions), and
+[Resource Limits](/agentos/docs/resource-limits).
+
+</Step>
 </Steps>
-
-## Show me the code
-
-### Run Bash Commands
-
-<CodeSnippet file="examples/embedded/quickstart.ts" region="bash" />
-
-### Work With the Filesystem
-
-<CodeSnippet file="examples/embedded/quickstart.ts" region="filesystem" />
-
-### Run a Dev Server
-
-Start a Node.js server in the VM, then send it a request from your process.
-The listener is not exposed on the host network.
-
-<CodeSnippet file="examples/embedded/quickstart.ts" region="dev-server" />
-
-### Use the Language Runtimes
-
-Run JavaScript, TypeScript, and Python directly, with npm and pip installs
-built in.
-
-<CodeSnippet file="examples/embedded/quickstart.ts" region="languages" />
-
-### Schedule Cron Jobs
-
-<CodeSnippet file="examples/embedded/quickstart.ts" region="cron" />
-
-### Install Software
-
-Install tools from the [software registry](/agentos/docs/registry/software)
-while the VM is running. Packages are verified against their digest before
-their commands appear on `/opt/agentos/bin`.
-
-<CodeSnippet file="examples/embedded/quickstart.ts" region="software" />
-
-### Persist Files
-
-The filesystem is in memory by default. Store the root filesystem in SQLite to
-keep files across VM recreation.
-
-<CodeSnippet file="examples/embedded/persistence.ts" />
 
 ## Next steps
 
 - Expose your own functions to guest code with
   [host functions](/agentos/docs/host-functions).
-- Lock the VM down with [Permissions](/agentos/docs/permissions) and
-  [Resource Limits](/agentos/docs/resource-limits).
+- Install tools from the [software registry](/agentos/docs/software).
+- Run servers and send them requests with
+  [Networking & Previews](/agentos/docs/networking).
