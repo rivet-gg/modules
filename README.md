@@ -41,9 +41,7 @@ Cloudflare Workers. Linux with POSIX files, processes, and networking.
 | Cold start, p95 | 5.6 ms | 950 ms | 170× faster |
 | Cold start, p99 | 6.1 ms | 3,150 ms | 516× faster |
 | Memory, shell workload | ~22 MB | 1,024 MB | 47× less |
-| Memory, coding agent | ~131 MB | 1,024 MB | 8× less |
 | Cost per execution-second, shell workload | $0.000000073 | $0.000018 | 254× cheaper |
-| Cost per execution-second, coding agent | $0.00000058 | $0.000018 | 32× cheaper |
 
 Baselines are E2B for cold starts and Daytona for memory and cost. See the
 [benchmark details](https://rivet.dev/agentos#bench-cold-start) for methodology,
