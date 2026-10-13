@@ -241,41 +241,42 @@ issue it a JWT scoped to that VM.
 
 **Step 4: Configure the VM**
 
-Configuration is stored with the VM and versioned. Pass it when the VM is first
-created, then change it with `v1.config.patch`.
+Configuration is stored with the VM and versioned. Replace it with
+`v1.config.set`, then restart the VM so filesystem and software changes take
+effect.
 
 ```ts
-const vm = client.agentOS.getOrCreate(["my-vm"], {
-	createWithInput: {
-		config: {
-			// Keep files across sleep and restarts, and mount durable storage at /data.
-			filesystem: {
-				root: { type: "durable" },
-				mounts: [{ path: "/data", backend: { type: "durable" } }],
-			},
+const vm = client.agentOS.getOrCreate(["my-vm"]);
 
-			// Environment variables for guest processes.
-			environment: { NODE_ENV: "production" },
+await vm.v1.config.set({
+	config: {
+		// Keep files across sleep and restarts, and mount durable storage at /data.
+		filesystem: {
+			root: { type: "durable" },
+			mounts: [{ path: "/data", backend: { type: "durable" } }],
+		},
 
-			// Deny network access except to one host.
-			permissions: {
-				network: {
-					default: "deny",
-					rules: [
-						{
-							mode: "allow",
-							operations: ["*"],
-							patterns: ["dns://api.example.com", "tcp://api.example.com:*"],
-						},
-					],
-				},
+		// Environment variables for guest processes.
+		environment: { NODE_ENV: "production" },
+
+		// Deny network access except to one host.
+		permissions: {
+			network: {
+				default: "deny",
+				rules: [
+					{
+						mode: "allow",
+						operations: ["*"],
+						patterns: ["dns://api.example.com", "tcp://api.example.com:*"],
+					},
+				],
 			},
 		},
 	},
 });
 
-// Update a running VM. Filesystem and software changes apply after a restart.
-await vm.v1.config.patch({ patch: { environment: { DEBUG: "1" } } });
+// Filesystem and software changes apply after a restart.
+await vm.v1.vm.restart({});
 ```
 
 See [Persistence](https://rivet.dev/agentos/docs/persistence),
