@@ -125,41 +125,6 @@ curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.run" \
 
 </details>
 
-<details>
-<summary>Raw HTTP with TypeScript</summary>
-
-```ts
-const endpoint = "https://api.rivet.dev";
-const { RIVET_NAMESPACE, RIVET_TOKEN, VM_TOKEN } = process.env;
-
-const created = await fetch(`${endpoint}/actors?namespace=${RIVET_NAMESPACE}`, {
-	method: "PUT",
-	headers: {
-		Authorization: `Bearer ${RIVET_TOKEN}`,
-		"Content-Type": "application/json",
-	},
-	body: JSON.stringify({
-		name: "agentOS",
-		key: "my-vm",
-		runner_name_selector: "services",
-		crash_policy: "sleep",
-	}),
-});
-const { actor } = await created.json();
-
-const response = await fetch(`${endpoint}/gateway/${actor.actor_id}/action/v1.process.run`, {
-	method: "POST",
-	headers: { "x-rivet-token": VM_TOKEN, "Content-Type": "application/json" },
-	body: JSON.stringify({
-		args: [{ command: "sh", args: ["-c", "echo hello"], options: { captureStdio: true } }],
-	}),
-});
-const { output } = await response.json();
-console.log(output.stdout);
-```
-
-</details>
-
 Keep `RIVET_TOKEN` on your backend. To let a browser call one VM directly,
 issue it a JWT scoped to that VM. See the
 [hosted quickstart](https://rivet.dev/agentos/docs/quickstart-hosted) and the
