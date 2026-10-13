@@ -262,6 +262,14 @@ custom host-syscall imports. Treat that target as **native POSIX**;
   at `https://rivet.dev/secure-exec`.
 - Keep docs current in the same change as user-facing behavior: public APIs,
   runtime options, env knobs, limits, architecture, and package names.
+- The root `README.md` API Overview table has one Methods column per group
+  that lists the superset of library methods (`AgentOs` in
+  `packages/core/src/agent-os.ts`) and hosted actions (the Actions table in
+  `docs/content/docs/hosted-api.mdx`). Do not split it into per-mode columns.
+  When both modes expose the same operation under different names, such as
+  hosted `stdin.write` and library `writeStdin`, list the library name once.
+  Update the table in the same change that adds, removes, or renames a public
+  method or hosted action.
 - Runnable docs code must come from real checked example files via
   `<CodeSnippet>`. Inline code is fine only for shell commands, config
   fragments, or non-runnable examples.

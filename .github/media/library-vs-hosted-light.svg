@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 590 190" width="590" height="190" role="img" aria-label="Library: agentOS runs as a VM inside your backend, created with AgentOs.create(). Or hosted: your backend and your frontend call an agentOS VM over HTTP, reached with client.agentOS.getOrCreate()." style="font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="library-vs-hosted-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2E4034"/></marker>
+  </defs>
+
+  <rect x="10" y="10" width="200" height="170" rx="9" fill="#faf8f3" stroke="#2E4034" stroke-width="1.3" stroke-dasharray="6 5"/>
+  <text x="24" y="30" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.14em" fill="#2E4034">LIBRARY</text>
+  <rect x="30" y="44" width="160" height="96" rx="7" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
+  <text x="110" y="64" text-anchor="middle" font-size="12" fill="#1b1916">Your backend</text>
+  <rect x="50" y="76" width="120" height="46" rx="6" fill="#e7ece7" stroke="#1b1916" stroke-width="1.3"/>
+  <text x="110" y="103" text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">agentOS VM</text>
+  <text x="110" y="163" text-anchor="middle" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">AgentOs.create()</text>
+
+  <text x="232.5" y="99" text-anchor="middle" font-size="12" fill="#56524a">or</text>
+
+  <g transform="translate(30 0)">
+    <rect x="225" y="10" width="325" height="170" rx="9" fill="#faf8f3" stroke="#2E4034" stroke-width="1.3" stroke-dasharray="6 5"/>
+    <text x="239" y="30" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.14em" fill="#2E4034">HOSTED</text>
+    <rect x="245" y="48" width="110" height="38" rx="6" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
+    <text x="300" y="71" text-anchor="middle" font-size="12" fill="#1b1916">Your backend</text>
+    <rect x="245" y="100" width="110" height="38" rx="6" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
+    <text x="300" y="123" text-anchor="middle" font-size="12" fill="#1b1916">Your frontend</text>
+    <path d="M355 67 H366 Q372 67 372 73 V87 Q372 93 378 93" fill="none" stroke="#2E4034" stroke-width="1.3"/>
+    <path d="M355 119 H366 Q372 119 372 113 V99 Q372 93 378 93" fill="none" stroke="#2E4034" stroke-width="1.3"/>
+    <line x1="378" y1="93" x2="429" y2="93" stroke="#2E4034" stroke-width="1.3" marker-end="url(#library-vs-hosted-arrow)"/>
+    <text x="403" y="86" text-anchor="middle" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">HTTP</text>
+    <rect x="430" y="70" width="100" height="46" rx="6" fill="#e7ece7" stroke="#1b1916" stroke-width="1.3"/>
+    <text x="480" y="97" text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">agentOS VM</text>
+    <text x="387" y="163" text-anchor="middle" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">client.agentOS.getOrCreate(["my-vm"])</text>
+  </g>
+</svg>
