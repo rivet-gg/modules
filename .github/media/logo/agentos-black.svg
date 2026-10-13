@@ -8,7 +8,7 @@
                 <rect x="693" y="1332" width="464" height="186"/>
             </clipPath>
             <g clip-path="url(#_clip1)">
-                <g id="frame-layer" transform="matrix(0.682299,0,0,0.822642,1038.89,1346.67)">
+                <g id="frame-layer" transform="matrix(0.682299,0,0,0.822642,1038.89,1364.63)">
                     <path d="M164.529,52.792L164.529,120.844C164.529,145.347 144.635,165.241 120.132,165.241L52.08,165.241C27.577,165.241 7.683,145.347 7.683,120.844L7.683,52.792C7.683,28.289 27.577,8.395 52.08,8.395L120.132,8.395C144.635,8.395 164.529,28.289 164.529,52.792Z" style="fill:none;stroke:black;stroke-width:15.18px;"/>
                 </g>
                 <g id="text-layer" transform="matrix(2.17521,0,0,2.62263,-891.914,764.236)">
@@ -62,7 +62,7 @@
                     <g transform="matrix(50.1389,0,0,50.1389,868.057,261.867)">
                     </g>
                 </g>
-                <g id="os-layer" transform="matrix(0.942408,0,0,1.13625,379.074,1141.05)">
+                <g id="os-layer" transform="matrix(0.942408,0,0,1.13625,379.074,1159.01)">
                     <g transform="matrix(50.1389,0,0,50.1389,799.86,261.867)">
                     </g>
                     <text x="727.418px" y="261.867px" style="font-family:'Helvetica-Bold', 'Helvetica';font-weight:700;font-size:50.139px;fill:black;">OS</text>
