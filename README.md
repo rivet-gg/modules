@@ -1,4 +1,5 @@
 <div align="center">
+  <br/>
   <a href="https://rivet.dev/agentos">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./.github/media/logo/agentos-white.svg">
@@ -52,14 +53,15 @@ the benchmarks yourself.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./.github/media/architecture-dark.svg">
-    <img src="./.github/media/architecture-light.svg" alt="@rivet-dev/agentos-core or the agentOS Actor controls the agentOS sidecar process. Its trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates and WebAssembly and reaches the kernel only through syscalls." width="440">
+    <img src="./.github/media/architecture-light.svg" alt="The library or the HTTP API connects to the agentOS sidecar process over stdio and a Unix socket. Its trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates and WebAssembly and reaches the kernel only through syscalls." width="440">
   </picture>
 </p>
 
-Your code controls a VM through `@rivet-dev/agentos-core` in your backend, or
-through the agentOS Actor when hosted. Both drive the agentOS sidecar, a Rust
-process whose trusted kernel owns the process table, the virtual filesystem
-and its mounts, the socket table, and permissions and resource limits.
+The agentOS sidecar is a Rust process. The library, `@rivet-dev/agentos-core`,
+owns it inside your backend; when hosted, you control it over the HTTP API.
+Either way, the client talks to the sidecar over stdio and a Unix socket. The
+sidecar's trusted kernel owns the process table, the virtual filesystem and its
+mounts, the socket table, and permissions and resource limits.
 
 Guest code runs untrusted inside the same process: JavaScript and TypeScript in
 V8 isolates, and the shell, coreutils, and Python as WebAssembly. Every file,
