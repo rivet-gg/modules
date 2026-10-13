@@ -48,33 +48,6 @@ See the [benchmark details](https://rivet.dev/agentos#bench-cold-start) for
 methodology, or [Performance](https://rivet.dev/agentos/docs/performance) to run
 the benchmarks yourself.
 
-## Architecture
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./.github/media/architecture-dark.svg">
-    <img src="./.github/media/architecture-light.svg" alt="The library or the HTTP API connects to the agentOS sidecar process over stdio and a Unix socket. Its trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates and WebAssembly and reaches the kernel only through syscalls." width="440">
-  </picture>
-</p>
-
-The agentOS sidecar is a Rust process that runs separately from your
-application's process. The kernel and all guest code live in the sidecar, so
-untrusted code and its memory never enter your process. The library,
-`@rivet-dev/agentos-core`, starts and owns the sidecar from your backend and
-talks to it over stdio and a Unix socket. When hosted, you control the same
-sidecar over the HTTP API.
-
-The sidecar's trusted kernel owns the process table, the virtual filesystem and
-its mounts, the socket table, and permissions and resource limits.
-
-Guest code runs untrusted inside the sidecar: JavaScript and TypeScript in V8
-isolates, and the shell, coreutils, and Python as WebAssembly. The entire kernel
-is virtualized. Every file, process, and network operation is a syscall into
-it, so by default guest code never touches the host: no host files, processes,
-environment variables, or network access. Host access exists only where you opt
-in, through mounts, host functions, and network permissions. See
-[Architecture](https://rivet.dev/agentos/docs/architecture) for details.
-
 ## Quickstart
 
 <p align="center">
@@ -103,18 +76,14 @@ in, through mounts, host functions, and network permissions. See
 npm install @rivet-dev/agentos-core
 ```
 
-**Step 2: Create a VM**
+**Step 2: Create a VM and use it**
 
 ```ts
 import { AgentOs } from "@rivet-dev/agentos-core";
 
 // Boots a VM inside this process. It runs until dispose() or process exit.
 const vm = await AgentOs.create();
-```
 
-**Step 3: Use it**
-
-```ts
 try {
 	// Bash
 	const result = await vm.process.exec("echo hello && ls /home/agentos", {
@@ -136,11 +105,60 @@ try {
 }
 ```
 
-The filesystem is in memory by default. To keep files across VM recreation,
-store the root filesystem in SQLite; see
-[examples/embedded/persistence.ts](examples/embedded/persistence.ts). See the
-[library quickstart](https://rivet.dev/agentos/docs/quickstart) for software
-installs, host functions, permissions, and resource limits.
+**Step 3: Configure the VM**
+
+The filesystem is in memory by default. Pass options to `AgentOs.create()` to
+persist it, attach other filesystems, and lock the VM down.
+
+```ts
+import { resolve } from "node:path";
+import { AgentOs } from "@rivet-dev/agentos-core";
+
+const vm = await AgentOs.create({
+	// Store the root filesystem in SQLite so files survive VM recreation.
+	database: { type: "sqlite_file", path: resolve("agentos.sqlite") },
+	rootFilesystem: { type: "native", plugin: { id: "chunked_sqlite", config: {} } },
+
+	// Attach a host directory (read-only) and an S3 bucket.
+	mounts: [
+		{
+			path: "/mnt/code",
+			plugin: { id: "host_dir", config: { hostPath: "/path/to/repo" } },
+			readOnly: true,
+		},
+		{
+			path: "/mnt/data",
+			plugin: { id: "chunked_s3", config: { bucket: "my-bucket", region: "us-east-1" } },
+		},
+	],
+
+	// Environment variables for guest processes.
+	environment: { NODE_ENV: "production" },
+
+	// Deny network access except to one host.
+	permissions: {
+		network: {
+			default: "deny",
+			rules: [
+				{
+					mode: "allow",
+					operations: ["*"],
+					patterns: ["dns://api.example.com", "tcp://api.example.com:*"],
+				},
+			],
+		},
+	},
+
+	// Cap processes and filesystem size.
+	limits: { resources: { maxProcesses: 64, maxFilesystemBytes: 256 * 1024 * 1024 } },
+});
+```
+
+See [Filesystem](https://rivet.dev/agentos/docs/filesystem),
+[Persistence](https://rivet.dev/agentos/docs/persistence),
+[Permissions](https://rivet.dev/agentos/docs/permissions),
+[Resource Limits](https://rivet.dev/agentos/docs/resource-limits), and
+[Host Functions](https://rivet.dev/agentos/docs/host-functions).
 
 ### Hosted
 
@@ -188,7 +206,7 @@ await vm.v1.process.spawn({ command: "node", args: ["/home/agentos/server.js"] }
 const preview = await vm.v1.network.preview.create({ port: 3000, ttlMs: 60 * 60 * 1_000 });
 ```
 
-The client is optional. Every action is a plain HTTP call: create the VM by
+The client is optional. Every action is a plain HTTP call. Create the VM by
 key with your `RIVET_TOKEN`, then call `POST /gateway/{vm_id}/action/v1.{group}.{action}`
 with a token that can reach the VM.
 
@@ -219,16 +237,71 @@ curl "https://api.rivet.dev/gateway/$VM_ID/action/v1.process.run" \
 </details>
 
 Keep `RIVET_TOKEN` on your backend. To let a browser call one VM directly,
-issue it a JWT scoped to that VM. See the
-[hosted quickstart](https://rivet.dev/agentos/docs/quickstart-hosted) and the
-[Hosted HTTP API](https://rivet.dev/agentos/docs/hosted-api).
+issue it a JWT scoped to that VM.
+
+**Step 4: Configure the VM**
+
+Configuration is stored with the VM and versioned. Pass it when the VM is first
+created, then change it with `v1.config.patch`.
+
+```ts
+const vm = client.agentOS.getOrCreate(["my-vm"], {
+	createWithInput: {
+		config: {
+			// Keep files across sleep and restarts, and mount durable storage at /data.
+			filesystem: {
+				root: { type: "durable" },
+				mounts: [{ path: "/data", backend: { type: "durable" } }],
+			},
+
+			// Environment variables for guest processes.
+			environment: { NODE_ENV: "production" },
+		},
+	},
+});
+
+// Update a running VM. Filesystem and software changes apply after a restart.
+await vm.v1.config.patch({ patch: { environment: { DEBUG: "1" } } });
+```
+
+See the [hosted quickstart](https://rivet.dev/agentos/docs/quickstart-hosted),
+[Persistence](https://rivet.dev/agentos/docs/persistence), and the
+[Hosted HTTP API](https://rivet.dev/agentos/docs/hosted-api) for every config
+field.
+
+## Architecture
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/media/architecture-dark.svg">
+    <img src="./.github/media/architecture-light.svg" alt="The library or the HTTP API connects to the agentOS sidecar process over stdio and a Unix socket. Its trusted kernel owns processes, the filesystem, networking, and permissions. Untrusted guest code runs in V8 isolates and WebAssembly and reaches the kernel only through syscalls." width="440">
+  </picture>
+</p>
+
+The agentOS sidecar is a Rust process that runs separately from your
+application's process. The kernel and all guest code live in the sidecar, so
+untrusted code and its memory never enter your process. The library,
+`@rivet-dev/agentos-core`, starts and owns the sidecar from your backend and
+talks to it over stdio and a Unix socket. When hosted, you control the same
+sidecar over the HTTP API.
+
+The sidecar's trusted kernel owns the process table, the virtual filesystem and
+its mounts, the socket table, and permissions and resource limits.
+
+Untrusted guest code also runs inside the sidecar. JavaScript and TypeScript run
+in V8 isolates, and the shell, coreutils, and Python run as WebAssembly.
+
+The entire kernel is virtualized. Every file, process, and network operation is
+a syscall into the kernel, so by default guest code can't reach host files,
+processes, environment variables, or the network. You opt in to host access
+with mounts, host functions, and network permissions. See
+[Architecture](https://rivet.dev/agentos/docs/architecture) for details.
 
 ## API Overview
 
 Library methods live under `vm.<group>`. Hosted actions live under
 `vm.v1.<group>`, or `POST /gateway/{vm_id}/action/v1.<group>.<action>` over
-HTTP. The table lists every method across both. A few exist in only one mode,
-and hosted uses dotted names for some, such as `stdin.write` for `writeStdin`.
+HTTP. The table lists every method across both.
 
 | Group | What it does | Methods |
 |---|---|---|
@@ -244,11 +317,6 @@ and hosted uses dotted names for some, such as `stdin.write` for `writeStdin`.
 | `network` | Reach servers running in the VM | `httpRequest`, `fetch`, `fetchStream`, `preview.create`, `preview.expire` |
 | `software` | Install `.aospkg` command packages | `install`, `uninstall`, `list`, `installed`, `link` |
 | `cron` | Scheduled commands | `schedule`, `list`, `cancel` |
-
-Software packages are immutable `.aospkg` artifacts, verified against their
-digest and linked under `/opt/agentos/bin`. Hosted VMs install from a URL;
-the library also accepts trusted local package paths. Runtime software is not
-resolved from npm.
 
 ## License
 
