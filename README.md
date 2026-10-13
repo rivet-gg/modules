@@ -52,7 +52,7 @@ the benchmarks yourself.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./.github/media/architecture-dark.svg">
-    <img src="./.github/media/architecture-light.svg" alt="Your backend or the hosted agentOS Actor controls a trusted Rust sidecar that owns processes, the filesystem, networking, and permissions. Untrusted executors run guest code in V8 isolates, WebAssembly, and Pyodide, and reach the sidecar only through syscalls." width="560">
+    <img src="./.github/media/architecture-light.svg" alt="@rivet-dev/agentos-core or the hosted agentOS Actor controls a trusted sidecar that owns processes, the filesystem, networking, and permissions. Untrusted executors run guest code in V8 isolates, WebAssembly, and Pyodide, and reach the sidecar only through syscalls." width="560">
   </picture>
 </p>
 
@@ -77,12 +77,16 @@ details.
   </picture>
 </p>
 
+<div align="center">
+
 |  | Library | Hosted |
 |---|---|---|
 | **Runs** | Inside your process | Durable instance on Rivet Cloud or self-hosted |
 | **Lifecycle** | Runs until `dispose()` or process exit | Sleeps when idle unless a process is running |
 | **Clients** | Your backend | Your backend, or browsers with a scoped JWT |
 | **Preview URLs** | None | Expiring preview URLs |
+
+</div>
 
 ### Library
 

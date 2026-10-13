@@ -1,58 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 348" width="560" height="348" role="img" aria-label="agentOS architecture. Your backend with @rivet-dev/agentos-core, or the hosted agentOS Actor, controls a trusted Rust sidecar that owns processes, the filesystem, networking, and permissions. Below a security boundary, untrusted executors run guest code: V8 isolates for JavaScript and TypeScript, WebAssembly for the shell, coreutils, and tools, and Pyodide for Python. Executors reach the sidecar only through syscalls." style="font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 236" width="560" height="236" role="img" aria-label="agentOS architecture. @rivet-dev/agentos-core or the hosted agentOS Actor controls a trusted sidecar that owns processes, the filesystem, networking, and permissions. Below a security boundary, untrusted executors run guest code in V8 isolates for JavaScript and TypeScript, WebAssembly for the shell, coreutils, and tools, and Pyodide for Python, and reach the sidecar only through syscalls." style="font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
   <defs>
     <marker id="architecture-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2E4034"/></marker>
   </defs>
 
-  <rect x="30" y="10" width="230" height="48" rx="6" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
-  <text x="145" y="30" text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">Your backend</text>
-  <text x="145" y="47" text-anchor="middle" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">@rivet-dev/agentos-core</text>
-  <rect x="300" y="10" width="230" height="48" rx="6" fill="#ffffff" stroke="#1b1916" stroke-width="1.3"/>
-  <text x="415" y="30" text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">agentOS Actor</text>
-  <text x="415" y="47" text-anchor="middle" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">hosted on Rivet</text>
-  <line x1="145" y1="58" x2="145" y2="95" stroke="#2E4034" stroke-width="1.3" marker-end="url(#architecture-arrow)"/>
-  <line x1="415" y1="58" x2="415" y2="95" stroke="#2E4034" stroke-width="1.3" marker-end="url(#architecture-arrow)"/>
+  <text x="280" y="16" text-anchor="middle" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">@rivet-dev/agentos-core  or  hosted agentOS Actor</text>
+  <line x1="280" y1="23" x2="280" y2="41" stroke="#2E4034" stroke-width="1.3" marker-end="url(#architecture-arrow)"/>
 
-  <rect x="10" y="96" width="540" height="94" rx="9" fill="#faf8f3" stroke="#2E4034" stroke-width="1.3" stroke-dasharray="6 5"/>
-  <text x="24" y="114" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.14em" fill="#2E4034">SIDECAR · TRUSTED · RUST</text>
-  <g fill="#e7ece7" stroke="#1b1916" stroke-width="1.3">
-    <rect x="40" y="124" width="111" height="50" rx="6"/>
-    <rect x="163" y="124" width="111" height="50" rx="6"/>
-    <rect x="286" y="124" width="111" height="50" rx="6"/>
-    <rect x="409" y="124" width="111" height="50" rx="6"/>
-  </g>
-  <g text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">
-    <text x="95.5" y="146">Processes</text>
-    <text x="218.5" y="146">Filesystem</text>
-    <text x="341.5" y="146">Networking</text>
-    <text x="464.5" y="146">Permissions</text>
-  </g>
-  <g text-anchor="middle" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">
-    <text x="95.5" y="163">process table</text>
-    <text x="218.5" y="163">VFS + mounts</text>
-    <text x="341.5" y="163">socket table</text>
-    <text x="464.5" y="163">policy + limits</text>
-  </g>
+  <rect x="10" y="42" width="540" height="58" rx="9" fill="#e7ece7" stroke="#1b1916" stroke-width="1.3"/>
+  <text x="24" y="62" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.14em" fill="#2E4034">SIDECAR · TRUSTED</text>
+  <text x="24" y="86" font-size="13" font-weight="600" fill="#1b1916">Processes · Filesystem · Networking · Permissions &amp; limits</text>
 
-  <text x="10" y="217" font-size="9.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.12em" fill="#d63e00">SECURITY BOUNDARY</text>
-  <line x1="138" y1="214" x2="550" y2="214" stroke="#d63e00" stroke-width="1.3" stroke-dasharray="4 4"/>
-  <line x1="280" y1="192" x2="280" y2="264" stroke="#2E4034" stroke-width="1.3" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
-  <text x="288" y="207" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">syscalls</text>
+  <text x="10" y="123" font-size="9.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.12em" fill="#d63e00">SECURITY BOUNDARY</text>
+  <line x1="138" y1="120" x2="550" y2="120" stroke="#d63e00" stroke-width="1.3" stroke-dasharray="4 4"/>
 
-  <rect x="10" y="238" width="540" height="100" rx="9" fill="#faf8f3" stroke="#2E4034" stroke-width="1.3" stroke-dasharray="6 5"/>
-  <text x="24" y="256" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.14em" fill="#2E4034">EXECUTORS · UNTRUSTED GUEST CODE</text>
+  <rect x="10" y="140" width="540" height="86" rx="9" fill="#faf8f3" stroke="#2E4034" stroke-width="1.3" stroke-dasharray="6 5"/>
+  <text x="24" y="158" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" letter-spacing="0.14em" fill="#2E4034">EXECUTORS · UNTRUSTED</text>
   <g fill="#ffffff" stroke="#1b1916" stroke-width="1.3">
-    <rect x="40" y="266" width="150" height="56" rx="6"/>
-    <rect x="205" y="266" width="150" height="56" rx="6"/>
-    <rect x="370" y="266" width="150" height="56" rx="6"/>
+    <rect x="40" y="166" width="150" height="48" rx="6"/>
+    <rect x="205" y="166" width="150" height="48" rx="6"/>
+    <rect x="370" y="166" width="150" height="48" rx="6"/>
   </g>
   <g text-anchor="middle" font-size="12" font-weight="600" fill="#1b1916">
-    <text x="115" y="289">V8 isolates</text>
-    <text x="280" y="289">WebAssembly</text>
-    <text x="445" y="289">Pyodide</text>
+    <text x="115" y="186">V8 isolates</text>
+    <text x="280" y="186">WebAssembly</text>
+    <text x="445" y="186">Pyodide</text>
   </g>
   <g text-anchor="middle" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">
-    <text x="115" y="307">JavaScript, TypeScript</text>
-    <text x="280" y="307">shell, coreutils, tools</text>
-    <text x="445" y="307">Python</text>
+    <text x="115" y="203">JavaScript, TypeScript</text>
+    <text x="280" y="203">shell, coreutils, tools</text>
+    <text x="445" y="203">Python</text>
   </g>
+
+  <line x1="280" y1="102" x2="280" y2="164" stroke="#2E4034" stroke-width="1.3" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+  <text x="288" y="114" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#56524a">syscalls</text>
 </svg>
