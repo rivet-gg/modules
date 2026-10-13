@@ -40,12 +40,69 @@ Cloudflare Workers. Linux with POSIX files, processes, and networking.
   <img src="./.github/media/library-vs-hosted-light.svg" alt="Library: agentOS runs as a VM inside your backend. Hosted: your backend and frontend call an agentOS VM over HTTP." width="560">
 </picture>
 
-|  | Hosted | Library |
+|  | Library | Hosted |
 |---|---|---|
-| **Runs** | Durable instance on Rivet Cloud or self-hosted | Inside your process |
-| **Lifecycle** | Sleeps when idle unless a process is running | Runs until `dispose()` or process exit |
-| **Clients** | Your backend, or browsers with a scoped JWT | Your backend |
-| **Preview URLs** | Expiring preview URLs | None |
+| **Runs** | Inside your process | Durable instance on Rivet Cloud or self-hosted |
+| **Lifecycle** | Runs until `dispose()` or process exit | Sleeps when idle unless a process is running |
+| **Clients** | Your backend | Your backend, or browsers with a scoped JWT |
+| **Preview URLs** | None | Expiring preview URLs |
+
+### Library
+
+**Step 1: Install the library**
+
+```bash
+npm install @rivet-dev/agentos-core
+```
+
+**Step 2: Create a VM**
+
+```ts
+import { AgentOs } from "@rivet-dev/agentos-core";
+
+// Boots a VM inside this process. It runs until dispose() or process exit.
+const vm = await AgentOs.create();
+```
+
+**Step 3: Use it**
+
+```ts
+try {
+	const result = await vm.process.exec("echo hello && ls /home/agentos", {
+		output: { capture: "all" },
+	});
+	console.log(result.stdout);
+
+	await vm.filesystem.writeFile("/home/agentos/hello.txt", "Hello, world!");
+	const file = await vm.filesystem.readFile("/home/agentos/hello.txt");
+
+	// Start a server. The listener stays inside the VM; send it a request from the host.
+	await vm.filesystem.writeFile(
+		"/home/agentos/server.js",
+		`require("node:http").createServer((req, res) => res.end("hello")).listen(3000);`,
+	);
+	await vm.process.spawn("node", ["/home/agentos/server.js"]);
+	const response = await vm.network.httpRequest({ port: 3000, path: "/" });
+
+	await vm.javascript.execute("console.log(1 + 2)");
+	await vm.typescript.execute("const n: number = 3; console.log(n)");
+	const answer = await vm.python.evaluate<number>("21 * 2");
+
+	vm.cron.schedule({
+		id: "cleanup",
+		schedule: "0 * * * *",
+		action: { type: "exec", command: "rm", args: ["-rf", "/tmp/cache"] },
+	});
+} finally {
+	await vm.dispose();
+}
+```
+
+The filesystem is in memory by default. To keep files across VM recreation,
+store the root filesystem in SQLite; see
+[examples/embedded/persistence.ts](examples/embedded/persistence.ts). See the
+[library quickstart](https://rivet.dev/agentos/docs/quickstart) for software
+installs, host functions, permissions, and resource limits.
 
 ### Hosted
 
@@ -129,63 +186,6 @@ Keep `RIVET_TOKEN` on your backend. To let a browser call one VM directly,
 issue it a JWT scoped to that VM. See the
 [hosted quickstart](https://rivet.dev/agentos/docs/quickstart-hosted) and the
 [Hosted HTTP API](https://rivet.dev/agentos/docs/hosted-api).
-
-### Library
-
-**Step 1: Install the library**
-
-```bash
-npm install @rivet-dev/agentos-core
-```
-
-**Step 2: Create a VM**
-
-```ts
-import { AgentOs } from "@rivet-dev/agentos-core";
-
-// Boots a VM inside this process. It runs until dispose() or process exit.
-const vm = await AgentOs.create();
-```
-
-**Step 3: Use it**
-
-```ts
-try {
-	const result = await vm.process.exec("echo hello && ls /home/agentos", {
-		output: { capture: "all" },
-	});
-	console.log(result.stdout);
-
-	await vm.filesystem.writeFile("/home/agentos/hello.txt", "Hello, world!");
-	const file = await vm.filesystem.readFile("/home/agentos/hello.txt");
-
-	// Start a server. The listener stays inside the VM; send it a request from the host.
-	await vm.filesystem.writeFile(
-		"/home/agentos/server.js",
-		`require("node:http").createServer((req, res) => res.end("hello")).listen(3000);`,
-	);
-	await vm.process.spawn("node", ["/home/agentos/server.js"]);
-	const response = await vm.network.httpRequest({ port: 3000, path: "/" });
-
-	await vm.javascript.execute("console.log(1 + 2)");
-	await vm.typescript.execute("const n: number = 3; console.log(n)");
-	const answer = await vm.python.evaluate<number>("21 * 2");
-
-	vm.cron.schedule({
-		id: "cleanup",
-		schedule: "0 * * * *",
-		action: { type: "exec", command: "rm", args: ["-rf", "/tmp/cache"] },
-	});
-} finally {
-	await vm.dispose();
-}
-```
-
-The filesystem is in memory by default. To keep files across VM recreation,
-store the root filesystem in SQLite; see
-[examples/embedded/persistence.ts](examples/embedded/persistence.ts). See the
-[library quickstart](https://rivet.dev/agentos/docs/quickstart) for software
-installs, host functions, permissions, and resource limits.
 
 ## API Overview
 
