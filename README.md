@@ -57,11 +57,15 @@ the benchmarks yourself.
   </picture>
 </p>
 
-The agentOS sidecar is a Rust process. The library, `@rivet-dev/agentos-core`,
-owns it inside your backend and talks to it over stdio and a Unix socket. When
-hosted, you control the same sidecar over the HTTP API. The sidecar's trusted
-kernel owns the process table, the virtual filesystem and its mounts, the
-socket table, and permissions and resource limits.
+The agentOS sidecar is a Rust process that runs separately from your
+application's process. The kernel and all guest code live in the sidecar, so
+untrusted code and its memory never enter your process. The library,
+`@rivet-dev/agentos-core`, starts and owns the sidecar from your backend and
+talks to it over stdio and a Unix socket. When hosted, you control the same
+sidecar over the HTTP API.
+
+The sidecar's trusted kernel owns the process table, the virtual filesystem and
+its mounts, the socket table, and permissions and resource limits.
 
 Guest code runs untrusted inside the same process: JavaScript and TypeScript in
 V8 isolates, and the shell, coreutils, and Python as WebAssembly. Every file,
