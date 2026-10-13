@@ -1661,6 +1661,17 @@ where
         return settle_owned_fetch_sync_rpc::<B>(vm, process_id, child_path, request, response)
             .await;
     }
+    if matches!(
+        request.method.as_str(),
+        "__kernel_stdin_read" | "__kernel_poll"
+    ) {
+        if let Some(response) =
+            service_owned_kernel_wait::<B>(vm, process_id, child_path, &request).await
+        {
+            return settle_owned_fetch_sync_rpc::<B>(vm, process_id, child_path, request, response)
+                .await;
+        }
+    }
 
     let response = vm.try_command("service owned JavaScript process event", |vm| {
         let socket_paths = build_javascript_socket_path_context(vm)?;
@@ -1710,6 +1721,128 @@ where
         }
     })?;
     settle_owned_fetch_sync_rpc::<B>(vm, process_id, child_path, request, response).await
+}
+
+/// A guest stdin read or poll, parsed once.
+enum OwnedKernelWait {
+    StdinRead {
+        max_bytes: usize,
+    },
+    Poll {
+        fd_requests: Vec<KernelPollFdRequest>,
+    },
+}
+
+/// Service a guest `__kernel_stdin_read` or `__kernel_poll` without blocking the
+/// protocol thread. Every VM shares that thread, so a guest that waits on an
+/// empty pipe must never wait inside a VM command. Each pass probes the kernel
+/// with a zero timeout during a short VM command. When nothing is ready, the
+/// wait happens off the VM until kernel poll state changes or the guest's
+/// deadline passes.
+///
+/// Returns `None` for a JavaScript process whose stdin is the in-process bridge
+/// rather than a kernel pipe; kernel poll state does not track it.
+async fn service_owned_kernel_wait<B>(
+    vm: &crate::state::VmHandle,
+    process_id: &str,
+    child_path: &[String],
+    request: &JavascriptSyncRpcRequest,
+) -> Option<Result<JavascriptSyncRpcServiceResponse, SidecarError>>
+where
+    B: NativeSidecarBridge + Send + 'static,
+    BridgeError<B>: fmt::Debug + Send + Sync + 'static,
+{
+    let parsed = if request.method == "__kernel_stdin_read" {
+        parse_kernel_stdin_read_args(request)
+            .map(|(max_bytes, timeout)| (OwnedKernelWait::StdinRead { max_bytes }, timeout))
+    } else {
+        parse_kernel_poll_args(request).map(|(fd_requests, timeout)| {
+            (
+                OwnedKernelWait::Poll { fd_requests },
+                u64::try_from(timeout).ok(),
+            )
+        })
+    };
+    let (wait, timeout_ms) = match parsed {
+        Ok(parsed) => parsed,
+        Err(error) => return Some(Err(error)),
+    };
+    let deadline = timeout_ms.map(|timeout| Instant::now() + Duration::from_millis(timeout));
+    let path = child_path.iter().map(String::as_str).collect::<Vec<_>>();
+    loop {
+        let probe = vm.try_command("probe owned kernel wait", |vm| {
+            // Snapshot before the probe so a write that lands between the
+            // probe and the wait still wakes the wait.
+            let wait_handle = vm.kernel.poll_wait_handle();
+            let generation = wait_handle.snapshot();
+            let VmState {
+                kernel,
+                active_processes,
+                ..
+            } = vm;
+            let process = active_processes
+                .get_mut(process_id)
+                .and_then(|root| NativeSidecar::<B>::active_process_by_path_mut(root, &path))
+                .ok_or_else(|| {
+                    SidecarError::InvalidState(format!(
+                        "kernel wait target process disappeared: {process_id}/{}",
+                        child_path.join("/")
+                    ))
+                })?;
+            if matches!(wait, OwnedKernelWait::StdinRead { .. })
+                && matches!(process.execution, ActiveExecution::Javascript(_))
+                && process.tty_master_fd.is_none()
+                && !process.direct_posix_stdin
+            {
+                return Ok(None);
+            }
+            // Reading frees pipe capacity; move queued host stdin (and a
+            // deferred close) into the pipe before probing it.
+            flush_pending_kernel_stdin(kernel, process)?;
+            let (value, ready) = match &wait {
+                OwnedKernelWait::StdinRead { max_bytes } => {
+                    let value = kernel_stdin_read_response(
+                        kernel,
+                        process.kernel_pid,
+                        process.kernel_stdin_reader_fd,
+                        *max_bytes,
+                        Duration::ZERO,
+                    )?;
+                    let ready = !value.is_null();
+                    (value, ready)
+                }
+                OwnedKernelWait::Poll { fd_requests } => {
+                    let value = kernel_poll_response(kernel, process.kernel_pid, fd_requests, 0)?;
+                    let ready = value.get("readyCount").and_then(Value::as_u64).unwrap_or(0) > 0;
+                    (value, ready)
+                }
+            };
+            Ok(Some((wait_handle, generation, value, ready)))
+        });
+        let (wait_handle, generation, value, ready) = match probe {
+            Ok(Some(probe)) => probe,
+            Ok(None) => return None,
+            Err(error) => return Some(Err(error)),
+        };
+        let now = Instant::now();
+        if ready || deadline.is_some_and(|deadline| now >= deadline) {
+            return Some(Ok(value.into()));
+        }
+        // A process that exits closes its descriptors, which changes kernel
+        // poll state, and disposing the VM cancels this task, so an
+        // indefinite wait needs no timer.
+        match deadline {
+            Some(deadline) => {
+                tokio::select! {
+                    _ = wait_handle.wait_for_change_async(generation) => {}
+                    _ = tokio::time::sleep(deadline.saturating_duration_since(now)) => {}
+                }
+            }
+            None => {
+                wait_handle.wait_for_change_async(generation).await;
+            }
+        }
+    }
 }
 
 fn owned_fetch_process_notify(
