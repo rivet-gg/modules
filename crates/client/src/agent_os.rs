@@ -1503,8 +1503,8 @@ async fn wait_for_vm_ready(
                 },
                 Err(broadcast::error::RecvError::Lagged(_)) => {}
                 Err(broadcast::error::RecvError::Closed) => {
-                    return Err(ClientError::Sidecar(
-                        "sidecar transport closed before the VM became ready".to_string(),
+                    return Err(ClientError::SidecarExited(
+                        "the sidecar exited before the VM became ready".to_string(),
                     ));
                 }
             }

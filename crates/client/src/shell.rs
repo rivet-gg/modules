@@ -508,10 +508,7 @@ impl AgentOs {
                         continue;
                     }
                     Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                        let error = ClientError::TerminationFailed {
-                            process_id: route_process_id.clone(),
-                            reason: "terminal event stream closed before a confirmed exit".into(),
-                        };
+                        let error = crate::process::sidecar_exited_before_exit(&route_process_id);
                         tracing::warn!(?error, "terminal exit unconfirmed");
                         agent.retain_shell_outcome(
                             &exit_shell_id,

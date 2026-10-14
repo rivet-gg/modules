@@ -162,15 +162,20 @@ async fn next_spawn_event(
                 let reason =
                     format!("spawn event stream failed before exit was confirmed: {error}");
                 tracing::error!(%process_id, %reason, "spawn observation failed");
+                let error = if closed {
+                    sidecar_exited_before_exit(process_id)
+                } else {
+                    ClientError::TerminationFailed {
+                        process_id: process_id.into(),
+                        reason,
+                    }
+                };
                 outcome.send_if_modified(|state| {
                     if !matches!(state, ProcessOutcome::Pending) {
                         return false;
                     }
                     *state = ProcessOutcome::Failed {
-                        error: ClientError::TerminationFailed {
-                            process_id: process_id.into(),
-                            reason,
-                        },
+                        error,
                         rejected: false,
                     };
                     true
@@ -182,6 +187,12 @@ async fn next_spawn_event(
             }
         }
     }
+}
+
+/// The transport closes its event stream only when the sidecar process is gone, and the process
+/// went with it.
+pub(crate) fn sidecar_exited_before_exit(process_id: &str) -> ClientError {
+    ClientError::SidecarExited(format!("process {process_id} ended with its sidecar"))
 }
 
 fn reconcile_replayed_exit(outcome: &watch::Sender<ProcessOutcome>, exit_code: Option<i32>) {
@@ -677,11 +688,7 @@ impl AgentOs {
                 Ok(frame) => frame,
                 Err(broadcast::error::RecvError::Lagged(_)) => continue,
                 Err(broadcast::error::RecvError::Closed) => {
-                    return Err(ClientError::TerminationFailed {
-                        process_id,
-                        reason: "event stream closed before process exit".to_owned(),
-                    }
-                    .into());
+                    return Err(sidecar_exited_before_exit(&process_id).into());
                 }
             };
             if ownership != self.vm_scope() {
@@ -1989,7 +1996,13 @@ async fn confirm_exec_exit(
                     tracing::warn!(%process_id, skipped, "exec exit confirmation receiver lagged");
                     None
                 }
-                Err(broadcast::error::RecvError::Closed) => Some("event stream closed before exit confirmation".to_owned()),
+                Err(broadcast::error::RecvError::Closed) => {
+                    let mut error = sidecar_exited_before_exit(process_id);
+                    if let (ClientError::SidecarExited(message), Some(kill_error)) = (&mut error, &kill_error) {
+                        message.push_str(&format!("; SIGKILL failed: {kill_error}"));
+                    }
+                    return Err(error);
+                }
             },
         };
         if let Some(mut reason) = failure {
@@ -2313,10 +2326,19 @@ mod tests {
             );
             assert_eq!(outcome.borrow().exit_code(), None);
             assert!(!outcome.borrow().reclaimable());
-            assert!(matches!(
-                super::wait_for_process_outcome(outcome.subscribe(), "p").await,
-                Err(ClientError::TerminationFailed { .. })
-            ));
+            // A closed stream means the sidecar is gone; a lagged one lost the exit event.
+            let result = super::wait_for_process_outcome(outcome.subscribe(), "p").await;
+            if lagged {
+                assert!(
+                    matches!(result, Err(ClientError::TerminationFailed { .. })),
+                    "{result:?}"
+                );
+            } else {
+                assert!(
+                    matches!(result, Err(ClientError::SidecarExited(_))),
+                    "{result:?}"
+                );
+            }
         }
     }
 
@@ -2439,9 +2461,8 @@ mod tests {
         )
         .await
         .unwrap_err();
-        let message = error.to_string();
-        assert!(message.contains("event stream closed"));
-        assert!(message.contains("kill rejection"));
+        assert!(matches!(error, ClientError::SidecarExited(_)), "{error:?}");
+        assert!(error.to_string().contains("kill rejection"));
     }
 
     #[test]

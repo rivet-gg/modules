@@ -52,6 +52,14 @@ const CONTROL_FD: std::os::fd::RawFd = 3;
 /// Fixed protocol constant paired with the sidecar heartbeat cadence; mirrors the TS client.
 const SIDECAR_SILENCE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
+/// After a disconnect, how long the event lane may keep delivering frames the sidecar wrote before
+/// it exited. The killed sidecar's stdout normally reaches EOF at once; this only bounds the case
+/// where something else holds the pipe open, so event waiters never hang.
+const EVENT_DRAIN_GRACE: std::time::Duration = std::time::Duration::from_secs(2);
+
+type EventSenderSlot =
+    parking_lot::Mutex<Option<broadcast::Sender<(wire::OwnershipScope, wire::EventPayload)>>>;
+
 /// A registered callback that answers a sidecar-initiated request using generated wire types.
 pub type WireSidecarCallback = Arc<
     dyn Fn(
@@ -77,8 +85,10 @@ pub struct SidecarTransport {
     request_counter: AtomicI64,
     /// Negotiated max frame size.
     max_frame_bytes: AtomicUsize,
-    /// Structured-event fan-out for `Event` frames.
-    event_tx: broadcast::Sender<(wire::OwnershipScope, wire::EventPayload)>,
+    /// Structured-event fan-out for `Event` frames. Dropped once the event lane ends (or
+    /// `EVENT_DRAIN_GRACE` after a disconnect), so every subscriber sees `RecvError::Closed`
+    /// instead of waiting for an event that cannot come.
+    event_tx: Arc<EventSenderSlot>,
     /// Registered host callbacks for `SidecarRequest` frames.
     callbacks: SccHashMap<&'static str, WireSidecarCallback>,
     /// Outbound host request frames drained by the writer task into the child's stdin.
@@ -176,7 +186,7 @@ impl SidecarTransport {
             pending_request_lock: parking_lot::Mutex::new(()),
             request_counter: AtomicI64::new(1),
             max_frame_bytes: AtomicUsize::new(wire::DEFAULT_MAX_FRAME_BYTES),
-            event_tx,
+            event_tx: Arc::new(parking_lot::Mutex::new(Some(event_tx))),
             callbacks: SccHashMap::new(),
             request_writer_tx,
             control_writer_tx,
@@ -246,11 +256,6 @@ impl SidecarTransport {
         payload: wire::RequestPayload,
         max_frame_bytes: Option<usize>,
     ) -> Result<wire::ResponsePayload, TransportError> {
-        if self.is_disconnected() {
-            return Err(TransportError::Disconnected(
-                "request sent after the sidecar process was lost".to_string(),
-            ));
-        }
         let request_id = self.next_request_id();
         let frame = wire::ProtocolFrame::RequestFrame(wire::RequestFrame {
             schema: wire::protocol_schema(),
@@ -279,7 +284,11 @@ impl SidecarTransport {
     pub fn subscribe_wire_events(
         &self,
     ) -> broadcast::Receiver<(wire::OwnershipScope, wire::EventPayload)> {
-        self.event_tx.subscribe()
+        match self.event_tx.lock().as_ref() {
+            Some(event_tx) => event_tx.subscribe(),
+            // A lost transport delivers no more events; a receiver without a sender says so.
+            None => broadcast::channel(1).1,
+        }
     }
 
     /// Register a callback that answers a class of sidecar-initiated requests using generated wire
@@ -417,7 +426,9 @@ impl SidecarTransport {
                 ) {
                     return;
                 }
-                let _ = self.event_tx.send((event.ownership, event.payload));
+                if let Some(event_tx) = self.event_tx.lock().as_ref() {
+                    let _ = event_tx.send((event.ownership, event.payload));
+                }
             }
             wire::ProtocolFrame::SidecarRequestFrame(request) => {
                 self.dispatch_sidecar_request(request).await
@@ -469,6 +480,9 @@ impl SidecarTransport {
 
     /// Reject every in-flight request after the transport disconnects.
     fn fail_all_pending(&self) {
+        // Serialized with `register_pending_request`, so no request can register after this
+        // clear without seeing `disconnected`.
+        let _guard = self.pending_request_lock.lock();
         self.pending.clear();
     }
 
@@ -476,6 +490,23 @@ impl SidecarTransport {
         self.disconnected.store(true, Ordering::SeqCst);
         self.kill_child();
         self.fail_all_pending();
+        // The event lane closes the event stream once it drains what the sidecar already wrote,
+        // such as a process exit. Bound that drain in case the lane never reaches EOF.
+        match tokio::runtime::Handle::try_current() {
+            Ok(runtime) => {
+                let event_tx = Arc::clone(&self.event_tx);
+                runtime.spawn(async move {
+                    tokio::time::sleep(EVENT_DRAIN_GRACE).await;
+                    event_tx.lock().take();
+                });
+            }
+            Err(_) => self.close_events(),
+        }
+    }
+
+    /// End the event stream: subscribers receive every event already sent, then `Closed`.
+    fn close_events(&self) {
+        self.event_tx.lock().take();
     }
 
     fn register_pending_request(
@@ -484,6 +515,11 @@ impl SidecarTransport {
         tx: oneshot::Sender<wire::ResponsePayload>,
     ) -> Result<(), TransportError> {
         let _guard = self.pending_request_lock.lock();
+        if self.is_disconnected() {
+            return Err(TransportError::Disconnected(
+                "request sent after the sidecar process was lost".to_string(),
+            ));
+        }
         if pending_request_count(self) >= PENDING_REQUEST_LIMIT {
             return Err(TransportError::Sidecar(format!(
                 "sidecar pending request limit exceeded: at most {PENDING_REQUEST_LIMIT} requests can be in flight"
@@ -606,7 +642,20 @@ fn is_heartbeat(event: &wire::EventFrame) -> bool {
 }
 
 /// Read length-prefixed BARE frames from one physical inbound lane and route them.
-async fn run_reader<R>(transport: Weak<SidecarTransport>, mut reader: R, lane: InboundLane)
+async fn run_reader<R>(transport: Weak<SidecarTransport>, reader: R, lane: InboundLane)
+where
+    R: AsyncRead + Unpin,
+{
+    route_frames(transport.clone(), reader, lane).await;
+    // Only the event lane carries events, so once it ends no event can follow.
+    if matches!(lane, InboundLane::Event) {
+        if let Some(transport) = transport.upgrade() {
+            transport.close_events();
+        }
+    }
+}
+
+async fn route_frames<R>(transport: Weak<SidecarTransport>, mut reader: R, lane: InboundLane)
 where
     R: AsyncRead + Unpin,
 {
@@ -777,7 +826,7 @@ mod tests {
             pending_request_lock: parking_lot::Mutex::new(()),
             request_counter: AtomicI64::new(1),
             max_frame_bytes: AtomicUsize::new(wire::DEFAULT_MAX_FRAME_BYTES),
-            event_tx,
+            event_tx: Arc::new(parking_lot::Mutex::new(Some(event_tx))),
             callbacks: SccHashMap::new(),
             request_writer_tx,
             control_writer_tx,
@@ -1124,7 +1173,7 @@ mod tests {
             pending_request_lock: parking_lot::Mutex::new(()),
             request_counter: AtomicI64::new(1),
             max_frame_bytes: AtomicUsize::new(wire::DEFAULT_MAX_FRAME_BYTES),
-            event_tx,
+            event_tx: Arc::new(parking_lot::Mutex::new(Some(event_tx))),
             callbacks: SccHashMap::new(),
             request_writer_tx,
             control_writer_tx,
@@ -1233,6 +1282,60 @@ mod tests {
             rx.await.expect_err("EOF must fail pending requests");
             assert_eq!(pending_request_count(&transport), 0);
         }
+    }
+
+    /// The control lane can close before the event lane drains, for example when the sidecar
+    /// exits right after writing a process exit. Events already written to the event lane must
+    /// still reach subscribers before they see the transport close.
+    #[tokio::test]
+    async fn events_written_before_a_disconnect_still_reach_subscribers() {
+        let transport = Arc::new(test_transport());
+        let mut events = transport.subscribe_wire_events();
+
+        let (control_reader, control_peer) = tokio::io::duplex(64);
+        drop(control_peer);
+        run_reader(
+            Arc::downgrade(&transport),
+            control_reader,
+            InboundLane::Control,
+        )
+        .await;
+        assert!(transport.is_disconnected());
+
+        let (event_reader, mut event_peer) = tokio::io::duplex(4096);
+        let frame = WireFrameCodec::default()
+            .encode(&wire::ProtocolFrame::EventFrame(wire::EventFrame {
+                schema: wire::protocol_schema(),
+                ownership: wire::OwnershipScope::ConnectionOwnership(wire::ConnectionOwnership {
+                    connection_id: "conn-1".to_string(),
+                }),
+                payload: wire::EventPayload::StructuredEvent(wire::StructuredEvent {
+                    name: "last_words".to_string(),
+                    detail: std::collections::HashMap::new(),
+                }),
+            }))
+            .expect("encode event");
+        event_peer.write_all(&frame).await.expect("write event");
+        drop(event_peer);
+        tokio::time::timeout(
+            Duration::from_secs(1),
+            run_reader(Arc::downgrade(&transport), event_reader, InboundLane::Event),
+        )
+        .await
+        .expect("event reader must end at EOF");
+
+        let (_, payload) = events
+            .recv()
+            .await
+            .expect("the buffered event is delivered");
+        assert!(matches!(
+            payload,
+            wire::EventPayload::StructuredEvent(wire::StructuredEvent { name, .. }) if name == "last_words"
+        ));
+        assert!(matches!(
+            events.recv().await,
+            Err(broadcast::error::RecvError::Closed)
+        ));
     }
 
     #[tokio::test]

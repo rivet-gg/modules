@@ -7,6 +7,7 @@ mod common;
 use std::time::Duration;
 
 use agentos_client::fs::FileContent;
+use agentos_client::{ClientError, SpawnOptions};
 
 #[tokio::test]
 async fn a_pool_recovers_after_its_sidecar_process_dies() {
@@ -19,6 +20,32 @@ async fn a_pool_recovers_after_its_sidecar_process_dies() {
         .write_file("/tmp/who", FileContent::Text("orphan".to_string()))
         .await
         .expect("write before the crash");
+    let running = orphan
+        .spawn_process(
+            "node",
+            vec![
+                "-e".into(),
+                "console.log('ready'); setInterval(() => {}, 1000)".into(),
+            ],
+            SpawnOptions {
+                retain_output: true,
+                ..Default::default()
+            },
+        )
+        .expect("spawn before the crash");
+    tokio::time::timeout(Duration::from_secs(20), async {
+        while orphan
+            .read_process_output(running.pid, None, None, None)
+            .await
+            .expect("read output before the crash")
+            .events
+            .is_empty()
+        {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+    })
+    .await
+    .expect("the process starts before the crash");
 
     let killed = kill_sidecar_children();
     assert_eq!(killed, 1, "expected exactly one sidecar child to kill");
@@ -29,6 +56,14 @@ async fn a_pool_recovers_after_its_sidecar_process_dies() {
     assert!(
         orphan_call.is_err(),
         "a VM whose sidecar died cannot serve calls"
+    );
+    let orphan_wait =
+        tokio::time::timeout(Duration::from_secs(5), orphan.wait_process(running.pid))
+            .await
+            .expect("waiting on a process whose sidecar died must fail fast, not hang");
+    assert!(
+        matches!(orphan_wait, Err(ClientError::SidecarExited(_))),
+        "a process whose sidecar died has no exit code: {orphan_wait:?}"
     );
 
     let fresh = tokio::time::timeout(
