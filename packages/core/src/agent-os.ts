@@ -44,8 +44,8 @@ import type {
 	OutputReplay,
 	ProcessDescriptor,
 	ProcessExit,
+	ProcessSpawnOptions,
 	PythonInstallOptions,
-	SpawnOptions,
 	TypeScriptCheckOptions,
 	TypeScriptCheckResult,
 	TypeScriptDiagnostic,
@@ -4349,7 +4349,7 @@ export class AgentOs {
 	private async _spawnProcess(
 		command: string,
 		args: string[] = [],
-		options: SpawnOptions = {},
+		options: ProcessSpawnOptions = {},
 	): Promise<ProcessDescriptor> {
 		const releaseRegistrySlot = this._reserveProcessRegistrySlot();
 		const outputHandlers = new Set<(event: ProcessOutput) => void>();
@@ -4361,7 +4361,7 @@ export class AgentOs {
 				env: options.env,
 				stdin: options.stdin,
 				timeout: options.timeoutMs,
-				streamStdin: true,
+				streamStdin: options.streamStdin ?? true,
 				retainOutput: options.output?.retainEvents ?? false,
 				onStdout: (data, metadata) => {
 					options?.onStdout?.(data);
@@ -4393,7 +4393,7 @@ export class AgentOs {
 	spawn(
 		command: string,
 		args: string[] = [],
-		options?: SpawnOptions,
+		options?: ProcessSpawnOptions,
 	): Promise<ProcessDescriptor> {
 		return this.process.spawn(command, args, options);
 	}

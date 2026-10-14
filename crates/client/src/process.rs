@@ -390,6 +390,8 @@ pub struct SpawnOptions {
     pub stdin_fd: Option<i32>,
     pub stdout_fd: Option<i32>,
     pub stderr_fd: Option<i32>,
+    /// `Some(false)` closes stdin as soon as the process starts, so it reads EOF as with
+    /// `</dev/null`. Otherwise stdin stays open for `write_process_stdin`.
     pub stream_stdin: Option<bool>,
     /// Retain a bounded sequenced output replay in the sidecar.
     pub retain_output: bool,
@@ -1861,6 +1863,12 @@ impl AgentOs {
                 // kernel-snapshot entry back to its display pid.
                 if let Some(kernel_pid) = started.pid {
                     kernel_pid_tx.send_replace(Some(kernel_pid));
+                }
+                // Closed after Execute on this task, so the sidecar always knows the process.
+                if options.stream_stdin == Some(false) {
+                    if let Err(error) = self.close_wire_stdin(&process_id).await {
+                        tracing::warn!(?error, pid, %process_id, "spawn: closing stdin failed");
+                    }
                 }
             }
             Err(error) => {

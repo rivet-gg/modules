@@ -84,4 +84,18 @@ describe("process API", () => {
 		});
 		await expect(vm.process.closeStdin(pid)).resolves.toBeUndefined();
 	}, 30_000);
+
+	test("a process spawned without streamed stdin reads EOF", async () => {
+		const { pid } = await vm.process.spawn(
+			"node",
+			[
+				"-e",
+				"process.stdin.resume(); process.stdin.on('end', () => process.exit(7))",
+			],
+			{ streamStdin: false },
+		);
+
+		// A reader that never saw EOF would hang here until the test timeout.
+		expect((await vm.process.wait(pid)).exitCode).toBe(7);
+	}, 30_000);
 });

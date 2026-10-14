@@ -70,6 +70,9 @@ commands or working directories are invalid input.
 | Wait for exit | `v1.process.wait` | `process.wait` |
 | Inspect | `v1.process.get`, `v1.process.list`, `v1.process.tree` | `process.get`, `process.list`, `process.tree` |
 
+A library `process.spawn` keeps stdin open; pass `streamStdin: false` to give
+the process EOF instead.
+
 Hosted operations take the process handle `{ generation, pid }`; library
 operations take the `pid`. A hosted handle from before a `v1.vm.restart` fails
 with `stale_generation`.

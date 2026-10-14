@@ -342,6 +342,43 @@ async fn stdin_written_after_a_process_exits_fails_with_epipe() {
     result.unwrap();
 }
 
+/// A caller that does not stream stdin gets a process that reads EOF, as with `</dev/null`, so a
+/// command that reads stdin cannot wait forever.
+#[tokio::test]
+async fn a_process_spawned_without_streamed_stdin_reads_eof() {
+    if !common::require_sidecar("a_process_spawned_without_streamed_stdin_reads_eof") {
+        return;
+    }
+    let os = common::new_vm().await;
+    let result = async {
+        let reader = os.spawn_process(
+            "node",
+            vec![
+                "-e".into(),
+                "process.stdin.resume(); process.stdin.on('end', () => process.exit(7))".into(),
+            ],
+            SpawnOptions {
+                stream_stdin: Some(false),
+                ..Default::default()
+            },
+        )?;
+        let exit = tokio::time::timeout(
+            std::time::Duration::from_secs(10),
+            os.wait_process(reader.pid),
+        )
+        .await
+        .map_err(|_| anyhow::anyhow!("the reader never saw EOF on stdin"))??;
+        anyhow::ensure!(exit == 7, "the reader exited with {exit}, not at EOF");
+        Ok::<_, anyhow::Error>(())
+    }
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), os.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    result.unwrap();
+}
+
 #[tokio::test]
 async fn exec_argv_timeout_confirms_node_guest_exit() {
     if !common::require_sidecar("exec_argv_timeout_confirms_node_guest_exit") {
