@@ -294,6 +294,54 @@ async fn a_pipeline_writer_resumes_when_a_late_reader_drains_the_pipe() {
     assert_eq!(result.stdout.trim(), "200000", "{result:?}");
 }
 
+/// Stdin written after a process exits has no reader, so the write fails with `EPIPE`, as a pipe
+/// write does on Linux. Closing that stdin still succeeds.
+#[tokio::test]
+async fn stdin_written_after_a_process_exits_fails_with_epipe() {
+    if !common::require_sidecar("stdin_written_after_a_process_exits_fails_with_epipe") {
+        return;
+    }
+    let os = common::new_vm().await;
+    let result = async {
+        let process = os.spawn_process(
+            "node",
+            vec!["-e".into(), "process.exit(0)".into()],
+            SpawnOptions::default(),
+        )?;
+        let exit = tokio::time::timeout(
+            std::time::Duration::from_secs(10),
+            os.wait_process(process.pid),
+        )
+        .await
+        .map_err(|_| anyhow::anyhow!("the process did not exit"))??;
+        anyhow::ensure!(exit == 0, "the process exited with {exit}");
+        for (variant, late) in [
+            (
+                "awaited",
+                os.write_process_stdin_awaited(process.pid, StdinInput::Text("late\n".into()))
+                    .await,
+            ),
+            (
+                "sync",
+                os.write_process_stdin(process.pid, StdinInput::Text("late\n".into())),
+            ),
+        ] {
+            anyhow::ensure!(
+                matches!(&late, Err(ClientError::Kernel { code, .. }) if code == "EPIPE"),
+                "the {variant} write after exit returned {late:?}, not EPIPE"
+            );
+        }
+        os.close_process_stdin_awaited(process.pid).await?;
+        Ok::<_, anyhow::Error>(())
+    }
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), os.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    result.unwrap();
+}
+
 #[tokio::test]
 async fn exec_argv_timeout_confirms_node_guest_exit() {
     if !common::require_sidecar("exec_argv_timeout_confirms_node_guest_exit") {

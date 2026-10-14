@@ -74,6 +74,10 @@ Hosted operations take the process handle `{ generation, pid }`; library
 operations take the `pid`. A hosted handle from before a `v1.vm.restart` fails
 with `stale_generation`.
 
+Writing to stdin after the process exits fails with `EPIPE`, as a write to a
+pipe with no reader does on Linux. Closing stdin after the process exits
+succeeds.
+
 `get` and `list` report `startedAtMs` as a Unix timestamp in milliseconds.
 `tree` includes guest child processes as well as processes launched through the
 API, so it can show more than you started. Use the returned handle or `pid`

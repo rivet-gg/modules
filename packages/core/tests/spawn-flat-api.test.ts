@@ -74,4 +74,14 @@ describe("process API", () => {
 
 		expect(chunks.join("")).toContain("hello from nested api");
 	}, 30_000);
+
+	test("stdin written after a process exits fails with EPIPE, as on Linux", async () => {
+		const { pid } = await vm.process.spawn("node", ["-e", "process.exit(0)"]);
+		expect((await vm.process.wait(pid)).exitCode).toBe(0);
+
+		await expect(vm.process.writeStdin(pid, "late\n")).rejects.toMatchObject({
+			code: "EPIPE",
+		});
+		await expect(vm.process.closeStdin(pid)).resolves.toBeUndefined();
+	}, 30_000);
 });

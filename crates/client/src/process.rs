@@ -88,6 +88,14 @@ impl ProcessOutcome {
     }
 }
 
+/// The error for stdin written after its process exited, as a pipe write with no reader on Linux.
+fn stdin_has_no_reader(pid: u32) -> ClientError {
+    ClientError::Kernel {
+        code: String::from("EPIPE"),
+        message: format!("process {pid} has exited, so its stdin has no reader"),
+    }
+}
+
 async fn wait_for_process_outcome(
     mut rx: watch::Receiver<ProcessOutcome>,
     process_id: &str,
@@ -863,7 +871,9 @@ impl AgentOs {
         pid: u32,
         data: StdinInput,
     ) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
+        let Some(process_id) = self.live_process_id(pid)? else {
+            return Err(stdin_has_no_reader(pid));
+        };
         let chunk: Vec<u8> = stdin_to_bytes(data);
         let this = self.clone();
         tokio::spawn(async move {
@@ -880,14 +890,24 @@ impl AgentOs {
         pid: u32,
         data: StdinInput,
     ) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
-        self.write_wire_stdin(&process_id, stdin_to_bytes(data))
-            .await
+        let Some(process_id) = self.live_process_id(pid)? else {
+            return Err(stdin_has_no_reader(pid));
+        };
+        let result = self
+            .write_wire_stdin(&process_id, stdin_to_bytes(data))
+            .await;
+        match result {
+            // The write raced the exit.
+            Err(_) if self.live_process_id(pid)?.is_none() => Err(stdin_has_no_reader(pid)),
+            result => result,
+        }
     }
 
     /// Close a spawned process's stdin. SYNC. Errors with `ProcessNotFound`.
     pub fn close_process_stdin(&self, pid: u32) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
+        let Some(process_id) = self.live_process_id(pid)? else {
+            return Ok(());
+        };
         let this = self.clone();
         tokio::spawn(async move {
             if let Err(error) = this.close_wire_stdin(&process_id).await {
@@ -902,7 +922,9 @@ impl AgentOs {
         &self,
         pid: u32,
     ) -> std::result::Result<(), ClientError> {
-        let process_id = self.lookup_process_id(pid)?;
+        let Some(process_id) = self.live_process_id(pid)? else {
+            return Ok(());
+        };
         self.close_wire_stdin(&process_id).await
     }
 
@@ -1562,6 +1584,22 @@ impl AgentOs {
     fn next_process_id(&self) -> String {
         let n = self.inner().process_counter.fetch_add(1, Ordering::SeqCst);
         format!("proc-{n}-{}", uuid::Uuid::new_v4())
+    }
+
+    /// The wire id of a tracked process, or `None` once its exit was observed. Stdin written after
+    /// exit has no reader and fails with `EPIPE`; closing it then succeeds, as on Linux.
+    fn live_process_id(&self, pid: u32) -> std::result::Result<Option<String>, ClientError> {
+        self.inner()
+            .processes
+            .read(&pid, |_, entry| {
+                entry
+                    .exit_tx
+                    .borrow()
+                    .exit_code()
+                    .is_none()
+                    .then(|| entry.process_id.clone())
+            })
+            .ok_or(ClientError::ProcessNotFound(pid))
     }
 
     /// Resolve the wire `process_id` for an SDK pid, erroring with `ProcessNotFound` if unknown.

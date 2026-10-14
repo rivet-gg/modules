@@ -17,18 +17,19 @@ import type {
 import type { FilesystemEntry } from "../filesystem-snapshot.js";
 import type { RootSnapshotExport } from "../layers.js";
 import type { ProcessForestRecord } from "../process-forest.js";
-import type {
-	ConnectTerminalOptions,
-	Kernel,
-	KernelExecOptions,
-	KernelExecResult,
-	KernelSpawnOptions,
-	ManagedProcess,
-	OpenShellOptions,
-	ProcessInfo,
-	ShellHandle,
-	VirtualFileSystem,
-	VirtualStat,
+import {
+	type ConnectTerminalOptions,
+	type Kernel,
+	KernelError,
+	type KernelExecOptions,
+	type KernelExecResult,
+	type KernelSpawnOptions,
+	type ManagedProcess,
+	type OpenShellOptions,
+	type ProcessInfo,
+	type ShellHandle,
+	type VirtualFileSystem,
+	type VirtualStat,
 } from "../runtime-compat.js";
 import type {
 	AuthenticatedSession,
@@ -725,10 +726,12 @@ export class NativeSidecarKernelProxy {
 			const shellExitCode = await runManagedProcessToCompletion(
 				proc,
 				async () => {
+					// A command may exit without reading its input, as `true` does in
+					// `echo x | true`; its exit status is the result.
 					if (stdinOverride !== undefined) {
-						await proc.writeStdin(stdinOverride);
+						await proc.writeStdin(stdinOverride).catch(ignoreBrokenPipe);
 					} else if (options?.stdin !== undefined) {
-						await proc.writeStdin(options.stdin);
+						await proc.writeStdin(options.stdin).catch(ignoreBrokenPipe);
 					}
 					// Non-interactive runs must observe EOF after any provided input.
 					await proc.closeStdin();
@@ -817,7 +820,7 @@ export class NativeSidecarKernelProxy {
 				proc,
 				async () => {
 					if (options?.stdin !== undefined) {
-						await proc.writeStdin(options.stdin);
+						await proc.writeStdin(options.stdin).catch(ignoreBrokenPipe);
 					}
 					await proc.closeStdin();
 				},
@@ -936,7 +939,7 @@ export class NativeSidecarKernelProxy {
 			processId,
 			writeStdin: (data) => {
 				if (entry.exitCode !== null) {
-					return Promise.resolve();
+					return Promise.reject(stdinHasNoReader(entry.pid));
 				}
 				if (entry.waitError) return Promise.reject(entry.waitError);
 				entry.pendingStdin.push(data);
@@ -2277,7 +2280,9 @@ export class NativeSidecarKernelProxy {
 			.then(async () => {
 				if (entry.waitError) throw entry.waitError;
 				if (entry.exitCode !== null) {
-					return;
+					if (entry.pendingStdin.length === 0) return;
+					entry.pendingStdin.length = 0;
+					throw stdinHasNoReader(entry.pid);
 				}
 				while (entry.pendingStdin.length > 0) {
 					const chunk = entry.pendingStdin.shift();
@@ -2297,7 +2302,7 @@ export class NativeSidecarKernelProxy {
 					entry.exitCode !== null &&
 					(isNoSuchProcessError(error) || isUnknownVmError(error))
 				) {
-					return;
+					throw stdinHasNoReader(entry.pid);
 				}
 				throw error;
 			})
@@ -2319,7 +2324,8 @@ export class NativeSidecarKernelProxy {
 	private async closeTrackedStdin(entry: TrackedProcessEntry): Promise<void> {
 		await entry.startPromise;
 		if (entry.waitError) throw entry.waitError;
-		await this.flushPendingStdin(entry);
+		// Closing stdin succeeds after exit even though queued writes had no reader.
+		await this.flushPendingStdin(entry).catch(ignoreBrokenPipe);
 		if (entry.exitCode !== null || !entry.pendingCloseStdin) {
 			return;
 		}
@@ -2341,6 +2347,8 @@ export class NativeSidecarKernelProxy {
 		entry: TrackedProcessEntry,
 		error: unknown,
 	): void {
+		// The writer already received EPIPE; a reader that went away is not a process failure.
+		if (isBrokenPipe(error)) return;
 		if (entry.exitCode !== null) {
 			// An I/O failure after exit must never rewrite the guest's real status.
 			if (!isNoSuchProcessError(error) && !isUnknownVmError(error)) {
@@ -2944,6 +2952,23 @@ function buildCommandMap(
 		commands.set(name, "wasmvm");
 	}
 	return commands;
+}
+
+/** Stdin written after its process exited, as a pipe write with no reader on Linux. */
+function stdinHasNoReader(pid: number): KernelError {
+	return new KernelError(
+		"EPIPE",
+		`process ${pid} has exited, so its stdin has no reader`,
+	);
+}
+
+function isBrokenPipe(error: unknown): boolean {
+	return error instanceof KernelError && error.code === "EPIPE";
+}
+
+function ignoreBrokenPipe(error: unknown): void {
+	if (isBrokenPipe(error)) return;
+	throw error;
 }
 
 function isNoSuchProcessError(error: unknown): boolean {
