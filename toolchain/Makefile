@@ -19,8 +19,11 @@ PATCH_SCRIPT := scripts/patch-std.sh
 # Include the libc digest in rustc's metadata so Cargo relinks Rust commands
 # whenever the external sysroot is rebuilt; Cargo does not otherwise track
 # archives passed as linker arguments.
+# rustc's link drops libc's `export_name` on `__wasi_signal_trampoline`, so a
+# Rust command that installs a signal handler would never receive the signal.
+# Export it whenever the libc signal code is linked in.
 WASI_C_LIBC_DIGEST = $(shell if command -v sha256sum >/dev/null 2>&1; then sha256sum "$(WASI_C_LIBDIR)/libc.a"; elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$(WASI_C_LIBDIR)/libc.a"; else cksum "$(WASI_C_LIBDIR)/libc.a"; fi 2>/dev/null | cut -d ' ' -f1 | cut -c1-16)
-WASI_RUSTFLAGS = -C link-self-contained=no -C link-arg=$(WASI_C_LIBDIR)/crt1-command.o -C link-arg=$(WASI_C_LIBDIR)/libc.a -C link-arg=$(WASI_C_LIBDIR)/libwasi-emulated-pthread.a -C link-arg=-L$(WASI_C_LIBDIR) -C metadata=agentos-libc-$(WASI_C_LIBC_DIGEST) --cfg tokio_unstable
+WASI_RUSTFLAGS = -C link-self-contained=no -C link-arg=$(WASI_C_LIBDIR)/crt1-command.o -C link-arg=$(WASI_C_LIBDIR)/libc.a -C link-arg=$(WASI_C_LIBDIR)/libwasi-emulated-pthread.a -C link-arg=-L$(WASI_C_LIBDIR) -C link-arg=--export-if-defined=__wasi_signal_trampoline -C metadata=agentos-libc-$(WASI_C_LIBC_DIGEST) --cfg tokio_unstable
 
 # Discover command binary names from colocated package crates plus toolchain
 # helper crates. Keep known slow/heavy commands out of the default software

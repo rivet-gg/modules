@@ -5,12 +5,19 @@ AgentOS background commands expose virtual process IDs through `$!`. Resolve
 numeric wait operands against those managed jobs, while retaining Brush's `%`
 job-spec resolution, so POSIX `wait $!` returns the child's actual status.
 
+Like bash, return 128 + the signal number as soon as a trapped signal arrives,
+so the trap runs without waiting for the job.
+
 diff --git a/src/wait.rs b/src/wait.rs
 --- a/src/wait.rs
 +++ b/src/wait.rs
-@@ -39,7 +39,28 @@ impl builtins::Command for WaitCommand {
+@@ -39,11 +39,41 @@
+         if self.variable_to_receive_id.is_some() {
              return error::unimp("wait -p");
          }
++        // Bash returns from `wait` as soon as a trapped signal arrives so the trap can run.
++        // Subshells run in this process and never take the shell's signals.
++        let interruptible = !context.shell.is_subshell();
          if !self.job_specs.is_empty() {
 -            return error::unimp("wait with job specs");
 +            let mut result = ExecutionResult::success();
@@ -31,12 +38,53 @@ diff --git a/src/wait.rs b/src/wait.rs
 +                    writeln!(context.stderr(), "wait: {spec}: no such job")?;
 +                    return Ok(ExecutionResult::new(127));
 +                };
-+                result = job.wait().await?;
++                result = match until_trapped_signal(interruptible, job.wait()).await {
++                    Ok(result) => result?,
++                    Err(status) => return Ok(ExecutionResult::new(status)),
++                };
 +            }
 +            context.shell.jobs.poll()?;
 +            return Ok(result);
          }
  
-         let jobs = context.shell.jobs.wait_all().await?;
--- 
-2.43.0
+-        let jobs = context.shell.jobs.wait_all().await?;
++        let jobs = match until_trapped_signal(interruptible, context.shell.jobs.wait_all()).await {
++            Ok(jobs) => jobs?,
++            Err(status) => return Ok(ExecutionResult::new(status)),
++        };
+ 
+         if context.shell.options.enable_job_control {
+             for job in jobs {
+@@ -54,3 +84,32 @@
+         Ok(ExecutionResult::success())
+     }
+ }
++
++/// Runs `wait` until it finishes or, when `interruptible`, until a trapped signal is pending. In
++/// that case it returns `Err` with the exit status bash gives `wait`: 128 + the signal number.
++async fn until_trapped_signal<T>(
++    interruptible: bool,
++    wait: impl std::future::Future<Output = T>,
++) -> Result<T, u8> {
++    let mut wait = std::pin::pin!(wait);
++    std::future::poll_fn(|cx| {
++        if interruptible {
++            if let Some(signal) = pending_trap_signal() {
++                return std::task::Poll::Ready(Err(signal));
++            }
++        }
++        wait.as_mut().poll(cx).map(Ok)
++    })
++    .await
++}
++
++#[cfg(target_os = "wasi")]
++fn pending_trap_signal() -> Option<u8> {
++    // The WASI child wait re-polls on every runtime tick, so this check runs while it waits.
++    brush_core::sys::signal::pending_trap_signal().map(|signal| 128 + signal as u8)
++}
++
++#[cfg(not(target_os = "wasi"))]
++fn pending_trap_signal() -> Option<u8> {
++    None
++}

@@ -7428,6 +7428,11 @@ const hostProcessImport = {
                     retCoreDumpedPtr,
                   );
                 }
+                // Linux runs signal handlers on return from every syscall. A
+                // caller polling with WNOHANG (such as an async child wait)
+                // must still see its handlers run; WNOHANG never blocks, so
+                // there is no EINTR.
+                dispatchPendingWasmSignals();
                 return writeGuestUint32(retPidPtr, 0);
               }
 

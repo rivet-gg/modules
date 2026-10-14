@@ -457,6 +457,129 @@ async fn read_stdout_until(
     .unwrap_or(false)
 }
 
+/// `trap '' TERM` makes a shell ignore SIGTERM, and `trap - TERM` restores the default action, as
+/// on Linux. A trap set inside a subshell does not change the parent shell.
+#[tokio::test]
+async fn a_shell_ignores_sigterm_only_while_it_traps_it_with_an_empty_action() {
+    const TEST: &str = "a_shell_ignores_sigterm_only_while_it_traps_it_with_an_empty_action";
+    if !common::require_sidecar(TEST) {
+        return;
+    }
+    let Some(vm) = common::new_vm_with_commands().await else {
+        if common::allow_local_e2e_skips() {
+            eprintln!("skipping {TEST}: coreutils package absent");
+            return;
+        }
+        panic!("{TEST}: coreutils package absent");
+    };
+    let result = async {
+        for (script, survives) in [
+            ("trap '' TERM; echo ready; sleep 600", true),
+            ("trap '' TERM; trap - TERM; echo ready; sleep 600", false),
+            ("(trap '' TERM); echo ready; sleep 600", false),
+        ] {
+            let shell = spawn_shell_until_ready(&vm, script).await?;
+            vm.signal_process_awaited(shell, "SIGTERM").await?;
+            let exit =
+                tokio::time::timeout(std::time::Duration::from_secs(2), vm.wait_process(shell))
+                    .await;
+            vm.signal_process_awaited(shell, "SIGKILL").await?;
+            match (survives, exit) {
+                (true, Err(_)) | (false, Ok(Ok(_))) => {}
+                (true, Ok(exit)) => anyhow::bail!("`{script}` ended on SIGTERM: {exit:?}"),
+                (false, exit) => anyhow::bail!("`{script}` survived SIGTERM: {exit:?}"),
+            }
+        }
+        Ok::<_, anyhow::Error>(())
+    }
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), vm.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    result.unwrap();
+}
+
+/// A shell that traps SIGTERM with a command runs the trap once its foreground command finishes, as
+/// on Linux. `wait` returns early for the trap, and subshells do not take the parent's signal.
+#[tokio::test]
+async fn a_shell_runs_its_sigterm_trap_after_the_foreground_command() {
+    const TEST: &str = "a_shell_runs_its_sigterm_trap_after_the_foreground_command";
+    if !common::require_sidecar(TEST) {
+        return;
+    }
+    let Some(vm) = common::new_vm_with_commands().await else {
+        if common::allow_local_e2e_skips() {
+            eprintln!("skipping {TEST}: coreutils package absent");
+            return;
+        }
+        panic!("{TEST}: coreutils package absent");
+    };
+    let result = async {
+        for script in [
+            "trap 'echo caught; exit 3' TERM; echo ready; sleep 2; echo after",
+            "trap 'echo caught; exit 3' TERM; sleep 600 & echo ready; wait $!; echo after",
+            "trap 'echo caught; exit 3' TERM; echo ready; while :; do x=$(sleep 0.2); done",
+        ] {
+            let shell = spawn_shell_until_ready(&vm, script).await?;
+            vm.signal_process_awaited(shell, "SIGTERM").await?;
+            let exit =
+                tokio::time::timeout(std::time::Duration::from_secs(10), vm.wait_process(shell))
+                    .await;
+            let Ok(exit) = exit else {
+                vm.signal_process_awaited(shell, "SIGKILL").await?;
+                anyhow::bail!("`{script}` never ran its trap");
+            };
+            let exit = exit?;
+            let output = vm.read_process_output(shell, None, None, None).await?;
+            let stdout = output
+                .events
+                .into_iter()
+                .flat_map(|event| event.data)
+                .collect::<Vec<_>>();
+            let stdout = String::from_utf8_lossy(&stdout);
+            anyhow::ensure!(
+                exit == 3 && stdout == "ready\ncaught\n",
+                "`{script}`: expected the trap to run and exit 3, got exit {exit} with {stdout:?}"
+            );
+        }
+        Ok::<_, anyhow::Error>(())
+    }
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), vm.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    result.unwrap();
+}
+
+/// Spawns `sh -c script` with retained output and waits until the script prints `ready`.
+async fn spawn_shell_until_ready(
+    vm: &agentos_client::AgentOs,
+    script: &str,
+) -> anyhow::Result<u32> {
+    let shell = vm.spawn_process(
+        "sh",
+        vec!["-c".into(), script.into()],
+        SpawnOptions {
+            retain_output: true,
+            ..Default::default()
+        },
+    )?;
+    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+        loop {
+            let replay = vm.read_process_output(shell.pid, None, None, None).await?;
+            if replay.events.iter().any(|event| event.data == b"ready\n") {
+                return Ok::<_, anyhow::Error>(());
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        }
+    })
+    .await
+    .map_err(|_| anyhow::anyhow!("`{script}` never printed ready"))??;
+    Ok(shell.pid)
+}
+
 #[tokio::test]
 async fn exec_argv_timeout_confirms_node_guest_exit() {
     if !common::require_sidecar("exec_argv_timeout_confirms_node_guest_exit") {
