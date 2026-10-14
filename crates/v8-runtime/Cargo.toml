@@ -21,6 +21,7 @@ ciborium = "0.2"
 serde = "1.0"
 sha2 = "0.10"
 tokio = { version = "1", features = ["rt", "sync", "time"] }
+tracing = "0.1"
 
 [build-dependencies]
 agentos-build-support = { workspace = true }

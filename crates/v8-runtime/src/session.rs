@@ -711,7 +711,7 @@ impl WarmWorkerPool {
                 target_count,
             );
         }) {
-            eprintln!("ERR_AGENTOS_V8_WARM_REFILL: bounded executor rejected refill: {error}");
+            tracing::warn!(%error, "ERR_AGENTOS_V8_WARM_REFILL: bounded executor rejected warm worker refill");
             self.state
                 .lock()
                 .expect("warm worker pool lock poisoned")
@@ -773,10 +773,10 @@ impl WarmWorkerPool {
             if let Some((evicted_key, worker)) = evicted {
                 drop(worker.assignment_tx);
                 let _ = worker.join_handle.join();
-                eprintln!(
-                    "agentos-v8-runtime: warm worker evicted key={} heap={}",
-                    warm_key_prefix(&evicted_key),
-                    evicted_key.heap_limit_mb
+                tracing::debug!(
+                    key = %warm_key_prefix(&evicted_key),
+                    heap_mb = evicted_key.heap_limit_mb,
+                    "warm worker evicted"
                 );
                 continue;
             }
@@ -802,11 +802,11 @@ impl WarmWorkerPool {
                 break;
             }
             workers.push(worker);
-            eprintln!(
-                "agentos-v8-runtime: warm worker refilled key={} heap={} pool_size={}",
-                warm_key_prefix(&key),
-                key.heap_limit_mb,
-                workers.len()
+            tracing::debug!(
+                key = %warm_key_prefix(&key),
+                heap_mb = key.heap_limit_mb,
+                pool_size = workers.len(),
+                "warm worker refilled"
             );
         }
 
@@ -845,7 +845,7 @@ fn spawn_warm_worker(
             match precreated {
                 Ok(precreated) => {
                     if ready_tx.send(Ok(())).is_err() {
-                        eprintln!("INFO_AGENTOS_STALE_WARM_WORKER: warm worker requester disconnected before startup completed");
+                        tracing::debug!("warm worker requester disconnected before startup completed");
                     }
                     if let Ok(assignment) = assignment_rx.recv() {
                         session_thread(assignment, Some(precreated));
@@ -853,14 +853,14 @@ fn spawn_warm_worker(
                 }
                 Err(error) => {
                     if ready_tx.send(Err(error)).is_err() {
-                        eprintln!("INFO_AGENTOS_STALE_WARM_WORKER: warm worker requester disconnected before startup failure was delivered");
+                        tracing::debug!("warm worker requester disconnected before startup failure was delivered");
                     }
                 }
             }
         }) {
         Ok(handle) => handle,
         Err(error) => {
-            eprintln!("agentos-v8-runtime: warm worker spawn failed: {error}");
+            tracing::warn!(%error, "warm worker spawn failed");
             return None;
         }
     };
@@ -871,19 +871,21 @@ fn spawn_warm_worker(
             join_handle,
         }),
         Ok(Err(error)) => {
-            eprintln!(
-                "agentos-v8-runtime: warm worker refill failed key={} heap={}: {error}",
-                warm_key_prefix(&key),
-                key.heap_limit_mb
+            tracing::warn!(
+                key = %warm_key_prefix(&key),
+                heap_mb = key.heap_limit_mb,
+                %error,
+                "warm worker refill failed"
             );
             let _ = join_handle.join();
             None
         }
         Err(error) => {
-            eprintln!(
-                "agentos-v8-runtime: warm worker refill failed key={} heap={}: {error}",
-                warm_key_prefix(&key),
-                key.heap_limit_mb
+            tracing::warn!(
+                key = %warm_key_prefix(&key),
+                heap_mb = key.heap_limit_mb,
+                %error,
+                "warm worker refill failed"
             );
             let _ = join_handle.join();
             None
@@ -954,11 +956,13 @@ fn normalize_wall_clock_limit_ms(wall_clock_limit_ms: Option<u32>) -> Option<u32
 fn signal_session_shutdown(sender: &Sender<()>, session_id: &str) {
     match sender.try_send(()) {
         Ok(()) => {}
-        Err(crossbeam_channel::TrySendError::Full(())) => eprintln!(
-            "INFO_AGENTOS_VM_SHUTDOWN_COALESCED: session={session_id} already has a pending shutdown signal"
+        Err(crossbeam_channel::TrySendError::Full(())) => tracing::debug!(
+            session = %session_id,
+            "VM shutdown coalesced: a shutdown signal is already pending"
         ),
-        Err(crossbeam_channel::TrySendError::Disconnected(())) => eprintln!(
-            "INFO_AGENTOS_STALE_VM_SHUTDOWN: session={session_id} executor already disconnected"
+        Err(crossbeam_channel::TrySendError::Disconnected(())) => tracing::debug!(
+            session = %session_id,
+            "VM shutdown skipped: executor already disconnected"
         ),
     }
 }
@@ -1519,10 +1523,10 @@ impl SessionManager {
         let key = warm_pool_key(&hint.bridge_code, &hint.userland_code, hint.heap_limit_mb);
         let Some(worker) = self.warm_pool.claim(&key) else {
             record_warm_worker_miss();
-            eprintln!(
-                "agentos-v8-runtime: warm worker pool-empty key={} heap={}",
-                warm_key_prefix(&key),
-                key.heap_limit_mb
+            tracing::debug!(
+                key = %warm_key_prefix(&key),
+                heap_mb = key.heap_limit_mb,
+                "warm worker pool empty"
             );
             return Err(assignment);
         };
@@ -1530,10 +1534,10 @@ impl SessionManager {
         match worker.assignment_tx.send(assignment) {
             Ok(()) => {
                 record_warm_worker_hit();
-                eprintln!(
-                    "agentos-v8-runtime: warm worker claimed key={} heap={}",
-                    warm_key_prefix(&key),
-                    key.heap_limit_mb
+                tracing::debug!(
+                    key = %warm_key_prefix(&key),
+                    heap_mb = key.heap_limit_mb,
+                    "warm worker claimed"
                 );
                 Ok((worker.join_handle, true))
             }
@@ -1653,9 +1657,10 @@ impl SessionManager {
                     quarantined.session_id, quarantined.output_generation
                 );
             } else {
-                eprintln!(
-                    "INFO_AGENTOS_VM_EXECUTOR_QUARANTINE_RELEASED: session={} generation={:?}",
-                    quarantined.session_id, quarantined.output_generation
+                tracing::debug!(
+                    session = %quarantined.session_id,
+                    generation = ?quarantined.output_generation,
+                    "VM executor quarantine released"
                 );
             }
             self.call_id_router
@@ -2474,9 +2479,9 @@ fn session_thread(
                                     // that fails (unsupported platform, spawn failure),
                                     // degrade to a fresh isolate that evaluates the
                                     // bridge in-context rather than failing the session.
-                                    eprintln!(
-                                        "agentos-v8-runtime: snapshot creation failed, \
-                                         falling back to fresh isolate: {message}"
+                                    tracing::warn!(
+                                        %message,
+                                        "snapshot creation failed; falling back to a fresh isolate"
                                     );
                                     None
                                 }
@@ -2485,9 +2490,7 @@ fn session_thread(
                             let mut iso = match snapshot_blob {
                                 Some(blob) => {
                                     from_snapshot = true;
-                                    eprintln!(
-                                        "agentos-v8-runtime: restored session isolate from_snapshot=true"
-                                    );
+                                    tracing::debug!("restored session isolate from snapshot");
                                     let phase_start = Instant::now();
                                     // rusty_v8 0.130's CreateParams::snapshot_blob
                                     // takes owned 'static data, so this copy remains
