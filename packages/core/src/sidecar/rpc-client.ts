@@ -2304,7 +2304,7 @@ export class NativeSidecarKernelProxy {
 				) {
 					throw stdinHasNoReader(entry.pid);
 				}
-				throw error;
+				throw guestStdinError(error) ?? error;
 			})
 			.finally(() => {
 				entry.stdinFlushPromise = null;
@@ -2339,7 +2339,7 @@ export class NativeSidecarKernelProxy {
 			) {
 				return;
 			}
-			throw error;
+			throw guestStdinError(error) ?? error;
 		}
 	}
 
@@ -2347,8 +2347,9 @@ export class NativeSidecarKernelProxy {
 		entry: TrackedProcessEntry,
 		error: unknown,
 	): void {
-		// The writer already received EPIPE; a reader that went away is not a process failure.
-		if (isBrokenPipe(error)) return;
+		// The writer already received the errno; a stdin write the guest
+		// refused is not a process failure.
+		if (isRefusedStdinWrite(error)) return;
 		if (entry.exitCode !== null) {
 			// An I/O failure after exit must never rewrite the guest's real status.
 			if (!isNoSuchProcessError(error) && !isUnknownVmError(error)) {
@@ -2959,6 +2960,23 @@ function stdinHasNoReader(pid: number): KernelError {
 	return new KernelError(
 		"EPIPE",
 		`process ${pid} has exited, so its stdin has no reader`,
+	);
+}
+
+/**
+ * A stdin rejection that carries a guest errno, such as EBADF for a write
+ * after closeStdin, as the KernelError the Rust client also returns.
+ */
+function guestStdinError(error: unknown): KernelError | null {
+	if (!(error instanceof SidecarRejectedError) || !error.detail.errno) return null;
+	return new KernelError(error.detail.errno, error.detail.message);
+}
+
+/** EPIPE (no reader) or EBADF (stdin closed): the guest refused the write. */
+function isRefusedStdinWrite(error: unknown): boolean {
+	return (
+		error instanceof KernelError &&
+		(error.code === "EPIPE" || error.code === "EBADF")
 	);
 }
 

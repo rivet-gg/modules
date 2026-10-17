@@ -85,6 +85,19 @@ describe("process API", () => {
 		await expect(vm.process.closeStdin(pid)).resolves.toBeUndefined();
 	}, 30_000);
 
+	test("stdin written after closeStdin fails with EBADF and the process still exits normally", async () => {
+		const { pid } = await vm.process.spawn("node", [
+			"-e",
+			"process.stdin.resume(); process.stdin.on('end', () => setTimeout(() => process.exit(7), 500))",
+		]);
+		await vm.process.closeStdin(pid);
+
+		await expect(vm.process.writeStdin(pid, "late\n")).rejects.toMatchObject({
+			code: "EBADF",
+		});
+		expect((await vm.process.wait(pid)).exitCode).toBe(7);
+	}, 30_000);
+
 	test("a process spawned without streamed stdin reads EOF", async () => {
 		const { pid } = await vm.process.spawn(
 			"node",

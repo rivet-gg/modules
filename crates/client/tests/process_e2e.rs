@@ -379,6 +379,84 @@ async fn a_process_spawned_without_streamed_stdin_reads_eof() {
     result.unwrap();
 }
 
+/// Stdin written after the caller closed it cannot reach the process, so the write fails with
+/// `EBADF`, as a write to a closed descriptor does on Linux, instead of dropping the bytes.
+#[tokio::test]
+async fn stdin_written_after_it_is_closed_is_rejected() {
+    const TEST: &str = "stdin_written_after_it_is_closed_is_rejected";
+    if !common::require_sidecar(TEST) {
+        return;
+    }
+    let Some(os) = common::new_vm_with_commands().await else {
+        if common::allow_local_e2e_skips() {
+            eprintln!("skipping {TEST}: coreutils package absent");
+            return;
+        }
+        panic!("{TEST}: coreutils package absent");
+    };
+    let result = async {
+        let process = os.spawn_process(
+            "sh",
+            vec![
+                "-c".into(),
+                "echo ready; cat >/dev/null; echo closed; sleep 30".into(),
+            ],
+            SpawnOptions::default(),
+        )?;
+        let (stdout_tx, mut stdout_rx) = tokio::sync::mpsc::unbounded_channel();
+        let _output = os.on_process_output(process.pid, move |event| {
+            if event.stream == agentos_client::ProcessStream::Stdout {
+                let _ = stdout_tx.send(event.data);
+            }
+        })?;
+        let mut stdout = Vec::new();
+        anyhow::ensure!(
+            read_stdout_until(&mut stdout_rx, &mut stdout, b"ready\n").await,
+            "the process never started"
+        );
+        os.write_process_stdin_awaited(process.pid, StdinInput::Text("early\n".into()))
+            .await?;
+        os.close_process_stdin_awaited(process.pid).await?;
+        anyhow::ensure!(
+            read_stdout_until(&mut stdout_rx, &mut stdout, b"closed\n").await,
+            "the process never saw EOF on stdin"
+        );
+        let late = os
+            .write_process_stdin_awaited(process.pid, StdinInput::Text("late\n".into()))
+            .await;
+        anyhow::ensure!(
+            matches!(&late, Err(ClientError::Kernel { code, .. }) if code == "EBADF"),
+            "a write after close returned {late:?}, not EBADF"
+        );
+        Ok::<_, anyhow::Error>(())
+    }
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), os.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    result.unwrap();
+}
+
+/// Collects stdout until it ends with `marker`; `false` if that takes more than 10 seconds.
+async fn read_stdout_until(
+    rx: &mut tokio::sync::mpsc::UnboundedReceiver<Vec<u8>>,
+    stdout: &mut Vec<u8>,
+    marker: &[u8],
+) -> bool {
+    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+        while !stdout.ends_with(marker) {
+            match rx.recv().await {
+                Some(chunk) => stdout.extend(chunk),
+                None => return false,
+            }
+        }
+        true
+    })
+    .await
+    .unwrap_or(false)
+}
+
 #[tokio::test]
 async fn exec_argv_timeout_confirms_node_guest_exit() {
     if !common::require_sidecar("exec_argv_timeout_confirms_node_guest_exit") {
