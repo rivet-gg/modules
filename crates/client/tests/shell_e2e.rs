@@ -344,3 +344,74 @@ async fn a_command_run_from_a_terminal_shows_its_output_once_and_while_the_shell
     })
     .await;
 }
+
+#[tokio::test]
+async fn large_terminal_output_reaches_the_host_intact() {
+    if !common::require_sidecar("large_terminal_output_reaches_the_host_intact") {
+        return;
+    }
+    with_wasm_vm(|os| async move {
+        // 32,000 lines of 64 bytes: far more than the PTY's 64 KiB output queue,
+        // written by the child in large chunks.
+        let line = format!("{}\n", &"0123456789abcdef".repeat(4)[..63]);
+        let content = line.repeat(32_000);
+        os.write_file("/tmp/big.txt", content.clone()).await?;
+
+        let shell = os.open_shell(OpenShellOptions {
+            command: Some("sh".into()),
+            args: vec!["-c".into(), "cat /tmp/big.txt".into()],
+            ..Default::default()
+        })?;
+        let (output, _subscription) = ShellOutput::subscribe(&os, &shell.shell_id)?;
+        anyhow::ensure!(
+            wait_for_shell_exit(&os, &shell.shell_id).await? == 0,
+            "shell failed"
+        );
+
+        // The terminal turns each "\n" into "\r\n".
+        let expected = content.replace('\n', "\r\n");
+        let received = output.bytes();
+        anyhow::ensure!(
+            received.len() == expected.len(),
+            "terminal output lost or duplicated bytes: got {} of {}",
+            received.len(),
+            expected.len()
+        );
+        anyhow::ensure!(received == expected.as_bytes(), "terminal output changed");
+        Ok(())
+    })
+    .await;
+}
+
+#[tokio::test]
+async fn a_single_large_write_to_a_terminal_is_written_whole() {
+    if !common::require_sidecar("a_single_large_write_to_a_terminal_is_written_whole") {
+        return;
+    }
+    with_wasm_vm(|os| async move {
+        // dd makes one write() per block and does not retry a short one, so a
+        // terminal that accepts part of a blocking write loses the rest. Linux
+        // completes a blocking write to a terminal. Each 192 KiB block is
+        // larger than the terminal's 64 KiB output queue and fits in one read.
+        let shell = os.open_shell(OpenShellOptions {
+            command: Some("sh".into()),
+            args: vec!["-c".into(), "dd if=/dev/zero bs=196608 count=8".into()],
+            ..Default::default()
+        })?;
+        let (output, _subscription) = ShellOutput::subscribe(&os, &shell.shell_id)?;
+        anyhow::ensure!(
+            wait_for_shell_exit(&os, &shell.shell_id).await? == 0,
+            "dd failed"
+        );
+
+        let received = output.bytes();
+        let zeros = received.iter().filter(|&&byte| byte == 0).count();
+        let report = String::from_utf8_lossy(&received).replace('\0', "");
+        anyhow::ensure!(
+            zeros == 8 * 196_608,
+            "dd wrote {zeros} of 1572864 bytes to the terminal; dd reported: {report:?}"
+        );
+        Ok(())
+    })
+    .await;
+}

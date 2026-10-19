@@ -452,7 +452,7 @@ impl PtyManager {
                 if pty.closed_master {
                     events |= POLLHUP;
                 } else if requested.intersects(POLLOUT)
-                    && (available_capacity(&pty.output_buffer) > 0
+                    && (buffer_size(&pty.output_buffer) < PTY_WAKEUP_CHARS
                         || !pty.waiting_output_reads.is_empty())
                 {
                     events |= POLLOUT;
@@ -465,6 +465,7 @@ impl PtyManager {
 
     pub fn write(&self, description_id: u64, data: impl AsRef<[u8]>) -> PtyResult<usize> {
         let payload = data.as_ref();
+        let mut written = payload.len();
         let mut signals = Vec::new();
 
         {
@@ -497,16 +498,28 @@ impl PtyManager {
                         return Err(PtyError::io("master closed"));
                     }
 
-                    let processed = process_output(&pty.termios, payload);
+                    // Like a Linux tty, accept as much as the output queue has
+                    // room for and report the count; a writer blocks or retries
+                    // only when none of it fits.
+                    let accepted = output_prefix_that_fits(
+                        &pty.termios,
+                        payload,
+                        output_capacity(pty, waiters),
+                    );
+                    if accepted == 0 && !payload.is_empty() {
+                        return Err(PtyError::would_block("PTY output buffer full"));
+                    }
+                    let processed = process_output(&pty.termios, &payload[..accepted]);
                     deliver_output(pty, waiters, &processed, false)?;
                     // Terminal emulation: answer a Device Status Report cursor-position
                     // query (ESC[6n) with a cursor report (ESC[row;colR) on the slave's
                     // input. A real terminal emulator on the master side does this; the
                     // converged PTY may have no such emulator, so crossterm/reedline guests
                     // that probe the cursor at startup would otherwise stall and abort.
-                    if contains_dsr_cursor_query(payload) {
+                    if contains_dsr_cursor_query(&payload[..accepted]) {
                         deliver_input(pty, waiters, b"\x1b[1;1R")?;
                     }
+                    written = accepted;
                 }
             }
         }
@@ -520,7 +533,7 @@ impl PtyManager {
             }
         }
 
-        Ok(payload.len())
+        Ok(written)
     }
 
     pub fn read(&self, description_id: u64, length: usize) -> PtyResult<Option<Vec<u8>>> {
@@ -1043,6 +1056,41 @@ fn contains_dsr_cursor_query(data: &[u8]) -> bool {
     data.windows(QUERY.len()).any(|window| window == QUERY)
 }
 
+/// Bytes the output side can take now: the buffer's free room, plus what a
+/// parked master reader takes directly.
+fn output_capacity(pty: &PtyState, waiters: &BTreeMap<u64, PendingRead>) -> usize {
+    let parked = pty
+        .waiting_output_reads
+        .front()
+        .and_then(|waiter_id| waiters.get(waiter_id))
+        .map_or(0, |waiter| waiter.length);
+    available_capacity(&pty.output_buffer).saturating_add(parked)
+}
+
+/// Length of the longest prefix of `data` whose processed output fits in
+/// `capacity` bytes. It never ends between a `\r` and the `\n` after it, so
+/// the next write does not add a second `\r` to that newline.
+fn output_prefix_that_fits(termios: &Termios, data: &[u8], capacity: usize) -> usize {
+    let onlcr = termios.opost && termios.onlcr;
+    let mut used = 0usize;
+    for (index, byte) in data.iter().enumerate() {
+        let cost = if onlcr && *byte == b'\n' && (index == 0 || data[index - 1] != b'\r') {
+            2
+        } else {
+            1
+        };
+        if used + cost > capacity {
+            return if index > 0 && data[index - 1] == b'\r' && *byte == b'\n' {
+                index - 1
+            } else {
+                index
+            };
+        }
+        used += cost;
+    }
+    data.len()
+}
+
 fn process_output(termios: &Termios, data: &[u8]) -> Vec<u8> {
     if !termios.opost || !termios.onlcr || !data.contains(&b'\n') {
         return data.to_vec();
@@ -1391,6 +1439,10 @@ fn erase_sequence(byte: u8) -> Vec<u8> {
 fn buffer_size(buffer: &VecDeque<Vec<u8>>) -> usize {
     buffer.iter().map(Vec::len).sum()
 }
+
+/// The slave is writable once fewer than this many output bytes wait, as Linux
+/// n_tty reports POLLOUT; a write then always makes progress.
+const PTY_WAKEUP_CHARS: usize = 256;
 
 fn available_capacity(buffer: &VecDeque<Vec<u8>>) -> usize {
     MAX_PTY_BUFFER_BYTES.saturating_sub(buffer_size(buffer))

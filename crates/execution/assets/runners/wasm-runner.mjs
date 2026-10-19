@@ -11696,30 +11696,59 @@ wasiImport.fd_prestat_dir_name = (fd, pathPtr, pathLen) => {
     : WASI_ERRNO_BADF;
 };
 
-function writeKernelFdCooperatively(targetFd, bytes) {
+// Writes guest bytes through the sidecar as a blocking Linux write does: it
+// returns once all of `bytes` is written, waiting while the target is full.
+// The sidecar takes the part of a write that fits and answers EAGAIN when none
+// fits. An O_NONBLOCK write returns what fit, or EAGAIN when nothing did. A
+// write that fails after writing part returns that part.
+function writeKernelCooperatively(method, targetFd, bytes, isNonblocking) {
+  let written = 0;
   while (true) {
     try {
-      return Number(callSyncRpc('process.fd_write', [targetFd, bytes]));
+      written += Number(
+        callSyncRpc(method, [targetFd, bytes.subarray(written)])
+      ) >>> 0;
+      if (written >= bytes.length || isNonblocking()) {
+        return written;
+      }
+      continue;
     } catch (error) {
-      if (error?.code !== 'EAGAIN' && error?.code !== 'EWOULDBLOCK') {
+      const wouldBlock = error?.code === 'EAGAIN' || error?.code === 'EWOULDBLOCK';
+      if (!wouldBlock || isNonblocking()) {
+        if (written > 0) {
+          return written;
+        }
         throw error;
       }
-      const stat = callSyncRpc('process.fd_stat', [targetFd]);
-      if ((Number(stat?.flags) & KERNEL_O_NONBLOCK) !== 0) {
-        throw error;
-      }
-      // The sidecar deliberately attempts kernel-pipe writes without blocking
-      // its dispatcher. Wait cooperatively so sibling/descendant reads can be
-      // serviced on that dispatcher, then retry Linux's logically blocking
-      // write. Guest O_NONBLOCK descriptors still return EAGAIN above.
+    }
+    try {
       dispatchPendingWasmSignals();
       pumpSpawnedChildren(0);
       callSyncRpc('__kernel_poll', [
         [{ fd: targetFd, events: KERNEL_POLLOUT }],
         KERNEL_WAIT_SLICE_MS,
       ]);
+    } catch (error) {
+      if (written > 0) {
+        return written;
+      }
+      throw error;
     }
   }
+}
+
+function writeKernelStdioCooperatively(targetFd, bytes, nonblocking) {
+  return writeKernelCooperatively('__kernel_stdio_write', targetFd, bytes, () => nonblocking);
+}
+
+function writeKernelFdCooperatively(targetFd, bytes) {
+  let nonblocking;
+  const isNonblocking = () => {
+    nonblocking ??=
+      (Number(callSyncRpc('process.fd_stat', [targetFd])?.flags) & KERNEL_O_NONBLOCK) !== 0;
+    return nonblocking;
+  };
+  return writeKernelCooperatively('process.fd_write', targetFd, bytes, isNonblocking);
 }
 
 wasiImport.fd_write = (fd, iovs, iovsLen, nwrittenPtr) => {
@@ -11800,8 +11829,10 @@ wasiImport.fd_write = (fd, iovs, iovsLen, nwrittenPtr) => {
         typeof process?.env?.AGENTOS_SANDBOX_ROOT === 'string' &&
         process.env.AGENTOS_SANDBOX_ROOT.length > 0;
       if (sidecarManagedProcess || KERNEL_STDIO_SYNC_RPC) {
+        const nonblocking =
+          ((delegatedWasiFdFlags.get(Number(fd) >>> 0) ?? 0) & WASI_FDFLAGS_NONBLOCK) !== 0;
         const written = __agentOSWasiMeasurePhase('fd_write', 'sync_rpc', () =>
-          Number(callSyncRpc('__kernel_stdio_write', [passthroughStdioTarget, bytes])) >>> 0
+          writeKernelStdioCooperatively(passthroughStdioTarget, bytes, nonblocking)
         );
         return __agentOSWasiMeasurePhase('fd_write', 'result_marshal', () =>
           writeGuestUint32(nwrittenPtr, written)
@@ -11813,8 +11844,8 @@ wasiImport.fd_write = (fd, iovs, iovsLen, nwrittenPtr) => {
       return __agentOSWasiMeasurePhase('fd_write', 'result_marshal', () =>
         writeGuestUint32(nwrittenPtr, bytes.length)
       );
-    } catch {
-      return WASI_ERRNO_FAULT;
+    } catch (error) {
+      return mapHostProcessError(error);
     }
   }
 

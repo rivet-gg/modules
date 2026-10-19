@@ -837,3 +837,69 @@ fn set_termios_updates_kill_and_werase_control_chars() {
     // Unspecified control chars keep their defaults.
     assert_eq!(termios.cc.verase, 0x7f);
 }
+
+#[test]
+fn a_slave_write_larger_than_the_output_queue_is_accepted_in_part() {
+    // Like a Linux tty, a write takes what fits and reports the count; the
+    // writer sends the rest after the master drains, and nothing is lost. A
+    // write never ends between "\r" and "\n", or the next one would add a
+    // second "\r".
+    let manager = PtyManager::new();
+    let pty = manager.create_pty();
+    // The first write fills the queue exactly at a "\r" whose "\n" follows.
+    let mut output = vec![b'x'; MAX_PTY_BUFFER_BYTES - 1];
+    output.extend_from_slice(b"\r\n");
+    output.extend(b"line\n".repeat(MAX_PTY_BUFFER_BYTES / 4));
+
+    let mut sent = 0;
+    let mut received = Vec::new();
+    let mut writes = 0;
+    while sent < output.len() {
+        let written = manager
+            .write(pty.slave.description.id(), &output[sent..])
+            .expect("slave write");
+        assert!(
+            written > 0,
+            "a write into an empty output queue must make progress"
+        );
+        sent += written;
+        writes += 1;
+        received.extend(
+            manager
+                .read(pty.master.description.id(), MAX_PTY_BUFFER_BYTES)
+                .expect("drain master")
+                .expect("drained output"),
+        );
+    }
+
+    assert!(writes > 1, "the write should have been accepted in part");
+    let mut expected = vec![b'x'; MAX_PTY_BUFFER_BYTES - 1];
+    expected.extend_from_slice(b"\r\n");
+    expected.extend(b"line\r\n".repeat(MAX_PTY_BUFFER_BYTES / 4));
+    assert!(
+        received == expected,
+        "every byte must arrive once, with newlines as CRLF"
+    );
+}
+
+#[test]
+fn a_slave_write_into_a_full_output_queue_waits_for_the_master_to_drain() {
+    let manager = PtyManager::new();
+    let pty = manager.create_pty();
+    let slave = pty.slave.description.id();
+    let fill = vec![b'x'; MAX_PTY_BUFFER_BYTES];
+    assert_eq!(
+        manager.write(slave, &fill).expect("fill"),
+        MAX_PTY_BUFFER_BYTES
+    );
+
+    let error = manager
+        .write(slave, b"more")
+        .expect_err("a full queue takes nothing");
+    assert_eq!(error.code(), "EAGAIN");
+
+    manager
+        .read(pty.master.description.id(), MAX_PTY_BUFFER_BYTES)
+        .expect("drain master");
+    assert_eq!(manager.write(slave, b"more").expect("write after drain"), 4);
+}
