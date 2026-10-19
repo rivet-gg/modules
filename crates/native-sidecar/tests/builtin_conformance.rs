@@ -2297,6 +2297,67 @@ fn write_file_sync_numeric_fd_matches_host_node() {
     run_isolated_builtin_conformance_test("fs-write-file-numeric-fd");
 }
 
+fn rm_does_not_follow_symlinks_matches_host_node_impl() {
+    assert_conformance(
+        "fs-rm-symlinks",
+        r#"
+import fs from "node:fs";
+
+const setup = (root) => {
+  fs.mkdirSync(`${root}/keep`, { recursive: true });
+  fs.writeFileSync(`${root}/keep/data.txt`, "keep");
+  fs.mkdirSync(`${root}/doomed/sub`, { recursive: true });
+  fs.writeFileSync(`${root}/doomed/sub/file.txt`, "doomed");
+  fs.symlinkSync("../keep", `${root}/doomed/link-dir`);
+};
+const describe = async (root, remove) => {
+  setup(root);
+  let error = null;
+  try {
+    await remove(`${root}/doomed`);
+  } catch (caught) {
+    error = caught.code ?? caught.message;
+  }
+  return {
+    error,
+    doomedExists: fs.existsSync(`${root}/doomed`),
+    keep: fs.readdirSync(`${root}/keep`),
+  };
+};
+
+const sync = await describe("sync", (path) => fs.rmSync(path, { recursive: true }));
+const callback = await describe(
+  "callback",
+  (path) =>
+    new Promise((resolve, reject) => {
+      fs.rm(path, { recursive: true }, (error) => (error ? reject(error) : resolve()));
+    })
+);
+const promises = await describe("promises", (path) => fs.promises.rm(path, { recursive: true }));
+
+fs.symlinkSync("missing-target", "dangling");
+let danglingError = null;
+try {
+  fs.rmSync("dangling");
+} catch (caught) {
+  danglingError = caught.code ?? caught.message;
+}
+let danglingRemoved = true;
+try {
+  fs.lstatSync("dangling");
+  danglingRemoved = false;
+} catch {}
+
+console.log(JSON.stringify({ sync, callback, promises, danglingError, danglingRemoved }));
+"#,
+    );
+}
+
+#[test]
+fn rm_does_not_follow_symlinks_matches_host_node() {
+    run_isolated_builtin_conformance_test("fs-rm-symlinks");
+}
+
 fn console_conformance_matches_host_node() {
     assert_conformance(
         "console",
@@ -4997,6 +5058,7 @@ fn __builtin_conformance_extra_test_runner() {
         "timer-handle-ref-refresh" => timer_handle_ref_refresh_matches_host_node_impl(),
         "timer-unref-exit" => unrefd_timeout_does_not_keep_guest_process_alive_impl(),
         "fs-write-file-numeric-fd" => write_file_sync_numeric_fd_matches_host_node_impl(),
+        "fs-rm-symlinks" => rm_does_not_follow_symlinks_matches_host_node_impl(),
         other => panic!("unknown builtin conformance extra test: {other}"),
     }
 }

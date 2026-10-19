@@ -2831,13 +2831,13 @@ var fs = {
     const pathStr = toPathString(path);
     const opts = options || {};
     try {
-      const stats = fs.statSync(pathStr);
+      const stats = fs.lstatSync(pathStr);
       if (stats.isDirectory()) {
         if (opts.recursive) {
           const entries = fs.readdirSync(pathStr);
           for (const entry of entries) {
             const entryPath = pathStr.endsWith("/") ? pathStr + entry : pathStr + "/" + entry;
-            const entryStats = fs.statSync(entryPath);
+            const entryStats = fs.lstatSync(entryPath);
             if (entryStats.isDirectory()) {
               fs.rmSync(entryPath, { recursive: true });
             } else {
@@ -3426,13 +3426,13 @@ var fs = {
     }
     const doRm = () => {
       try {
-        const stats = fs.statSync(path);
+        const stats = fs.lstatSync(path);
         if (stats.isDirectory()) {
           if (opts.recursive) {
             const entries = fs.readdirSync(path);
             for (const entry of entries) {
               const entryPath = path.endsWith("/") ? path + entry : path + "/" + entry;
-              const entryStats = fs.statSync(entryPath);
+              const entryStats = fs.lstatSync(entryPath);
               if (entryStats.isDirectory()) {
                 fs.rmSync(entryPath, { recursive: true });
               } else {
