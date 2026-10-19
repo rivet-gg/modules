@@ -1999,6 +1999,8 @@ pub(crate) struct ActiveProcess {
     /// this master output is the single ordered output stream surfaced to the
     /// host (instead of the raw guest stdout/stderr execution events).
     pub(crate) tty_master_fd: Option<u32>,
+    /// Cursor state for a TTY process, used to answer cursor-position queries.
+    pub(crate) terminal_model: Option<crate::execution::TerminalModel>,
     pub(crate) runtime: GuestRuntimeKind,
     pub(crate) detached: bool,
     pub(crate) execution: ActiveExecution,

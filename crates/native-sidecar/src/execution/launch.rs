@@ -5235,6 +5235,16 @@ where
     } else {
         install_kernel_stdin_pipe(&mut vm.kernel, kernel_pid)?
     };
+    let terminal_model = match tty_master_fd {
+        Some(master_fd) => {
+            let size = vm
+                .kernel
+                .pty_window_size(EXECUTION_DRIVER_NAME, kernel_pid, master_fd)
+                .map_err(kernel_error)?;
+            Some(crate::execution::TerminalModel::new(size.rows, size.cols))
+        }
+        None => None,
+    };
     let runtime_context = vm.runtime_context.clone();
     let limits = vm.limits.clone();
     vm.active_processes.insert(
@@ -5252,6 +5262,7 @@ where
         .with_vm_pending_byte_budgets(vm_pending_stdin_bytes_budget, vm_pending_event_bytes_budget)
         .with_kernel_stdin_writer_fd(kernel_stdin_writer_fd)
         .with_tty_master_fd(tty_master_fd)
+        .with_terminal_model(terminal_model)
         .with_guest_cwd(resolved.guest_cwd.clone())
         .with_env(process_env)
         .with_shadow_root(sandbox_root)

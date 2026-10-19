@@ -971,6 +971,47 @@ where
         })
     }
 
+    /// Answers the cursor-position queries in a terminal's output and returns
+    /// the event with the output clients receive, which leaves them out, or
+    /// `None` when nothing is left. A terminal's stdout and stderr are one
+    /// screen, so both are observed.
+    fn answer_terminal_queries_in_event(
+        &mut self,
+        vm_id: &str,
+        process_id: &str,
+        event: ActiveExecutionEvent,
+    ) -> Option<ActiveExecutionEvent> {
+        let (ActiveExecutionEvent::Stdout(chunk) | ActiveExecutionEvent::Stderr(chunk)) = &event
+        else {
+            return Some(event);
+        };
+        let Some(mut vm) = self.vms.get_mut(vm_id) else {
+            return Some(event);
+        };
+        let vm = &mut *vm;
+        let Some(process) = vm
+            .active_processes
+            .get_mut(process_id)
+            .filter(|process| process.terminal_model.is_some())
+        else {
+            return Some(event);
+        };
+        let forward = match super::answer_terminal_queries(&mut vm.kernel, process, chunk) {
+            std::borrow::Cow::Owned(forward) => Some(forward),
+            std::borrow::Cow::Borrowed(_) => None,
+        };
+        let Some(forward) = forward else {
+            return Some(event);
+        };
+        if forward.is_empty() {
+            return None;
+        }
+        Some(match event {
+            ActiveExecutionEvent::Stderr(_) => ActiveExecutionEvent::Stderr(forward),
+            _ => ActiveExecutionEvent::Stdout(forward),
+        })
+    }
+
     /// Apply one already-polled public process event without suspending the
     /// protocol coordinator. Internal RPC events are never valid broker
     /// payloads; they stay on the owned VM event-service path.
@@ -1015,6 +1056,11 @@ where
         }
         let ownership = OwnershipScope::vm(&connection_id, &session_id, vm_id);
         let public_execution = self.is_public_execution_process(vm_id, process_id);
+        // Output that held only cursor queries leaves nothing for clients;
+        // it gets no event and no replay sequence number.
+        let Some(event) = self.answer_terminal_queries_in_event(vm_id, process_id, event) else {
+            return Ok(None);
+        };
 
         if self.capture_extension_process_output_event(vm_id, process_id, &event) {
             return Ok(None);
@@ -1557,6 +1603,11 @@ where
         }
         let ownership = OwnershipScope::vm(&connection_id, &session_id, vm_id);
         let public_execution = self.is_public_execution_process(vm_id, process_id);
+        // Output that held only cursor queries leaves nothing for clients;
+        // it gets no event and no replay sequence number.
+        let Some(event) = self.answer_terminal_queries_in_event(vm_id, process_id, event) else {
+            return Ok(None);
+        };
 
         if self.capture_extension_process_output_event(vm_id, process_id, &event) {
             return Ok(None);

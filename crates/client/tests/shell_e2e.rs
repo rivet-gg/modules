@@ -415,3 +415,215 @@ async fn a_single_large_write_to_a_terminal_is_written_whole() {
     })
     .await;
 }
+
+fn screen(rows: u16, cols: u16) -> vt100::Parser {
+    let size = |n: u16| std::num::NonZeroU16::new(n).expect("terminal size");
+    vt100::Parser::new(size(rows), size(cols), 0)
+}
+
+fn screen_lines(bytes: &[u8]) -> Vec<String> {
+    let mut parser = screen(24, 80);
+    parser.process(bytes);
+    parser
+        .screen()
+        .rows(0, 80)
+        .map(|row| row.trim_end().to_string())
+        .collect()
+}
+
+/// Waits until `done` holds, the shell exits, or `limit` passes. Returns the
+/// shell's exit code if it exited.
+async fn wait_until(
+    os: &agentos_client::AgentOs,
+    shell_id: &str,
+    limit: std::time::Duration,
+    mut done: impl FnMut() -> bool,
+) -> anyhow::Result<Option<i32>> {
+    let deadline = std::time::Instant::now() + limit;
+    while std::time::Instant::now() < deadline && !done() {
+        if let Ok(code) = tokio::time::timeout(
+            std::time::Duration::from_millis(50),
+            os.wait_shell(shell_id),
+        )
+        .await
+        {
+            return Ok(Some(code?));
+        }
+    }
+    Ok(None)
+}
+
+/// Waits until the shell has written something and then been quiet for a
+/// moment, as a line editor waiting for keys is.
+async fn wait_until_quiet(
+    os: &agentos_client::AgentOs,
+    shell_id: &str,
+    output: &ShellOutput,
+) -> anyhow::Result<Option<i32>> {
+    let quiet = std::time::Duration::from_millis(700);
+    let mut seen = (0, std::time::Instant::now());
+    wait_until(os, shell_id, std::time::Duration::from_secs(15), || {
+        let length = output.bytes().len();
+        if length != seen.0 {
+            seen = (length, std::time::Instant::now());
+        }
+        length > 0 && seen.1.elapsed() >= quiet
+    })
+    .await
+}
+
+/// Opens the interactive shell, whose line editor asks the terminal for the
+/// cursor position before every prompt, runs one command in it, and returns
+/// the rendered screen and whether the shell exited.
+async fn run_interactive_command(
+    os: &agentos_client::AgentOs,
+    answering_clients: usize,
+) -> anyhow::Result<(Vec<String>, Option<i32>)> {
+    let shell = os.open_shell(OpenShellOptions {
+        command: Some("sh".into()),
+        cols: Some(80),
+        rows: Some(24),
+        env: [("TERM".to_string(), "xterm-256color".to_string())].into(),
+        ..Default::default()
+    })?;
+    let (output, _subscription) = ShellOutput::subscribe(os, &shell.shell_id)?;
+    // Each answering client renders the stream with its own emulator and
+    // answers every cursor query it sees, as a browser terminal does.
+    let clients = std::sync::Arc::new(std::sync::Mutex::new(
+        (0..answering_clients)
+            .map(|_| screen(24, 80))
+            .collect::<Vec<_>>(),
+    ));
+    let answer_errors = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let (answering, errors) = (clients.clone(), answer_errors.clone());
+    let writer = os.clone();
+    let shell_id = shell.shell_id.clone();
+    let _answers = os.on_shell_data(&shell.shell_id, move |event| {
+        let mut clients = answering.lock().expect("clients lock");
+        for client in clients.iter_mut() {
+            let mut applied = 0;
+            for (index, _) in event
+                .data
+                .windows(4)
+                .enumerate()
+                .filter(|(_, bytes)| *bytes == b"\x1b[6n")
+            {
+                client.process(&event.data[applied..index + 4]);
+                applied = index + 4;
+                let (row, col) = client.screen().cursor_position();
+                let report = StdinInput::Text(format!("\x1b[{};{}R", row + 1, col + 1));
+                if let Err(error) = writer.write_shell(&shell_id, report) {
+                    errors.lock().expect("errors lock").push(error.to_string());
+                }
+            }
+            client.process(&event.data[applied..]);
+        }
+    })?;
+
+    let mut exited = wait_until_quiet(os, &shell.shell_id, &output).await?;
+    if exited.is_none() {
+        os.write_shell(
+            &shell.shell_id,
+            StdinInput::Text("cat /tmp/early.txt\r".into()),
+        )?;
+        exited = wait_until(
+            os,
+            &shell.shell_id,
+            std::time::Duration::from_secs(15),
+            || {
+                screen_lines(&output.bytes())
+                    .iter()
+                    .any(|line| line == "EARLY-LINE")
+            },
+        )
+        .await?;
+    }
+    if exited.is_none() {
+        exited = wait_until_quiet(os, &shell.shell_id, &output).await?;
+    }
+    let errors = answer_errors.lock().expect("errors lock");
+    anyhow::ensure!(
+        errors.is_empty() || exited.is_some(),
+        "a client's answer could not be written: {errors:?}"
+    );
+    Ok((screen_lines(&output.bytes()), exited))
+}
+
+#[tokio::test]
+async fn an_interactive_shell_keeps_running_when_no_client_answers_its_cursor_queries() {
+    if !common::require_sidecar(
+        "an_interactive_shell_keeps_running_when_no_client_answers_its_cursor_queries",
+    ) {
+        return;
+    }
+    with_wasm_vm(|os| async move {
+        os.write_file("/tmp/early.txt", "EARLY-LINE\n").await?;
+        let (lines, exited) = run_interactive_command(&os, 0).await?;
+        anyhow::ensure!(
+            exited.is_none(),
+            "the shell must not exit while no client is attached"
+        );
+        anyhow::ensure!(
+            lines
+                .iter()
+                .filter(|line| line.as_str() == "EARLY-LINE")
+                .count()
+                == 1,
+            "the command's output must be on screen once: {lines:#?}"
+        );
+        Ok(())
+    })
+    .await;
+}
+
+#[tokio::test]
+async fn cursor_reports_from_attached_clients_do_not_corrupt_the_shell_screen() {
+    if !common::require_sidecar(
+        "cursor_reports_from_attached_clients_do_not_corrupt_the_shell_screen",
+    ) {
+        return;
+    }
+    with_wasm_vm(|os| async move {
+        os.write_file("/tmp/early.txt", "EARLY-LINE\n").await?;
+        // Two clients answer every query they see; only one answer may reach the shell.
+        let (lines, exited) = run_interactive_command(&os, 2).await?;
+        anyhow::ensure!(exited.is_none(), "the shell must keep running");
+        anyhow::ensure!(
+            lines
+                .iter()
+                .filter(|line| line.as_str() == "EARLY-LINE")
+                .count()
+                == 1,
+            "the command's output must stay on screen once: {lines:#?}"
+        );
+        Ok(())
+    })
+    .await;
+}
+
+#[tokio::test]
+async fn hostile_terminal_output_does_not_stall_the_sidecar() {
+    if !common::require_sidecar("hostile_terminal_output_does_not_stall_the_sidecar") {
+        return;
+    }
+    with_wasm_vm(|os| async move {
+        // Each sequence asks a terminal to repeat or insert 65,535 characters.
+        let hostile = "x\x1b[65535b\x1b[65535@\x1b[2J".repeat(40_000);
+        os.write_file("/tmp/hostile.txt", hostile).await?;
+        let shell = os.open_shell(OpenShellOptions {
+            command: Some("sh".into()),
+            args: vec!["-c".into(), "cat /tmp/hostile.txt; echo DONE".into()],
+            ..Default::default()
+        })?;
+        let (output, _subscription) = ShellOutput::subscribe(&os, &shell.shell_id)?;
+        let code = tokio::time::timeout(
+            std::time::Duration::from_secs(20),
+            os.wait_shell(&shell.shell_id),
+        )
+        .await
+        .map_err(|_| anyhow::anyhow!("the terminal took over 20 s to pass 1 MB of output"))??;
+        anyhow::ensure!(code == 0 && output.count("DONE") == 1, "cat failed");
+        Ok(())
+    })
+    .await;
+}

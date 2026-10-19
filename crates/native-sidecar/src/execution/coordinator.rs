@@ -229,6 +229,13 @@ where
             .kernel
             .tcgetpgrp(EXECUTION_DRIVER_NAME, kernel_pid, writer_fd)
             .map_err(kernel_error)?;
+        if let Some(model) = vm
+            .active_processes
+            .get_mut(&payload.process_id)
+            .and_then(|process| process.terminal_model.as_mut())
+        {
+            model.resize(payload.rows, payload.cols);
+        }
         vm.kernel
             .pty_resize(
                 EXECUTION_DRIVER_NAME,

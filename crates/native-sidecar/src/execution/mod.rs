@@ -43,16 +43,18 @@ pub(crate) use self::signals::{
     signal_runtime_process,
 };
 mod stdio;
+mod terminal_model;
 #[cfg(test)]
 #[allow(unused_imports)]
 pub(crate) use self::stdio::drain_tty_master_output;
 use self::stdio::*;
 pub(crate) use self::stdio::{
-    close_kernel_process_stdin, flush_pending_kernel_stdin, install_kernel_stdin_pipe,
-    kernel_poll_response, kernel_stdin_read_response, parse_kernel_poll_args,
-    parse_kernel_stdin_read_args, service_javascript_kernel_fd_write_sync_rpc,
-    write_kernel_process_stdin,
+    answer_terminal_queries, close_kernel_process_stdin, flush_pending_kernel_stdin,
+    install_kernel_stdin_pipe, kernel_poll_response, kernel_stdin_read_response,
+    parse_kernel_poll_args, parse_kernel_stdin_read_args,
+    service_javascript_kernel_fd_write_sync_rpc, write_kernel_process_stdin,
 };
+pub(crate) use self::terminal_model::TerminalModel;
 mod network;
 #[cfg(test)]
 #[allow(unused_imports)]

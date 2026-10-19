@@ -511,14 +511,6 @@ impl PtyManager {
                     }
                     let processed = process_output(&pty.termios, &payload[..accepted]);
                     deliver_output(pty, waiters, &processed, false)?;
-                    // Terminal emulation: answer a Device Status Report cursor-position
-                    // query (ESC[6n) with a cursor report (ESC[row;colR) on the slave's
-                    // input. A real terminal emulator on the master side does this; the
-                    // converged PTY may have no such emulator, so crossterm/reedline guests
-                    // that probe the cursor at startup would otherwise stall and abort.
-                    if contains_dsr_cursor_query(&payload[..accepted]) {
-                        deliver_input(pty, waiters, b"\x1b[1;1R")?;
-                    }
                     written = accepted;
                 }
             }
@@ -1047,13 +1039,6 @@ impl PtyManager {
             notifier.notify();
         }
     }
-}
-
-/// True if `data` contains a Device Status Report cursor-position query
-/// (`ESC [ 6 n`). Used to drive the converged PTY's terminal-style auto-reply.
-fn contains_dsr_cursor_query(data: &[u8]) -> bool {
-    const QUERY: &[u8] = b"\x1b[6n";
-    data.windows(QUERY.len()).any(|window| window == QUERY)
 }
 
 /// Bytes the output side can take now: the buffer's free room, plus what a

@@ -1,4 +1,5 @@
 use super::*;
+use std::borrow::Cow;
 
 pub(super) fn wait_fd_readable_until(fd: BorrowedFd<'_>, deadline: Instant) -> bool {
     wait_fd_until(fd, deadline, PollFlags::POLLIN)
@@ -499,14 +500,7 @@ pub(crate) fn write_kernel_process_stdin(
         return Ok(());
     };
     if process.tty_master_fd.is_some() {
-        kernel
-            .fd_write(EXECUTION_DRIVER_NAME, process.kernel_pid, writer_fd, chunk)
-            .map_err(kernel_error)?;
-        if let Some(echo) = drain_tty_master_output(kernel, process)? {
-            process.queue_pending_execution_event(ActiveExecutionEvent::Stdout(echo))?;
-        }
-        forward_tty_slave_input_to_javascript(kernel, process)?;
-        return Ok(());
+        return write_terminal_input(kernel, process, writer_fd, chunk);
     }
     if process
         .pending_kernel_stdin
@@ -804,6 +798,56 @@ pub(super) fn forward_tty_slave_input_to_javascript(
             Err(error) => return Err(kernel_error(error)),
         }
     }
+}
+
+/// Writes bytes to a TTY process's terminal as typed input, then passes on what
+/// the terminal echoes and what the guest can now read.
+fn write_terminal_input(
+    kernel: &mut SidecarKernel,
+    process: &mut ActiveProcess,
+    master_fd: u32,
+    input: &[u8],
+) -> Result<(), SidecarError> {
+    kernel
+        .fd_write(EXECUTION_DRIVER_NAME, process.kernel_pid, master_fd, input)
+        .map_err(kernel_error)?;
+    if let Some(echo) = drain_tty_master_output(kernel, process)? {
+        process.queue_pending_execution_event(ActiveExecutionEvent::Stdout(echo))?;
+    }
+    forward_tty_slave_input_to_javascript(kernel, process)
+}
+
+/// Answers the cursor-position queries in a TTY process's output from its
+/// terminal model, as a terminal would, and returns the output to forward to
+/// clients without the queries.
+pub(crate) fn answer_terminal_queries<'a>(
+    kernel: &mut SidecarKernel,
+    process: &mut ActiveProcess,
+    output: &'a [u8],
+) -> Cow<'a, [u8]> {
+    let (Some(model), Some(master_fd)) = (process.terminal_model.as_mut(), process.tty_master_fd)
+    else {
+        return Cow::Borrowed(output);
+    };
+    let observed = model.observe_output(output);
+    if observed.reports.is_empty() {
+        return observed.forward;
+    }
+    match write_terminal_input(kernel, process, master_fd, &observed.reports) {
+        Ok(()) => {}
+        // The guest is not reading its input, and a report it read later would
+        // be stale; its next query gets a fresh answer.
+        Err(error) if javascript_sync_rpc_error_code(&error) == "EAGAIN" => {
+            tracing::debug!(
+                pid = process.kernel_pid,
+                "terminal input queue is full; cursor position report dropped"
+            );
+        }
+        Err(error) => {
+            tracing::warn!(pid = process.kernel_pid, %error, "failed to answer a terminal cursor query");
+        }
+    }
+    observed.forward
 }
 
 pub(crate) fn close_kernel_process_stdin(

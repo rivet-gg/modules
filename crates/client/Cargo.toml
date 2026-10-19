@@ -49,3 +49,4 @@ vfs = { workspace = true }
 [dev-dependencies]
 tar = "0.4"
 tokio = { version = "1", features = ["full"] }
+vt100 = "0.18"
