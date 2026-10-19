@@ -8582,6 +8582,13 @@ where
             let parks_here = match wait_request.method.as_str() {
                 "__kernel_poll" => parse_kernel_poll_args(&wait_request).is_ok(),
                 "__kernel_stdin_read" => parse_kernel_stdin_read_args(&wait_request).is_ok(),
+                // The WASM runner sends these writes itself and, on EAGAIN, waits
+                // on poll and writes the rest, as a blocking Linux write waits
+                // for as long as the reader takes. A Node `fs.writeSync` arrives
+                // rewritten to `process.fd_write`; it cannot retry, so it parks.
+                "process.fd_write" | "__kernel_stdio_write" => {
+                    request.method != wait_request.method
+                }
                 _ => true,
             };
             if !parks_here {

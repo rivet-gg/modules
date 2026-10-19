@@ -294,6 +294,37 @@ async fn a_pipeline_writer_resumes_when_a_late_reader_drains_the_pipe() {
     assert_eq!(result.stdout.trim(), "200000", "{result:?}");
 }
 
+/// A pipeline writer waits for its reader for as long as the reader takes, as a blocking write
+/// does on Linux, and loses nothing.
+#[tokio::test]
+#[ignore = "waits past the 30 s limits.reactor.operationDeadlineMs to show pipe writes have no deadline"]
+async fn a_pipeline_writer_waits_for_a_slow_reader_without_losing_data() {
+    const TEST: &str = "a_pipeline_writer_waits_for_a_slow_reader_without_losing_data";
+    if !common::require_sidecar(TEST) {
+        return;
+    }
+    let Some(vm) = common::new_vm_with_commands().await else {
+        panic!("{TEST}: coreutils package absent");
+    };
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(90),
+        vm.exec_process(
+            "seq 1 200000 | { sleep 35; wc -l; }",
+            ExecOptions::default(),
+        ),
+    )
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), vm.shutdown())
+        .await
+        .expect("bounded VM cleanup")
+        .expect("shutdown VM");
+    let result = result
+        .expect("the pipeline must finish")
+        .expect("pipeline runs");
+    assert_eq!(result.exit_code, 0, "{result:?}");
+    assert_eq!(result.stdout.trim(), "200000", "{result:?}");
+}
+
 /// Stdin written after a process exits has no reader, so the write fails with `EPIPE`, as a pipe
 /// write does on Linux. Closing that stdin still succeeds.
 #[tokio::test]
