@@ -1,0 +1,143 @@
+--- a/src/interp.rs
++++ b/src/interp.rs
+@@ -568,6 +568,10 @@
+             }
+         }
+ 
++        if let Some(trap_result) = shell.run_pending_signal_traps().await? {
++            return Ok(trap_result);
++        }
++
+         Ok(result)
+     }
+ }
+--- a/src/shell.rs
++++ b/src/shell.rs
+@@ -971,6 +971,44 @@
+         Ok(())
+     }
+ 
++    /// Runs the trap command of each signal caught since the last check. Bash does this after
++    /// the foreground command finishes. Returns the trap's result when it exits or returns.
++    ///
++    /// Subshells run in this process as clones of the shell, but a signal is sent to the shell
++    /// itself, so only the top-level shell takes pending signals.
++    pub(crate) async fn run_pending_signal_traps(
++        &mut self,
++    ) -> Result<Option<ExecutionResult>, error::Error> {
++        if self.traps.handler_depth > 0 || self.is_subshell() {
++            return Ok(None);
++        }
++        for signal in crate::sys::signal::take_pending_trap_signals() {
++            let Some(handler) = self
++                .traps
++                .handlers
++                .get(&traps::TrapSignal::Signal(signal))
++                .cloned()
++            else {
++                continue;
++            };
++
++            let mut params = self.default_exec_params();
++            params.process_group_policy = ProcessGroupPolicy::SameProcessGroup;
++
++            let orig_last_exit_status = self.last_exit_status;
++            self.traps.handler_depth += 1;
++            let result = self.run_string(handler, &params).await;
++            self.traps.handler_depth -= 1;
++
++            let result = result?;
++            if result.is_return_or_exit() {
++                return Ok(Some(result));
++            }
++            self.last_exit_status = orig_last_exit_status;
++        }
++        Ok(None)
++    }
++
+     async fn invoke_exit_trap_handler_if_registered(
+         &mut self,
+     ) -> Result<ExecutionResult, error::Error> {
+--- a/src/sys/stubs/signal.rs
++++ b/src/sys/stubs/signal.rs
+@@ -151,6 +151,80 @@
+     }
+ }
+ 
++/// The process disposition a trap sets for its signal.
++#[derive(Clone, Copy)]
++pub enum TrapDisposition {
++    /// `trap - SIG`: take the default action.
++    Default,
++    /// `trap '' SIG`: ignore the signal.
++    Ignore,
++    /// `trap 'command' SIG`: catch the signal and run the command between commands.
++    Catch,
++}
++
++/// Bit `n` is set when signal `n` was caught and its trap has not run yet.
++static PENDING_TRAP_SIGNALS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
++
++extern "C" fn record_pending_trap_signal(signal: i32) {
++    if (1..64).contains(&signal) {
++        PENDING_TRAP_SIGNALS.fetch_or(1 << signal, std::sync::atomic::Ordering::SeqCst);
++    }
++}
++
++#[cfg(target_os = "wasi")]
++unsafe extern "C" {
++    // The agentOS wasi-libc `signal()`: stores the handler for the signal trampoline and
++    // reports the disposition to the kernel.
++    #[link_name = "signal"]
++    fn libc_signal(signal: i32, handler: usize) -> usize;
++    // wasi-libc's SIG_IGN and SIG_ERR are these functions' addresses, not 1 and -1: table
++    // index 1 is a valid function pointer on wasm.
++    fn __SIG_IGN(signal: i32);
++    fn __SIG_ERR(signal: i32);
++}
++
++/// Sets the process disposition for a trapped signal, as bash does with `sigaction`.
++#[cfg(target_os = "wasi")]
++pub fn set_trap_disposition(
++    signal: Signal,
++    disposition: TrapDisposition,
++) -> Result<(), error::Error> {
++    const SIG_DFL: usize = 0;
++    let sig_ign = __SIG_IGN as usize;
++    let sig_err = __SIG_ERR as usize;
++    // Linux rejects a disposition change for SIGKILL and SIGSTOP; bash ignores the trap.
++    if matches!(signal, Signal::Sigkill | Signal::Sigstop) {
++        return Ok(());
++    }
++    let handler = match disposition {
++        TrapDisposition::Default => SIG_DFL,
++        TrapDisposition::Ignore => sig_ign,
++        TrapDisposition::Catch => record_pending_trap_signal as usize,
++    };
++    // SAFETY: the handler only performs an atomic store, which is safe in a signal handler.
++    if unsafe { libc_signal(signal as i32, handler) } == sig_err {
++        return Err(std::io::Error::last_os_error().into());
++    }
++    Ok(())
++}
++
++/// Returns the lowest-numbered caught signal whose trap has not run yet, without taking it.
++pub fn pending_trap_signal() -> Option<Signal> {
++    let pending = PENDING_TRAP_SIGNALS.load(std::sync::atomic::Ordering::SeqCst);
++    (1..64)
++        .filter(|signal| pending & (1 << signal) != 0)
++        .find_map(|signal| Signal::try_from(signal).ok())
++}
++
++/// Returns the signals caught since the last call, lowest number first.
++pub(crate) fn take_pending_trap_signals() -> Vec<Signal> {
++    let pending = PENDING_TRAP_SIGNALS.swap(0, std::sync::atomic::Ordering::SeqCst);
++    (1..64)
++        .filter(|signal| pending & (1 << signal) != 0)
++        .filter_map(|signal| Signal::try_from(signal).ok())
++        .collect()
++}
++
+ pub(crate) fn continue_process(_pid: sys::process::ProcessId) -> Result<(), error::Error> {
+     Err(error::ErrorKind::NotSupportedOnThisPlatform("continuing process").into())
+ }
