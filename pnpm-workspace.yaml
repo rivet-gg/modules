@@ -22,6 +22,7 @@ packages:
   # embeddable example is a workspace member that `turbo check-types` covers.
   - examples/*/*
   - scripts/publish
+  - scripts/pipboy
 
 ignoredBuiltDependencies:
   - '@clerk/shared'
