@@ -149,6 +149,14 @@ export interface SpawnOptions {
 
 export type LanguageSpawnOptions = SpawnOptions;
 
+export interface ProcessSpawnOptions extends SpawnOptions {
+	/**
+	 * Keep stdin open for `writeStdin`. Defaults to `true`. With `false` the
+	 * process reads EOF as soon as it starts, as with `</dev/null`.
+	 */
+	streamStdin?: boolean;
+}
+
 export interface ExecutionErrorData {
 	code: string;
 	name: string;

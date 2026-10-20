@@ -771,6 +771,12 @@ pub enum SidecarError {
     InvalidState(String),
     /// A requested resource does not exist. Reported to clients as `ENOENT`.
     NotFound(String),
+    /// A host request failed as the matching Linux call would. Reported to clients with `errno`
+    /// as the rejection code.
+    Errno {
+        errno: &'static str,
+        message: String,
+    },
     ProtocolVersionMismatch(String),
     BridgeVersionMismatch(String),
     Conflict(String),
@@ -794,6 +800,7 @@ impl fmt::Display for SidecarError {
             ),
             Self::RequestAdmission { message, .. }
             | Self::VmTeardownDeadline { message, .. } => f.write_str(message),
+            Self::Errno { errno, message } => write!(f, "{errno}: {message}"),
             Self::InvalidState(message)
             | Self::NotFound(message)
             | Self::ProtocolVersionMismatch(message)
@@ -1973,6 +1980,9 @@ pub(crate) struct ActiveProcess {
     /// their bounds from this snapshot instead of process-wide constants.
     pub(crate) limits: crate::limits::VmLimits,
     pub(crate) kernel_stdin_writer_fd: Option<u32>,
+    /// Set once the host closes stdin. Later host writes fail with `EBADF`, as a write to a
+    /// closed descriptor does on Linux.
+    pub(crate) host_stdin_closed: bool,
     /// Whether fd 0 was installed by POSIX spawn actions and must be read
     /// directly from the kernel instead of the JavaScript local-stdin bridge.
     pub(crate) direct_posix_stdin: bool,

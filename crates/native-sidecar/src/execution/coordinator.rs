@@ -279,6 +279,15 @@ pub(crate) async fn write_stdin_owned(
                     input.vm_id, payload.process_id
                 ))
             })?;
+        if process.host_stdin_closed {
+            return Err(SidecarError::Errno {
+                errno: "EBADF",
+                message: format!(
+                    "process {} stdin is closed; a write after closeStdin cannot reach it",
+                    payload.process_id
+                ),
+            });
+        }
         let tty_js =
             process.runtime == GuestRuntimeKind::JavaScript && process.tty_master_fd.is_some();
         if !tty_js {
@@ -316,7 +325,9 @@ pub(crate) async fn close_stdin_owned(
                 ))
             })?;
         process.execution.close_stdin()?;
-        close_kernel_process_stdin(kernel, process)
+        close_kernel_process_stdin(kernel, process)?;
+        process.host_stdin_closed = true;
+        Ok(())
     })?;
 
     Ok(DispatchResult {

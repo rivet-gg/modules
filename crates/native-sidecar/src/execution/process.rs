@@ -88,6 +88,7 @@ impl ActiveProcess {
             runtime_context,
             limits,
             kernel_stdin_writer_fd: None,
+            host_stdin_closed: false,
             direct_posix_stdin: false,
             kernel_stdin_reader_fd: 0,
             pending_kernel_stdin: PendingKernelStdin::default(),

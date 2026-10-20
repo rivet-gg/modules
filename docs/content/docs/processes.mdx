@@ -70,9 +70,17 @@ commands or working directories are invalid input.
 | Wait for exit | `v1.process.wait` | `process.wait` |
 | Inspect | `v1.process.get`, `v1.process.list`, `v1.process.tree` | `process.get`, `process.list`, `process.tree` |
 
+A library `process.spawn` keeps stdin open; pass `streamStdin: false` to give
+the process EOF instead.
+Writing to stdin after it is closed fails with `EBADF`, as on Linux.
+
 Hosted operations take the process handle `{ generation, pid }`; library
 operations take the `pid`. A hosted handle from before a `v1.vm.restart` fails
 with `stale_generation`.
+
+Writing to stdin after the process exits fails with `EPIPE`, as a write to a
+pipe with no reader does on Linux. Closing stdin after the process exits
+succeeds.
 
 `get` and `list` report `startedAtMs` as a Unix timestamp in milliseconds.
 `tree` includes guest child processes as well as processes launched through the

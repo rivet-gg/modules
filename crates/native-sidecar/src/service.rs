@@ -5237,6 +5237,13 @@ where
                 }),
             );
         }
+        if let SidecarError::Errno { errno, .. } = error {
+            let mut response = self.reject(request, errno, &error.to_string());
+            if let ResponsePayload::Rejected(rejected) = &mut response.payload {
+                rejected.errno = Some((*errno).to_owned());
+            }
+            return response;
+        }
         let SidecarError::ResourceLimit(limit) = error else {
             return self.reject(request, error_code(error), &error.to_string());
         };
