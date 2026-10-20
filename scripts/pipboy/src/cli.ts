@@ -1,3 +1,4 @@
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
 	NodeHttpClient,
@@ -11,13 +12,16 @@ import {
 	FileSystem,
 	Layer,
 	Option,
+	Redacted,
 	Schema,
 } from "effect";
 import { Command, Flag } from "effect/cli";
+import { HttpClient, HttpClientRequest } from "effect/http";
 import { compareFootprint } from "./compare/footprint.ts";
 import { compareHygiene } from "./compare/hygiene.ts";
 import { compareNative } from "./compare/native.ts";
 import { REPO_ROOT } from "./config.ts";
+import { run } from "./exec.ts";
 import { inspectEntrypoints } from "./footprint/inspect.ts";
 import { pack, readPackManifest } from "./footprint/pack.ts";
 import * as Registry from "./footprint/registry.ts";
@@ -32,9 +36,11 @@ import { renderFootprint } from "./render/footprint.ts";
 import { renderHygiene } from "./render/hygiene.ts";
 import { renderNative } from "./render/native.ts";
 import { JobResults, renderCheckSection } from "./render/status.ts";
+import { renderTraceHelp } from "./render/trace.ts";
 import { FootprintReport, type FootprintSide } from "./schema/footprint.ts";
 import { HygieneReport } from "./schema/hygiene.ts";
 import { NativeReport } from "./schema/native.ts";
+import { commitTrace } from "./trace/commit.ts";
 
 export class ChecksFailed extends Schema.TaggedError<ChecksFailed>()(
 	"ChecksFailed",
@@ -241,7 +247,7 @@ const reportCommand = Command.make(
 	Effect.fn("Cli.report")(
 		function* ({ reports, baseHistory }) {
 			const fs = yield* FileSystem.FileSystem;
-			const github = yield* GitHubApi.GitHub;
+			const currentRun = yield* GitHubApi.CurrentRun;
 			const env = yield* Config.all({
 				// Empty for pushes and fork PRs, which get the run summary instead of a comment.
 				prNumber: Config.String("PR_NUMBER").pipe(Config.withDefault("")),
@@ -261,7 +267,7 @@ const reportCommand = Command.make(
 				renderCheckSection(
 					{ heading, job, skipReason, rendered },
 					results,
-					github.runUrl,
+					currentRun.url,
 				);
 
 			const sections: Array<string> = [
@@ -345,7 +351,7 @@ const reportCommand = Command.make(
 			);
 
 			const timing = yield* readTiming();
-			sections.push(renderTiming(timing));
+			sections.push(renderTiming(timing), renderTraceHelp(env.headSha));
 			const body = sections.join("\n\n");
 
 			if (Option.isSome(env.summary)) {
@@ -357,7 +363,7 @@ const reportCommand = Command.make(
 				const result = yield* upsertComment(
 					Number(env.prNumber),
 					env.headSha,
-					fitComment(body, github.runUrl),
+					fitComment(body, currentRun.url),
 				);
 				yield* Console.log(`comment ${result}`);
 			}
@@ -368,6 +374,70 @@ const reportCommand = Command.make(
 ).pipe(
 	Command.withDescription(
 		"Write the PR comment and run summary from the checks' reports",
+	),
+);
+
+export class InvalidSha extends Schema.TaggedError<InvalidSha>()("InvalidSha", {
+	sha: Schema.String,
+}) {
+	override get message() {
+		return `--sha must be a full 40-character commit SHA, got \`${this.sha}\``;
+	}
+}
+
+const traceCommand = Command.make(
+	"trace",
+	{
+		sha: Flag.String("sha").pipe(
+			Flag.withDescription("Commit to trace (full SHA)"),
+		),
+		repo: Flag.String("repo").pipe(Flag.withDefault("rivet-dev/agentos")),
+		out: Flag.String("out").pipe(
+			Flag.optional,
+			Flag.withDescription("Write the OTLP/JSON trace to this file"),
+		),
+		otlp: Flag.String("otlp").pipe(
+			Flag.optional,
+			Flag.withDescription(
+				"Send the trace to this OTLP/HTTP endpoint, such as motel at http://127.0.0.1:27686",
+			),
+		),
+	},
+	Effect.fn("Cli.trace")(function* ({ sha, repo, out, otlp }) {
+		if (!/^[0-9a-f]{40}$/.test(sha)) return yield* new InvalidSha({ sha });
+		const fs = yield* FileSystem.FileSystem;
+		// Locally, fall back to the GitHub CLI's login so no token needs exporting.
+		const token =
+			Option.getOrUndefined(
+				yield* Config.option(Config.Redacted("GITHUB_TOKEN")),
+			) ?? Redacted.make((yield* run("gh", ["auth", "token"])).trim());
+		const { runs, document } = yield* Effect.scoped(commitTrace(sha)).pipe(
+			Effect.provide(GitHubApi.layerFor(repo, token)),
+		);
+		const spans = document.resourceSpans[0]?.scopeSpans[0]?.spans.length ?? 0;
+
+		// The default stays out of the checkout, where version control would pick it up.
+		const path = Option.getOrElse(out, () =>
+			join(tmpdir(), `pipboy-trace-${sha.slice(0, 7)}.json`),
+		);
+		yield* fs.writeFileString(path, JSON.stringify(document));
+		yield* Console.log(`${runs} workflow runs, ${spans} spans → ${path}`);
+		if (Option.isSome(otlp)) {
+			const http = (yield* HttpClient.HttpClient).pipe(
+				HttpClient.filterStatusOk,
+			);
+			yield* HttpClientRequest.post(
+				`${otlp.value.replace(/\/$/, "")}/v1/traces`,
+			).pipe(
+				HttpClientRequest.bodyJson(document),
+				Effect.flatMap(http.execute),
+			);
+			yield* Console.log(`sent to ${otlp.value}`);
+		}
+	}),
+).pipe(
+	Command.withDescription(
+		"Build one trace of the CI that ran on a commit: CI, Pip-Boy, and releases",
 	),
 );
 
@@ -422,6 +492,7 @@ const cli = Command.make("pipboy").pipe(
 		nativeCommand,
 		baselineCommand,
 		reportCommand,
+		traceCommand,
 	]),
 );
 
