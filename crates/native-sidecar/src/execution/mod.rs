@@ -102,7 +102,7 @@ use crate::filesystem::{
     service_owned_python_filesystem_rpc_request,
 };
 use crate::host_functions::{
-    format_host_function_failure_output, is_host_function_command,
+    format_host_function_failure_output, host_function_globals_script, is_host_function_command,
     normalized_host_function_command_name, resolve_host_function_command,
     HostFunctionCommandResolution,
 };

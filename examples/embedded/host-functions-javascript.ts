@@ -31,6 +31,18 @@ try {
 		{ output: { capture: "all" } },
 	);
 	console.log(result.outcome === "succeeded" ? result.stdout : result.error);
+
+	// Every guest Node process gets the same globals, including scripts started
+	// with process.spawn(), from the shell, or by another guest process.
+	await vm.writeFile(
+		"/app/report.mjs",
+		`const forecast = await weather.forecast({ city: "Tokyo" });
+console.log(forecast);`,
+	);
+	const report = await vm.process.exec("node /app/report.mjs", {
+		output: { capture: "all" },
+	});
+	console.log(report.outcome === "succeeded" ? report.stdout : report.error);
 } finally {
 	await vm.dispose();
 }

@@ -4,7 +4,7 @@ description: "Expose trusted host functions to guest programs in agentOS VMs as 
 skill: true
 ---
 
-Host functions expose JavaScript functions from your process to code running inside the VM. They run as in-process callbacks, so they are available in the library only, not on hosted VMs. Each function is defined with a Zod input schema and becomes an auto-generated CLI command at `/bin/agentos-{name}`, plus an async function that inline JavaScript can call directly.
+Host functions expose JavaScript functions from your process to code running inside the VM. They run as in-process callbacks, so they are available in the library only, not on hosted VMs. Each function is defined with a Zod input schema and becomes an auto-generated CLI command at `/bin/agentos-{name}`, plus an async function that guest JavaScript can call directly.
 
 ## Getting started
 
@@ -66,9 +66,13 @@ Missing required flag: --city
 
 ## Call host functions from JavaScript
 
-Inline JavaScript and TypeScript get each collection as a frozen global, and each
+Every guest Node process gets each collection as a frozen global, and each
 host function as an async function, so generated code calls your tools like any
-other API. Keys written in camelCase become kebab-case commands and camelCase guest
+other API. This covers inline `vm.javascript` and `vm.typescript` executions,
+scripts started with `vm.process.spawn("node", ...)` or `vm.process.exec`,
+`node` run from the guest shell, and child processes of guest Node. The globals
+are defined before the entry script and its imports run, so a module can use
+them at its top level. Keys written in camelCase become kebab-case commands and camelCase guest
 identifiers, so `orderStore.listOrders` is `agentos-order-store list-orders` on
 the CLI and `orderStore.listOrders(input)` in guest JavaScript.
 

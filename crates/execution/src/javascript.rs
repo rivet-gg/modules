@@ -515,6 +515,12 @@ pub struct GuestRuntimeConfig {
     /// keeps the bridge-only snapshot (unchanged behavior). The runtime caches the
     /// snapshot process-wide keyed by sha256(bridge_code + this bundle).
     pub snapshot_userland_code: Option<String>,
+    /// Optional sidecar-owned classic script evaluated in the execution's
+    /// context before the entrypoint, including before an ES module entrypoint
+    /// links its static imports. The sidecar uses it to define VM-wide guest
+    /// globals such as host-function collections. Runner isolates for WASM and
+    /// Python leave it unset.
+    pub prelude_script: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2954,7 +2960,11 @@ impl JavascriptExecutionEngine {
             mode: u8::from(use_module_mode) | if retain_context { 2 } else { 0 },
             file_path: execution_file_path,
             bridge_code: V8RuntimeHost::bridge_code().to_owned(),
-            post_restore_script: String::new(),
+            post_restore_script: request
+                .guest_runtime
+                .prelude_script
+                .clone()
+                .unwrap_or_default(),
             userland_code: snapshot_userland_code,
             high_resolution_time: request.guest_runtime.high_resolution_time,
             user_code,

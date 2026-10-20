@@ -24,6 +24,8 @@ Arguments from the guest are validated before your code runs.
 ## Call them from guest code
 
 Inside the VM each collection is a global object and each function is async.
+The globals exist in every guest Node process: inline code, spawned scripts,
+`node` run from the shell, and child processes of guest Node.
 
 <CodeSnippet file="secure-exec/examples/host-functions/src/index.ts" region="call" />
 

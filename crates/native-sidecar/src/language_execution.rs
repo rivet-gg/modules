@@ -115,59 +115,6 @@ fn inline_inputs_prefix(inputs: Option<String>, python: bool) -> String {
     }
 }
 
-/// Convert a kebab-case host function or collection name to the camelCase
-/// identifier
-/// guest JavaScript uses for it.
-fn host_function_identifier(name: &str) -> String {
-    let mut identifier = String::with_capacity(name.len());
-    let mut upper_next = false;
-    for character in name.chars() {
-        if character == '-' {
-            upper_next = true;
-        } else if upper_next {
-            identifier.extend(character.to_uppercase());
-            upper_next = false;
-        } else {
-            identifier.push(character);
-        }
-    }
-    identifier
-}
-
-/// Guest prefix that defines one frozen global per registered host function
-/// collection, so inline JavaScript can `await orders.list({ ... })` instead of
-/// spawning the `agentos-orders` command by hand. Each function runs that same
-/// command, so the `hostFunction` permission scope, input validation, and
-/// timeouts
-/// all still apply. The prefix stays on one line so guest line numbers do not
-/// shift. A collection whose name is already a global is skipped with a warning
-/// on stderr rather than shadowing it.
-fn inline_host_functions_prefix(
-    host_functions: &BTreeMap<String, RegisterHostCallbacksRequest>,
-) -> String {
-    const DEFINE_GLOBALS: &str = r#"((groups)=>{const call=(command,name)=>(input={})=>import("node:child_process").then(({execFile})=>new Promise((resolve,reject)=>{execFile(command,[name,"--json",JSON.stringify(input)],{maxBuffer:67108864},(error,stdout,stderr)=>{if(error){reject(new Error(String(stderr||"").trim()||error.message));return;}let reply;try{reply=JSON.parse(String(stdout));}catch(parseError){reject(new Error("host function returned invalid JSON: "+parseError.message));return;}if(!reply||reply.ok!==true){reject(new Error((reply&&reply.error)||"host function failed"));return;}resolve(reply.result);});}));for(const [group,definition] of Object.entries(groups)){if(group in globalThis){console.error("agentos: host function group \""+group+"\" was not defined because globalThis."+group+" already exists");continue;}const functions={};for(const [key,name] of definition.functions)functions[key]=call(definition.command,name);Object.defineProperty(globalThis,group,{value:Object.freeze(functions),enumerable:true});}})"#;
-
-    let groups = host_functions
-        .values()
-        .filter_map(|collection| {
-            let command = collection.command_aliases.first()?;
-            let functions = collection
-                .callbacks
-                .keys()
-                .map(|name| serde_json::json!([host_function_identifier(name), name]))
-                .collect::<Vec<_>>();
-            Some((
-                host_function_identifier(&collection.name),
-                serde_json::json!({ "command": command, "functions": functions }),
-            ))
-        })
-        .collect::<serde_json::Map<_, _>>();
-    if groups.is_empty() {
-        return String::new();
-    }
-    format!("{DEFINE_GLOBALS}({});", serde_json::Value::Object(groups))
-}
-
 fn semantic_result_path() -> String {
     static NEXT_RESULT_ID: AtomicU64 = AtomicU64::new(1);
     let nonce = NEXT_RESULT_ID.fetch_add(1, Ordering::Relaxed);
@@ -1331,26 +1278,6 @@ where
                 "retainEvents requires a context or spawned language process",
             ));
         }
-        // Inline JavaScript and TypeScript run as `node -e <source>`. Give them the
-        // VM's registered host functions as globals.
-        if operation.retained_language == Some(RetainedExecutionLanguage::JavaScript)
-            && operation.args.first().map(String::as_str) == Some("-e")
-        {
-            let prefix = self
-                .vms
-                .get(&vm_id)
-                .map(|vm| inline_host_functions_prefix(&vm.host_functions))
-                .unwrap_or_default();
-            if !prefix.is_empty() {
-                if let Some(source) = operation.args.get_mut(1) {
-                    source.insert_str(0, &prefix);
-                }
-                if let Some(source) = operation.retained_source.as_mut() {
-                    source.insert_str(0, &prefix);
-                }
-            }
-        }
-
         if !context_execution {
             // Ephemeral calls must not park a language interpreter after the
             // operation completes.
@@ -3105,64 +3032,5 @@ fn execution_limit_error(limit: ExecutionLimit) -> ExecutionErrorData {
         message: String::from(message),
         stack: None,
         details: None,
-    }
-}
-
-#[cfg(test)]
-mod inline_host_functions_prefix_tests {
-    use super::*;
-
-    fn collection(name: &str, callbacks: &[&str]) -> RegisterHostCallbacksRequest {
-        RegisterHostCallbacksRequest {
-            name: name.to_string(),
-            description: String::new(),
-            command_aliases: vec![format!("agentos-{name}")],
-            registry_command_aliases: vec![String::from("agentos")],
-            callbacks: callbacks
-                .iter()
-                .map(|callback| {
-                    (
-                        callback.to_string(),
-                        RegisteredHostCallbackDefinition {
-                            description: String::new(),
-                            input_schema: String::from("{}"),
-                            timeout_ms: None,
-                            examples: Vec::new(),
-                        },
-                    )
-                })
-                .collect(),
-        }
-    }
-
-    #[test]
-    fn converts_kebab_case_names_to_identifiers() {
-        assert_eq!(host_function_identifier("orders"), "orders");
-        assert_eq!(host_function_identifier("order-store"), "orderStore");
-        assert_eq!(
-            host_function_identifier("list-open-orders"),
-            "listOpenOrders"
-        );
-    }
-
-    #[test]
-    fn is_empty_without_host_functions() {
-        assert_eq!(inline_host_functions_prefix(&BTreeMap::new()), "");
-    }
-
-    #[test]
-    fn defines_one_group_per_collection_on_a_single_line() {
-        let host_functions = BTreeMap::from([(
-            String::from("order-store"),
-            collection("order-store", &["list-orders"]),
-        )]);
-        let prefix = inline_host_functions_prefix(&host_functions);
-        assert!(
-            !prefix.contains('\n'),
-            "prefix must not shift guest line numbers"
-        );
-        assert!(prefix.ends_with(
-            r#"({"orderStore":{"command":"agentos-order-store","functions":[["listOrders","list-orders"]]}});"#
-        ));
     }
 }

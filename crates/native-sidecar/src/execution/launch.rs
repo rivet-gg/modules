@@ -3023,7 +3023,24 @@ pub(super) fn guest_runtime_identity(
             .as_ref()
             .is_some_and(|cfg| cfg.high_resolution_time.unwrap_or(false)),
         snapshot_userland_code: None,
+        prelude_script: None,
     }
+}
+
+/// Guest-runtime config for a guest Node process. Adds the VM's host-function
+/// globals to the shared identity so every guest Node process, however it was
+/// launched, can call registered host functions directly.
+pub(super) fn javascript_guest_runtime(
+    vm: &VmState,
+    virtual_pid: Option<u64>,
+    virtual_ppid: Option<u64>,
+) -> GuestRuntimeConfig {
+    let mut config = guest_runtime_identity(vm, virtual_pid, virtual_ppid);
+    let script = host_function_globals_script(&vm.host_functions);
+    if !script.is_empty() {
+        config.prelude_script = Some(script);
+    }
+    config
 }
 
 /// The guest's virtual home directory, sourced from the VM user profile (the
@@ -5076,7 +5093,7 @@ where
             let execution = javascript_engine
                 .start_execution_with_module_reader_and_runtime(
                     StartJavascriptExecutionRequest {
-                        guest_runtime: guest_runtime_identity(&vm, None, None),
+                        guest_runtime: javascript_guest_runtime(&vm, None, None),
                         vm_id: vm_id.clone(),
                         context_id: context.context_id,
                         argv: std::iter::once(launch_entrypoint.clone())

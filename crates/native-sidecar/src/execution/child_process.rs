@@ -4893,7 +4893,7 @@ where
                     let execution_result = javascript_engine
                         .start_execution_with_module_reader_and_runtime(
                             StartJavascriptExecutionRequest {
-                                guest_runtime: guest_runtime_identity(
+                                guest_runtime: javascript_guest_runtime(
                                     &vm,
                                     Some(u64::from(kernel_pid)),
                                     Some(u64::from(parent_kernel_pid)),
@@ -5575,7 +5575,7 @@ where
                 let replacement_result = javascript_engine
                     .prepare_execution_with_module_reader_and_runtime(
                         StartJavascriptExecutionRequest {
-                            guest_runtime: guest_runtime_identity(
+                            guest_runtime: javascript_guest_runtime(
                                 vm,
                                 Some(u64::from(kernel_pid)),
                                 Some(u64::from(parent_kernel_pid)),
@@ -6515,7 +6515,7 @@ where
                         let execution_result = javascript_engine
                             .start_execution_with_module_reader_and_runtime(
                                 StartJavascriptExecutionRequest {
-                                    guest_runtime: guest_runtime_identity(
+                                    guest_runtime: javascript_guest_runtime(
                                         &vm,
                                         Some(u64::from(kernel_pid)),
                                         Some(u64::from(parent_kernel_pid)),

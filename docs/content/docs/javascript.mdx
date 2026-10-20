@@ -192,7 +192,9 @@ See [Filesystem](/agentos/docs/filesystem), [Processes & Shells](/agentos/docs/p
 ## Host functions
 
 Guest JavaScript calls [host functions](/agentos/docs/host-functions) as async globals, so host
-credentials stay outside the VM. Host functions are library-only.
+credentials stay outside the VM. The globals exist in every guest Node process,
+whether it runs inline code, a spawned script, `node` from the shell, or a child
+process. Host functions are library-only.
 
 <CodeSnippet file="examples/embedded/host-functions-javascript.ts" title="Library" />
 

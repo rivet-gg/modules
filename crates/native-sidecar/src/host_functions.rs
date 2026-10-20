@@ -715,6 +715,59 @@ fn host_function_registration_error(error: HostFunctionRegistrationError) -> Sid
     }
 }
 
+/// Convert a kebab-case host function or collection name to the camelCase
+/// identifier
+/// guest JavaScript uses for it.
+fn host_function_identifier(name: &str) -> String {
+    let mut identifier = String::with_capacity(name.len());
+    let mut upper_next = false;
+    for character in name.chars() {
+        if character == '-' {
+            upper_next = true;
+        } else if upper_next {
+            identifier.extend(character.to_uppercase());
+            upper_next = false;
+        } else {
+            identifier.push(character);
+        }
+    }
+    identifier
+}
+
+/// Guest script that defines one frozen global per registered host function
+/// collection, so guest JavaScript can `await orders.list({ ... })` instead of
+/// spawning the `agentos-orders` command by hand. The sidecar runs it before
+/// the entrypoint of every guest Node process in the VM. Each function runs
+/// that same command, so the `hostFunction` permission scope, input
+/// validation, and timeouts all still apply. A collection whose name is
+/// already a global is skipped with a warning on stderr rather than shadowing
+/// it. Returns an empty string when the VM has no host functions.
+pub(crate) fn host_function_globals_script(
+    host_functions: &BTreeMap<String, RegisterHostCallbacksRequest>,
+) -> String {
+    const DEFINE_GLOBALS: &str = r#"((groups)=>{const call=(command,name)=>(input={})=>import("node:child_process").then(({execFile})=>new Promise((resolve,reject)=>{execFile(command,[name,"--json",JSON.stringify(input)],{maxBuffer:67108864},(error,stdout,stderr)=>{if(error){reject(new Error(String(stderr||"").trim()||error.message));return;}let reply;try{reply=JSON.parse(String(stdout));}catch(parseError){reject(new Error("host function returned invalid JSON: "+parseError.message));return;}if(!reply||reply.ok!==true){reject(new Error((reply&&reply.error)||"host function failed"));return;}resolve(reply.result);});}));for(const [group,definition] of Object.entries(groups)){if(group in globalThis){console.error("agentos: host function group \""+group+"\" was not defined because globalThis."+group+" already exists");continue;}const functions={};for(const [key,name] of definition.functions)functions[key]=call(definition.command,name);Object.defineProperty(globalThis,group,{value:Object.freeze(functions),enumerable:true});}})"#;
+
+    let groups = host_functions
+        .values()
+        .filter_map(|collection| {
+            let command = collection.command_aliases.first()?;
+            let functions = collection
+                .callbacks
+                .keys()
+                .map(|name| serde_json::json!([host_function_identifier(name), name]))
+                .collect::<Vec<_>>();
+            Some((
+                host_function_identifier(&collection.name),
+                serde_json::json!({ "command": command, "functions": functions }),
+            ))
+        })
+        .collect::<serde_json::Map<_, _>>();
+    if groups.is_empty() {
+        return String::new();
+    }
+    format!("{DEFINE_GLOBALS}({});", serde_json::Value::Object(groups))
+}
+
 enum HostFunctionCommand {
     Registry(String),
     Collection { collection_name: String },
@@ -1040,5 +1093,62 @@ mod tests {
                 "host function collection already registered: browser",
             ))
         );
+    }
+}
+
+#[cfg(test)]
+mod host_function_globals_tests {
+    use super::*;
+    use crate::protocol::RegisteredHostCallbackDefinition;
+
+    fn collection(name: &str, callbacks: &[&str]) -> RegisterHostCallbacksRequest {
+        RegisterHostCallbacksRequest {
+            name: name.to_string(),
+            description: String::new(),
+            command_aliases: vec![format!("agentos-{name}")],
+            registry_command_aliases: vec![String::from("agentos")],
+            callbacks: callbacks
+                .iter()
+                .map(|callback| {
+                    (
+                        callback.to_string(),
+                        RegisteredHostCallbackDefinition {
+                            description: String::new(),
+                            input_schema: String::from("{}"),
+                            timeout_ms: None,
+                            examples: Vec::new(),
+                        },
+                    )
+                })
+                .collect(),
+        }
+    }
+
+    #[test]
+    fn converts_kebab_case_names_to_identifiers() {
+        assert_eq!(host_function_identifier("orders"), "orders");
+        assert_eq!(host_function_identifier("order-store"), "orderStore");
+        assert_eq!(
+            host_function_identifier("list-open-orders"),
+            "listOpenOrders"
+        );
+    }
+
+    #[test]
+    fn is_empty_without_host_functions() {
+        assert_eq!(host_function_globals_script(&BTreeMap::new()), "");
+    }
+
+    #[test]
+    fn defines_one_group_per_collection_on_a_single_line() {
+        let host_functions = BTreeMap::from([(
+            String::from("order-store"),
+            collection("order-store", &["list-orders"]),
+        )]);
+        let script = host_function_globals_script(&host_functions);
+        assert!(!script.contains('\n'), "script must stay on one line");
+        assert!(script.ends_with(
+            r#"({"orderStore":{"command":"agentos-order-store","functions":[["listOrders","list-orders"]]}});"#
+        ));
     }
 }
