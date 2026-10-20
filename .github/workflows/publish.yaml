@@ -116,10 +116,10 @@ jobs:
       matrix:
         include:
           - platform: linux-x64-gnu
-            runner: [self-hosted, agentos-builder]
+            runner: ubuntu-latest
             target: x86_64-unknown-linux-gnu
           - platform: linux-arm64-gnu
-            runner: [self-hosted, agentos-builder-arm64]
+            runner: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
     runs-on: ${{ matrix.runner }}
     steps:
@@ -127,7 +127,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
         with:
           name: agentos-${{ matrix.platform }}
-          keep-state: ${{ contains(matrix.runner, 'self-hosted') }}
       - name: Build linux artifacts
         uses: docker/build-push-action@v6
         with:
@@ -175,11 +174,11 @@ jobs:
       matrix:
         include:
           - platform: darwin-x64
-            runner: [self-hosted, agentos-builder]
+            runner: ubuntu-latest
             target: x86_64-apple-darwin
             clang: x86_64-apple-darwin20.4
           - platform: darwin-arm64
-            runner: [self-hosted, agentos-builder]
+            runner: ubuntu-latest
             target: aarch64-apple-darwin
             clang: aarch64-apple-darwin20.4
     runs-on: ${{ matrix.runner }}
@@ -188,7 +187,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
         with:
           name: agentos-${{ matrix.platform }}
-          keep-state: true
       - name: Log in to ghcr.io
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Cross-compile via osxcross

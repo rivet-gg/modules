@@ -8,7 +8,7 @@ on:
 jobs:
   nightly:
     name: Nightly runtime validation
-    runs-on: [self-hosted, agentos-builder]
+    runs-on: ubuntu-latest
     env:
       # Cargo validation and the shared sidecar build are explicit below.
       # Do not let TypeScript dependency builds compile a second Rust copy.
