@@ -20,6 +20,44 @@ processes, environment, listeners, and loopback networking work, and outbound
 network access is limited to the sidecar's default allowlist. Library host
 functions are governed by the `hostFunction` scope.
 
+## Network
+
+`network: "deny"` denies traffic that crosses the VM boundary and keeps
+networking inside the VM working, like a container with no published ports.
+
+| Traffic | `network: "deny"` |
+| --- | --- |
+| Guest `listen()` on TCP or Unix sockets | Allowed |
+| Guest connections to its own listeners over `127.0.0.1`, `localhost`, `::1`, or Unix sockets | Allowed |
+| Host requests to guest servers with `fetch`, `httpRequest`, or previews | Allowed |
+| DNS lookups | Denied |
+| TCP connections and HTTP requests to any non-loopback address | Denied |
+| The default allowlist of model provider endpoints | Denied |
+
+Guest listeners are never bound on the host, and guest loopback never reaches a
+host loopback service unless that host port is listed in `loopbackExemptPorts`.
+`network: "deny"` does not change either rule.
+
+`"deny"` is shorthand for this rule set. A rule set replaces the whole network
+scope, so a custom rule set that should keep listeners and loopback working
+must include these rules. Omit them to deny VM-local networking too.
+
+```json
+{
+  "network": {
+    "default": "deny",
+    "rules": [
+      { "mode": "allow", "operations": ["listen"], "patterns": ["tcp://**", "unix:**"] },
+      {
+        "mode": "allow",
+        "operations": ["http"],
+        "patterns": ["tcp://127.0.0.1:*", "tcp://localhost:*", "tcp://::1:*", "unix:**"]
+      }
+    ]
+  }
+}
+```
+
 See the [Security Model](/agentos/docs/security-model) for the trust boundary
 these policies enforce.
 

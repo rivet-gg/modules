@@ -898,7 +898,9 @@ fn http_request_denied_egress_returns_permission_error_impl() {
 import http from "node:http";
 
 const result = await new Promise((resolve) => {
-  const req = http.get("http://127.0.0.1:9/denied", (res) => {
+  // A scalar network denial keeps VM-local loopback, so probe an external
+  // address that crosses the VM boundary.
+  const req = http.get("http://203.0.113.10:9/denied", (res) => {
     res.resume();
     resolve({
       statusCode: res.statusCode ?? null,

@@ -54,6 +54,35 @@ pub fn allow_all_policy() -> vm_config::PermissionsPolicy {
     }
 }
 
+/// The network scope that keeps the VM self-contained: guest listeners and
+/// VM-local loopback traffic work, and everything that would cross the VM
+/// boundary is denied. Listeners are never published on the host, and guest
+/// loopback reaches a host loopback service only through an explicit
+/// loopback exemption. It is the default network scope and the meaning of a
+/// scalar `network: "deny"`.
+pub fn vm_local_network_scope() -> vm_config::PatternPermissionScope {
+    vm_config::PatternPermissionScope::Rules(vm_config::PatternPermissionRuleSet {
+        default: Some(vm_config::PermissionMode::Deny),
+        rules: vec![
+            vm_config::PatternPermissionRule {
+                mode: vm_config::PermissionMode::Allow,
+                operations: vec![String::from("listen")],
+                patterns: vec![String::from("tcp://**"), String::from("unix:**")],
+            },
+            vm_config::PatternPermissionRule {
+                mode: vm_config::PermissionMode::Allow,
+                operations: vec![String::from("http")],
+                patterns: vec![
+                    String::from("tcp://127.0.0.1:*"),
+                    String::from("tcp://localhost:*"),
+                    String::from("tcp://::1:*"),
+                    String::from("unix:**"),
+                ],
+            },
+        ],
+    })
+}
+
 /// The policy for every scope a client leaves out. The guest behaves like a
 /// sandboxed machine: its virtual filesystem, processes, environment, host
 /// functions, listeners, and loopback networking work. External network access
@@ -69,28 +98,7 @@ pub fn default_permissions_policy() -> vm_config::PermissionsPolicy {
         fs: Some(vm_config::FsPermissionScope::Mode(
             vm_config::PermissionMode::Allow,
         )),
-        network: Some(vm_config::PatternPermissionScope::Rules(
-            vm_config::PatternPermissionRuleSet {
-                default: Some(vm_config::PermissionMode::Deny),
-                rules: vec![
-                    vm_config::PatternPermissionRule {
-                        mode: vm_config::PermissionMode::Allow,
-                        operations: vec![String::from("listen")],
-                        patterns: vec![String::from("tcp://**"), String::from("unix:**")],
-                    },
-                    vm_config::PatternPermissionRule {
-                        mode: vm_config::PermissionMode::Allow,
-                        operations: vec![String::from("http")],
-                        patterns: vec![
-                            String::from("tcp://127.0.0.1:*"),
-                            String::from("tcp://localhost:*"),
-                            String::from("tcp://::1:*"),
-                            String::from("unix:**"),
-                        ],
-                    },
-                ],
-            },
-        )),
+        network: Some(vm_local_network_scope()),
         child_process: allow(),
         process: allow(),
         env: allow(),
@@ -137,8 +145,8 @@ pub fn resolve_permissions_policy(
         if overrides.fs.is_some() {
             resolved.fs = overrides.fs;
         }
-        if overrides.network.is_some() {
-            resolved.network = overrides.network;
+        if let Some(network) = overrides.network {
+            resolved.network = Some(resolve_network_override(network));
         }
         if overrides.child_process.is_some() {
             resolved.child_process = overrides.child_process;
@@ -154,6 +162,26 @@ pub fn resolve_permissions_policy(
         }
     }
     resolved
+}
+
+/// A scalar network denial denies external egress only. Like the default, it
+/// keeps VM-local listeners and loopback working, because they never cross
+/// the VM boundary. A caller that also wants to deny those lists explicit
+/// rules instead.
+fn resolve_network_override(
+    network: vm_config::PatternPermissionScope,
+) -> vm_config::PatternPermissionScope {
+    match network {
+        vm_config::PatternPermissionScope::Mode(vm_config::PermissionMode::Deny) => {
+            vm_local_network_scope()
+        }
+        vm_config::PatternPermissionScope::Mode(
+            mode @ (vm_config::PermissionMode::Allow | vm_config::PermissionMode::Ask),
+        ) => vm_config::PatternPermissionScope::Mode(mode),
+        vm_config::PatternPermissionScope::Rules(rules) => {
+            vm_config::PatternPermissionScope::Rules(rules)
+        }
+    }
 }
 
 pub fn evaluate_permissions_policy(
@@ -627,7 +655,10 @@ mod tests {
             "dns://generativelanguage.googleapis.com",
             "dns://openrouter.ai",
         ] {
-            assert!(network.rules[0]
+            assert!(network
+                .rules
+                .last()
+                .expect("agentOS egress rule")
                 .patterns
                 .iter()
                 .any(|value| value == expected));
@@ -648,12 +679,87 @@ mod tests {
         );
         assert_eq!(overridden.fs, defaults.fs);
         assert_eq!(overridden.child_process, defaults.child_process);
-        assert_eq!(
-            overridden.network,
-            Some(vm_config::PatternPermissionScope::Mode(
-                vm_config::PermissionMode::Deny
-            ))
+        assert_eq!(overridden.network, Some(vm_local_network_scope()));
+    }
+
+    fn network_override(scope: vm_config::PatternPermissionScope) -> vm_config::PermissionsPolicy {
+        vm_config::PermissionsPolicy {
+            fs: None,
+            network: Some(scope),
+            child_process: None,
+            process: None,
+            env: None,
+            host_function: None,
+        }
+    }
+
+    #[test]
+    fn scalar_network_deny_blocks_egress_but_keeps_vm_local_networking() {
+        for profile in [
+            vm_config::VmDefaultsProfile::Secure,
+            vm_config::VmDefaultsProfile::AgentOs,
+        ] {
+            let policy = resolve_permissions_policy(
+                profile,
+                Some(network_override(vm_config::PatternPermissionScope::Mode(
+                    vm_config::PermissionMode::Deny,
+                ))),
+            );
+
+            for (capability, resource) in [
+                ("network.listen", "tcp://0.0.0.0:3000"),
+                ("network.listen", "tcp://127.0.0.1:3000"),
+                ("network.listen", "unix:/tmp/app.sock"),
+                ("network.http", "tcp://127.0.0.1:3000"),
+                ("network.http", "tcp://localhost:3000"),
+                ("network.http", "tcp://::1:3000"),
+                ("network.http", "unix:/tmp/app.sock"),
+            ] {
+                assert!(
+                    allowed(&policy, "network", capability, resource),
+                    "{profile:?}: {capability} {resource} should stay VM-local and allowed",
+                );
+            }
+            for (capability, resource) in [
+                ("network.http", "tcp://example.com:443"),
+                ("network.http", "tcp://203.0.113.10:80"),
+                ("network.http", "tcp://api.anthropic.com:443"),
+                ("network.fetch", "https://example.com/"),
+                ("network.dns", "dns://example.com"),
+                ("network.dns", "dns://api.anthropic.com"),
+            ] {
+                assert!(
+                    !allowed(&policy, "network", capability, resource),
+                    "{profile:?}: {capability} {resource} crosses the VM boundary",
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn explicit_network_rules_can_still_deny_vm_local_networking() {
+        let policy = resolve_permissions_policy(
+            vm_config::VmDefaultsProfile::Secure,
+            Some(network_override(vm_config::PatternPermissionScope::Rules(
+                vm_config::PatternPermissionRuleSet {
+                    default: Some(vm_config::PermissionMode::Deny),
+                    rules: Vec::new(),
+                },
+            ))),
         );
+
+        assert!(!allowed(
+            &policy,
+            "network",
+            "network.listen",
+            "tcp://127.0.0.1:3000"
+        ));
+        assert!(!allowed(
+            &policy,
+            "network",
+            "network.http",
+            "tcp://127.0.0.1:3000"
+        ));
     }
 
     #[test]

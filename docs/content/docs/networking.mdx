@@ -77,6 +77,7 @@ browsers, route requests through your application and forward them with
 
 Guest listeners and loopback traffic stay inside the VM. Outbound access is
 limited to the sidecar's default allowlist unless the `network`
-[permission](/agentos/docs/permissions) scope allows more. Requests from the
-host and previews enter the VM from the host side, so they are subject to
-loopback confinement but not to the guest egress policy.
+[permission](/agentos/docs/permissions) scope allows more. `network: "deny"`
+removes that allowlist and keeps listeners and loopback working. Requests from
+the host and previews enter the VM over VM-local loopback, so they are subject
+to loopback confinement, not to the guest egress allowlist.

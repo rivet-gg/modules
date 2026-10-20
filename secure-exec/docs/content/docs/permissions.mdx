@@ -26,7 +26,10 @@ scope as it was.
 ## Allow specific hosts
 
 A rule set denies by default and allows matching patterns. A host needs both a
-`dns://` pattern to resolve it and a `tcp://` pattern to connect to it.
+`dns://` pattern to resolve it and a `tcp://` pattern to connect to it. A rule
+set replaces the whole network scope, so add the VM-local `listen` and loopback
+rules from the [agentOS permissions reference](/agentos/docs/permissions#network)
+if guest code also runs a server. `network: "deny"` keeps them.
 
 <CodeSnippet file="secure-exec/examples/permissions/src/index.ts" region="scoped" />
 

@@ -7,7 +7,9 @@
  *   1. With network "allow", the guest starts a loopback HTTP server inside the
  *      VM and fetches it - the request and response stay entirely within the
  *      kernel socket table (hermetic, no real host network).
- *   2. With an explicit network deny policy, the same fetch is blocked.
+ *   2. With network "deny", the same VM-local fetch still works, because
+ *      listeners and loopback never leave the VM, but external egress is
+ *      blocked.
  *   3. Host loopback is separate from VM loopback: even with network "allow",
  *      a guest can reach a host loopback service only when the host port is in
  *      loopbackExemptPorts.
@@ -69,25 +71,34 @@ try {
 }
 // docs:end vm-network
 
-// 2. Network denied explicitly. Supplying a partial policy denies omitted
-// scopes too, so name the runtime capabilities needed to launch the program.
+// 2. Network denied. A scalar deny blocks traffic that crosses the VM
+// boundary, so the VM-local server still works while external egress fails.
+const EGRESS_GUEST = `
+try {
+	await fetch("http://example.com/");
+	console.log("unexpected: external fetch succeeded");
+} catch (error) {
+	console.log("external fetch:", error.cause?.code || error.code || error.name);
+}
+`;
 const denied = await AgentOs.create({
-	permissions: {
-		fs: "allow",
-		network: "deny",
-		childProcess: "allow",
-		process: "allow",
-		env: "allow",
-	},
+	permissions: { network: "deny" },
 });
 try {
-	const result = await denied.javascript.execute(GUEST, {
+	const local = await denied.javascript.execute(GUEST, {
 		output: { capture: "all" },
 	});
-	console.log("[network denied] exitCode:", result.exitCode);
+	console.log("[network denied] VM-local exitCode:", local.exitCode);
 	console.log(
-		"[network denied] stderr:",
-		JSON.stringify(result.stderr?.trim().split("\n")[0]),
+		"[network denied] VM-local stdout:",
+		JSON.stringify(local.stdout?.trim()),
+	);
+	const external = await denied.javascript.execute(EGRESS_GUEST, {
+		output: { capture: "all" },
+	});
+	console.log(
+		"[network denied] egress stdout:",
+		JSON.stringify(external.stdout?.trim()),
 	);
 } finally {
 	await denied.dispose();

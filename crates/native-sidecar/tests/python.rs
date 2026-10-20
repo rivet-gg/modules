@@ -2862,7 +2862,14 @@ fn python_runtime_micropip_install_respects_network_permissions() {
         )]),
         PermissionsPolicy {
             fs: wire_permissions_allow_all().fs,
-            network: Some(PatternPermissionScope::PermissionMode(PermissionMode::Deny)),
+            // A scalar network denial keeps VM-local loopback, and the exempt port
+            // would let it reach the host server, so deny every operation.
+            network: Some(PatternPermissionScope::PatternPermissionRuleSet(
+                PatternPermissionRuleSet {
+                    default: Some(PermissionMode::Deny),
+                    rules: Vec::new(),
+                },
+            )),
             child_process: wire_permissions_allow_all().child_process,
             process: wire_permissions_allow_all().process,
             env: wire_permissions_allow_all().env,
