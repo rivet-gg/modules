@@ -16,21 +16,25 @@ import {
 import { Command, Flag } from "effect/cli";
 import { compareFootprint } from "./compare/footprint.ts";
 import { compareHygiene } from "./compare/hygiene.ts";
+import { compareNative } from "./compare/native.ts";
 import { REPO_ROOT } from "./config.ts";
 import { inspectEntrypoints } from "./footprint/inspect.ts";
 import { pack, readPackManifest } from "./footprint/pack.ts";
 import * as Registry from "./footprint/registry.ts";
 import { resolveSide } from "./footprint/resolve.ts";
 import * as GitHubApi from "./github/api.ts";
-import { fetchBaseline } from "./github/baseline.ts";
+import { fetchBaseline, fetchNearestBaselines } from "./github/baseline.ts";
 import { upsertComment } from "./github/comment.ts";
 import { readTiming, renderTiming } from "./github/timing.ts";
 import { collectHygiene } from "./hygiene/collect.ts";
+import { measureNative } from "./native/measure.ts";
 import { renderFootprint } from "./render/footprint.ts";
 import { renderHygiene } from "./render/hygiene.ts";
+import { renderNative } from "./render/native.ts";
 import { JobResults, renderCheckSection } from "./render/status.ts";
 import { FootprintReport, type FootprintSide } from "./schema/footprint.ts";
 import { HygieneReport } from "./schema/hygiene.ts";
+import { NativeReport } from "./schema/native.ts";
 
 export class ChecksFailed extends Schema.TaggedError<ChecksFailed>()(
 	"ChecksFailed",
@@ -173,6 +177,32 @@ const hygieneCommand = Command.make(
 	),
 );
 
+const nativeCommand = Command.make(
+	"native",
+	{
+		target: Flag.String("target").pipe(
+			Flag.withDescription("agentos-native-sidecar"),
+		),
+		platform: Flag.String("platform"),
+		artifact: Flag.String("artifact").pipe(
+			Flag.withDescription("Path to the built binary"),
+		),
+		out: Flag.String("out"),
+	},
+	Effect.fn("Cli.native")(function* ({ target, platform, artifact, out }) {
+		const fs = yield* FileSystem.FileSystem;
+		const report = yield* measureNative(target, platform, artifact);
+		yield* fs.writeFileString(out, JSON.stringify(report));
+		yield* Console.log(
+			`${target} ${platform}: ${report.artifact.bytes} bytes, ${Object.keys(report.artifact.crates).length} crates`,
+		);
+	}, Effect.provide(Registry.layer)),
+).pipe(
+	Command.withDescription(
+		"Measure one published binary built by the publish Dockerfiles",
+	),
+);
+
 const baselineCommand = Command.make(
 	"baseline",
 	{
@@ -201,80 +231,140 @@ const reportCommand = Command.make(
 		reports: Flag.String("reports").pipe(
 			Flag.withDescription("Directory holding the checks' JSON reports"),
 		),
+		baseHistory: Flag.String("base-history").pipe(
+			Flag.withDefault(""),
+			Flag.withDescription(
+				"Comma-separated merge base ancestry, newest first, for native baselines",
+			),
+		),
 	},
-	Effect.fn("Cli.report")(function* ({ reports }) {
-		const fs = yield* FileSystem.FileSystem;
-		const github = yield* GitHubApi.GitHub;
-		const env = yield* Config.all({
-			// Empty for pushes and fork PRs, which get the run summary instead of a comment.
-			prNumber: Config.String("PR_NUMBER").pipe(Config.withDefault("")),
-			headSha: Config.String("HEAD_SHA"),
-			summary: Config.option(Config.String("GITHUB_STEP_SUMMARY")),
-			jobResults: Config.String("JOB_RESULTS").pipe(Config.withDefault("{}")),
-		});
-		const results = yield* Schema.decodeUnknownEffect(
-			Schema.fromJsonString(JobResults),
-		)(env.jobResults);
-		const section = (
-			heading: string,
-			job: string,
-			skipReason: string,
-			rendered: string | undefined,
-		) =>
-			renderCheckSection(
-				{ heading, job, skipReason, rendered },
-				results,
-				github.runUrl,
+	Effect.fn("Cli.report")(
+		function* ({ reports, baseHistory }) {
+			const fs = yield* FileSystem.FileSystem;
+			const github = yield* GitHubApi.GitHub;
+			const env = yield* Config.all({
+				// Empty for pushes and fork PRs, which get the run summary instead of a comment.
+				prNumber: Config.String("PR_NUMBER").pipe(Config.withDefault("")),
+				headSha: Config.String("HEAD_SHA"),
+				summary: Config.option(Config.String("GITHUB_STEP_SUMMARY")),
+				jobResults: Config.String("JOB_RESULTS").pipe(Config.withDefault("{}")),
+			});
+			const results = yield* Schema.decodeUnknownEffect(
+				Schema.fromJsonString(JobResults),
+			)(env.jobResults);
+			const section = (
+				heading: string,
+				job: string,
+				skipReason: string,
+				rendered: string | undefined,
+			) =>
+				renderCheckSection(
+					{ heading, job, skipReason, rendered },
+					results,
+					github.runUrl,
+				);
+
+			const sections: Array<string> = [
+				`## 📟 Pip-Boy · \`${env.headSha.slice(0, 7)}\``,
+			];
+			const footprintPath = join(reports, "footprint.json");
+			sections.push(
+				section(
+					"### 📦 Packages",
+					"footprint",
+					"this PR doesn't change any published package.",
+					(yield* fs.exists(footprintPath))
+						? renderFootprint(
+								compareFootprint(
+									yield* readReport(footprintPath, FootprintReport),
+								),
+							)
+						: undefined,
+				),
+			);
+			const hygienePath = join(reports, "hygiene.json");
+			sections.push(
+				section(
+					"### 🧹 Rust dependencies",
+					"hygiene",
+					"this PR doesn't change any Rust code or dependencies.",
+					(yield* fs.exists(hygienePath))
+						? renderHygiene(
+								compareHygiene(yield* readReport(hygienePath, HygieneReport)),
+							)
+						: undefined,
+				),
 			);
 
-		const sections: Array<string> = [
-			`## 📟 Pip-Boy · \`${env.headSha.slice(0, 7)}\``,
-		];
-		const footprintPath = join(reports, "footprint.json");
-		sections.push(
-			section(
-				"### 📦 Packages",
-				"footprint",
-				"this PR doesn't change any published package.",
-				(yield* fs.exists(footprintPath))
-					? renderFootprint(
-							compareFootprint(
-								yield* readReport(footprintPath, FootprintReport),
+			// No report artifacts at all (every check skipped) means no reports directory.
+			const reportFiles = (yield* fs.exists(reports))
+				? yield* fs.readDirectory(reports)
+				: [];
+			const nativeFiles = reportFiles
+				.filter((f) => /^native-.+\.json$/.test(f))
+				.sort();
+			let nativeRendered: string | undefined;
+			if (nativeFiles.length > 0) {
+				const history = baseHistory
+					.split(",")
+					.filter((sha) => /^[0-9a-f]{40}$/.test(sha));
+				const baseDir = yield* fs.makeTempDirectoryScoped({
+					prefix: "pipboy-native-base-",
+				});
+				const pr = yield* Effect.forEach(nativeFiles, (file) =>
+					readReport(join(reports, file), NativeReport),
+				);
+				const baseline = yield* fetchNearestBaselines(
+					history,
+					nativeFiles.map((file) => `report-${file.replace(/\.json$/, "")}`),
+					baseDir,
+				);
+				const base = Option.isSome(baseline)
+					? yield* Effect.forEach(baseline.value.found, (artifact) =>
+							readReport(
+								join(baseDir, `${artifact.replace(/^report-/, "")}.json`),
+								NativeReport,
 							),
 						)
-					: undefined,
-			),
-		);
-		const hygienePath = join(reports, "hygiene.json");
-		sections.push(
-			section(
-				"### 🧹 Rust dependencies",
-				"hygiene",
-				"this PR doesn't change any Rust code or dependencies.",
-				(yield* fs.exists(hygienePath))
-					? renderHygiene(
-							compareHygiene(yield* readReport(hygienePath, HygieneReport)),
-						)
-					: undefined,
-			),
-		);
-
-		const timing = yield* readTiming();
-		sections.push(renderTiming(timing));
-		const body = sections.join("\n\n");
-
-		if (Option.isSome(env.summary)) {
-			yield* fs.writeFileString(env.summary.value, `${body}\n`, { flag: "a" });
-		}
-		if (env.prNumber !== "") {
-			const result = yield* upsertComment(
-				Number(env.prNumber),
-				env.headSha,
-				body,
+					: [];
+				nativeRendered = renderNative(
+					compareNative(pr, base),
+					Option.map(baseline, ({ sha }) => ({
+						sha,
+						isMergeBase: sha === history[0],
+					})),
+				);
+			}
+			sections.push(
+				section(
+					"### 🦀 Binaries",
+					"native",
+					"this PR doesn't change any Rust code.",
+					nativeRendered,
+				),
 			);
-			yield* Console.log(`comment ${result}`);
-		}
-	}, Effect.provide(GitHubApi.layer)),
+
+			const timing = yield* readTiming();
+			sections.push(renderTiming(timing));
+			const body = sections.join("\n\n");
+
+			if (Option.isSome(env.summary)) {
+				yield* fs.writeFileString(env.summary.value, `${body}\n`, {
+					flag: "a",
+				});
+			}
+			if (env.prNumber !== "") {
+				const result = yield* upsertComment(
+					Number(env.prNumber),
+					env.headSha,
+					fitComment(body, github.runUrl),
+				);
+				yield* Console.log(`comment ${result}`);
+			}
+		},
+		Effect.scoped,
+		Effect.provide(GitHubApi.layer),
+	),
 ).pipe(
 	Command.withDescription(
 		"Write the PR comment and run summary from the checks' reports",
@@ -306,6 +396,13 @@ const readReport = Effect.fn("Cli.readReport")(function* <
 	);
 });
 
+/** GitHub rejects comments over 65,536 characters; the run summary always has the full report. */
+const MAX_COMMENT = 60_000;
+function fitComment(body: string, runUrl: string): string {
+	if (body.length <= MAX_COMMENT) return body;
+	return `${body.slice(0, MAX_COMMENT)}\n\n…truncated. The [run summary](${runUrl}) has the full report.`;
+}
+
 /** Appends `name=value` to the step's outputs. A no-op outside GitHub Actions. */
 const setOutput = Effect.fn("Cli.setOutput")(function* (
 	name: string,
@@ -322,6 +419,7 @@ const cli = Command.make("pipboy").pipe(
 		packCommand,
 		footprintCommand,
 		hygieneCommand,
+		nativeCommand,
 		baselineCommand,
 		reportCommand,
 	]),
