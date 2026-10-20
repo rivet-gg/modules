@@ -101,6 +101,7 @@ impl ActiveProcess {
                 queue_tracker::TrackedLimit::PendingKernelStdinBytes,
             ),
             tty_master_fd: None,
+            terminal_model: None,
             runtime,
             detached: false,
             execution,
@@ -519,6 +520,14 @@ impl ActiveProcess {
 
     pub(crate) fn with_tty_master_fd(mut self, fd: Option<u32>) -> Self {
         self.tty_master_fd = fd;
+        self
+    }
+
+    pub(crate) fn with_terminal_model(
+        mut self,
+        model: Option<crate::execution::TerminalModel>,
+    ) -> Self {
+        self.terminal_model = model;
         self
     }
 

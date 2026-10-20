@@ -146,3 +146,9 @@ Interactive terminals allocate a kernel PTY and start a shell attached to it.
 | Output | `terminal.output` and `terminal.exit` events, `v1.terminal.output.read` replay | `vm.onShellData`, `vm.onShellStderr`, `vm.onShellExit` |
 
 Hosted VMs also list open terminals with `v1.terminal.list`.
+
+The VM tracks each terminal's cursor and answers a program's cursor-position
+query (`ESC[6n`) itself, as a terminal multiplexer does, so a shell keeps
+running while no client is attached and several clients can watch one
+terminal. The query is removed from the output that clients receive, so their
+emulators never answer it.

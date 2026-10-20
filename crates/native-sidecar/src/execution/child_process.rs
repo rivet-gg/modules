@@ -8530,11 +8530,7 @@ where
     }
 
     /// Service `__kernel_stdio_write` for a process writing to the SHARED
-    /// terminal (`tty_master_owner` set): write through the process's own PTY
-    /// slave (line discipline applies), then drain the master and surface the
-    /// drained bytes as the OWNER's ordered output stream — the single
-    /// host-facing path. No child stdout event is queued, so nothing gets
-    /// relayed (and re-rendered) by the parent shell.
+    /// terminal (`tty_master_owner` set); see [`write_shared_terminal`].
     pub(crate) fn service_shared_tty_stdio_write(
         &mut self,
         vm_id: &str,
@@ -8542,52 +8538,12 @@ where
         owner: (u32, u32),
         request: &JavascriptSyncRpcRequest,
     ) -> Result<Value, SidecarError> {
-        let fd = javascript_sync_rpc_arg_u32(&request.args, 0, "__kernel_stdio_write fd")?;
-        let chunk = javascript_sync_rpc_bytes_arg(&request.args, 1, "__kernel_stdio_write chunk")?;
-        if fd != 1 && fd != 2 {
-            return Err(SidecarError::InvalidState(format!(
-                "__kernel_stdio_write only supports fd 1/2, got {fd}"
-            )));
-        }
         let Some(mut vm) = self.vms.get_mut(vm_id) else {
+            let chunk =
+                javascript_sync_rpc_bytes_arg(&request.args, 1, "__kernel_stdio_write chunk")?;
             return Ok(json!(chunk.len()));
         };
-        let written = if fd == 1 {
-            vm.kernel
-                .write_process_stdout(EXECUTION_DRIVER_NAME, writer_kernel_pid, &chunk)
-                .map_err(kernel_error)?
-        } else {
-            vm.kernel
-                .write_process_stderr(EXECUTION_DRIVER_NAME, writer_kernel_pid, &chunk)
-                .map_err(kernel_error)?
-        };
-        let (owner_pid, master_fd) = owner;
-        let mut drained: Vec<u8> = Vec::new();
-        loop {
-            match vm.kernel.fd_read_with_timeout_result(
-                EXECUTION_DRIVER_NAME,
-                owner_pid,
-                master_fd,
-                MAX_PTY_BUFFER_BYTES,
-                Some(Duration::ZERO),
-            ) {
-                Ok(Some(bytes)) if !bytes.is_empty() => drained.extend(bytes),
-                Ok(_) => break,
-                Err(error) if error.code() == "EAGAIN" => break,
-                Err(error) => return Err(kernel_error(error)),
-            }
-        }
-        if !drained.is_empty() {
-            if let Some(owner_process) = vm
-                .active_processes
-                .values_mut()
-                .find(|process| process.kernel_pid == owner_pid)
-            {
-                owner_process
-                    .queue_pending_execution_event(ActiveExecutionEvent::Stdout(drained))?;
-            }
-        }
-        Ok(json!(written))
+        write_shared_terminal(&mut vm, writer_kernel_pid, owner.0, request)
     }
 
     /// Answer or park a child's blocking kernel read, poll, or pipe write from
@@ -8626,6 +8582,13 @@ where
             let parks_here = match wait_request.method.as_str() {
                 "__kernel_poll" => parse_kernel_poll_args(&wait_request).is_ok(),
                 "__kernel_stdin_read" => parse_kernel_stdin_read_args(&wait_request).is_ok(),
+                // The WASM runner sends these writes itself and, on EAGAIN, waits
+                // on poll and writes the rest, as a blocking Linux write waits
+                // for as long as the reader takes. A Node `fs.writeSync` arrives
+                // rewritten to `process.fd_write`; it cannot retry, so it parks.
+                "process.fd_write" | "__kernel_stdio_write" => {
+                    request.method != wait_request.method
+                }
                 _ => true,
             };
             if !parks_here {
@@ -12518,4 +12481,53 @@ console.log("relay-ready");
             })
             .await;
     }
+}
+
+/// Services `__kernel_stdio_write` for a process that shares an ancestor's
+/// terminal (`tty_master_owner`): writes through the process's own PTY slave,
+/// so line discipline applies, then drains the master and queues the bytes as
+/// the owner's output, the one host-facing stream. No stdout event is queued
+/// for the writer, so its parent shell has nothing to relay a second time.
+/// Every route that services a descendant's sync RPC must write this way.
+pub(crate) fn write_shared_terminal(
+    vm: &mut VmState,
+    writer_kernel_pid: u32,
+    owner_pid: u32,
+    request: &JavascriptSyncRpcRequest,
+) -> Result<Value, SidecarError> {
+    let fd = javascript_sync_rpc_arg_u32(&request.args, 0, "__kernel_stdio_write fd")?;
+    let chunk = javascript_sync_rpc_bytes_arg(&request.args, 1, "__kernel_stdio_write chunk")?;
+    if fd != 1 && fd != 2 {
+        return Err(SidecarError::InvalidState(format!(
+            "__kernel_stdio_write only supports fd 1/2, got {fd}"
+        )));
+    }
+    let written = if fd == 1 {
+        vm.kernel
+            .write_process_stdout(EXECUTION_DRIVER_NAME, writer_kernel_pid, &chunk)
+            .map_err(kernel_error)?
+    } else {
+        vm.kernel
+            .write_process_stderr(EXECUTION_DRIVER_NAME, writer_kernel_pid, &chunk)
+            .map_err(kernel_error)?
+    };
+    let VmState {
+        kernel,
+        active_processes,
+        ..
+    } = vm;
+    let Some(owner_process) = active_processes
+        .values_mut()
+        .find(|process| process.kernel_pid == owner_pid)
+    else {
+        tracing::warn!(
+            owner_pid,
+            "shared terminal has no owner process; its output is dropped"
+        );
+        return Ok(json!(written));
+    };
+    if let Some(output) = drain_tty_master_output(kernel, owner_process)? {
+        owner_process.queue_pending_execution_event(ActiveExecutionEvent::Stdout(output))?;
+    }
+    Ok(json!(written))
 }

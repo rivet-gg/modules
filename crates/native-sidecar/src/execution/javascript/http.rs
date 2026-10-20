@@ -1674,6 +1674,27 @@ where
     }
 
     let response = vm.try_command("service owned JavaScript process event", |vm| {
+        if request.method == "__kernel_stdio_write" {
+            let path = child_path.iter().map(String::as_str).collect::<Vec<_>>();
+            let shared_terminal_writer = vm
+                .active_processes
+                .get(process_id)
+                .and_then(|root| NativeSidecar::<B>::active_process_by_path(root, &path))
+                .and_then(|process| {
+                    process
+                        .tty_master_owner
+                        .map(|(owner_pid, _)| (process.kernel_pid, owner_pid))
+                });
+            if let Some((writer_kernel_pid, owner_pid)) = shared_terminal_writer {
+                return Ok(super::super::child_process::write_shared_terminal(
+                    vm,
+                    writer_kernel_pid,
+                    owner_pid,
+                    &request,
+                )
+                .map(JavascriptSyncRpcServiceResponse::Json));
+            }
+        }
         let socket_paths = build_javascript_socket_path_context(vm)?;
         let dns = vm.dns.clone();
         let kernel_readiness = Arc::clone(&vm.kernel_socket_readiness);

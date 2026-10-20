@@ -95,6 +95,7 @@ dependencies = [
  "tracing",
  "ts-rs",
  "uuid",
+ "vt100",
 ]
 
 [[package]]
@@ -203,11 +204,13 @@ dependencies = [
  "tokio-rustls 0.26.4",
  "tracing",
  "tracing-subscriber",
+ "unicode-width",
  "ureq",
  "url",
  "uuid",
  "v8",
  "vbare",
+ "vte",
  "wat",
 ]
 
@@ -4870,6 +4873,27 @@ name = "vsimd"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64"
+
+[[package]]
+name = "vt100"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb05cdd19ae8707bf6a0a269972c07e6358103a7079faec749dec318a5b3dc23"
+dependencies = [
+ "itoa",
+ "unicode-width",
+ "vte",
+]
+
+[[package]]
+name = "vte"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5924018406ce0063cd67f8e008104968b74b563ee1b85dde3ed1f7cb87d3dbd"
+dependencies = [
+ "arrayvec",
+ "memchr",
+]
 
 [[package]]
 name = "walkdir"

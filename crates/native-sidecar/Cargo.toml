@@ -77,10 +77,14 @@ tempfile = "3"
 tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "process", "rt", "rt-multi-thread", "signal", "sync", "time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
+unicode-width = "0.2"
 ureq = { version = "2.10", features = ["json"] }
 url = "2"
 uuid = { version = "1", features = ["v4"] }
 vfs = { workspace = true }
+# Without its std feature vte keeps a fixed-size OSC buffer, so guest output
+# cannot grow it.
+vte = { version = "0.15", default-features = false }
 
 [dev-dependencies]
 command-fds = "0.3"
