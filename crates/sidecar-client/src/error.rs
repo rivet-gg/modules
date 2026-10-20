@@ -10,6 +10,10 @@ pub enum TransportError {
     /// A sidecar process, stdin/stdout, or connection failure with context.
     #[error("sidecar error: {0}")]
     Sidecar(String),
+
+    /// The sidecar process exited or was killed. Its VMs are gone; a new sidecar is required.
+    #[error("sidecar exited: {0}")]
+    Disconnected(String),
 }
 
 /// Convenience alias for sidecar transport results.

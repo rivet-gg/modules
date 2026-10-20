@@ -180,6 +180,11 @@ pub enum ClientError {
     /// A generic sidecar rejection or I/O failure with context.
     #[error("sidecar error: {0}")]
     Sidecar(String),
+
+    /// The sidecar process exited or was killed, taking its VMs with it. Parity with TypeScript
+    /// `SidecarProcessExited`. Create a new VM to continue.
+    #[error("sidecar exited: {0}")]
+    SidecarExited(String),
 }
 
 impl From<TransportError> for ClientError {
@@ -187,6 +192,7 @@ impl From<TransportError> for ClientError {
         match error {
             TransportError::Protocol(error) => ClientError::Transport(error),
             TransportError::Sidecar(message) => ClientError::Sidecar(message),
+            TransportError::Disconnected(message) => ClientError::SidecarExited(message),
         }
     }
 }
@@ -293,7 +299,8 @@ impl ClientError {
             | ClientError::PackageCacheConfiguration(_)
             | ClientError::SoftwareNotFound(_)
             | ClientError::Transport(_)
-            | ClientError::Sidecar(_) => self.to_string(),
+            | ClientError::Sidecar(_)
+            | ClientError::SidecarExited(_) => self.to_string(),
         }
     }
 }

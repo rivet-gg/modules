@@ -347,9 +347,14 @@ export interface SidecarPersistenceFlushed {
 
 export class SidecarProcess {
 	private readonly protocolClient: SidecarProcessTransport;
+	/** Set once the transport fails for good; no request can succeed after it. */
+	private lost = false;
 
 	private constructor(protocolClient: SidecarProcessTransport) {
 		this.protocolClient = protocolClient;
+		protocolClient.onClose(() => {
+			this.lost = true;
+		});
 	}
 
 	static fromClient(protocolClient: SidecarProcessTransport): SidecarProcess {
@@ -1349,6 +1354,11 @@ export class SidecarProcess {
 	}
 
 	async disposeVm(session: AuthenticatedSession, vm: CreatedVm): Promise<void> {
+		// A VM dies with its sidecar process, so a lost transport leaves nothing
+		// to dispose. Matches the Rust client.
+		if (this.lost) {
+			return;
+		}
 		const response = await this.sendRequest({
 			ownership: {
 				scope: "vm",

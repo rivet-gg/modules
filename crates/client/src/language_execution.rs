@@ -1198,9 +1198,7 @@ async fn wait_for_completion_event(
             }
             Ok(_) | Err(broadcast::error::RecvError::Lagged(_)) => {}
             Err(broadcast::error::RecvError::Closed) => {
-                return Err(ClientError::Sidecar(String::from(
-                    "execution event stream closed before completion",
-                )))
+                return Err(crate::process::sidecar_exited_before_exit(execution_id))
             }
         }
     }
@@ -1386,14 +1384,20 @@ fn background_submission(
                             let reason =
                                 format!("background execution event stream failed: {error}");
                             tracing::error!(%operation_id, %reason, "background exit observation failed");
-                            exit_tx.send_replace(crate::process::ProcessOutcome::Failed {
-                                error: ClientError::TerminationFailed {
+                            let closed = matches!(error, broadcast::error::RecvError::Closed);
+                            let error = if closed {
+                                crate::process::sidecar_exited_before_exit(&process_id)
+                            } else {
+                                ClientError::TerminationFailed {
                                     process_id: process_id.clone(),
                                     reason,
-                                },
+                                }
+                            };
+                            exit_tx.send_replace(crate::process::ProcessOutcome::Failed {
+                                error,
                                 rejected: false,
                             });
-                            if matches!(error, broadcast::error::RecvError::Closed) {
+                            if closed {
                                 break;
                             }
                             continue;

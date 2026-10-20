@@ -6005,6 +6005,17 @@ function ensureSharedSidecarNativeProcess(
 			applySharedSidecarHold(state);
 			try {
 				const session = await client.authenticateAndOpenSession();
+				// A transport that fails for good (process exit, silence watchdog,
+				// event buffer overflow, undecodable frame) leaves the VMs out of
+				// reach. Stop the process, as the Rust client does, and report the
+				// handle disposed so a shared pool spawns a fresh sidecar.
+				const child = state.sharedChild;
+				client.onClose(() => {
+					child?.kill?.("SIGKILL");
+					if (state.description.state === "ready") {
+						state.description.state = "disposed";
+					}
+				});
 				return { client, session };
 			} catch (error) {
 				// Spawn/handshake failed: reap the child, drop the cached handle,
