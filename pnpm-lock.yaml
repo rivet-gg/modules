@@ -54,30 +54,8 @@ importers:
         specifier: ^5.9.2
         version: 5.9.3
 
-  examples/bindings:
-    dependencies:
-      '@rivet-dev/agentos-core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      zod:
-        specifier: ^4.1.11
-        version: 4.3.6
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.19.15
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
   examples/embedded:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -432,9 +410,6 @@ importers:
 
   examples/quickstart:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -466,9 +441,6 @@ importers:
 
   examples/quickstart/bash:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -500,9 +472,6 @@ importers:
 
   examples/quickstart/cron:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -534,9 +503,6 @@ importers:
 
   examples/quickstart/filesystem:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -568,9 +534,6 @@ importers:
 
   examples/quickstart/git:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -602,9 +565,6 @@ importers:
 
   examples/quickstart/hello-world:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -655,9 +615,6 @@ importers:
 
   examples/quickstart/network:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -689,9 +646,6 @@ importers:
 
   examples/quickstart/nodejs:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -723,9 +677,6 @@ importers:
 
   examples/quickstart/processes:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -773,9 +724,6 @@ importers:
 
   examples/quickstart/s3-filesystem:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core
@@ -807,9 +755,6 @@ importers:
 
   examples/quickstart/sandbox:
     dependencies:
-      '@agentos-software/git':
-        specifier: workspace:*
-        version: link:../../../software/git
       '@rivet-dev/agentos-core':
         specifier: workspace:*
         version: link:../../../packages/core

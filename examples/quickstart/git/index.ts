@@ -2,7 +2,6 @@
 
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
-import git from "@agentos-software/git";
 import { AgentOs } from "@rivet-dev/agentos-core";
 
 type ExecResult = {
@@ -47,7 +46,22 @@ function parseHeadRef(content: string): string {
 
 const vm = await AgentOs.create({
 	permissions: GIT_QUICKSTART_PERMISSIONS,
-	software: [git],
+});
+
+// Install git from the agentOS software registry. The release manifest lists
+// each package's URL and digest, and the bytes are verified before install.
+const SOFTWARE_BASE = "https://releases.rivet.dev/agent-os/latest/software/";
+const manifest = (await (
+	await fetch(`${SOFTWARE_BASE}manifest.json`)
+).json()) as { artifacts: { name: string; digest: string; path: string }[] };
+const gitArtifact = manifest.artifacts.find(
+	(artifact) => artifact.name === "git",
+);
+if (!gitArtifact) throw new Error("git is not in the software manifest");
+await vm.software.install({
+	type: "url",
+	url: new URL(gitArtifact.path, SOFTWARE_BASE).href,
+	expectedDigest: gitArtifact.digest,
 });
 
 async function run(command: string): Promise<ExecResult> {
@@ -64,6 +78,8 @@ async function run(command: string): Promise<ExecResult> {
 	};
 }
 
+await run('git config --global user.name "agentOS"');
+await run('git config --global user.email "agentos@example.com"');
 await run("git init /tmp/origin");
 await vm.filesystem.writeFile("/tmp/origin/README.md", "# demo repo\n");
 await run("git -C /tmp/origin add README.md");

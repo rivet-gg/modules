@@ -16,8 +16,34 @@ Browse the available packages in the [registry](/agentos/docs/registry).
 Registry packages are published with each release under
 `https://releases.rivet.dev/agent-os/<version>/software/`, or `latest` for the
 newest release. Its `manifest.json` lists each package's name, digest, size,
-and path relative to the manifest. Registry software is not installed from npm;
-see [Publishing Software](/agentos/docs/custom-software/publishing).
+and path relative to the manifest:
+
+```json
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "name": "git",
+      "digest": "sha256:<64 lowercase hex>",
+      "size": 17961114,
+      "path": "packages/git/<64 lowercase hex>.aospkg"
+    }
+  ]
+}
+```
+
+Resolve `path` against the manifest URL to get the package URL, and pass
+`digest` along so the bytes are verified before they are installed. Registry
+software is distributed only as `.aospkg` files from this location, not as npm
+packages. See [Publishing Software](/agentos/docs/custom-software/publishing).
+
+## Default software
+
+Every VM installs a default bundle first: `coreutils` (which provides `sh`),
+`sed`, `grep`, `gawk`, `findutils`, `diffutils`, `tar`, and `gzip`. The bundle
+ships with the library and the hosted runtime, so it needs no download. Pass
+`defaultSoftware: false` to `AgentOs.create()`, or set `"defaultSoftware": false`
+in a hosted VM's `config`, for a bare VM that has only the software you list.
 
 ## Install while running
 
@@ -82,14 +108,15 @@ import { createAgentOsClient } from "@rivet-dev/agentos";
 
 const client = createAgentOsClient({ endpoint: "https://api.rivet.dev" });
 
+// Look up the package in a release manifest. Use a release version, or `latest`.
+const base = "https://releases.rivet.dev/agent-os/latest/software/";
+const { artifacts } = await (await fetch(`${base}manifest.json`)).json();
+const git = artifacts.find((artifact: { name: string }) => artifact.name === "git");
+
 const vm = client.agentOS.getOrCreate(["my-vm"], {
 	createWithInput: {
 		config: {
-			software: [
-				{
-					url: "https://releases.rivet.dev/agent-os/latest/software/packages/git/<sha256>.aospkg",
-				},
-			],
+			software: [{ url: new URL(git.path, base).href, digest: git.digest }],
 		},
 	},
 });
@@ -99,10 +126,29 @@ const vm = client.agentOS.getOrCreate(["my-vm"], {
 
 </CodeGroup>
 
-Hosted VMs take package URLs in their `software` config. The library takes
-`{ packagePath }` references to packed `.aospkg` files, which is what the
-`@agentos-software/*` packages in the agentOS repository export, and
-`defaultSoftware: false` for a bare VM with only the software you list.
+Hosted VMs take `{ url, digest }` sources in their `software` config, and
+download and verify them when the VM starts. The library's `software` option
+takes `{ packagePath }` references to trusted `.aospkg` files on the host, so
+the library example downloads the registry package once, verifies its digest,
+and passes the cached file. To install from a URL without a local file, create
+the VM and call [`software.install`](#install-while-running) before you run
+anything that needs the package.
+
+## Custom and local packages
+
+A package you build yourself, or any other `.aospkg` file, installs the same way
+as a registry package. See
+[Software Package Definition](/agentos/docs/custom-software/definition) and
+[Building Software](/agentos/docs/custom-software/building-wasm) for how to
+build one.
+
+<CodeSnippet file="examples/embedded/software-local.ts" title="Library" />
+
+The library reads trusted local paths, both in `software` at creation and with
+`software.install({ type: "path", path })` while running. Hosted VMs cannot read
+files from your machine, so upload the `.aospkg` to an HTTPS location you
+control and pass its URL and `sha256:` digest, at creation or with
+`v1.software.install`.
 
 ## Verification and caching
 
