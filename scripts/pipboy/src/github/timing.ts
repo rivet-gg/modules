@@ -1,6 +1,7 @@
 import { Effect, Schema } from "effect";
 import { code } from "../render/format.ts";
-import { GitHub } from "./api.ts";
+import { stepLabel, toMillis } from "../trace/spans.ts";
+import { CurrentRun, GitHub } from "./api.ts";
 
 const Step = Schema.Struct({
 	name: Schema.String,
@@ -14,6 +15,7 @@ const Job = Schema.Struct({
 	id: Schema.Number,
 	name: Schema.String,
 	conclusion: Schema.NullOr(Schema.String),
+	created_at: Schema.optionalKey(Schema.String),
 	started_at: Schema.NullOr(Schema.String),
 	completed_at: Schema.NullOr(Schema.String),
 	html_url: Schema.optionalKey(Schema.String),
@@ -29,34 +31,32 @@ export interface Timing {
 	readonly now: number;
 }
 
-/** Job and step timings of the current run, including still-running jobs. */
-export const readTiming = Effect.fn("Timing.read")(function* () {
+/** Every job of one run attempt, including still-running jobs. */
+export const readJobs = Effect.fn("Timing.readJobs")(function* (
+	runId: number | string,
+	attempt: number | string,
+) {
 	const github = yield* GitHub;
-	const { jobs } = yield* github.get(
-		`/repos/${github.repository}/actions/runs/${github.runId}/attempts/${github.runAttempt}/jobs?per_page=100`,
-		Jobs,
-	);
+	const jobs: Array<Job> = [];
+	for (let page = 1; ; page++) {
+		const batch = yield* github.get(
+			`/repos/${github.repository}/actions/runs/${runId}/attempts/${attempt}/jobs?per_page=100&page=${page}`,
+			Jobs,
+		);
+		jobs.push(...batch.jobs);
+		if (batch.jobs.length < 100) return jobs;
+	}
+});
+
+/** Job and step timings of the current run. */
+export const readTiming = Effect.fn("Timing.read")(function* () {
+	const run = yield* CurrentRun;
+	const jobs = yield* readJobs(run.runId, run.runAttempt);
 	return {
 		jobs: jobs.filter((job) => job.started_at !== null),
 		now: Date.now(),
 	} satisfies Timing;
 });
-
-/**
- * Short step names: `Run actions/checkout@<sha>` becomes `checkout`. Rendered
- * as code, so GitHub never turns `owner/repo@sha` into a commit link or `@name`
- * into a mention.
- */
-export function stepLabel(name: string): string {
-	const action = name.match(
-		/^(Post )?Run [\w.-]+\/([\w.-]+)(?:\/[\w./-]+)?@\S+$/,
-	);
-	if (action) return `${action[1] ? "post " : ""}${action[2]}`;
-	return name.split("\n")[0] ?? name;
-}
-
-const ms = (iso: string | null, fallback: number) =>
-	iso === null ? fallback : Date.parse(iso);
 
 function duration(totalMs: number): string {
 	const s = Math.max(0, Math.round(totalMs / 1000));
@@ -74,11 +74,13 @@ export function renderTiming(timing: Timing): string {
 		"|---|---:|---|",
 	];
 	for (const job of timing.jobs) {
-		const start = ms(job.started_at, timing.now);
+		const start = toMillis(job.started_at, timing.now);
 		const slowest = [...(job.steps ?? [])]
 			.map((s) => ({
 				name: s.name,
-				ms: ms(s.completed_at, timing.now) - ms(s.started_at, timing.now),
+				ms:
+					toMillis(s.completed_at, timing.now) -
+					toMillis(s.started_at, timing.now),
 			}))
 			.sort((a, b) => b.ms - a.ms)[0];
 		const name =
@@ -96,7 +98,7 @@ export function renderTiming(timing: Timing): string {
 					? "⊘ "
 					: "";
 		lines.push(
-			`| ${icon}${name} | ${duration(ms(job.completed_at, timing.now) - start)} | ${slowest ? `${code(stepLabel(slowest.name))} · ${duration(slowest.ms)}` : "—"} |`,
+			`| ${icon}${name} | ${duration(toMillis(job.completed_at, timing.now) - start)} | ${slowest ? `${code(stepLabel(slowest.name))} · ${duration(slowest.ms)}` : "—"} |`,
 		);
 	}
 	return lines.join("\n");
