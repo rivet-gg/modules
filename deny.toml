@@ -1,0 +1,34 @@
+# cargo-deny configuration. The Pip-Boy hygiene check runs it on every PR
+# that changes Rust and fails only on findings the PR adds.
+
+[licenses]
+# The same license policy as rivet-dev/rivet.
+allow = [
+	"Apache-2.0",
+	"0BSD",
+	"BSD-2-Clause",
+	"BSD-3-Clause",
+	"ISC",
+	"MIT",
+	"MPL-2.0",
+	"CC0-1.0",
+	"Unicode-3.0",
+	"Zlib",
+	"EPL-2.0",
+	"Unlicense",
+	# Boost Software License, not Business Source License (ryu).
+	"BSL-1.0",
+	# Mozilla's CA root list (webpki-roots, webpki-root-certs).
+	"CDLA-Permissive-2.0",
+]
+unused-allowed-license = "allow"
+
+[[licenses.exceptions]]
+name = "ring"
+allow = ["OpenSSL"]
+
+# ring 0.16 ships its license only as a file cargo-deny can't detect.
+[[licenses.clarify]]
+name = "ring"
+expression = "ISC AND MIT AND OpenSSL"
+license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
