@@ -68,6 +68,11 @@ export type {
 } from "./runtime.js";
 export { KernelError } from "./runtime-compat.js";
 export {
+	DEFAULT_SOFTWARE_REGISTRY_URL,
+	resolveRegistrySoftware,
+	SOFTWARE_REGISTRY_URL_ENV,
+} from "./software-registry.js";
+export {
 	createSandboxFs,
 	createSandboxHostFunctions,
 	getSandboxDisposeHooks,

@@ -51,7 +51,10 @@ software/manifest.json
 
 It uploads that directory to S3-compatible object storage. The manifest contains
 the package name, exact digest, byte size, and a path relative to the manifest
-URL. It is a build inventory, not a semantic-version resolver.
+URL. It is a build inventory, not a semantic-version resolver. Core resolves
+registry names such as `{ registry: "git" }` against
+`<registry>/<version>/software/manifest.json`; set
+`AGENTOS_SOFTWARE_REGISTRY_URL` to test against a local copy of that layout.
 
 Run the credential-free release staging path locally with:
 

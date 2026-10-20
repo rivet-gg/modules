@@ -22,6 +22,8 @@ const VM_OPTION_KEYS = Object.keys({
 	environment: true,
 	software: true,
 	defaultSoftware: true,
+	softwareRegistry: true,
+	packageResolver: true,
 	loopbackExemptPorts: true,
 	allowedNodeBuiltins: true,
 	highResolutionTime: true,

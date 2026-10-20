@@ -44,24 +44,11 @@ function parseHeadRef(content: string): string {
 	return branch;
 }
 
+// Install git from the agentOS software registry. The package is resolved from
+// this client's release manifest and its bytes are verified before install.
 const vm = await AgentOs.create({
 	permissions: GIT_QUICKSTART_PERMISSIONS,
-});
-
-// Install git from the agentOS software registry. The release manifest lists
-// each package's URL and digest, and the bytes are verified before install.
-const SOFTWARE_BASE = "https://releases.rivet.dev/agent-os/latest/software/";
-const manifest = (await (
-	await fetch(`${SOFTWARE_BASE}manifest.json`)
-).json()) as { artifacts: { name: string; digest: string; path: string }[] };
-const gitArtifact = manifest.artifacts.find(
-	(artifact) => artifact.name === "git",
-);
-if (!gitArtifact) throw new Error("git is not in the software manifest");
-await vm.software.install({
-	type: "url",
-	url: new URL(gitArtifact.path, SOFTWARE_BASE).href,
-	expectedDigest: gitArtifact.digest,
+	software: [{ registry: "git" }],
 });
 
 async function run(command: string): Promise<ExecResult> {

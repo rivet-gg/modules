@@ -27,6 +27,7 @@ export type {
 	NativeRootFilesystemConfig,
 	OverlayMountConfig,
 	OverlayRootFilesystemConfig,
+	PackageResolverOptions,
 	PlainMountConfig,
 	ProcessOutput,
 	ProcessTreeNode,
@@ -107,7 +108,18 @@ export type {
 	SnapshotLayerHandle,
 	WritableLayerHandle,
 } from "./layers.js";
-export type { SoftwareInput, SoftwareRoot } from "./packages.js";
+export type {
+	RegistrySoftwareRef,
+	SoftwareEntry,
+	SoftwareInput,
+	SoftwareRoot,
+	UrlSoftwareRef,
+} from "./packages.js";
+export type {
+	ResolvedRegistrySoftware,
+	ResolveRegistrySoftwareOptions,
+	SoftwareRegistryOptions,
+} from "./software-registry.js";
 export type {
 	ChildProcessPermissions,
 	ConnectTerminalOptions,

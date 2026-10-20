@@ -250,7 +250,36 @@ impl AgentOs {
         }
     }
 
-    async fn create_owned(options: AgentOsConfig) -> Result<AgentOs, ClientError> {
+    async fn create_owned(mut options: AgentOsConfig) -> Result<AgentOs, ClientError> {
+        // Resolve registry names before allocating a sidecar, so an unknown
+        // package or release fails without booting a VM. The packages are
+        // downloaded and verified by the sidecar once the VM exists.
+        let mut boot_sources = Vec::with_capacity(options.software_sources.len());
+        for source in std::mem::take(&mut options.software_sources) {
+            let source = crate::software_registry::resolve_software_source(
+                source,
+                options.software_registry.as_ref(),
+            )
+            .await?;
+            if !boot_sources.contains(&source) {
+                boot_sources.push(source);
+            }
+        }
+        let client = Self::create_vm(options).await?;
+        // A failed install disposes the VM instead of returning one without the
+        // requested software.
+        for source in boot_sources {
+            if let Err(error) = client.install_software(source).await {
+                if let Err(shutdown_error) = client.shutdown().await {
+                    tracing::error!(%shutdown_error, "failed to dispose VM after create-time software install failed");
+                }
+                return Err(error);
+            }
+        }
+        Ok(client)
+    }
+
+    async fn create_vm(options: AgentOsConfig) -> Result<AgentOs, ClientError> {
         let config = Arc::new(options);
 
         // 1. Resolve the sidecar handle (shared "default" pool unless configured otherwise) and
@@ -764,11 +793,20 @@ impl AgentOs {
 
     /// Resolve, verify, pin, and project one exact software artifact inside the
     /// sidecar. The client sends only the source, never a resolved host path.
+    ///
+    /// A [`crate::SoftwareSource::Registry`] source resolves on this host to the
+    /// release manifest's URL and digest, so the sidecar verifies the bytes
+    /// exactly as for an explicit URL source.
     pub async fn install_software(
         &self,
-        source: crate::software::PackageSource,
+        source: impl Into<crate::software_registry::SoftwareSource>,
     ) -> Result<crate::software::InstalledSoftware, ClientError> {
         let _vm_configuration = try_vm_mutation(&self.inner.vm_configuration_operation)?;
+        let source = crate::software_registry::resolve_software_source(
+            source.into(),
+            self.inner.config.software_registry.as_ref(),
+        )
+        .await?;
         let source = match source {
             crate::software::PackageSource::Url {
                 url,

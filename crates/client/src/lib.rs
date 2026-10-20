@@ -26,6 +26,7 @@ mod output_replay;
 pub mod process;
 pub mod sidecar;
 pub mod software;
+pub mod software_registry;
 pub mod stream;
 pub mod transport;
 
@@ -161,6 +162,12 @@ pub use software::{
     InstalledSoftware, PackageManifestInfo, PackageResolver, PackageResolverOptions, PackageSource,
     ProcessPackageCacheOptions, ProcessPackageCacheStats, VerifiedPackage,
     DEFAULT_MAX_PACKAGE_BYTES,
+};
+
+pub use software_registry::{
+    default_registry_version, resolve_registry_software, ResolvedRegistrySoftware,
+    SoftwareRegistryOptions, SoftwareSource, DEFAULT_SOFTWARE_REGISTRY_URL,
+    SOFTWARE_REGISTRY_URL_ENV,
 };
 
 pub use fs::{

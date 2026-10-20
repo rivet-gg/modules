@@ -31,6 +31,8 @@ https://releases.rivet.dev/agent-os/latest/software/manifest.json
 ```
 
 The same directory also holds `default-software.json`, the manifest of the
-packages every VM installs by default. Consumers pass an artifact URL and
-digest from the manifest directly to `software.install`; see
-[Software](/agentos/docs/software#install-while-running).
+packages every VM installs by default. The library resolves registry names such
+as `{ registry: "git" }` against this manifest. To serve packages from a mirror,
+copy the `<version>/software/` layout and point `softwareRegistry.url` or
+`AGENTOS_SOFTWARE_REGISTRY_URL` at its root; see
+[Software](/agentos/docs/software#registry-packages).

@@ -223,10 +223,35 @@ export interface BatchReadResult {
 	error?: string;
 }
 
-/** The hosted actor accepts only URL sources; embedded Core also accepts trusted paths. */
+/**
+ * The hosted actor accepts only URL sources; embedded Core also accepts trusted
+ * paths. A `registry` source names a package in an agentOS release manifest and
+ * is resolved by this host process to a digest-pinned `url` source.
+ */
 export type SoftwarePackageSource =
 	| { type: "url"; url: string; expectedDigest?: string }
-	| { type: "path"; path: string; expectedDigest?: string };
+	| { type: "path"; path: string; expectedDigest?: string }
+	| { type: "registry"; name: string; version?: string };
+
+/**
+ * Trusted limits for URL package downloads, which the sidecar performs on the
+ * host. Omitted fields use the sidecar defaults.
+ */
+export interface PackageResolverOptions {
+	/** Maximum `.aospkg` size in bytes. */
+	maxPackageBytes?: number;
+	/** Whole-download timeout in milliseconds. */
+	downloadTimeoutMs?: number;
+	/** Connect timeout in milliseconds. */
+	connectTimeoutMs?: number;
+	/** Maximum redirects to follow (at most 16). */
+	maxRedirects?: number;
+	/**
+	 * Allow plain `http://` package URLs on loopback addresses, for local
+	 * mirrors and tests. Defaults to `false`.
+	 */
+	allowInsecureLocalHttp?: boolean;
+}
 
 export interface InstalledSoftware {
 	packageId: string;
@@ -296,6 +321,10 @@ import {
 	type SidecarResponsePayload,
 	serializeRootFilesystemForSidecar,
 } from "./sidecar/rpc-client.js";
+import {
+	resolveRegistrySoftware,
+	type SoftwareRegistryOptions,
+} from "./software-registry.js";
 
 export interface AgentOsSharedSidecarOptions {
 	pool?: string;
@@ -586,10 +615,22 @@ export interface AgentOsOptions<
 	 */
 	environment?: Record<string, string>;
 	/**
-	 * Software to install in the VM. Each entry is a package-dir ref. Arrays are
-	 * flattened, so meta-packages that export arrays of sub-packages work directly.
+	 * Software to install in the VM: trusted local `{ packagePath }` files,
+	 * registry packages by name (`{ registry: "git" }`), or `{ url, digest }`
+	 * artifacts. Arrays are flattened, so meta-packages that export arrays of
+	 * sub-packages work directly. Registry and URL entries are downloaded and
+	 * verified on the host before `create()` resolves, and appear in
+	 * `software.installed()`.
 	 */
 	software?: SoftwareInput[];
+	/**
+	 * Where registry entries resolve. Defaults to
+	 * `https://releases.rivet.dev/agent-os/` (or `AGENTOS_SOFTWARE_REGISTRY_URL`)
+	 * at this client's own release.
+	 */
+	softwareRegistry?: SoftwareRegistryOptions;
+	/** Trusted download limits for registry and URL packages. */
+	packageResolver?: PackageResolverOptions;
 	/**
 	 * Whether to auto-include Core's vendored default software bundle (`sh`,
 	 * coreutils, and the standard CLI tools programs rely on) in addition to
@@ -691,6 +732,79 @@ function normalizePackageRef(value: unknown): NormalizedPackageRef | undefined {
 		}
 	}
 	return undefined;
+}
+
+type CreateTimeSoftware =
+	| { kind: "path"; path: string }
+	| { kind: "registry"; name: string; version?: string }
+	| { kind: "url"; url: string; digest?: string };
+
+// Every create-time entry must be recognized: silently dropping one would boot
+// a VM without the package and with no diagnostic.
+function classifySoftwareEntry(entry: unknown): CreateTimeSoftware {
+	const ref = normalizePackageRef(entry);
+	if (ref) return { kind: "path", path: ref.path };
+	const record = toRecord(entry);
+	if (typeof record.registry === "string") {
+		if (record.version !== undefined && typeof record.version !== "string") {
+			throw new Error(
+				`agentOS \`software\` registry entry "${record.registry}" has a non-string version; pass { registry, version: "0.4.2" }`,
+			);
+		}
+		return {
+			kind: "registry",
+			name: record.registry,
+			...(record.version !== undefined
+				? { version: record.version as string }
+				: {}),
+		};
+	}
+	if (typeof record.url === "string") {
+		if (record.digest !== undefined && typeof record.digest !== "string") {
+			throw new Error(
+				`agentOS \`software\` URL entry ${record.url} has a non-string digest; pass { url, digest: "sha256:<64 lowercase hex>" }`,
+			);
+		}
+		return {
+			kind: "url",
+			url: record.url,
+			...(record.digest !== undefined
+				? { digest: record.digest as string }
+				: {}),
+		};
+	}
+	throw new Error(
+		`agentOS \`software\` entry is not a package ref (got ${entry === null ? "null" : typeof entry}); pass { packagePath }, { registry: "<name>" }, or { url, digest }`,
+	);
+}
+
+function packageResolverWireOptions(
+	options: PackageResolverOptions | undefined,
+): {
+	max_package_bytes?: bigint;
+	download_timeout_ms?: bigint;
+	connect_timeout_ms?: bigint;
+	max_redirects?: number;
+	allow_insecure_local_http?: boolean;
+} {
+	if (!options) return {};
+	return {
+		...(options.maxPackageBytes !== undefined
+			? { max_package_bytes: BigInt(options.maxPackageBytes) }
+			: {}),
+		...(options.downloadTimeoutMs !== undefined
+			? { download_timeout_ms: BigInt(options.downloadTimeoutMs) }
+			: {}),
+		...(options.connectTimeoutMs !== undefined
+			? { connect_timeout_ms: BigInt(options.connectTimeoutMs) }
+			: {}),
+		...(options.maxRedirects !== undefined
+			? { max_redirects: options.maxRedirects }
+			: {}),
+		...(options.allowInsecureLocalHttp !== undefined
+			? { allow_insecure_local_http: options.allowInsecureLocalHttp }
+			: {}),
+	};
 }
 
 const CLOSED_SHELL_ID_RETENTION_LIMIT = 2048;
@@ -2644,6 +2758,8 @@ export class AgentOs {
 	private _shellCounter = 0;
 	private _softwareRoots: SoftwareRoot[];
 	private readonly _installedSoftware = new Map<string, InstalledSoftware>();
+	private _softwareRegistry: SoftwareRegistryOptions | undefined;
+	private _packageResolver: PackageResolverOptions | undefined;
 	private _vmMutationActive = false;
 	private _cronManager!: CronManager;
 	private _hostFunctions: ResolvedHostFunctions[] = [];
@@ -2842,14 +2958,44 @@ export class AgentOs {
 		// this the sidecar rejects the second projection with a duplicate-command
 		// error (e.g. coreutils' `[`).
 		const seenPackagePaths = new Set<string>();
-		const sidecarPackages = flatSoftware.flatMap((entry) => {
-			const ref = normalizePackageRef(entry);
-			if (!ref || seenPackagePaths.has(ref.path)) {
-				return [];
+		const sidecarPackages: { path: string }[] = [];
+		const pendingSoftware: Exclude<CreateTimeSoftware, { kind: "path" }>[] = [];
+		for (const entry of flatSoftware) {
+			const classified = classifySoftwareEntry(entry);
+			if (classified.kind !== "path") {
+				pendingSoftware.push(classified);
+				continue;
 			}
-			seenPackagePaths.add(ref.path);
-			return [{ path: ref.path }];
-		});
+			if (seenPackagePaths.has(classified.path)) continue;
+			seenPackagePaths.add(classified.path);
+			sidecarPackages.push({ path: classified.path });
+		}
+		// Resolve registry names before allocating a sidecar, so an unknown
+		// package or release fails without booting a VM. The packages themselves
+		// are downloaded and verified by the sidecar once the VM exists.
+		const seenSoftwareUrls = new Set<string>();
+		const postBootSoftware: Extract<SoftwarePackageSource, { type: "url" }>[] =
+			[];
+		for (const pending of pendingSoftware) {
+			const source =
+				pending.kind === "registry"
+					? await resolveRegistrySoftware(pending.name, {
+							version: pending.version,
+							registry: options?.softwareRegistry,
+						}).then((resolved) => ({
+							type: "url" as const,
+							url: resolved.url,
+							expectedDigest: resolved.digest,
+						}))
+					: {
+							type: "url" as const,
+							url: pending.url,
+							expectedDigest: pending.digest,
+						};
+			if (seenSoftwareUrls.has(source.url)) continue;
+			seenSoftwareUrls.add(source.url);
+			postBootSoftware.push(source);
+		}
 		// All package software is projected into `/opt/agentos` by the sidecar. The
 		// client stages nothing host-side and parses no package manifests.
 		const localMounts = await resolveCompatLocalMounts(options?.mounts);
@@ -3105,6 +3251,7 @@ export class AgentOs {
 		};
 
 		let sidecarLease: AgentOsSidecarVmLease<AgentOsVmAdmin> | null = null;
+		let createdVm!: AgentOs;
 
 		try {
 			sidecarLease = await leaseAgentOsSidecarVm(sidecar, {
@@ -3125,6 +3272,8 @@ export class AgentOs {
 				options?.onLimitWarning,
 			);
 			vm._sidecarLease = sidecarLease;
+			vm._softwareRegistry = options?.softwareRegistry;
+			vm._packageResolver = options?.packageResolver;
 			vm._hostFunctions = vmAdmin.hostFunctions;
 			vm._hostFunctionReference = vmAdmin.hostFunctionReference;
 			vm._disposeHooks.push(...sandboxDisposeHooks);
@@ -3133,8 +3282,7 @@ export class AgentOs {
 				vm,
 				options?.scheduleDriver ?? new TimerScheduleDriver(),
 			);
-
-			return vm;
+			createdVm = vm;
 		} catch (error) {
 			const cleanupErrors: unknown[] = [];
 			try {
@@ -3158,6 +3306,27 @@ export class AgentOs {
 			}
 			throw error;
 		}
+
+		// Registry and URL entries install through the same sidecar path as
+		// `software.install`, so the bytes are digest-verified before the VM is
+		// returned. A failed install disposes the VM instead of returning one
+		// without the requested software.
+		try {
+			for (const source of postBootSoftware) {
+				await createdVm._installSoftware(source);
+			}
+		} catch (error) {
+			try {
+				await createdVm.dispose();
+			} catch (disposeError) {
+				throw new AggregateError(
+					[error, disposeError],
+					"AgentOS VM software install and cleanup failed",
+				);
+			}
+			throw error;
+		}
+		return createdVm;
 	}
 
 	async createContext(contextId: string): Promise<void> {
@@ -5440,22 +5609,48 @@ export class AgentOs {
 		source: SoftwarePackageSource,
 	): Promise<InstalledSoftware> {
 		return this._withVmMutation(async () => {
-			const wireSource: LivePackageAcquisitionSource =
-				source.type === "url"
-					? {
-							type: "url",
-							url: source.url,
-							expected_digest: source.expectedDigest,
-						}
-					: {
-							type: "path",
-							path: source.path,
-							expected_digest: source.expectedDigest,
-						};
+			let wireSource: LivePackageAcquisitionSource;
+			switch (source.type) {
+				case "url":
+					wireSource = {
+						type: "url",
+						url: source.url,
+						expected_digest: source.expectedDigest,
+					};
+					break;
+				case "path":
+					wireSource = {
+						type: "path",
+						path: source.path,
+						expected_digest: source.expectedDigest,
+					};
+					break;
+				case "registry": {
+					// Resolved on this host; the sidecar verifies the bytes against
+					// the manifest digest exactly as for an explicit URL source.
+					const resolved = await resolveRegistrySoftware(source.name, {
+						version: source.version,
+						registry: this._softwareRegistry,
+					});
+					wireSource = {
+						type: "url",
+						url: resolved.url,
+						expected_digest: resolved.digest,
+					};
+					break;
+				}
+				default:
+					throw new Error(
+						`unsupported software source type ${JSON.stringify((source as { type?: unknown }).type)}; use "registry", "url", or "path"`,
+					);
+			}
 			const result = await this._sidecarClient.installPackage(
 				this._sidecarSession,
 				this._sidecarVm,
-				{ source: wireSource },
+				{
+					source: wireSource,
+					...packageResolverWireOptions(this._packageResolver),
+				},
 			);
 			const packageInfo = result.package;
 			const installed: InstalledSoftware = {

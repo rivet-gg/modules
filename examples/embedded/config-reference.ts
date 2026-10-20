@@ -19,8 +19,12 @@ const vm = await AgentOs.create({
 	// Kernel permission policy (see /agentos/docs/permissions) and runtime caps.
 	permissions: { network: "allow" },
 	limits: { jsRuntime: { v8HeapLimitMb: 128 } },
-	// Install a packed .aospkg from a trusted local path at boot.
-	software: [{ packagePath: "/path/to/tool.aospkg" }],
+	// Install a packed .aospkg from a trusted local path, and a registry package
+	// by name, at boot.
+	software: [{ packagePath: "/path/to/tool.aospkg" }, { registry: "git" }],
+	// Where registry packages resolve. Defaults to releases.rivet.dev at this
+	// client's release; point `url` at a mirror or pin `version`.
+	softwareRegistry: { url: "https://releases.rivet.dev/agent-os/" },
 	// Also install the default software bundle (sh + coreutils). Defaults to true;
 	// set false for a bare VM with only the software you list.
 	defaultSoftware: true,

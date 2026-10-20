@@ -57,6 +57,13 @@ pub struct AgentOsConfig {
     /// Trusted Core package acquisition limits and local-test transport policy.
     /// Hosted actor callers cannot configure this process-owned policy.
     pub package_resolver: Option<crate::software::PackageResolverOptions>,
+    /// Registry packages and URL or path sources installed after boot, before
+    /// [`crate::AgentOs::create`] returns (= TS `software` registry and URL
+    /// entries). Registry names resolve before the VM is created. Default `[]`.
+    pub software_sources: Vec<crate::software_registry::SoftwareSource>,
+    /// Where registry sources resolve (= TS `softwareRegistry`). Default:
+    /// `https://releases.rivet.dev/agent-os/` at this client's release.
+    pub software_registry: Option<crate::software_registry::SoftwareRegistryOptions>,
     /// Loopback ports exempt from the default outbound-to-host block.
     pub loopback_exempt_ports: Vec<u16>,
     /// Allowed Node.js builtins. Default: the hardened native-bridge set.
@@ -120,6 +127,22 @@ impl AgentOsConfigBuilder {
 
     pub fn package_resolver(mut self, options: crate::software::PackageResolverOptions) -> Self {
         self.config.package_resolver = Some(options);
+        self
+    }
+
+    pub fn software_sources(
+        mut self,
+        sources: Vec<crate::software_registry::SoftwareSource>,
+    ) -> Self {
+        self.config.software_sources = sources;
+        self
+    }
+
+    pub fn software_registry(
+        mut self,
+        options: crate::software_registry::SoftwareRegistryOptions,
+    ) -> Self {
+        self.config.software_registry = Some(options);
         self
     }
 

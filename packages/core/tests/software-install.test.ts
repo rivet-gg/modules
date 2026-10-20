@@ -114,3 +114,13 @@ describe("sidecar-owned software install", () => {
 		);
 	});
 });
+
+describe("create-time software entries", () => {
+	it("rejects an entry that is not a package ref", async () => {
+		await expect(
+			AgentOs.create({
+				software: [{ name: "tool" } as unknown as { packagePath: string }],
+			}),
+		).rejects.toThrow("not a package ref");
+	});
+});

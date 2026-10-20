@@ -379,6 +379,23 @@ export const agentOsOptionFieldSchemas = {
 	environment: z.record(z.string(), z.string()).optional(),
 	software: z.array(z.unknown()).optional(),
 	defaultSoftware: z.boolean().optional(),
+	softwareRegistry: z
+		.object({
+			url: z.string().min(1).optional(),
+			version: z.string().min(1).optional(),
+		})
+		.strict()
+		.optional(),
+	packageResolver: z
+		.object({
+			maxPackageBytes: z.number().int().positive().optional(),
+			downloadTimeoutMs: z.number().int().positive().optional(),
+			connectTimeoutMs: z.number().int().positive().optional(),
+			maxRedirects: z.number().int().min(0).max(16).optional(),
+			allowInsecureLocalHttp: z.boolean().optional(),
+		})
+		.strict()
+		.optional(),
 	loopbackExemptPorts: z.array(z.number().int().min(0).max(65535)).optional(),
 	allowedNodeBuiltins: stringArray.optional(),
 	highResolutionTime: z.boolean().optional(),
