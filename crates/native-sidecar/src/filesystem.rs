@@ -17,9 +17,9 @@ use crate::service::{
     python_error,
 };
 use crate::state::{
-    ActiveExecutionEvent, ActiveProcess, BridgeError, ShadowNodeType, ShadowSyncInventoryEntry,
-    SharedBridge, SidecarKernel, VmHandle, VmState, EXECUTION_DRIVER_NAME,
-    PYTHON_VFS_RPC_GUEST_ROOT,
+    ActiveExecutionEvent, ActiveProcess, BridgeError, ShadowNodeType, ShadowSyncBaseline,
+    ShadowSyncInventoryEntry, ShadowSyncStamp, SharedBridge, SidecarKernel, VmHandle, VmState,
+    EXECUTION_DRIVER_NAME, PYTHON_VFS_RPC_GUEST_ROOT,
 };
 use crate::{DispatchResult, NativeSidecar, NativeSidecarBridge, SidecarError};
 
@@ -736,23 +736,20 @@ fn refresh_shadow_inventory_path(vm: &mut VmState, guest_path: &str) -> Result<(
     }
     let guest_path = normalize_path(guest_path);
     let mut updates = collect_shadow_inventory_ancestors(vm, &guest_path)?;
-    let Some(node_type) = shadow_inventory_kernel_node_type(vm, &guest_path)? else {
+    let Some(entry) = shadow_inventory_entry(vm, &guest_path)? else {
         forget_shadow_inventory_path(vm, &guest_path);
         return Ok(());
     };
-    updates.insert(
-        guest_path.clone(),
-        ShadowSyncInventoryEntry::present(node_type),
-    );
-    if node_type == ShadowNodeType::Directory {
+    updates.insert(guest_path.clone(), entry);
+    if entry.node_type == ShadowNodeType::Directory {
         let entries = vm
             .kernel
             .read_dir_recursive(&guest_path, None)
             .map_err(kernel_error)?;
         for entry in entries {
             let path = normalize_path(&entry.path);
-            if let Some(node_type) = shadow_inventory_kernel_node_type(vm, &path)? {
-                updates.insert(path, ShadowSyncInventoryEntry::present(node_type));
+            if let Some(entry) = shadow_inventory_entry(vm, &path)? {
+                updates.insert(path, entry);
             }
         }
     }
@@ -772,11 +769,8 @@ fn refresh_shadow_inventory_path(vm: &mut VmState, guest_path: &str) -> Result<(
 fn refresh_shadow_inventory_node(vm: &mut VmState, guest_path: &str) -> Result<(), SidecarError> {
     let guest_path = normalize_path(guest_path);
     let mut updates = collect_shadow_inventory_ancestors(vm, &guest_path)?;
-    if let Some(node_type) = shadow_inventory_kernel_node_type(vm, &guest_path)? {
-        updates.insert(
-            guest_path.clone(),
-            ShadowSyncInventoryEntry::present(node_type),
-        );
+    if let Some(entry) = shadow_inventory_entry(vm, &guest_path)? {
+        updates.insert(guest_path.clone(), entry);
     }
     vm.shadow_sync_inventory.extend(updates);
     Ok(())
@@ -801,20 +795,21 @@ fn collect_shadow_inventory_ancestors(
     }
     let mut updates = BTreeMap::new();
     for ancestor in ancestors.into_iter().rev() {
-        if shadow_inventory_kernel_node_type(vm, &ancestor)? == Some(ShadowNodeType::Directory) {
-            updates.insert(
-                ancestor,
-                ShadowSyncInventoryEntry::present(ShadowNodeType::Directory),
-            );
+        if let Some(entry) = shadow_inventory_entry(vm, &ancestor)? {
+            if entry.node_type == ShadowNodeType::Directory {
+                updates.insert(ancestor, entry);
+            }
         }
     }
     Ok(updates)
 }
 
-fn shadow_inventory_kernel_node_type(
+/// Inventory a path whose kernel state the sidecar just mirrored into the
+/// shadow, recording both sides as reconciled.
+fn shadow_inventory_entry(
     vm: &mut VmState,
     guest_path: &str,
-) -> Result<Option<ShadowNodeType>, SidecarError> {
+) -> Result<Option<ShadowSyncInventoryEntry>, SidecarError> {
     // This inventory is trusted sidecar bookkeeping after the guest mutation has
     // already passed its operation-specific permission check. Re-entering through
     // `KernelVm::lstat` would incorrectly require a separate guest `fs.stat`
@@ -831,7 +826,24 @@ fn shadow_inventory_kernel_node_type(
     } else {
         ShadowNodeType::File
     };
-    Ok(Some(node_type))
+    let shadow_path = shadow_host_path_for_guest(&vm.cwd, guest_path);
+    let shadow = match fs::symlink_metadata(&shadow_path) {
+        Ok(metadata) => Some(ShadowSyncStamp::host(&metadata)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => {
+            return Err(SidecarError::Io(format!(
+                "failed to inspect shadow path {}: {error}",
+                shadow_path.display()
+            )));
+        }
+    };
+    Ok(Some(ShadowSyncInventoryEntry::reconciled(
+        node_type,
+        ShadowSyncBaseline {
+            shadow,
+            kernel: Some(ShadowSyncStamp::kernel(&stat)),
+        },
+    )))
 }
 
 fn forget_shadow_inventory_path(vm: &mut VmState, guest_path: &str) {
@@ -5377,8 +5389,20 @@ fn sync_active_shadow_path_to_kernel(
     if host_paths.is_empty() && !vm.kernel.exists(&guest_path).unwrap_or(false) {
         host_paths.push(shadow_host_path_for_guest(&vm.cwd, &guest_path));
     }
+    // The root walk above already decided which side wins for a reconciled
+    // shadow path; importing it again here would undo a newer kernel edit.
+    let reconciled_in_root_shadow = vm
+        .shadow_sync_inventory
+        .get(&guest_path)
+        .is_some_and(|entry| entry.baseline.is_some());
+    let vm_shadow_root = normalize_host_path(&vm.cwd);
 
     for host_path in host_paths {
+        if reconciled_in_root_shadow
+            && path_is_within_root(&normalize_host_path(&host_path), &vm_shadow_root)
+        {
+            continue;
+        }
         let metadata = match fs::symlink_metadata(&host_path) {
             Ok(metadata) => metadata,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,

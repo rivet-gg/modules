@@ -2061,4 +2061,151 @@ try {
 
         dispose_vm_and_close_session(&mut sidecar, &connection_id, &session_id, &vm_id);
     }
+
+    /// Regression for #2022 and #1901: Python and shell writes reach only the
+    /// kernel VFS, so the stale API-seeded shadow copy must not replace them
+    /// (or resurrect a deleted-then-recreated file) on the next host read.
+    #[test]
+    fn python_and_shell_edits_to_host_written_files_survive_shadow_reconciliation() {
+        if registry_command_root().is_none() {
+            return;
+        }
+        support::assert_node_available();
+
+        let mut sidecar = create_test_sidecar();
+        let (connection_id, session_id) = authenticate_and_open_session(&mut sidecar);
+        let vm_id = create_vm_with_mounts(&mut sidecar, &connection_id, &session_id, Vec::new());
+
+        enum Editor {
+            Python,
+            Shell,
+        }
+        let cases = [
+            (
+                "python-overwrite",
+                Editor::Python,
+                "from pathlib import Path\nPath('/workspace/python-overwrite.txt').write_text('EDITED\\n')",
+                "EDITED\n",
+            ),
+            (
+                "shell-overwrite",
+                Editor::Shell,
+                "echo EDITED > /workspace/shell-overwrite.txt",
+                "EDITED\n",
+            ),
+            (
+                "shell-recreate",
+                Editor::Shell,
+                "rm /workspace/shell-recreate.txt && echo RECREATED > /workspace/shell-recreate.txt",
+                "RECREATED\n",
+            ),
+        ];
+
+        let mut request_id = 20;
+        for (name, editor, script, expected) in cases {
+            let target = format!("/workspace/{name}.txt");
+            host_write_text(
+                &mut sidecar,
+                &connection_id,
+                &session_id,
+                &vm_id,
+                request_id,
+                &target,
+                "original\n",
+            );
+
+            let process_id = format!("proc-edit-{name}");
+            let (_, stderr, exit_code) = match editor {
+                Editor::Python => execute_python_code(
+                    &mut sidecar,
+                    &connection_id,
+                    &session_id,
+                    &vm_id,
+                    request_id + 1,
+                    &process_id,
+                    script,
+                ),
+                Editor::Shell => execute_command(
+                    &mut sidecar,
+                    &connection_id,
+                    &session_id,
+                    &vm_id,
+                    request_id + 1,
+                    &process_id,
+                    "/bin/sh",
+                    vec![String::from("-c"), String::from(script)],
+                ),
+            };
+            assert_eq!(exit_code, Some(0), "{name}: stderr: {stderr}");
+
+            assert_eq!(
+                guest_read_text(
+                    &mut sidecar,
+                    &connection_id,
+                    &session_id,
+                    &vm_id,
+                    request_id + 2,
+                    &target,
+                ),
+                expected,
+                "{name}: host readFile lost the guest edit to a host-written file"
+            );
+
+            let (cat_stdout, cat_stderr, cat_exit_code) = execute_command(
+                &mut sidecar,
+                &connection_id,
+                &session_id,
+                &vm_id,
+                request_id + 3,
+                &format!("proc-cat-{name}"),
+                "/bin/cat",
+                vec![target.clone()],
+            );
+            assert_eq!(cat_exit_code, Some(0), "{name}: stderr: {cat_stderr}");
+            assert_eq!(
+                cat_stdout, expected,
+                "{name}: a later process saw stale host-written bytes"
+            );
+            request_id += 10;
+        }
+
+        dispose_vm_and_close_session(&mut sidecar, &connection_id, &session_id, &vm_id);
+    }
+
+    fn execute_python_code(
+        sidecar: &mut agentos_native_sidecar::NativeSidecar<RecordingBridge>,
+        connection_id: &str,
+        session_id: &str,
+        vm_id: &str,
+        request_id: i64,
+        process_id: &str,
+        code: &str,
+    ) -> (String, String, Option<i32>) {
+        let response = sidecar
+            .dispatch_wire_blocking(wire_request(
+                request_id,
+                wire_vm(connection_id, session_id, vm_id),
+                RequestPayload::ExecuteRequest(ExecuteRequest {
+                    process_id: String::from(process_id),
+                    command: None,
+                    runtime: Some(GuestRuntimeKind::Python),
+                    entrypoint: Some(String::from(code)),
+                    args: Vec::new(),
+                    env: HashMap::new(),
+                    cwd: Some(String::from("/workspace")),
+                    wasm_permission_tier: None,
+                    retain_output: false,
+                }),
+            ))
+            .expect("dispatch Python execute");
+
+        match response.response.payload {
+            ResponsePayload::ProcessStartedResponse(started) => {
+                assert_eq!(started.process_id, process_id);
+            }
+            other => panic!("unexpected execute response: {other:?}"),
+        }
+
+        drain_process_output(sidecar, connection_id, session_id, vm_id, process_id)
+    }
 }

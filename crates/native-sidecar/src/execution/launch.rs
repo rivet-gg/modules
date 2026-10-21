@@ -813,7 +813,8 @@ fn sync_vm_shadow_root_to_kernel(vm: &mut VmState) -> Result<(), SidecarError> {
         }
     }
 
-    let failed_replacements = propagate_shadow_deletions_to_kernel(vm, &mut snapshot.entries);
+    let kernel_owned = kernel_owned_shadow_paths(vm, &snapshot);
+    let failed_replacements = propagate_shadow_deletions_to_kernel(vm, &mut snapshot);
     let mut synced_file_times = BTreeMap::new();
     sync_host_directory_tree_to_kernel_inner(
         vm,
@@ -821,16 +822,87 @@ fn sync_vm_shadow_root_to_kernel(vm: &mut VmState) -> Result<(), SidecarError> {
         &shadow_root,
         "/",
         &mut synced_file_times,
-        Some(&snapshot.entries),
-        Some(&failed_replacements),
+        Some(&ShadowSyncPlan {
+            inventory: &snapshot.entries,
+            failed_replacements: &failed_replacements,
+            kernel_owned: &kernel_owned,
+        }),
     )?;
+    for (path, entry) in &mut snapshot.entries {
+        if entry.deletion_pending {
+            continue;
+        }
+        if let Some(shadow) = snapshot.shadow_stamps.get(path) {
+            entry.baseline = Some(ShadowSyncBaseline {
+                shadow: Some(*shadow),
+                kernel: kernel_shadow_sync_stamp(vm, path),
+            });
+        }
+    }
     vm.shadow_sync_inventory = snapshot.entries;
     Ok(())
+}
+
+/// Every guest runtime writes the kernel VFS directly, and most of those
+/// writes never reach the shadow. A shadow change therefore applies to the
+/// kernel only when the kernel node is unchanged since the last
+/// reconciliation; otherwise the kernel holds the newer guest edit.
+fn shadow_change_applies_to_kernel(
+    previous: Option<&ShadowSyncInventoryEntry>,
+    shadow: Option<ShadowSyncStamp>,
+    kernel: Option<ShadowSyncStamp>,
+) -> bool {
+    match previous.map(|entry| entry.baseline) {
+        // A shadow node that was never inventoried may only fill a kernel gap.
+        None => kernel.is_none(),
+        // Seeded shadow content that was never reconciled is authoritative.
+        Some(None) => true,
+        Some(Some(baseline)) => baseline.shadow != shadow && baseline.kernel == kernel,
+    }
+}
+
+/// Shadow paths whose kernel node must not be overwritten by this walk.
+fn kernel_owned_shadow_paths(vm: &mut VmState, snapshot: &ShadowSyncSnapshot) -> BTreeSet<String> {
+    let mut kernel_owned = BTreeSet::new();
+    for path in snapshot.entries.keys() {
+        let kernel = kernel_shadow_sync_stamp(vm, path);
+        if !shadow_change_applies_to_kernel(
+            vm.shadow_sync_inventory.get(path),
+            snapshot.shadow_stamps.get(path).copied(),
+            kernel,
+        ) {
+            kernel_owned.insert(path.clone());
+        }
+    }
+    kernel_owned
+}
+
+/// Trusted bookkeeping read of a kernel node. It must not require the guest
+/// `fs.stat` permission that a `KernelVm::lstat` would check.
+fn kernel_shadow_sync_stamp(vm: &mut VmState, guest_path: &str) -> Option<ShadowSyncStamp> {
+    use agentos_kernel::vfs::VirtualFileSystem;
+    vm.kernel
+        .filesystem_mut()
+        .inner_mut()
+        .lstat(guest_path)
+        .ok()
+        .map(|stat| ShadowSyncStamp::kernel(&stat))
+}
+
+/// Paths the additive shadow walk must leave alone.
+struct ShadowSyncPlan<'a> {
+    /// The entry appeared after the inventory pass when it is missing here.
+    inventory: &'a BTreeMap<String, ShadowSyncInventoryEntry>,
+    /// Stale kernel objects whose removal failed.
+    failed_replacements: &'a BTreeSet<String>,
+    /// Kernel nodes that changed since the last reconciliation.
+    kernel_owned: &'a BTreeSet<String>,
 }
 
 #[derive(Default)]
 struct ShadowSyncSnapshot {
     entries: BTreeMap<String, ShadowSyncInventoryEntry>,
+    shadow_stamps: BTreeMap<String, ShadowSyncStamp>,
     incomplete_subtrees: BTreeSet<String>,
 }
 
@@ -922,10 +994,23 @@ fn collect_shadow_sync_snapshot_inner(
         } else {
             continue;
         };
+        let metadata = match entry.metadata() {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => {
+                return Err(SidecarError::Io(format!(
+                    "failed to inventory host shadow entry {}: {error}",
+                    host_path.display()
+                )));
+            }
+        };
         snapshot.entries.insert(
             guest_path.clone(),
             ShadowSyncInventoryEntry::present(node_type),
         );
+        snapshot
+            .shadow_stamps
+            .insert(guest_path.clone(), ShadowSyncStamp::host(&metadata));
         if node_type == ShadowNodeType::Directory {
             collect_shadow_sync_snapshot_inner(shadow_root, &host_path, &guest_path, snapshot)?;
         }
@@ -942,8 +1027,9 @@ fn collect_shadow_sync_snapshot_inner(
 /// leaves before the directories that contain them.
 fn propagate_shadow_deletions_to_kernel(
     vm: &mut VmState,
-    current: &mut BTreeMap<String, ShadowSyncInventoryEntry>,
+    snapshot: &mut ShadowSyncSnapshot,
 ) -> BTreeSet<String> {
+    let current = &mut snapshot.entries;
     let stale = vm
         .shadow_sync_inventory
         .iter()
@@ -960,6 +1046,16 @@ fn propagate_shadow_deletions_to_kernel(
     for (path, previous) in stale {
         if path == "/" || should_skip_shadow_sync_path(vm, &path) || is_shadow_bootstrap_dir(&path)
         {
+            continue;
+        }
+        let kernel = kernel_shadow_sync_stamp(vm, &path);
+        if !shadow_change_applies_to_kernel(
+            Some(&previous),
+            snapshot.shadow_stamps.get(&path).copied(),
+            kernel,
+        ) {
+            // The kernel node was replaced or edited after the shadow copy
+            // went stale (for example `rm f && echo new > f` in a guest).
             continue;
         }
         let stat = match vm.kernel.lstat(&path) {
@@ -1003,10 +1099,13 @@ fn retain_shadow_deletion_tombstone(
 ) {
     current
         .entry(path.to_owned())
-        .and_modify(|entry| entry.deletion_pending = true)
+        .and_modify(|entry| {
+            entry.deletion_pending = true;
+            entry.baseline = previous.baseline;
+        })
         .or_insert(ShadowSyncInventoryEntry {
-            node_type: previous.node_type,
             deletion_pending: true,
+            ..previous
         });
 }
 
@@ -1115,7 +1214,6 @@ fn sync_host_directory_tree_to_kernel(
         &normalized_guest_root,
         &mut synced_file_times,
         None,
-        None,
     )
 }
 
@@ -1134,8 +1232,7 @@ fn sync_host_directory_tree_to_kernel_inner(
     current_host_dir: &Path,
     guest_root: &str,
     synced_file_times: &mut BTreeMap<(u64, u64), (u64, u64)>,
-    expected_inventory: Option<&BTreeMap<String, ShadowSyncInventoryEntry>>,
-    failed_replacements: Option<&BTreeSet<String>>,
+    plan: Option<&ShadowSyncPlan<'_>>,
 ) -> Result<(), SidecarError> {
     let entries = match fs::read_dir(current_host_dir) {
         Ok(entries) => entries,
@@ -1196,26 +1293,29 @@ fn sync_host_directory_tree_to_kernel_inner(
         if should_skip_shadow_sync_path(vm, &guest_path) {
             continue;
         }
-        if expected_inventory.is_some_and(|inventory| !inventory.contains_key(&guest_path)) {
+        if plan.is_some_and(|plan| !plan.inventory.contains_key(&guest_path)) {
             // The entry appeared after the inventory pass. Pick it up on the
             // next sync rather than mixing two different shadow snapshots.
             continue;
         }
-        if failed_replacements.is_some_and(|failed| failed.contains(&guest_path)) {
+        if plan.is_some_and(|plan| plan.failed_replacements.contains(&guest_path)) {
             // Never write through a stale object whose removal failed. The
             // retained tombstone will retry before a future additive write.
             continue;
         }
+        let kernel_owned = plan.is_some_and(|plan| plan.kernel_owned.contains(&guest_path));
 
         if file_type.is_dir() {
-            ensure_kernel_shadow_node_type(vm, &guest_path, ShadowNodeType::Directory)?;
+            if !kernel_owned {
+                ensure_kernel_shadow_node_type(vm, &guest_path, ShadowNodeType::Directory)?;
+            }
             let metadata = entry.metadata().map_err(|error| {
                 SidecarError::Io(format!(
                     "failed to read host shadow metadata {}: {error}",
                     host_path.display()
                 ))
             })?;
-            if !is_shadow_bootstrap_dir(&guest_path) {
+            if !kernel_owned && !is_shadow_bootstrap_dir(&guest_path) {
                 if !vm.kernel.exists(&guest_path).unwrap_or(false) {
                     vm.kernel.mkdir(&guest_path, true).map_err(|error| {
                         SidecarError::InvalidState(format!(
@@ -1243,9 +1343,11 @@ fn sync_host_directory_tree_to_kernel_inner(
                 &host_path,
                 guest_root,
                 synced_file_times,
-                expected_inventory,
-                failed_replacements,
+                plan,
             )?;
+            continue;
+        }
+        if kernel_owned {
             continue;
         }
 
