@@ -67,6 +67,11 @@ Executions are ephemeral, so capture stdio only when you want it: `"stderr"` for
 diagnostics, `"all"` for both streams. `onStdout`/`onStderr` stream live and work
 independently of capture.
 
+The exit code follows CPython. `sys.exit()` and `SystemExit` set it: no
+argument exits `0`, an integer exits with that code, and any other value is
+printed to stderr and exits `1`. An uncaught exception prints a Python traceback
+to stderr and exits `1`.
+
 ## Pass data into code
 
 In the library, `inputs` hands host values to the guest as real objects, so data never gets

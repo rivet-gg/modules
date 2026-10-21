@@ -3564,6 +3564,56 @@ fn python_command_runs_inline_code() {
     assert_eq!(stdout, "2\n", "stderr: {stderr}");
 }
 
+fn python_command_exits_with_cpython_status_and_traceback() {
+    assert_node_available();
+    let mut sidecar = new_sidecar("python-cli-exit-status");
+    let cwd = temp_dir("python-cli-exit-status-cwd");
+    let connection_id = authenticate_wire(&mut sidecar, "conn-python");
+    let session_id = open_session_wire(&mut sidecar, 2, &connection_id);
+    let (vm_id, _) = create_vm_wire(
+        &mut sidecar,
+        3,
+        &connection_id,
+        &session_id,
+        GuestRuntimeKind::Python,
+        &cwd,
+    );
+
+    let cases = [
+        ("raise SystemExit(7)", 7, ""),
+        ("import sys; sys.exit(0)", 0, ""),
+        ("import sys; sys.exit('msg')", 1, "msg\n"),
+        (
+            "raise ValueError('boom')",
+            1,
+            "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nValueError: boom\n",
+        ),
+    ];
+    for (index, (source, expected_exit, expected_stderr)) in cases.into_iter().enumerate() {
+        let process_id = format!("proc-py-exit-{index}");
+        execute_python_cli(
+            &mut sidecar,
+            4 + index as RequestId,
+            &connection_id,
+            &session_id,
+            &vm_id,
+            &process_id,
+            "python3",
+            &["-c", source],
+        );
+        let (stdout, stderr, exit_code) = collect_process_output(
+            &mut sidecar,
+            &connection_id,
+            &session_id,
+            &vm_id,
+            &process_id,
+        );
+        assert_eq!(exit_code, expected_exit, "{source}\nstderr: {stderr}");
+        assert_eq!(stderr, expected_stderr, "{source}");
+        assert!(stdout.is_empty(), "{source}\nstdout: {stdout}");
+    }
+}
+
 fn python_command_runs_script_with_argv() {
     assert_node_available();
     let mut sidecar = new_sidecar("python-cli-argv");
@@ -4104,6 +4154,7 @@ fn python_rootfs_suite() {
 
 fn python_cli_suite() {
     python_command_runs_inline_code();
+    python_command_exits_with_cpython_status_and_traceback();
     python_command_runs_script_with_argv();
     python_command_runs_module_with_dash_m();
     python_command_reads_program_from_stdin();
@@ -4212,6 +4263,7 @@ mod python_split {
         python_runtime_runs_node_subprocesses_through_sidecar_bridge,
         python_runtime_surfaces_subprocess_permission_errors,
         python_command_runs_inline_code,
+        python_command_exits_with_cpython_status_and_traceback,
         python_command_runs_script_with_argv,
         python_command_runs_module_with_dash_m,
         python_command_reads_program_from_stdin,

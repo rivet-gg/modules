@@ -2345,17 +2345,20 @@ del _agentos_install_bundled_finder
     bundledFiles.has(lockfilePackages[normalizePythonPackageName(distributionName)]?.file_name);
 }
 
+// Filename for runner-owned Python source, so tracebacks can drop its frames.
+const PYTHON_INTERNAL_FILENAME = '<agentos>';
+
 // `pip` / `python -m pip`: emulate the common pip CLI via Pyodide's micropip,
 // which fetches wheels through the runner's kernel-backed fetch (so egress is
 // governed by the VM network policy, never an ambient host fetch). Installed
 // packages are copied into the persistent VFS site-packages so they survive the
 // per-process interpreter and can be imported by a later `python` invocation.
 // Bundled packages are importable in every process, so they are not copied.
-async function runPythonPip(pyodide, isBundledPackage) {
+async function runPythonPip(pyodide, runMain, isBundledPackage) {
   pyodide.globals.set('__agentos_vfs_site', PYTHON_VFS_SITE_PACKAGES);
   pyodide.globals.set('__agentos_is_bundled_package', isBundledPackage);
   try {
-    await pyodide.runPythonAsync(`
+    return await runMain(`
 import importlib.metadata, os, shutil, site, sys
 _agentos_pip_args = sys.argv[1:]
 if _agentos_pip_args and _agentos_pip_args[0] == "install":
@@ -2398,7 +2401,7 @@ elif _agentos_pip_args and _agentos_pip_args[0] == "list":
 else:
     print("usage: pip install <package> [<package> ...]", file=sys.stderr)
     sys.exit(2)
-`);
+`, PYTHON_INTERNAL_FILENAME);
   } finally {
     try {
       pyodide.globals.delete('__agentos_vfs_site');
@@ -2414,8 +2417,8 @@ else:
 
 // Minimal interactive REPL backed by the kernel stdin stream (sys.stdin via
 // setStdin). Prompts use the standard PS1/PS2; EOF on stdin ends the session.
-async function runPythonRepl(pyodide) {
-  await pyodide.runPythonAsync(`
+function runPythonRepl(runMain) {
+  return runMain(`
 import sys
 from code import InteractiveConsole
 if not hasattr(sys, "ps1"):
@@ -2423,7 +2426,50 @@ if not hasattr(sys, "ps1"):
 if not hasattr(sys, "ps2"):
     sys.ps2 = "... "
 InteractiveConsole(locals={"__name__": "__main__", "__doc__": None}).interact(banner="", exitmsg="")
-`);
+`, PYTHON_INTERNAL_FILENAME);
+}
+
+// Returns `runMain(source, filename)`, which runs a main program in `__main__`
+// and resolves to its process exit status the way CPython decides it:
+// `SystemExit` maps to its code, and any other uncaught exception prints a
+// Python traceback through `sys.excepthook` and exits 1. Without this,
+// `SystemExit` escapes Pyodide's event loop as an uncaught JS error.
+function installPythonMainRunner(pyodide) {
+  pyodide.runPython(
+    `
+async def _agentos_run_main(source, filename):
+    import __main__, sys
+    from _pyodide._base import __file__ as pyodide_base_file, eval_code_async
+
+    try:
+        await eval_code_async(source, __main__.__dict__, filename=filename)
+        return 0
+    except SystemExit as error:
+        code = error.code
+        if code is None:
+            return 0
+        if isinstance(code, int):
+            return code & 0xFF
+        print(code, file=sys.stderr)
+        return 1
+    except BaseException as error:
+        tb = error.__traceback__
+        while tb is not None and tb.tb_frame.f_code.co_filename in (
+            ${JSON.stringify(PYTHON_INTERNAL_FILENAME)},
+            pyodide_base_file,
+        ):
+            tb = tb.tb_next
+        sys.excepthook(type(error), error, tb)
+        return 1
+    finally:
+        sys.stdout.flush()
+        sys.stderr.flush()
+`,
+    { filename: PYTHON_INTERNAL_FILENAME },
+  );
+  const runMain = pyodide.globals.get('_agentos_run_main');
+  pyodide.globals.delete('_agentos_run_main');
+  return runMain;
 }
 
 function resolvePythonSource(pyodide) {
@@ -2512,9 +2558,6 @@ try {
       error,
     );
   });
-  if (retainLanguageContext) {
-    globalThis.__agentOSRetainedPyodide = pyodide;
-  }
   restorePyodideShellCompat();
   emitWarmupStage('after-load-pyodide');
   const loadPyodideMs = realPerformance.now() - loadPyodideStarted;
@@ -2553,23 +2596,31 @@ try {
     loadPyodideMs,
     source,
   });
+  const runMain = installPythonMainRunner(pyodide);
+  if (retainLanguageContext) {
+    globalThis.__agentOSRunRetainedPython = (code) => runMain(code, '<string>');
+  }
   if (moduleName === 'pip') {
-    await runPythonPip(pyodide, isBundledPackage);
+    process.exitCode = await runPythonPip(pyodide, runMain, isBundledPackage);
   } else if (moduleName) {
     pyodide.globals.set('__agentos_module', moduleName);
     try {
-      await pyodide.runPythonAsync(
+      process.exitCode = await runMain(
         'import runpy\nrunpy.run_module(__agentos_module, run_name="__main__", alter_sys=True)',
+        PYTHON_INTERNAL_FILENAME,
       );
     } finally {
       pyodide.globals.delete('__agentos_module');
     }
   } else if (stdinProgram) {
-    await pyodide.runPythonAsync(readProgramFromStdin());
+    process.exitCode = await runMain(readProgramFromStdin(), '<stdin>');
   } else if (interactive) {
-    await runPythonRepl(pyodide);
+    process.exitCode = await runPythonRepl(runMain);
   } else {
-    await pyodide.runPythonAsync(resolvePythonSource(pyodide));
+    process.exitCode = await runMain(
+      resolvePythonSource(pyodide),
+      readRunnerEnv(PYTHON_FILE_ENV) ?? '<string>',
+    );
   }
   }
 } catch (error) {
