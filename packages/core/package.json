@@ -59,16 +59,12 @@
 		"test:nightly": "vitest run tests/*.nightly.test.ts --reporter=verbose --passWithNoTests"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.1019.0",
 		"@rivet-dev/agentos-runtime-sidecar": "workspace:*",
 		"@rivet-dev/agentos-runtime-core": "workspace:*",
 		"@xterm/headless": "^6.0.0",
-		"better-sqlite3": "^12.8.0",
 		"croner": "^10.0.1",
 		"long-timeout": "^0.1.1",
-		"minimatch": "^10.2.4",
-		"zod": "^4.1.11",
-		"zod-to-json-schema": "^3.25.2"
+		"zod": "^4.1.11"
 	},
 	"devDependencies": {
 		"@bare-ts/lib": "^0.4.0",
