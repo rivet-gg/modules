@@ -815,8 +815,8 @@ importers:
   packages/agentos-toolchain:
     dependencies:
       '@bare-ts/lib':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.1
+        version: 0.4.1
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
@@ -835,7 +835,7 @@ importers:
     dependencies:
       '@bare-ts/tools':
         specifier: 0.15.0
-        version: 0.15.0(@bare-ts/lib@0.4.0)
+        version: 0.15.0(@bare-ts/lib@0.4.1)
       '@exodus/bytes':
         specifier: 1.15.1
         version: 1.15.1(@noble/hashes@2.2.0)
@@ -946,8 +946,8 @@ importers:
         specifier: workspace:*
         version: link:../../software/yq
       '@bare-ts/lib':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.1
+        version: 0.4.1
       '@browserbasehq/browse-cli':
         specifier: 0.5.0
         version: 0.5.0(@cfworker/json-schema@4.1.1)(@opentelemetry/api@1.9.0)(bufferutil@4.1.0)(deepmerge@4.3.1)(zod@4.3.6)
@@ -1069,8 +1069,8 @@ importers:
   packages/runtime-core:
     dependencies:
       '@bare-ts/lib':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.1
+        version: 0.4.1
       '@rivet-dev/agentos-runtime-sidecar':
         specifier: workspace:*
         version: link:../runtime-sidecar
@@ -2248,8 +2248,8 @@ packages:
   '@balena/dockerignore@1.0.2':
     resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
 
-  '@bare-ts/lib@0.4.0':
-    resolution: {integrity: sha512-uTb12lcDkvwwwGb/4atNy/+2Xuksx88tlxKuwnDuxmsOFVo4R/WsE+fmAf2nWtzHDi7m6NDw8Ke9j+XlNBLoJg==}
+  '@bare-ts/lib@0.4.1':
+    resolution: {integrity: sha512-G9RnojF6PJjAF6ULnlOc2C10gnCk0jgywZXxVhxDH2Kw4pCNdf0jGk+bYm1kIE9VbzJ9m5iG53mT92jXTCzPzA==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
   '@bare-ts/tools@0.15.0':
@@ -6227,11 +6227,11 @@ snapshots:
 
   '@balena/dockerignore@1.0.2': {}
 
-  '@bare-ts/lib@0.4.0': {}
+  '@bare-ts/lib@0.4.1': {}
 
-  '@bare-ts/tools@0.15.0(@bare-ts/lib@0.4.0)':
+  '@bare-ts/tools@0.15.0(@bare-ts/lib@0.4.1)':
     dependencies:
-      '@bare-ts/lib': 0.4.0
+      '@bare-ts/lib': 0.4.1
       commander: 11.1.0
 
   '@biomejs/biome@2.4.10':
