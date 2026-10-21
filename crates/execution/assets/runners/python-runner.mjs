@@ -7,6 +7,9 @@ import readline from 'node:readline';
 import { URL } from 'node:url';
 
 const ACCESS_DENIED_CODE = 'ERR_ACCESS_DENIED';
+// Package loads report progress on stdout by default, which would mix into
+// guest output. Load errors still reach stderr.
+const PYODIDE_LOAD_PACKAGE_OPTIONS = { checkIntegrity: true, messageCallback() {} };
 const ASSET_ROOT_ENV = 'AGENTOS_NODE_IMPORT_CACHE_ASSET_ROOT';
 const PYODIDE_INDEX_URL_ENV = 'AGENTOS_PYODIDE_INDEX_URL';
 const PYODIDE_PACKAGE_BASE_URL_ENV = 'AGENTOS_PYODIDE_PACKAGE_BASE_URL';
@@ -302,28 +305,6 @@ function writeStream(stream, message) {
 
   const value = typeof message === 'string' ? message : String(message);
   stream.write(value.endsWith('\n') ? value : `${value}\n`);
-}
-
-function writePyodideStdout(message) {
-  if (message == null) {
-    return;
-  }
-
-  const value = typeof message === 'string' ? message : String(message);
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return;
-  }
-  if (
-    trimmed.startsWith('Loading ') ||
-    trimmed.startsWith('Loaded ') ||
-    trimmed.startsWith("Didn't find package ") ||
-    (trimmed.startsWith('Package ') && trimmed.includes(' loaded from '))
-  ) {
-    return;
-  }
-
-  writeStream(process.stdout, value);
 }
 
 function resolvePyodidePackageCacheDir() {
@@ -1565,7 +1546,7 @@ function installPythonMicropipCompat(pyodide) {
   // Pyodide's loadPackage() logs a package that fails to load and resolves
   // anyway. Reject instead so micropip.install() does not report success.
   const loadPackage = async (names) => {
-    const loaded = await pyodide.loadPackage(names);
+    const loaded = await pyodide.loadPackage(names, PYODIDE_LOAD_PACKAGE_OPTIONS);
     const loadedNames = new Set(Object.keys(pyodide.loadedPackages).map(normalizePythonPackageName));
     const missing = Array.from(names).filter(
       (name) => !loadedNames.has(normalizePythonPackageName(name)),
@@ -2110,6 +2091,19 @@ async function readLockFileContents(indexPath, indexURL) {
   }
 }
 
+// Pyodide's line-batched handlers drop a final line that has no newline and
+// reframe the rest by line. Write raw bytes so guest output stays exact.
+function installPythonStdout(pyodide) {
+  const rawWriter = (stream) => ({
+    write(bytes) {
+      stream.write(bytes.slice());
+      return bytes.length;
+    },
+  });
+  pyodide.setStdout(rawWriter(process.stdout));
+  pyodide.setStderr(rawWriter(process.stderr));
+}
+
 function installPythonStdin(pyodide) {
   if (typeof pyodide?.setStdin !== 'function') {
     return;
@@ -2543,7 +2537,7 @@ try {
     packageBaseUrl,
     packageCacheDir,
     env: buildPythonRuntimeEnv(),
-    stdout: writePyodideStdout,
+    stdout: (message) => writeStream(process.stdout, message),
     stderr: (message) => writeStream(process.stderr, message),
   }).catch((error) => {
     throw wrapPythonStartupError(
@@ -2562,13 +2556,14 @@ try {
   emitWarmupStage('after-load-pyodide');
   const loadPyodideMs = realPerformance.now() - loadPyodideStarted;
 
+  installPythonStdout(pyodide);
   installPythonStdin(pyodide);
   installPythonWorkspaceFs(pyodide, pythonVfsRpcBridge);
   installPythonVfsSitePackages(pyodide);
   installPythonGuestLoaderHooks();
   if (typeof pyodide?.loadPackage === 'function') {
     emitWarmupStage('before-load-micropip');
-    await pyodide.loadPackage(['micropip']);
+    await pyodide.loadPackage(['micropip'], PYODIDE_LOAD_PACKAGE_OPTIONS);
     emitWarmupStage('after-load-micropip');
   }
   const isBundledPackage = installPythonBundledPackages(pyodide, indexPath);
