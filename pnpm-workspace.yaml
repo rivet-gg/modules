@@ -32,7 +32,6 @@ ignoredBuiltDependencies:
 
 onlyBuiltDependencies:
   - '@biomejs/biome'
-  - better-sqlite3
   - bun
   - cbor-extract
   - esbuild
