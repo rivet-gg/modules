@@ -33,6 +33,7 @@ export {
 	hostDirMount,
 	KernelError,
 	nodeModulesMount,
+	SidecarEventBufferOverflow,
 	SidecarProcessError,
 	SidecarProcessExited,
 	SidecarRejectedError,
