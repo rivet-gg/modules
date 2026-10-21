@@ -2503,6 +2503,13 @@ var NetSocket = class _NetSocket extends CanonicalDuplex {
 		}
 		return this;
 	}
+	// Fail the stream instead of ending it, so readers (including undici
+	// bodies) see the release. The summary on stderr already reports it, so a
+	// socket without its own error listener must not crash the context.
+	_destroyReleased(error) {
+		if (this.listenerCount("error") === 0) this.once("error", () => {});
+		this.destroy(error);
+	}
 	_syncHandleRef() {
 		const active =
 			this._refed &&
@@ -2527,7 +2534,7 @@ var NetSocket = class _NetSocket extends CanonicalDuplex {
 		}
 		this._handleRefId = this._livenessId;
 		if (typeof _registerHandle === "function") {
-			_registerHandle(this._handleRefId, "net socket", () => this.destroy());
+			_registerHandle(this._handleRefId, "net socket", (error) => this._destroyReleased(error));
 		}
 	}
 	address() {

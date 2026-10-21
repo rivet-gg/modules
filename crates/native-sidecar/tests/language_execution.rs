@@ -1117,6 +1117,32 @@ fn execution_timeout_is_enforced_by_the_sidecar() {
     dispose_vm_and_close_session_wire(&mut sidecar, &connection_id, &session_id, &vm_id);
 }
 
+fn evaluate_in_context(
+    sidecar: &mut agentos_native_sidecar::NativeSidecar<support::RecordingBridge>,
+    (connection_id, session_id, vm_id): (&str, &str, &str),
+    context_id: &str,
+    format: wire::JavaScriptModuleFormat,
+    expression: &str,
+) -> wire::ExecutionCompletedResponse {
+    let mut process = context_process_options(context_id);
+    process.timeout_ms = Some(5_000);
+    let started = sidecar
+        .dispatch_wire_blocking(wire_request(
+            5,
+            wire_vm(connection_id, session_id, vm_id),
+            wire::RequestPayload::JavaScriptEvaluationRequest(wire::JavaScriptEvaluationRequest {
+                process,
+                expression: expression.to_owned(),
+                format: Some(format),
+                file_path: None,
+                inputs: None,
+            }),
+        ))
+        .expect("start context evaluation");
+    let execution_id = accepted_execution_id(started);
+    wait_for_execution(sidecar, connection_id, session_id, vm_id, &execution_id)
+}
+
 #[test]
 fn context_call_completes_when_its_result_settles_despite_leftover_handles() {
     let mut sidecar = new_sidecar("language-execution-leftover-handles");
@@ -1132,32 +1158,18 @@ fn context_call_completes_when_its_result_settles_despite_leftover_handles() {
         &cwd,
     );
 
-    let mut request_id = 4;
-    let mut evaluate =
+    let evaluate =
         |sidecar: &mut agentos_native_sidecar::NativeSidecar<support::RecordingBridge>,
          context_id: &str,
          format: wire::JavaScriptModuleFormat,
          expression: &str| {
-            let mut process = context_process_options(context_id);
-            process.timeout_ms = Some(5_000);
-            request_id += 1;
-            let started = sidecar
-                .dispatch_wire_blocking(wire_request(
-                    request_id,
-                    wire_vm(&connection_id, &session_id, &vm_id),
-                    wire::RequestPayload::JavaScriptEvaluationRequest(
-                        wire::JavaScriptEvaluationRequest {
-                            process,
-                            expression: expression.to_owned(),
-                            format: Some(format),
-                            file_path: None,
-                            inputs: None,
-                        },
-                    ),
-                ))
-                .expect("start context evaluation");
-            let execution_id = accepted_execution_id(started);
-            wait_for_execution(sidecar, &connection_id, &session_id, &vm_id, &execution_id)
+            evaluate_in_context(
+                sidecar,
+                (&connection_id, &session_id, &vm_id),
+                context_id,
+                format,
+                expression,
+            )
         };
 
     for (context_id, format) in [
@@ -1198,6 +1210,112 @@ fn context_call_completes_when_its_result_settles_despite_leftover_handles() {
             "{context_id}: the context must keep state set by the first call"
         );
     }
+
+    dispose_vm_and_close_session_wire(&mut sidecar, &connection_id, &session_id, &vm_id);
+}
+
+#[test]
+fn released_context_socket_fails_reads_in_later_calls() {
+    let mut sidecar = new_sidecar("language-execution-released-socket");
+    let connection_id = authenticate_wire(&mut sidecar, "released-socket-connection");
+    let session_id = open_session_wire(&mut sidecar, 2, &connection_id);
+    let cwd = temp_dir("language-execution-released-socket-cwd");
+    let (vm_id, _) = create_vm_wire(
+        &mut sidecar,
+        3,
+        &connection_id,
+        &session_id,
+        wire::GuestRuntimeKind::JavaScript,
+        &cwd,
+    );
+    create_context(
+        &mut sidecar,
+        &connection_id,
+        &session_id,
+        &vm_id,
+        "released",
+    );
+    let ids = (connection_id.as_str(), session_id.as_str(), vm_id.as_str());
+    let stderr = |result: &wire::ExecutionCompletedResponse| {
+        String::from_utf8_lossy(result.stderr.as_deref().unwrap_or_default()).into_owned()
+    };
+
+    // The body is far larger than one read, so most of it is still on the
+    // socket when the first call completes and releases that socket.
+    let stored = evaluate_in_context(
+        &mut sidecar,
+        ids,
+        "released",
+        wire::JavaScriptModuleFormat::Module,
+        r#"await (async () => {
+            const http = require("node:http");
+            const body = Buffer.alloc(8 * 1024 * 1024, 97);
+            const server = http.createServer((_request, response) => {
+                response.setHeader("content-length", body.length);
+                response.end(body);
+            });
+            await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+            globalThis.response = await fetch(`http://127.0.0.1:${server.address().port}/`);
+            return response.status;
+        })()"#,
+    );
+    assert_eq!(
+        stored.outcome,
+        wire::ExecutionOutcome::Succeeded,
+        "{:?}",
+        stored.error
+    );
+    assert_eq!(stored.evaluation_value.as_deref(), Some("200"));
+
+    let read = evaluate_in_context(
+        &mut sidecar,
+        ids,
+        "released",
+        wire::JavaScriptModuleFormat::Module,
+        "await response.arrayBuffer().then((body) => ({ bytes: body.byteLength }), (error) => ({ code: error.cause?.code ?? error.code }))",
+    );
+    assert_eq!(
+        read.outcome,
+        wire::ExecutionOutcome::Succeeded,
+        "{:?}",
+        read.error
+    );
+    assert_eq!(
+        read.evaluation_value.as_deref(),
+        Some(r#"{"code":"ERR_AGENTOS_CONTEXT_HANDLE_RELEASED"}"#),
+        "a released response body must fail, not end early"
+    );
+
+    // A call that finishes its own I/O leaves nothing to release.
+    let complete = evaluate_in_context(
+        &mut sidecar,
+        ids,
+        "released",
+        wire::JavaScriptModuleFormat::Module,
+        r#"await (async () => {
+            const http = require("node:http");
+            const server = http.createServer((_request, response) => {
+                response.setHeader("connection", "close");
+                response.end("ok");
+            });
+            await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+            const text = await (await fetch(`http://127.0.0.1:${server.address().port}/`)).text();
+            await new Promise((resolve) => server.close(resolve));
+            return text;
+        })()"#,
+    );
+    assert_eq!(
+        complete.outcome,
+        wire::ExecutionOutcome::Succeeded,
+        "{:?}",
+        complete.error
+    );
+    assert_eq!(complete.evaluation_value.as_deref(), Some(r#""ok""#));
+    assert!(
+        !stderr(&complete).contains("work still pending"),
+        "a call that finished its fetch reported leftover work: {}",
+        stderr(&complete)
+    );
 
     dispose_vm_and_close_session_wire(&mut sidecar, &connection_id, &session_id, &vm_id);
 }

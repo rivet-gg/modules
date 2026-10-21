@@ -2973,27 +2973,31 @@ fn session_thread(
                             if execution_abort_requested(&abort_rx) {
                                 terminated = true;
                             } else if complete_on_settle {
-                                // Cancel what the call left behind, then let its
-                                // in-flight bridge calls (including the closes)
-                                // finish so no response outlives this execution.
-                                {
-                                    let scope = &mut v8::HandleScope::new(iso);
-                                    let ctx = v8::Local::new(scope, &exec_context);
-                                    let scope = &mut v8::ContextScope::new(scope, ctx);
-                                    if let Err(release_error) =
-                                        execution::release_leftover_handles(scope)
+                                // The call's outcome is fixed once its entry
+                                // evaluation settles. Finalize it first, then
+                                // release what it left behind and let in-flight
+                                // bridge calls (including the closes) finish so
+                                // no response outlives this execution. Failures
+                                // after this point go to stderr; they never
+                                // rewrite the completed call's outcome.
+                                let scope = &mut v8::HandleScope::new(iso);
+                                let ctx = v8::Local::new(scope, &exec_context);
+                                let scope = &mut v8::ContextScope::new(scope, ctx);
+                                if !module_mode && error.is_none() {
+                                    if let Some((next_code, next_error)) =
+                                        execution::finalize_pending_script_evaluation(scope)
                                     {
-                                        if error.is_none() {
-                                            code = 1;
-                                            error = Some(release_error);
-                                        }
+                                        code = next_code;
+                                        error = next_error;
                                     }
                                 }
-                                if !pending.is_empty() {
-                                    let scope = &mut v8::HandleScope::new(iso);
-                                    let ctx = v8::Local::new(scope, &exec_context);
-                                    let scope = &mut v8::ContextScope::new(scope, ctx);
-                                    let event_loop_status = run_event_loop_with_readiness(
+                                if let Err(release_error) =
+                                    execution::release_leftover_handles(scope)
+                                {
+                                    execution::report_after_call_failure(scope, &release_error);
+                                }
+                                while !pending.is_empty() {
+                                    match run_event_loop_with_readiness(
                                         scope,
                                         EventLoopSources {
                                             commands: &rx,
@@ -3005,16 +3009,29 @@ fn session_thread(
                                             exit: EventLoopExit::BridgeIdle,
                                         },
                                         &pending,
-                                    );
-                                    match event_loop_status {
-                                        EventLoopStatus::Completed => {}
-                                        EventLoopStatus::Terminated => terminated = true,
-                                        EventLoopStatus::Failed(next_code, next_error) => {
-                                            if error.is_none() {
-                                                code = next_code;
-                                                error = Some(next_error);
-                                            }
+                                    ) {
+                                        EventLoopStatus::Completed => break,
+                                        EventLoopStatus::Terminated => {
+                                            terminated = true;
+                                            break;
                                         }
+                                        EventLoopStatus::Failed(_, after_call_error) => {
+                                            execution::report_after_call_failure(
+                                                scope,
+                                                &after_call_error,
+                                            );
+                                        }
+                                    }
+                                }
+                                // Rejections that are still unhandled arose after
+                                // the result settled (typically from released
+                                // handles). Report them here so they cannot fail
+                                // an unrelated later call in this context.
+                                if !terminated {
+                                    while let Some(rejection) =
+                                        execution::take_unhandled_promise_rejection(scope)
+                                    {
+                                        execution::report_after_call_failure(scope, &rejection);
                                     }
                                 }
                             } else {
