@@ -208,7 +208,7 @@
 	},
 	"dependencies": {
 		"@rivet-dev/agentos-runtime-sidecar": "workspace:*",
-		"@bare-ts/lib": "^0.4.0",
+		"@bare-ts/lib": "^0.4.1",
 		"zod": "^4.1.11",
 		"zod-to-json-schema": "^3.25.2"
 	},

@@ -67,7 +67,7 @@
 		"zod": "^4.1.11"
 	},
 	"devDependencies": {
-		"@bare-ts/lib": "^0.4.0",
+		"@bare-ts/lib": "^0.4.1",
 		"@agentos-software/common": "workspace:*",
 		"@agentos-software/coreutils": "workspace:*",
 		"@agentos-software/curl": "workspace:*",
