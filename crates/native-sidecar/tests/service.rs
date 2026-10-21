@@ -30,6 +30,8 @@ mod limits;
 #[allow(dead_code)]
 #[path = "../src/metadata/mod.rs"]
 mod metadata;
+#[path = "../src/native_heap.rs"]
+mod native_heap;
 #[allow(dead_code)]
 #[path = "../src/package_projection.rs"]
 mod package_projection;
