@@ -1,5 +1,6 @@
 // @rivet-dev/agentos
 
+export { SidecarEventBufferOverflow } from "@rivet-dev/agentos-runtime-core/event-buffer";
 export {
 	SidecarProcessError,
 	SidecarProcessExited,

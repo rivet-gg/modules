@@ -1,7 +1,18 @@
 import type { ChildProcess } from "node:child_process";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { SidecarProcessExited } from "@rivet-dev/agentos-runtime-core/sidecar-client";
 import { expect, test } from "vitest";
 import { AgentOs } from "../src/index.js";
+import {
+	NativeSidecarProcessClient,
+	serializeRootFilesystemForSidecar,
+} from "../src/sidecar/rpc-client.js";
+
+const REPO_ROOT = fileURLToPath(new URL("../../..", import.meta.url));
+const SIDECAR_BINARY = process.env.AGENTOS_SIDECAR_BIN
+	? resolve(process.env.AGENTOS_SIDECAR_BIN)
+	: join(REPO_ROOT, "target/debug/agentos-native-sidecar");
 
 // Kills the VM's real sidecar process. This reaches into internals only to find
 // the process; the behavior under test is the public evaluate() result.
@@ -91,4 +102,44 @@ test("a sidecar whose transport fails is stopped, not leaked", async () => {
 	await fresh.filesystem.writeFile("/tmp/ok", "ok");
 	await broken.dispose().catch(() => {});
 	await fresh.dispose();
+}, 60_000);
+
+test("a sidecar outlives more VM create and dispose cycles than its event buffer holds", async () => {
+	const eventBufferCapacity = 8;
+	const client = NativeSidecarProcessClient.spawn({
+		cwd: REPO_ROOT,
+		command: SIDECAR_BINARY,
+		eventBufferCapacity,
+	});
+	try {
+		const session = await client.authenticateAndOpenSession();
+		// Each cycle leaves lifecycle events that no caller waits for.
+		for (let cycle = 0; cycle < eventBufferCapacity * 2; cycle += 1) {
+			const vm = await client.createVm(session, {
+				runtime: "java_script",
+				config: {
+					env: {},
+					rootFilesystem: serializeRootFilesystemForSidecar(),
+				},
+			});
+			await client.waitForEvent(
+				{
+					type: "vm_lifecycle",
+					ownership: {
+						scope: "vm",
+						connection_id: session.connectionId,
+						session_id: session.sessionId,
+						vm_id: vm.vmId,
+					},
+					state: "ready",
+				},
+				10_000,
+			);
+			await client.disposeVm(session, vm);
+		}
+	} catch (error) {
+		await client.dispose().catch(() => {});
+		throw error;
+	}
+	await client.dispose();
 }, 60_000);
