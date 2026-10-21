@@ -34,6 +34,24 @@ export class SidecarRejectedError extends Error {
 	}
 }
 
+/**
+ * A host frame exceeded the sidecar's negotiated `max_frame_bytes`. The client
+ * rejects it before writing, so the sidecar and its other VMs keep running.
+ */
+export class SidecarFrameTooLarge extends Error {
+	readonly frameBytes: number;
+	readonly maxFrameBytes: number;
+
+	constructor(options: { frameBytes: number; maxFrameBytes: number }) {
+		super(
+			`sidecar protocol frame is ${options.frameBytes} bytes, limit is ${options.maxFrameBytes} (sidecar max_frame_bytes); the request was not sent. Send less data per request, for example by writing large content in several smaller files or by mounting a host directory`,
+		);
+		this.name = "SidecarFrameTooLarge";
+		this.frameBytes = options.frameBytes;
+		this.maxFrameBytes = options.maxFrameBytes;
+	}
+}
+
 export class SidecarProcessExited extends Error {
 	readonly exitCode: number | null;
 	readonly signal: string | null;

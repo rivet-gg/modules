@@ -4,12 +4,18 @@ import {
 	encodeLengthPrefixedPayload,
 	tryDecodeLengthPrefixedPayload,
 } from "./framing.js";
+import { SidecarFrameTooLarge } from "./sidecar-errors.js";
 
 export interface StdioFrameTransportOptions<TReadFrame, TWriteFrame> {
 	stdin: Writable;
 	stdout: Readable;
 	encodeFrame: (frame: TWriteFrame) => Uint8Array;
 	decodeFrame: (payload: Uint8Array) => TReadFrame;
+	/**
+	 * Largest payload the peer accepts, or `undefined` while unknown. A larger
+	 * frame is rejected before it is written.
+	 */
+	maxFrameBytes?: () => number | undefined;
 }
 
 export interface FrameTransport<TReadFrame, TWriteFrame = TReadFrame> {
@@ -208,17 +214,21 @@ export class StdioFrameTransport<TReadFrame, TWriteFrame = TReadFrame>
 	private readonly stdout: Readable;
 	private readonly encodeFrame: (frame: TWriteFrame) => Uint8Array;
 	private readonly decodeFrame: (payload: Uint8Array) => TReadFrame;
+	private readonly maxFrameBytes: (() => number | undefined) | undefined;
 	private readonly sharedStdio: boolean;
 	private readonly frameListeners = new Set<(frame: TReadFrame) => void>();
 	private readonly errorListeners = new Set<(error: Error) => void>();
 	private readonly endListeners = new Set<() => void>();
 	private stdoutBuffer: ByteArray = new Uint8Array(0);
+	private pendingWrites = 0;
+	private disposed = false;
 
 	constructor(options: StdioFrameTransportOptions<TReadFrame, TWriteFrame>) {
 		this.stdin = options.stdin;
 		this.stdout = options.stdout;
 		this.encodeFrame = options.encodeFrame;
 		this.decodeFrame = options.decodeFrame;
+		this.maxFrameBytes = options.maxFrameBytes;
 		this.sharedStdio = this.stdin === (this.stdout as unknown as Writable);
 		if (!this.sharedStdio) {
 			this.stdin.on("error", this.handleError);
@@ -250,10 +260,24 @@ export class StdioFrameTransport<TReadFrame, TWriteFrame = TReadFrame>
 	}
 
 	async writeFrame(frame: TWriteFrame): Promise<void> {
+		if (this.disposed) {
+			throw new Error("stdio frame transport disposed");
+		}
 		const payload = this.encodeFrame(frame);
+		const maxFrameBytes = this.maxFrameBytes?.();
+		// The peer cannot resynchronize after an oversized length prefix, so
+		// writing one would end the stream for every user of it.
+		if (maxFrameBytes !== undefined && payload.length > maxFrameBytes) {
+			throw new SidecarFrameTooLarge({
+				frameBytes: payload.length,
+				maxFrameBytes,
+			});
+		}
 		const encoded = encodeLengthPrefixedPayload(payload);
+		this.pendingWrites += 1;
 		await new Promise<void>((resolve, reject) => {
 			this.stdin.write(encoded, (error) => {
+				this.pendingWrites -= 1;
 				if (error) {
 					reject(error);
 					return;
@@ -264,6 +288,10 @@ export class StdioFrameTransport<TReadFrame, TWriteFrame = TReadFrame>
 	}
 
 	dispose(): void {
+		if (this.disposed) {
+			return;
+		}
+		this.disposed = true;
 		if (!this.sharedStdio) {
 			this.stdin.off("error", this.handleError);
 		}
@@ -273,6 +301,14 @@ export class StdioFrameTransport<TReadFrame, TWriteFrame = TReadFrame>
 		this.frameListeners.clear();
 		this.errorListeners.clear();
 		this.endListeners.clear();
+		if (this.pendingWrites > 0) {
+			// A write still in flight rejects its own promise, but Node also emits
+			// the failure (for example EPIPE from a dead sidecar) as a stream
+			// `error` event. Without a listener that event crashes the host.
+			const stdin = this.stdin;
+			stdin.on("error", logLateStreamError);
+			stdin.once("close", () => stdin.off("error", logLateStreamError));
+		}
 	}
 
 	private readonly handleData = (chunk: ByteArray | string): void => {
@@ -317,6 +353,13 @@ export class StdioFrameTransport<TReadFrame, TWriteFrame = TReadFrame>
 			}
 		}
 	}
+}
+
+function logLateStreamError(error: Error): void {
+	console.error(
+		"[agentOS] sidecar stream failed after its frame transport was disposed:",
+		error,
+	);
 }
 
 function concatBytes(left: ByteArray, right: ByteArray): ByteArray {

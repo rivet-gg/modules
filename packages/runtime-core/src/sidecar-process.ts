@@ -53,6 +53,7 @@ import type {
 
 export { SidecarEventBufferOverflow } from "./event-buffer.js";
 export {
+	SidecarFrameTooLarge,
 	SidecarProcessError,
 	SidecarProcessExited,
 	SidecarSilenceTimeout,

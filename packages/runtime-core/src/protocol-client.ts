@@ -91,6 +91,11 @@ export class SidecarProtocolClient {
 		LiveSidecarRequestFrame
 	>;
 	private closedError: Error | null = null;
+	/**
+	 * Frame limit from the sidecar's authenticate response. Only the small
+	 * authenticate request is written before it is known.
+	 */
+	private maxFrameBytes: number | undefined;
 	private readonly closeListeners = new Set<(error: Error) => void>();
 	private readonly eventWaiters = new Set<{
 		matches: (event: LiveEventFrame) => boolean;
@@ -113,7 +118,11 @@ export class SidecarProtocolClient {
 			LiveEventFrame,
 			LiveSidecarRequestFrame
 		>({
-			frameTransport: resolveProtocolFrameTransport(options, this.payloadCodec),
+			frameTransport: resolveProtocolFrameTransport(
+				options,
+				this.payloadCodec,
+				() => this.maxFrameBytes,
+			),
 			encodeFrame: (frame) =>
 				encodeProtocolFramePayload(frame, this.payloadCodec),
 			decodeFrame: (payload) =>
@@ -222,6 +231,9 @@ export class SidecarProtocolClient {
 
 		if (response.payload.type === "rejected") {
 			throw new SidecarRejectedError(request.request_id, response.payload);
+		}
+		if (response.payload.type === "authenticated") {
+			this.maxFrameBytes = response.payload.max_frame_bytes;
 		}
 		return response;
 	}
@@ -424,6 +436,7 @@ export class SidecarProtocolClient {
 function resolveProtocolFrameTransport(
 	options: SidecarProtocolClientOptions,
 	payloadCodec: ProtocolFramePayloadCodec,
+	maxFrameBytes: () => number | undefined,
 ): FrameTransport<
 	LiveResponseFrame | LiveEventFrame | LiveSidecarRequestFrame,
 	LiveRequestFrame | LiveSidecarResponseFrame | LiveControlFrame
@@ -451,6 +464,7 @@ function resolveProtocolFrameTransport(
 			stdin: options.stdin,
 			stdout: options.stdout,
 			encodeFrame: (frame) => encodeProtocolFramePayload(frame, payloadCodec),
+			maxFrameBytes,
 			decodeFrame: (payload) =>
 				decodeProtocolFramePayload(payload, payloadCodec) as
 					| LiveResponseFrame
@@ -485,6 +499,7 @@ function resolveProtocolFrameTransport(
 			stdin: options.stdin,
 			stdout: options.stdout,
 			encodeFrame: (frame) => encodeProtocolFramePayload(frame, payloadCodec),
+			maxFrameBytes,
 			decodeFrame: (payload) => {
 				const frame = decodeProtocolFramePayload(payload, payloadCodec);
 				validateOrdinaryInboundFrame(frame);
@@ -498,6 +513,7 @@ function resolveProtocolFrameTransport(
 			stdin: options.control,
 			stdout: options.control,
 			encodeFrame: (frame) => encodeProtocolFramePayload(frame, payloadCodec),
+			maxFrameBytes,
 			decodeFrame: (payload) => {
 				const frame = decodeProtocolFramePayload(payload, payloadCodec);
 				validateControlInboundFrame(frame);

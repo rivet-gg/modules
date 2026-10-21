@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SidecarProcessExited } from "@rivet-dev/agentos-runtime-core/sidecar-client";
 import { expect, test } from "vitest";
-import { AgentOs } from "../src/index.js";
+import { AgentOs, SidecarFrameTooLarge } from "../src/index.js";
 import {
 	NativeSidecarProcessClient,
 	serializeRootFilesystemForSidecar,
@@ -142,4 +142,44 @@ test("a sidecar outlives more VM create and dispose cycles than its event buffer
 		throw error;
 	}
 	await client.dispose();
+}, 60_000);
+
+test("an oversized request rejects without stopping the sidecar its VMs share", async () => {
+	const uncaught: unknown[] = [];
+	const recordUncaught = (error: unknown) => uncaught.push(error);
+	process.on("uncaughtException", recordUncaught);
+	const sidecar = await AgentOs.createSidecar();
+	const placement = { kind: "explicit", handle: sidecar } as const;
+	const writer = await AgentOs.create({
+		defaultSoftware: false,
+		sidecar: placement,
+	});
+	const bystander = await AgentOs.create({
+		defaultSoftware: false,
+		sidecar: placement,
+	});
+	try {
+		// Base64 content encoding puts this request over the sidecar frame limit.
+		const error = await writer.filesystem
+			.writeFile("/tmp/big.bin", new Uint8Array(13 * 1024 * 1024))
+			.catch((caught: unknown) => caught);
+		expect(error).toMatchObject({ name: "SidecarFrameTooLarge" });
+		expect(error).toBeInstanceOf(SidecarFrameTooLarge);
+		const { frameBytes, maxFrameBytes } = error as SidecarFrameTooLarge;
+		expect(frameBytes).toBeGreaterThan(maxFrameBytes);
+		expect((error as Error).message).toContain(`limit is ${maxFrameBytes}`);
+
+		// Another VM on the same sidecar keeps working, and so does the writer.
+		expect(await bystander.javascript.evaluate("1 + 1")).toMatchObject({
+			outcome: "succeeded",
+			value: 2,
+		});
+		await writer.filesystem.writeFile("/tmp/small.txt", "ok");
+		expect(uncaught).toEqual([]);
+	} finally {
+		process.off("uncaughtException", recordUncaught);
+		await writer.dispose().catch(() => {});
+		await bystander.dispose().catch(() => {});
+		await sidecar.dispose().catch(() => {});
+	}
 }, 60_000);
