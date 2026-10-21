@@ -3556,6 +3556,7 @@ var Server = class {
   _listeners = {};
   _serverId;
   _netServer = null;
+  _refed = true;
   _listenPromise = null;
   _address = null;
   _handleId = null;
@@ -3633,6 +3634,7 @@ var Server = class {
     debugBridgeNetwork("server listen start", this._serverId, port, hostname);
     const netServer = new NetServer({ allowHalfOpen: true });
     this._netServer = netServer;
+    if (!this._refed) netServer.unref();
     netServer.on("connection", (socket) => {
       if (this._tlsOptions) {
         const tlsSocket = new TLSSocket(socket, {
@@ -3806,9 +3808,13 @@ var Server = class {
     return this;
   }
   ref() {
+    this._refed = true;
+    this._netServer?.ref();
     return this;
   }
   unref() {
+    this._refed = false;
+    this._netServer?.unref();
     return this;
   }
 };

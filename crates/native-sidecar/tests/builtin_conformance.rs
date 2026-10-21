@@ -4905,6 +4905,77 @@ fn unrefd_timeout_does_not_keep_guest_process_alive() {
     run_isolated_builtin_conformance_test("timer-unref-exit");
 }
 
+fn unrefd_http_server_does_not_keep_guest_process_alive_impl() {
+    let cwd = temp_dir("builtin-http-server-unref-exit");
+    let entrypoint = cwd.join("entry.mjs");
+    write_fixture(
+        &entrypoint,
+        r#"
+import http from "node:http";
+
+const server = http.createServer((_request, response) => response.end("ok"));
+server.listen(0, "127.0.0.1", () => {
+  server.unref();
+  console.log(JSON.stringify({ listening: server.listening }));
+});
+"#,
+    );
+
+    let mut sidecar = new_sidecar("http-server-unref-exit");
+    let connection_id = authenticate_wire(&mut sidecar, "conn-http-server-unref-exit");
+    let session_id = open_session_wire(&mut sidecar, 2, &connection_id);
+    let allowed_builtins =
+        serde_json::to_string(&["http", "net"]).expect("serialize http builtin allowlist");
+    let mut metadata = HashMap::new();
+    metadata.insert(
+        String::from("env.AGENTOS_ALLOWED_NODE_BUILTINS"),
+        allowed_builtins,
+    );
+    let vm_id = create_vm_with_metadata_and_permissions(
+        &mut sidecar,
+        3,
+        &connection_id,
+        &session_id,
+        GuestRuntimeKind::JavaScript,
+        &cwd,
+        metadata,
+        wire_permissions_allow_all(),
+    );
+
+    execute_wire(
+        &mut sidecar,
+        4,
+        &connection_id,
+        &session_id,
+        &vm_id,
+        "proc-http-server-unref-exit",
+        GuestRuntimeKind::JavaScript,
+        &entrypoint,
+        Vec::new(),
+    );
+
+    // Host Node exits as soon as the only listener is unref'd; the guest must
+    // not wait for the server to close.
+    let (stdout, stderr, exit_code) = collect_builtin_process_output_with_timeout(
+        &mut sidecar,
+        &connection_id,
+        &session_id,
+        &vm_id,
+        "proc-http-server-unref-exit",
+        Duration::from_secs(5),
+    );
+    dispose_vm_and_close_session_wire(&mut sidecar, &connection_id, &session_id, &vm_id);
+
+    assert_eq!(exit_code, 0, "guest process should exit cleanly: {stderr}");
+    let payload: Value = serde_json::from_str(stdout.trim()).expect("parse server stdout JSON");
+    assert_eq!(payload["listening"], Value::Bool(true));
+}
+
+#[test]
+fn unrefd_http_server_does_not_keep_guest_process_alive() {
+    run_isolated_builtin_conformance_test("http-server-unref-exit");
+}
+
 fn run_named_case(case_name: &str) {
     match case_name {
         "fs" => fs_conformance_matches_host_node(),
@@ -4998,6 +5069,7 @@ fn __builtin_conformance_extra_test_runner() {
         "os-resource-limits" => os_resource_limits_are_vm_scoped_impl(),
         "timer-handle-ref-refresh" => timer_handle_ref_refresh_matches_host_node_impl(),
         "timer-unref-exit" => unrefd_timeout_does_not_keep_guest_process_alive_impl(),
+        "http-server-unref-exit" => unrefd_http_server_does_not_keep_guest_process_alive_impl(),
         "fs-write-file-numeric-fd" => write_file_sync_numeric_fd_matches_host_node_impl(),
         other => panic!("unknown builtin conformance extra test: {other}"),
     }
