@@ -47,6 +47,7 @@ const NODE_KEEP_STDIN_OPEN_ENV: &str = "AGENTOS_KEEP_STDIN_OPEN";
 const NODE_GUEST_ENTRYPOINT_ENV: &str = "AGENTOS_GUEST_ENTRYPOINT";
 const NODE_GUEST_ENTRYPOINT_MODULE_MODE_ENV: &str = "AGENTOS_GUEST_ENTRYPOINT_MODULE_MODE";
 const NODE_RETAIN_CONTEXT_ENV: &str = "AGENTOS_RETAIN_LANGUAGE_CONTEXT";
+const NODE_COMPLETE_ON_SETTLE_ENV: &str = "AGENTOS_COMPLETE_ON_SETTLE";
 const NODE_INLINE_FILE_PATH_ENV: &str = "AGENTOS_INLINE_FILE_PATH";
 const NODE_USE_BUNDLED_TYPESCRIPT_ENV: &str = "AGENTOS_USE_BUNDLED_TYPESCRIPT";
 const NODE_TYPESCRIPT_COMPILER_PATH_ENV: &str = "AGENTOS_TYPESCRIPT_COMPILER_PATH";
@@ -280,6 +281,7 @@ const RESERVED_NODE_ENV_KEYS: &[&str] = &[
     NODE_IMPORT_CACHE_PATH_ENV,
     NODE_KEEP_STDIN_OPEN_ENV,
     NODE_RETAIN_CONTEXT_ENV,
+    NODE_COMPLETE_ON_SETTLE_ENV,
     NODE_USE_BUNDLED_TYPESCRIPT_ENV,
     NODE_TYPESCRIPT_COMPILER_PATH_ENV,
     NODE_ALLOWED_BUILTINS_ENV,
@@ -2952,12 +2954,18 @@ impl JavascriptExecutionEngine {
         record_js_start_phase("js_start_install_module_reader", phase_start.elapsed());
 
         let phase_start = Instant::now();
-        let retain_context = request
-            .env
-            .get(NODE_RETAIN_CONTEXT_ENV)
-            .is_some_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+        let env_flag = |key: &str| {
+            request
+                .env
+                .get(key)
+                .is_some_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+        };
+        let retain_context = env_flag(NODE_RETAIN_CONTEXT_ENV);
+        let complete_on_settle = env_flag(NODE_COMPLETE_ON_SETTLE_ENV);
         let prepared_execute = PreparedJavascriptExecute {
-            mode: u8::from(use_module_mode) | if retain_context { 2 } else { 0 },
+            mode: u8::from(use_module_mode)
+                | if retain_context { 2 } else { 0 }
+                | if complete_on_settle { 4 } else { 0 },
             file_path: execution_file_path,
             bridge_code: V8RuntimeHost::bridge_code().to_owned(),
             post_restore_script: request

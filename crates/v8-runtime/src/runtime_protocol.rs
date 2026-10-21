@@ -209,7 +209,7 @@ impl TryFrom<BinaryFrame> for RuntimeCommand {
                 high_resolution_time,
                 user_code,
             } => {
-                if mode > 3 {
+                if mode > 7 {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidInput,
                         format!("unknown Execute mode: {mode}"),
@@ -355,7 +355,7 @@ mod tests {
     fn rejects_unknown_execute_mode() {
         let err = RuntimeCommand::try_from(BinaryFrame::Execute {
             session_id: "s".into(),
-            mode: 4,
+            mode: 8,
             file_path: "/app/main.mjs".into(),
             bridge_code: String::new(),
             post_restore_script: String::new(),

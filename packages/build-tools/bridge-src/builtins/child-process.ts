@@ -1149,7 +1149,7 @@ var ChildProcess = class {
   }
   ref() {
     if (!this._handleRefed && this._handleId && typeof _registerHandle === "function") {
-      _registerHandle(this._handleId, this._handleDescription);
+      _registerHandle(this._handleId, this._handleDescription, () => this.kill());
       this._handleRefed = true;
     }
     return this;
@@ -1431,7 +1431,7 @@ function spawn(command, args, options) {
     if (typeof _registerHandle === "function") {
       child._handleId = `child:${sessionId}`;
       child._handleDescription = `child_process: ${command} ${argsArray.join(" ")}`;
-      _registerHandle(child._handleId, child._handleDescription);
+      _registerHandle(child._handleId, child._handleDescription, () => child.kill());
       child._handleRefed = true;
     }
     queueMicrotask(() => {
