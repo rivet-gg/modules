@@ -155,6 +155,7 @@ dependencies = [
  "agentos-native-sidecar-core",
  "agentos-runtime",
  "agentos-sidecar-protocol",
+ "agentos-v8-runtime",
  "agentos-vfs",
  "agentos-vfs-core",
  "agentos-vm-config",

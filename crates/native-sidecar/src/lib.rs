@@ -16,6 +16,7 @@ pub(crate) mod json_rpc;
 pub(crate) mod language_execution;
 pub mod limits;
 pub(crate) mod metadata;
+pub(crate) mod native_heap;
 pub(crate) mod ownership_coordinator;
 pub mod package_projection;
 pub(crate) mod plugins;

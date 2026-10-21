@@ -1654,13 +1654,17 @@ where
     /// reset) erroring out with `?` can never strand these maps for the rest of
     /// the process lifetime (H1). This also reclaims extension output buffers,
     /// which was previously removed only on a successful handoff and leaked on VM
-    /// or session disposal (M6).
+    /// or session disposal (M6). Finally, it schedules a coalesced native heap
+    /// trim so the disposed VM's freed V8 memory returns to the OS.
     pub(crate) fn reclaim_vm_tracking(&mut self, session_id: &str, vm_id: &str) {
         self.prune_extension_vm_resource(vm_id);
         self.extension_process_output_buffers
             .retain(|(buffer_vm_id, _process_id), _| buffer_vm_id != vm_id);
         if let Some(session) = self.sessions.get_mut(session_id) {
             session.vm_ids.remove(vm_id);
+        }
+        if let Some(runtime_context) = self.runtime_context.as_ref() {
+            crate::native_heap::schedule_trim_after_vm_disposal(runtime_context);
         }
     }
 

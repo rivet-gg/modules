@@ -21,6 +21,7 @@ agentos-sidecar-protocol = { workspace = true }
 agentos-native-sidecar-core = { workspace = true }
 agentos-runtime = { workspace = true }
 agentos-execution = { workspace = true }
+agentos-v8-runtime = { workspace = true }
 agentos-vm-config = { workspace = true }
 agentos-vfs = { workspace = true }
 async-trait = "0.1"
