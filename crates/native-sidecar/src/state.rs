@@ -1771,6 +1771,10 @@ pub(crate) struct ShadowSyncInventoryEntry {
     /// makes the next walk retry instead of permanently forgetting a failed
     /// reconciliation.
     pub(crate) deletion_pending: bool,
+    /// Both sides of this path as of its last reconciliation. `None` for
+    /// shadow content that the sidecar seeded but never reconciled, such as
+    /// the bootstrap tree.
+    pub(crate) baseline: Option<ShadowSyncBaseline>,
 }
 
 impl ShadowSyncInventoryEntry {
@@ -1778,6 +1782,69 @@ impl ShadowSyncInventoryEntry {
         Self {
             node_type,
             deletion_pending: false,
+            baseline: None,
+        }
+    }
+
+    pub(crate) fn reconciled(node_type: ShadowNodeType, baseline: ShadowSyncBaseline) -> Self {
+        Self {
+            baseline: Some(baseline),
+            ..Self::present(node_type)
+        }
+    }
+}
+
+/// The shadow and kernel nodes at one path as the sidecar last reconciled them.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ShadowSyncBaseline {
+    /// `None` when that side had no node at this path.
+    pub(crate) shadow: Option<ShadowSyncStamp>,
+    pub(crate) kernel: Option<ShadowSyncStamp>,
+}
+
+/// Change detector for one filesystem node. Every write, truncate, chmod,
+/// utimes, and replacement moves `ino`, `mode`, or the times, so an equal
+/// stamp means the node was not modified. Directory times are left out:
+/// they move with child changes, and children carry their own stamps.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ShadowSyncStamp {
+    ino: u64,
+    mode: u32,
+    contents: Option<ShadowSyncContentStamp>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ShadowSyncContentStamp {
+    size: u64,
+    mtime: (i64, u32),
+    ctime: (i64, u32),
+}
+
+impl ShadowSyncStamp {
+    pub(crate) fn host(metadata: &std::fs::Metadata) -> Self {
+        use std::os::unix::fs::MetadataExt;
+        Self {
+            ino: metadata.ino(),
+            mode: metadata.mode(),
+            contents: (!metadata.is_dir()).then(|| ShadowSyncContentStamp {
+                size: metadata.size(),
+                mtime: (metadata.mtime(), metadata.mtime_nsec() as u32),
+                ctime: (metadata.ctime(), metadata.ctime_nsec() as u32),
+            }),
+        }
+    }
+
+    pub(crate) fn kernel(stat: &agentos_kernel::vfs::VirtualStat) -> Self {
+        Self {
+            ino: stat.ino,
+            mode: stat.mode,
+            contents: (!stat.is_directory || stat.is_symbolic_link).then_some(
+                ShadowSyncContentStamp {
+                    size: stat.size,
+                    mtime: (stat.mtime_ms as i64, stat.mtime_nsec),
+                    ctime: (stat.ctime_ms as i64, stat.ctime_nsec),
+                },
+            ),
         }
     }
 }
