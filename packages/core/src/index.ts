@@ -2,6 +2,7 @@
 
 export { SidecarEventBufferOverflow } from "@rivet-dev/agentos-runtime-core/event-buffer";
 export {
+	SidecarFrameTooLarge,
 	SidecarProcessError,
 	SidecarProcessExited,
 	SidecarRejectedError,

@@ -1,5 +1,5 @@
-import { PassThrough } from "node:stream";
-import { describe, expect, test } from "vitest";
+import { PassThrough, Writable } from "node:stream";
+import { describe, expect, test, vi } from "vitest";
 import { StdioFrameTransport } from "../src/frame-stream.js";
 import { encodeLengthPrefixedPayload } from "../src/framing.js";
 
@@ -109,6 +109,41 @@ describe("stdio frame transport", () => {
 
 		transport.dispose();
 		expect(stdio.listenerCount("error")).toBe(initialErrorListeners);
+	});
+
+	test("a write that fails after dispose is logged instead of crashing the host", async () => {
+		let finishWrite: ((error?: Error | null) => void) | undefined;
+		const stdin = new Writable({
+			write(_chunk, _encoding, callback) {
+				finishWrite = callback;
+			},
+		});
+		const transport = new StdioFrameTransport<string>({
+			stdin,
+			stdout: new PassThrough(),
+			encodeFrame: (frame) => Buffer.from(frame, "utf8"),
+			decodeFrame: (payload) => Buffer.from(payload).toString("utf8"),
+		});
+		const uncaught: unknown[] = [];
+		const recordUncaught = (error: unknown) => uncaught.push(error);
+		process.on("uncaughtException", recordUncaught);
+		const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+		try {
+			const write = transport.writeFrame("in flight");
+			transport.dispose();
+			const brokenPipe = Object.assign(new Error("write EPIPE"), {
+				code: "EPIPE",
+			});
+			finishWrite?.(brokenPipe);
+
+			await expect(write).rejects.toBe(brokenPipe);
+			await new Promise((resolve) => setImmediate(resolve));
+			expect(uncaught).toEqual([]);
+			expect(logged).toHaveBeenCalledWith(expect.any(String), brokenPipe);
+		} finally {
+			logged.mockRestore();
+			process.off("uncaughtException", recordUncaught);
+		}
 	});
 
 	test("reports decode errors", async () => {
