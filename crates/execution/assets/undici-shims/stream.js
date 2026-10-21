@@ -45,6 +45,37 @@ const normalizeStreamError = (value) => {
 	return new Error(String(value));
 };
 
+// Web streams expose no way to observe close or error without locking the
+// stream. Node's eos waits on an internal promise that does not keep the event
+// loop alive, so watch web-streams-polyfill `_state` transitions. A polling
+// timer here held the guest process open while a fetch body stayed unread.
+const webStreamSettleListeners = new WeakMap();
+
+const watchWebStreamState = (stream) => {
+	const listeners = new Set();
+	let state = stream._state;
+	Object.defineProperty(stream, "_state", {
+		configurable: true,
+		enumerable: true,
+		get: () => state,
+		set: (next) => {
+			state = next;
+			if (next === "closed" || next === "errored") {
+				for (const listener of listeners) listener();
+			}
+		},
+	});
+	webStreamSettleListeners.set(stream, listeners);
+	return listeners;
+};
+
+const onWebStreamSettled = (stream, listener) => {
+	const listeners =
+		webStreamSettleListeners.get(stream) ?? watchWebStreamState(stream);
+	listeners.add(listener);
+	return () => listeners.delete(listener);
+};
+
 export const finished = (stream, options, callback) => {
 	let normalizedOptions = options;
 	let normalizedCallback = callback;
@@ -65,14 +96,12 @@ export const finished = (stream, options, callback) => {
 	const readableEnabled = normalizedOptions?.readable !== false;
 	const writableEnabled = normalizedOptions?.writable !== false;
 	let cancelled = false;
-	let timer = null;
+	let unsubscribe = null;
 
 	const cleanup = () => {
 		cancelled = true;
-		if (timer !== null) {
-			clearTimeout(timer);
-			timer = null;
-		}
+		unsubscribe?.();
+		unsubscribe = null;
 	};
 
 	const complete = (error = undefined) => {
@@ -83,14 +112,14 @@ export const finished = (stream, options, callback) => {
 		queueMicrotask(() => done(error));
 	};
 
-	const poll = () => {
+	const check = () => {
 		if (cancelled) {
-			return;
+			return true;
 		}
 		const state = stream?._state;
 		if (state === "errored") {
 			complete(normalizeStreamError(stream?._storedError));
-			return;
+			return true;
 		}
 		if (
 			state === "closed" ||
@@ -98,12 +127,16 @@ export const finished = (stream, options, callback) => {
 			(isWebWritableStream(stream) && !writableEnabled)
 		) {
 			complete();
-			return;
+			return true;
 		}
-		timer = setTimeout(poll, 0);
+		return false;
 	};
 
-	poll();
+	if (!check()) {
+		// The polyfill assigns `_storedError` after `_state`, so read it once the
+		// transition has finished.
+		unsubscribe = onWebStreamSettled(stream, () => queueMicrotask(check));
+	}
 	return cleanup;
 };
 
