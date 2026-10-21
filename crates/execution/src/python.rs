@@ -544,7 +544,7 @@ impl PythonExecution {
             )))
         })?;
         let runner = format!(
-            "process.exitCode = 0; (async () => {{ const pyodide = globalThis.__agentOSRetainedPyodide; if (!pyodide) throw new Error('retained Python interpreter is unavailable'); await pyodide.runPythonAsync({source}); }})()"
+            "process.exitCode = 0; (async () => {{ const runPython = globalThis.__agentOSRunRetainedPython; if (!runPython) throw new Error('retained Python interpreter is unavailable'); process.exitCode = await runPython({source}); }})()"
         );
         self.inner
             .execute_retained(runner, String::from("/[agentos-python-retained]"), false)
