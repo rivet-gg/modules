@@ -3564,6 +3564,46 @@ fn python_command_runs_inline_code() {
     assert_eq!(stdout, "2\n", "stderr: {stderr}");
 }
 
+fn python_command_keeps_output_without_trailing_newline() {
+    assert_node_available();
+    let mut sidecar = new_sidecar("python-cli-partial-output");
+    let cwd = temp_dir("python-cli-partial-output-cwd");
+    let connection_id = authenticate_wire(&mut sidecar, "conn-python");
+    let session_id = open_session_wire(&mut sidecar, 2, &connection_id);
+    let (vm_id, _) = create_vm_wire(
+        &mut sidecar,
+        3,
+        &connection_id,
+        &session_id,
+        GuestRuntimeKind::Python,
+        &cwd,
+    );
+
+    execute_python_cli(
+        &mut sidecar,
+        4,
+        &connection_id,
+        &session_id,
+        &vm_id,
+        "proc-py-partial",
+        "python3",
+        &[
+            "-c",
+            "import sys; print('a'); print(); print('b', end=''); sys.stderr.write('err')",
+        ],
+    );
+    let (stdout, stderr, exit_code) = collect_process_output(
+        &mut sidecar,
+        &connection_id,
+        &session_id,
+        &vm_id,
+        "proc-py-partial",
+    );
+    assert_eq!(exit_code, 0, "stderr: {stderr}");
+    assert_eq!(stdout, "a\n\nb");
+    assert_eq!(stderr, "err");
+}
+
 fn python_command_exits_with_cpython_status_and_traceback() {
     assert_node_available();
     let mut sidecar = new_sidecar("python-cli-exit-status");
@@ -4155,6 +4195,7 @@ fn python_rootfs_suite() {
 fn python_cli_suite() {
     python_command_runs_inline_code();
     python_command_exits_with_cpython_status_and_traceback();
+    python_command_keeps_output_without_trailing_newline();
     python_command_runs_script_with_argv();
     python_command_runs_module_with_dash_m();
     python_command_reads_program_from_stdin();
@@ -4264,6 +4305,7 @@ mod python_split {
         python_runtime_surfaces_subprocess_permission_errors,
         python_command_runs_inline_code,
         python_command_exits_with_cpython_status_and_traceback,
+        python_command_keeps_output_without_trailing_newline,
         python_command_runs_script_with_argv,
         python_command_runs_module_with_dash_m,
         python_command_reads_program_from_stdin,
