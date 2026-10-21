@@ -95,31 +95,44 @@ function _waitForActiveHandles() {
     }
   });
 }
-// A context call or evaluation completes when its result settles. Anything it
-// left behind would otherwise stay frozen in the idle context, so cancel the
-// timers, close the closable handles, and report both on stderr.
+var CONTEXT_HANDLE_RELEASED = "ERR_AGENTOS_CONTEXT_HANDLE_RELEASED";
+function contextHandleReleasedError(description) {
+  const error = new Error(
+    `${CONTEXT_HANDLE_RELEASED}: ${description} was closed because the context call that opened it completed; finish I/O inside one call, or use spawn for long-lived work`
+  );
+  error.code = CONTEXT_HANDLE_RELEASED;
+  return error;
+}
+// A context call or evaluation completes when its result settles. Whatever
+// would keep a Node process alive is released: ref'd timers are cancelled and
+// never run; ref'd sockets, servers, and child processes are closed, failing
+// any pending read or request with CONTEXT_HANDLE_RELEASED instead of ending
+// it cleanly. Unref'd timers (including the runtime's own) are left alone.
 function _releaseLeftoverHandles() {
   const released = [];
   for (const [id, entry] of Array.from(_timerEntries)) {
+    if (!entry.handle._refed) continue;
     clearTimeout2(id);
     released.push(entry.repeat ? "setInterval" : "setTimeout");
   }
-  for (const id of Array.from(_immediateEntries.keys())) {
+  for (const [id, entry] of Array.from(_immediateEntries)) {
+    if (!entry.handle._refed) continue;
     clearImmediate(id);
     released.push("setImmediate");
   }
   for (const [id, close] of Array.from(_handleClosers)) {
     if (!_handleClosers.has(id)) continue;
-    released.push(String(_activeHandles.get(id)).split(":")[0]);
+    const description = String(_activeHandles.get(id)).split(":")[0];
+    released.push(description);
     _handleClosers.delete(id);
-    close();
+    close(contextHandleReleasedError(description));
   }
   if (released.length === 0 || typeof _error === "undefined") return;
   const counts = new Map();
   for (const name of released) counts.set(name, (counts.get(name) ?? 0) + 1);
   const summary = Array.from(counts, ([name, count]) => `${name} x${count}`).join(", ");
   _error.applySync(void 0, [
-    `agentOS: the call completed with work still pending; cancelled ${summary}`
+    `agentOS: the context call completed with work still pending; released ${summary}. Released timers never run; pending I/O on released handles fails with ${CONTEXT_HANDLE_RELEASED}.\n`
   ]);
 }
 function _getActiveHandles() {

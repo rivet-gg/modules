@@ -40,8 +40,8 @@ Returning `undefined`, a function, a symbol, or a circular value fails with
 `evaluation_serialization_failed` rather than silently losing the value.
 
 `evaluate()` returns as soon as the expression's promise settles and its
-in-flight host calls finish. It then cancels any timers left behind, closes
-any ref'd sockets, servers, and child processes, and writes a summary to stderr.
+in-flight host calls finish. Work it leaves behind is released as described in
+[Keep state between calls](#keep-state-between-calls).
 
 ## Execute code
 
@@ -89,10 +89,23 @@ calls.
 <CodeSnippet file="examples/js-sdk-overview/src/contexts.ts" title="Library" />
 
 A call in a context completes when its top-level code, including any promise it
-awaits, settles. It does not wait for work it leaves behind. agentOS then
-cancels the timers that are left and closes the ref'd sockets, servers, and
-child processes, and reports them on stderr. Globals stay, so the next call sees the
-state. Run long-lived servers with `spawn` instead of a context.
+awaits, settles. It does not wait for work it leaves behind. Globals stay, so the
+next call sees the state, but agentOS releases what would keep a Node process
+alive:
+
+- **Ref'd timers and immediates** are cancelled and never run. A promise that
+  waits on one never settles.
+- **Ref'd sockets, servers, and child processes** are closed. Pending I/O on them
+  fails with `ERR_AGENTOS_CONTEXT_HANDLE_RELEASED`, never a clean end. A `fetch`
+  that is still in flight rejects with that error as its `cause`, and reading a
+  stored `Response` body fails the same way.
+- **Unref'd timers and handles** are left alone, but nothing runs between calls,
+  so they only make progress while a later call is running.
+
+The call's stderr names what was released. Errors raised during that cleanup,
+such as an unhandled rejection from a released `fetch`, are written to the same
+stderr and never change the call's result. Finish I/O inside one call, and run
+long-lived servers with `spawn` instead of a context.
 
 A context runs one call at a time. A call made while another call in the same
 context is still running fails immediately with `execution_busy`. Files, npm,

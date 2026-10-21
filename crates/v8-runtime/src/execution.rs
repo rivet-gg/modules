@@ -1144,6 +1144,51 @@ pub fn release_leftover_handles(scope: &mut v8::HandleScope) -> Result<(), Execu
     }
 }
 
+/// Report a failure that happened after a settle-complete call's result was
+/// fixed. It goes to the call's stderr (sidecar stderr when the bridge is
+/// absent) instead of changing the call's outcome.
+pub fn report_after_call_failure(scope: &mut v8::HandleScope, error: &ExecutionError) {
+    let detail = if error.stack.is_empty() {
+        format!("{}: {}", error.error_type, error.message)
+    } else {
+        error.stack.clone()
+    };
+    let message = format!("agentOS: after the context call completed: {detail}\n");
+    if !write_guest_stderr(scope, &message) {
+        eprint!("{message}");
+    }
+}
+
+fn write_guest_stderr(scope: &mut v8::HandleScope, message: &str) -> bool {
+    let tc = &mut v8::TryCatch::new(scope);
+    let global = tc.get_current_context().global(tc);
+    let (Some(error_key), Some(apply_key), Some(text)) = (
+        v8::String::new(tc, "_error"),
+        v8::String::new(tc, "applySync"),
+        v8::String::new(tc, message),
+    ) else {
+        return false;
+    };
+    let Some(target) = global
+        .get(tc, error_key.into())
+        .and_then(|value| v8::Local::<v8::Object>::try_from(value).ok())
+    else {
+        return false;
+    };
+    let Some(apply) = target
+        .get(tc, apply_key.into())
+        .and_then(|value| v8::Local::<v8::Function>::try_from(value).ok())
+    else {
+        return false;
+    };
+    let args = v8::Array::new_with_elements(tc, &[text.into()]);
+    let undefined = v8::undefined(tc).into();
+    apply
+        .call(tc, target.into(), &[undefined, args.into()])
+        .is_some()
+        && !tc.has_caught()
+}
+
 fn serialize_module_exports(
     scope: &mut v8::HandleScope,
     module: v8::Local<v8::Module>,
