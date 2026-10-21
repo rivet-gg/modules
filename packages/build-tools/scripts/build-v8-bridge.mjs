@@ -254,6 +254,7 @@ async function validateBridgeContractGlobals(sourceText) {
 		"_registerHandle",
 		"_unregisterHandle",
 		"_waitForActiveHandles",
+		"_releaseLeftoverHandles",
 		"_getActiveHandles",
 		"_childProcessDispatch",
 		"_childProcessModule",

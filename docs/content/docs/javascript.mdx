@@ -39,6 +39,10 @@ console.log(sum.value); // 3
 Returning `undefined`, a function, a symbol, or a circular value fails with
 `evaluation_serialization_failed` rather than silently losing the value.
 
+`evaluate()` returns as soon as the expression's promise settles and its
+in-flight host calls finish. It then cancels any timers left behind, closes
+any ref'd sockets, servers, and child processes, and writes a summary to stderr.
+
 ## Execute code
 
 `execute()` runs source and captures its output instead of returning a value.
@@ -65,6 +69,11 @@ Executions are ephemeral, so capture stdio only when you want it: `"stderr"` for
 diagnostics, `"all"` for both streams. `onStdout`/`onStderr` stream live and work
 independently of capture.
 
+Without a `contextId`, `execute()` behaves like `node -e`: it finishes when the
+event loop is empty, so a ref'd timer or a listening server keeps it running
+until `timeoutMs`. Call `unref()` on handles that must not hold it open, or use
+`spawn` for long-lived work.
+
 ## Pass data into code
 
 In the library, `inputs` hands host values to the guest as real objects, so data never gets
@@ -79,9 +88,16 @@ calls.
 
 <CodeSnippet file="examples/js-sdk-overview/src/contexts.ts" title="Library" />
 
-A context runs one operation at a time, so reusing a busy `contextId` fails
-immediately. Files, npm, Bash, and type checks may pass the same id, but they run
-in fresh processes and never touch retained memory.
+A call in a context completes when its top-level code, including any promise it
+awaits, settles. It does not wait for work it leaves behind. agentOS then
+cancels the timers that are left and closes the ref'd sockets, servers, and
+child processes, and reports them on stderr. Globals stay, so the next call sees the
+state. Run long-lived servers with `spawn` instead of a context.
+
+A context runs one call at a time. A call made while another call in the same
+context is still running fails immediately with `execution_busy`. Files, npm,
+Bash, and type checks may pass the same id, but they run in fresh processes and
+never touch retained memory.
 
 JavaScript defaults to `format: "module"`. Each call is a separate root ES
 module, so its imports, top-level declarations, and exports are scoped to that

@@ -36,6 +36,7 @@ const TTY_ENV: &str = "AGENTOS_EXEC_TTY";
 const TTY_COLS_ENV: &str = "AGENTOS_EXEC_TTY_COLS";
 const TTY_ROWS_ENV: &str = "AGENTOS_EXEC_TTY_ROWS";
 const RETAIN_LANGUAGE_CONTEXT_ENV: &str = "AGENTOS_RETAIN_LANGUAGE_CONTEXT";
+const COMPLETE_ON_SETTLE_ENV: &str = "AGENTOS_COMPLETE_ON_SETTLE";
 const GUEST_ENTRYPOINT_MODULE_MODE_ENV: &str = "AGENTOS_GUEST_ENTRYPOINT_MODULE_MODE";
 const INLINE_FILE_PATH_ENV: &str = "AGENTOS_INLINE_FILE_PATH";
 const USE_BUNDLED_TYPESCRIPT_ENV: &str = "AGENTOS_USE_BUNDLED_TYPESCRIPT";
@@ -113,6 +114,17 @@ fn inline_inputs_prefix(inputs: Option<String>, python: bool) -> String {
             serde_json::to_string(&inputs).expect("JSON string serialization cannot fail")
         )
     }
+}
+
+/// Wrap an evaluation so its result promise is the entry evaluation the
+/// runtime waits for: the completion value of a script, or a top-level
+/// `await` in a module. The call completes when that promise settles.
+fn evaluation_source(expression: &str, result_path: &str, module: bool) -> String {
+    format!(
+        "{{ {}Promise.resolve((async () => ({expression}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }}); }}",
+        if module { "await " } else { "" },
+        serde_json::to_string(result_path).expect("semantic result path serialization cannot fail")
+    )
 }
 
 fn semantic_result_path() -> String {
@@ -547,14 +559,10 @@ fn lower_operation(payload: RequestPayload) -> Result<LoweredOperation, SidecarE
             let module = payload.format == Some(JavaScriptModuleFormat::Module);
             let result_path = semantic_result_path();
             let mut source = inline_inputs_prefix(payload.inputs, false);
-            // The interval keeps the event loop alive until the evaluated promise
-            // settles, so a promise that never settles ends at `timeoutMs`
-            // instead of the guest exiting without a result.
-            source.push_str(&format!(
-                "{{ const keepAlive = setInterval(() => {{}}, 2147483647); Promise.resolve((async () => ({}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }}).finally(() => clearInterval(keepAlive)); }}",
-                payload.expression,
-                serde_json::to_string(&result_path)
-                    .expect("semantic result path serialization cannot fail")
+            source.push_str(&evaluation_source(
+                &payload.expression,
+                &result_path,
+                module,
             ));
             let mut operation =
                 lowered_process(payload.process, "node", vec![String::from("-e"), source]);
@@ -571,6 +579,9 @@ fn lower_operation(payload: RequestPayload) -> Result<LoweredOperation, SidecarE
             operation
                 .env
                 .insert(String::from(INLINE_FILE_PATH_ENV), file_path);
+            operation
+                .env
+                .insert(String::from(COMPLETE_ON_SETTLE_ENV), String::from("1"));
             operation.value_kind = ExecutionValueKind::JavaScript;
             operation.semantic_result_path = Some(result_path);
             operation
@@ -601,15 +612,7 @@ fn lower_operation(payload: RequestPayload) -> Result<LoweredOperation, SidecarE
                 .file_path
                 .unwrap_or_else(|| String::from("agentos-evaluation.ts"));
             let mut source = inline_inputs_prefix(payload.inputs, false);
-            // The interval keeps the event loop alive until the evaluated promise
-            // settles, so a promise that never settles ends at `timeoutMs`
-            // instead of the guest exiting without a result.
-            source.push_str(&format!(
-                "{{ const keepAlive = setInterval(() => {{}}, 2147483647); Promise.resolve((async () => ({}))()).then((value) => {{ let result; try {{ if (value === undefined || typeof value === 'function' || typeof value === 'symbol') throw new TypeError('undefined, functions, and symbols are not supported'); result = JSON.stringify({{ __agentosEvaluation: true, ok: true, value }}); }} catch (error) {{ result = JSON.stringify({{ __agentosEvaluation: true, ok: false, error: `AgentOS evaluation result must be JSON-serializable: ${{error instanceof Error ? error.message : String(error)}}` }}); }} require('node:fs').writeFileSync({}, result); }}).finally(() => clearInterval(keepAlive)); }}",
-                payload.expression,
-                serde_json::to_string(&result_path)
-                    .expect("semantic result path serialization cannot fail")
-            ));
+            source.push_str(&evaluation_source(&payload.expression, &result_path, false));
             let source = transform_retained_typescript_module(&source, &file_path)?;
             let mut operation =
                 lowered_process(payload.process, "node", vec![String::from("-e"), source]);
@@ -619,6 +622,9 @@ fn lower_operation(payload: RequestPayload) -> Result<LoweredOperation, SidecarE
             operation
                 .env
                 .insert(String::from(INLINE_FILE_PATH_ENV), file_path);
+            operation
+                .env
+                .insert(String::from(COMPLETE_ON_SETTLE_ENV), String::from("1"));
             operation.value_kind = ExecutionValueKind::JavaScript;
             operation.semantic_result_path = Some(result_path);
             operation

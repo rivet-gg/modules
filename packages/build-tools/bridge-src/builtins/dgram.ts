@@ -1290,7 +1290,7 @@ var DgramSocket = class {
 		}
 		this._handleRefId = nextHandleId;
 		if (typeof _registerHandle === "function") {
-			_registerHandle(this._handleRefId, "dgram socket");
+			_registerHandle(this._handleRefId, "dgram socket", () => this.close());
 		}
 	}
 	_emit(event, ...args) {

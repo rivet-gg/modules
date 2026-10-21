@@ -2539,6 +2539,10 @@ fn session_thread(
                         // receiving a fresh context for every Execute message.
                         let retain_context = mode & 2 != 0;
                         let module_mode = mode & 1 != 0;
+                        // Context calls and semantic evaluations complete when
+                        // their entry evaluation settles, not when the event
+                        // loop drains; leftover handles are released instead.
+                        let complete_on_settle = mode & 6 != 0;
                         let exec_context = if retain_context {
                             _v8_context
                                 .as_ref()
@@ -2907,7 +2911,7 @@ fn session_thread(
                         // are visible yet — the module body may have registered
                         // timers, stdin listeners, or child_process handles that
                         // need event loop pumping to deliver their callbacks.
-                        let should_enter_event_loop = !pending.is_empty()
+                        let should_enter_event_loop = (!complete_on_settle && !pending.is_empty())
                             || execution::has_pending_module_evaluation()
                             || execution::has_pending_script_evaluation();
                         let event_loop_status = if should_enter_event_loop {
@@ -2923,6 +2927,11 @@ fn session_thread(
                                     bridge_responses: Some(&async_response_rx),
                                     abort: Some(&abort_rx),
                                     pause: Some(&pause_control),
+                                    exit: if complete_on_settle {
+                                        EventLoopExit::EvaluationSettled
+                                    } else {
+                                        EventLoopExit::Drained
+                                    },
                                 },
                                 &pending,
                             )
@@ -2955,13 +2964,59 @@ fn session_thread(
                         // Keep the session alive while handles (timers, child
                         // processes, stdin listeners) are active. Long-lived
                         // Persistent services often run as plain scripts, so this
-                        // cannot be limited to ESM entrypoints.
-                        if !terminated && error.is_none() {
+                        // cannot be limited to ESM entrypoints. Settle-complete
+                        // calls release leftovers even after a guest error.
+                        if !terminated && (error.is_none() || complete_on_settle) {
                             // Destruction can race with the short gap before the
                             // active-handle pass. Observe its durable abort before
                             // calling into an isolate another thread terminated.
                             if execution_abort_requested(&abort_rx) {
                                 terminated = true;
+                            } else if complete_on_settle {
+                                // Cancel what the call left behind, then let its
+                                // in-flight bridge calls (including the closes)
+                                // finish so no response outlives this execution.
+                                {
+                                    let scope = &mut v8::HandleScope::new(iso);
+                                    let ctx = v8::Local::new(scope, &exec_context);
+                                    let scope = &mut v8::ContextScope::new(scope, ctx);
+                                    if let Err(release_error) =
+                                        execution::release_leftover_handles(scope)
+                                    {
+                                        if error.is_none() {
+                                            code = 1;
+                                            error = Some(release_error);
+                                        }
+                                    }
+                                }
+                                if !pending.is_empty() {
+                                    let scope = &mut v8::HandleScope::new(iso);
+                                    let ctx = v8::Local::new(scope, &exec_context);
+                                    let scope = &mut v8::ContextScope::new(scope, ctx);
+                                    let event_loop_status = run_event_loop_with_readiness(
+                                        scope,
+                                        EventLoopSources {
+                                            commands: &rx,
+                                            readiness: &ready_broker,
+                                            readiness_wakes: &ready_rx,
+                                            bridge_responses: Some(&async_response_rx),
+                                            abort: Some(&abort_rx),
+                                            pause: Some(&pause_control),
+                                            exit: EventLoopExit::BridgeIdle,
+                                        },
+                                        &pending,
+                                    );
+                                    match event_loop_status {
+                                        EventLoopStatus::Completed => {}
+                                        EventLoopStatus::Terminated => terminated = true,
+                                        EventLoopStatus::Failed(next_code, next_error) => {
+                                            if error.is_none() {
+                                                code = next_code;
+                                                error = Some(next_error);
+                                            }
+                                        }
+                                    }
+                                }
                             } else {
                                 // Phase 1: call _waitForActiveHandles() once. Repeating
                                 // this after it resolves can re-capture an idle HTTP
@@ -3011,6 +3066,7 @@ fn session_thread(
                                             bridge_responses: Some(&async_response_rx),
                                             abort: Some(&abort_rx),
                                             pause: Some(&pause_control),
+                                            exit: EventLoopExit::Drained,
                                         },
                                         &pending,
                                     );
@@ -3329,6 +3385,7 @@ pub fn run_event_loop(
             bridge_responses: bridge_rx,
             abort: abort_rx,
             pause: pause_control,
+            exit: EventLoopExit::Drained,
         },
         pending,
     )
@@ -3341,6 +3398,38 @@ struct EventLoopSources<'a> {
     bridge_responses: Option<&'a Receiver<BridgeResponse>>,
     abort: Option<&'a Receiver<()>>,
     pause: Option<&'a SessionPauseControl>,
+    exit: EventLoopExit,
+}
+
+/// When an event-loop pass may return.
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(test, allow(dead_code))]
+enum EventLoopExit {
+    /// Node process semantics: nothing is pending, including ref'd timers.
+    Drained,
+    /// The entry evaluation's promise has settled; other work may remain.
+    EvaluationSettled,
+    /// No async bridge call is in flight.
+    BridgeIdle,
+}
+
+fn event_loop_can_exit(
+    scope: &mut v8::HandleScope,
+    pending: &crate::bridge::PendingPromises,
+    exit: EventLoopExit,
+) -> bool {
+    let evaluation_settled = !execution::pending_module_evaluation_needs_wait(scope)
+        && !execution::pending_script_evaluation_needs_wait(scope);
+    match exit {
+        EventLoopExit::Drained => {
+            pending.is_empty()
+                && evaluation_settled
+                && pending_guest_timer_count(scope) == 0
+                && pending_guest_immediate_count(scope) == 0
+        }
+        EventLoopExit::EvaluationSettled => evaluation_settled,
+        EventLoopExit::BridgeIdle => pending.is_empty(),
+    }
 }
 
 fn run_event_loop_with_readiness(
@@ -3355,6 +3444,7 @@ fn run_event_loop_with_readiness(
         bridge_responses: bridge_rx,
         abort: abort_rx,
         pause: pause_control,
+        exit,
     } = sources;
     let mut bridge_lane_open = bridge_rx.is_some();
     loop {
@@ -3366,12 +3456,7 @@ fn run_event_loop_with_readiness(
             scope.terminate_execution();
             return EventLoopStatus::Terminated;
         }
-        if pending.is_empty()
-            && !execution::pending_module_evaluation_needs_wait(scope)
-            && !execution::pending_script_evaluation_needs_wait(scope)
-            && pending_guest_timer_count(scope) == 0
-            && pending_guest_immediate_count(scope) == 0
-        {
+        if event_loop_can_exit(scope, pending, exit) {
             break;
         }
         if let Some(control) = pause_control {
@@ -3433,12 +3518,7 @@ fn run_event_loop_with_readiness(
 
         // Re-check exit conditions after microtask flush — the microtask may
         // have resolved all pending promises or registered new handles.
-        if pending.is_empty()
-            && !execution::pending_module_evaluation_needs_wait(scope)
-            && !execution::pending_script_evaluation_needs_wait(scope)
-            && pending_guest_timer_count(scope) == 0
-            && pending_guest_immediate_count(scope) == 0
-        {
+        if event_loop_can_exit(scope, pending, exit) {
             break;
         }
 
@@ -3570,12 +3650,7 @@ fn run_event_loop_with_readiness(
             scope.perform_microtask_checkpoint();
             pump_v8_message_loop(scope);
             // Check if we should exit
-            if pending.is_empty()
-                && !execution::pending_module_evaluation_needs_wait(scope)
-                && !execution::pending_script_evaluation_needs_wait(scope)
-                && pending_guest_timer_count(scope) == 0
-                && pending_guest_immediate_count(scope) == 0
-            {
+            if event_loop_can_exit(scope, pending, exit) {
                 return EventLoopStatus::Completed;
             }
         };

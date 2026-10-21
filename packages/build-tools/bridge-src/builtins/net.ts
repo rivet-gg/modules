@@ -2527,7 +2527,7 @@ var NetSocket = class _NetSocket extends CanonicalDuplex {
 		}
 		this._handleRefId = this._livenessId;
 		if (typeof _registerHandle === "function") {
-			_registerHandle(this._handleRefId, "net socket");
+			_registerHandle(this._handleRefId, "net socket", () => this.destroy());
 		}
 	}
 	address() {
@@ -3641,7 +3641,7 @@ var NetServer = class {
 		}
 		this._handleRefId = nextHandleId;
 		if (typeof _registerHandle === "function") {
-			_registerHandle(this._handleRefId, "net server");
+			_registerHandle(this._handleRefId, "net server", () => this.close());
 		}
 	}
 	async _pumpAccepts() {

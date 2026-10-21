@@ -1,6 +1,7 @@
 import { _exited } from "./process.js";
 import { exposeCustomGlobal } from "../global-exposure.js";
 import { bridgeDispatchSync } from "../transport.js";
+import { _immediateEntries, _timerEntries, clearImmediate, clearTimeout2 } from "./timers.js";
 
 var HANDLE_DISPATCH = {
   register: "kernelHandleRegister",
@@ -8,6 +9,8 @@ var HANDLE_DISPATCH = {
   list: "kernelHandleList"
 };
 var _activeHandles = /* @__PURE__ */ new Map();
+// Optional close callbacks, keyed like _activeHandles.
+var _handleClosers = /* @__PURE__ */ new Map();
 var _waitResolvers = [];
 
 var _activeHandleDrainScheduled = false;
@@ -28,7 +31,7 @@ function scheduleActiveHandleDrain() {
   });
 }
 
-function _registerHandle2(id, description) {
+function _registerHandle2(id, description, close) {
   try {
     bridgeDispatchSync(HANDLE_DISPATCH.register, id, description);
   } catch (error) {
@@ -40,9 +43,11 @@ function _registerHandle2(id, description) {
     throw error;
   }
   _activeHandles.set(id, description);
+  if (typeof close === "function") _handleClosers.set(id, close);
 }
 function _unregisterHandle2(id) {
   _activeHandles.delete(id);
+  _handleClosers.delete(id);
   const remaining = _activeHandles.size;
   try {
     bridgeDispatchSync(HANDLE_DISPATCH.unregister, id);
@@ -90,6 +95,33 @@ function _waitForActiveHandles() {
     }
   });
 }
+// A context call or evaluation completes when its result settles. Anything it
+// left behind would otherwise stay frozen in the idle context, so cancel the
+// timers, close the closable handles, and report both on stderr.
+function _releaseLeftoverHandles() {
+  const released = [];
+  for (const [id, entry] of Array.from(_timerEntries)) {
+    clearTimeout2(id);
+    released.push(entry.repeat ? "setInterval" : "setTimeout");
+  }
+  for (const id of Array.from(_immediateEntries.keys())) {
+    clearImmediate(id);
+    released.push("setImmediate");
+  }
+  for (const [id, close] of Array.from(_handleClosers)) {
+    if (!_handleClosers.has(id)) continue;
+    released.push(String(_activeHandles.get(id)).split(":")[0]);
+    _handleClosers.delete(id);
+    close();
+  }
+  if (released.length === 0 || typeof _error === "undefined") return;
+  const counts = new Map();
+  for (const name of released) counts.set(name, (counts.get(name) ?? 0) + 1);
+  const summary = Array.from(counts, ([name, count]) => `${name} x${count}`).join(", ");
+  _error.applySync(void 0, [
+    `agentOS: the call completed with work still pending; cancelled ${summary}`
+  ]);
+}
 function _getActiveHandles() {
   return Array.from(_activeHandles.values());
 }
@@ -97,4 +129,5 @@ exposeCustomGlobal("_registerHandle", _registerHandle2);
 exposeCustomGlobal("_unregisterHandle", _unregisterHandle2);
 exposeCustomGlobal("_waitForActiveHandles", _waitForActiveHandles);
 exposeCustomGlobal("_getActiveHandles", _getActiveHandles);
+exposeCustomGlobal("_releaseLeftoverHandles", _releaseLeftoverHandles);
 export { HANDLE_DISPATCH, _activeHandles, _waitResolvers, _registerHandle2, _unregisterHandle2, _waitForActiveHandles, _getActiveHandles };

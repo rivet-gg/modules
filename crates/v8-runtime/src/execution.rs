@@ -1121,6 +1121,29 @@ pub fn finalize_pending_script_evaluation(
     }
 }
 
+/// Cancel the timers and close the handles a settle-complete call left behind.
+/// The bridge owns both, so a context without the bridge has nothing to release.
+pub fn release_leftover_handles(scope: &mut v8::HandleScope) -> Result<(), ExecutionError> {
+    let tc = &mut v8::TryCatch::new(scope);
+    let context = tc.get_current_context();
+    let global = context.global(tc);
+    let Some(key) = v8::String::new(tc, "_releaseLeftoverHandles") else {
+        return Ok(());
+    };
+    let Some(release) = global
+        .get(tc, key.into())
+        .and_then(|value| v8::Local::<v8::Function>::try_from(value).ok())
+    else {
+        return Ok(());
+    };
+    release.call(tc, global.into(), &[]);
+    tc.perform_microtask_checkpoint();
+    match tc.exception() {
+        Some(exception) => Err(exception_to_result(tc, exception).1),
+        None => Ok(()),
+    }
+}
+
 fn serialize_module_exports(
     scope: &mut v8::HandleScope,
     module: v8::Local<v8::Module>,

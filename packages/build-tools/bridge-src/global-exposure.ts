@@ -337,6 +337,12 @@ var NODE_CUSTOM_GLOBAL_INVENTORY = [
 			"Active-handle lifecycle hook controls runtime completion semantics.",
 	},
 	{
+		name: "_releaseLeftoverHandles",
+		classification: "hardened",
+		rationale:
+			"Active-handle lifecycle hook controls runtime completion semantics.",
+	},
+	{
 		name: "_getActiveHandles",
 		classification: "hardened",
 		rationale: "Bridge debug hook should not be replaced by sandbox code.",

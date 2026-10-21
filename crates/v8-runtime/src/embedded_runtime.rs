@@ -593,8 +593,9 @@ impl EmbeddedV8SessionHandle {
     }
 }
 
+// Mode bits: 1 = module, 2 = retained context, 4 = complete on settle.
 fn validate_execute_mode(mode: u8) -> io::Result<()> {
-    if mode > 3 {
+    if mode > 7 {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
             format!("unknown Execute mode: {mode}"),

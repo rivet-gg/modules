@@ -1118,6 +1118,91 @@ fn execution_timeout_is_enforced_by_the_sidecar() {
 }
 
 #[test]
+fn context_call_completes_when_its_result_settles_despite_leftover_handles() {
+    let mut sidecar = new_sidecar("language-execution-leftover-handles");
+    let connection_id = authenticate_wire(&mut sidecar, "leftover-handles-connection");
+    let session_id = open_session_wire(&mut sidecar, 2, &connection_id);
+    let cwd = temp_dir("language-execution-leftover-handles-cwd");
+    let (vm_id, _) = create_vm_wire(
+        &mut sidecar,
+        3,
+        &connection_id,
+        &session_id,
+        wire::GuestRuntimeKind::JavaScript,
+        &cwd,
+    );
+
+    let mut request_id = 4;
+    let mut evaluate =
+        |sidecar: &mut agentos_native_sidecar::NativeSidecar<support::RecordingBridge>,
+         context_id: &str,
+         format: wire::JavaScriptModuleFormat,
+         expression: &str| {
+            let mut process = context_process_options(context_id);
+            process.timeout_ms = Some(5_000);
+            request_id += 1;
+            let started = sidecar
+                .dispatch_wire_blocking(wire_request(
+                    request_id,
+                    wire_vm(&connection_id, &session_id, &vm_id),
+                    wire::RequestPayload::JavaScriptEvaluationRequest(
+                        wire::JavaScriptEvaluationRequest {
+                            process,
+                            expression: expression.to_owned(),
+                            format: Some(format),
+                            file_path: None,
+                            inputs: None,
+                        },
+                    ),
+                ))
+                .expect("start context evaluation");
+            let execution_id = accepted_execution_id(started);
+            wait_for_execution(sidecar, &connection_id, &session_id, &vm_id, &execution_id)
+        };
+
+    for (context_id, format) in [
+        ("leftover-module", wire::JavaScriptModuleFormat::Module),
+        ("leftover-commonjs", wire::JavaScriptModuleFormat::CommonJs),
+    ] {
+        create_context(
+            &mut sidecar,
+            &connection_id,
+            &session_id,
+            &vm_id,
+            context_id,
+        );
+        let first = evaluate(
+            &mut sidecar,
+            context_id,
+            format.clone(),
+            "(setInterval(() => {}, 50), globalThis.answer = 41)",
+        );
+        assert_eq!(
+            first.outcome,
+            wire::ExecutionOutcome::Succeeded,
+            "{context_id}: a leftover interval must not fail the call: {:?}",
+            first.error
+        );
+        assert_eq!(first.evaluation_value.as_deref(), Some("41"));
+
+        let second = evaluate(&mut sidecar, context_id, format, "globalThis.answer + 1");
+        assert_eq!(
+            second.outcome,
+            wire::ExecutionOutcome::Succeeded,
+            "{context_id}: {:?}",
+            second.error
+        );
+        assert_eq!(
+            second.evaluation_value.as_deref(),
+            Some("42"),
+            "{context_id}: the context must keep state set by the first call"
+        );
+    }
+
+    dispose_vm_and_close_session_wire(&mut sidecar, &connection_id, &session_id, &vm_id);
+}
+
+#[test]
 fn evaluation_rejects_non_json_values_with_a_structured_result() {
     let mut sidecar = new_sidecar("language-execution-json-evaluation");
     let connection_id = authenticate_wire(&mut sidecar, "json-evaluation-connection");
