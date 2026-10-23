@@ -2360,6 +2360,231 @@ fn rm_does_not_follow_symlinks_matches_host_node() {
     run_isolated_builtin_conformance_test("fs-rm-symlinks");
 }
 
+// The probe chdirs into a VM-local directory, so relative paths cannot be
+// rescued by the host-mapped harness cwd.
+fn process_chdir_moves_relative_paths_and_children_matches_host_node_impl() {
+    assert_conformance(
+        "process-chdir-cwd",
+        r#"
+import fs from "node:fs";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
+
+const base = fs.realpathSync(fs.mkdtempSync("/tmp/agentos-cwd-"));
+const rel = (target) => path.relative(base, target);
+const childCwd = (options) =>
+  rel(execFileSync("node", ["-e", "process.stdout.write(process.cwd())"], options).toString());
+fs.mkdirSync(path.join(base, "p/sub"), { recursive: true });
+process.chdir(path.join(base, "p"));
+
+fs.mkdirSync("made");
+fs.symlinkSync("made", "link");
+const relativeOps = {
+  entries: fs.readdirSync(process.cwd()).sort(),
+  linkIsSymlink: fs.lstatSync("link").isSymbolicLink(),
+  strayAtRoot: ["made", "link"].filter((name) => fs.existsSync(`/${name}`)),
+};
+fs.unlinkSync("link");
+fs.rmdirSync("made");
+
+process.chdir("sub");
+const cwd = { process: rel(process.cwd()), proc: rel(fs.readlinkSync("/proc/self/cwd")) };
+const child = { inherited: childCwd(), relativeOption: childCwd({ cwd: ".." }) };
+
+const chdirError = (target) => {
+  try {
+    process.chdir(target);
+    return null;
+  } catch (error) {
+    return {
+      code: error.code,
+      syscall: error.syscall,
+      path: rel(error.path),
+      dest: error.dest,
+      message: error.message.replaceAll(base, "<base>"),
+    };
+  }
+};
+fs.writeFileSync("file.txt", "x");
+const errors = {
+  missing: chdirError("missing"),
+  notDirectory: chdirError("file.txt"),
+  cwdAfterFailures: rel(process.cwd()),
+};
+
+process.chdir("/");
+fs.rmSync(base, { recursive: true });
+console.log(JSON.stringify({ relativeOps, cwd, child, errors }));
+"#,
+    );
+}
+
+#[test]
+fn process_chdir_moves_relative_paths_and_children_matches_host_node() {
+    run_isolated_builtin_conformance_test("process-chdir-cwd");
+}
+
+// Each walker case runs under the host-mapped cwd and under a /tmp directory,
+// which the guest serves from the kernel VFS. The host probe shares the cwd,
+// so each run uses fresh directories and removes them.
+const FS_TWO_ROOTS_PRELUDE: &str = r#"
+import fs from "node:fs";
+import path from "node:path";
+const roots = [
+  fs.mkdtempSync(path.join(process.cwd(), "case-")),
+  fs.mkdtempSync("/tmp/agentos-conformance-"),
+];
+const attempt = async (fn) => {
+  try {
+    await fn();
+    return null;
+  } catch (error) {
+    return error.code ?? error.message;
+  }
+};
+const runInRoots = async (run) => {
+  const results = [];
+  for (const root of roots) {
+    results.push(await run(root));
+    fs.rmSync(root, { recursive: true });
+  }
+  console.log(JSON.stringify(results));
+};
+"#;
+
+fn cp_copies_symlinks_as_links_matches_host_node_impl() {
+    let script = format!(
+        "{FS_TWO_ROOTS_PRELUDE}{}",
+        r#"
+await runInRoots(async (root) => {
+  const shown = (target) => (target.startsWith(root) ? `<root>${target.slice(root.length)}` : target);
+  const entry = (path) => {
+    const stats = fs.lstatSync(path);
+    if (stats.isSymbolicLink()) return { link: shown(fs.readlinkSync(path)) };
+    if (stats.isDirectory()) return { dir: fs.readdirSync(path).sort() };
+    return { file: fs.readFileSync(path, "utf8") };
+  };
+  const tree = (dir) =>
+    Object.fromEntries(fs.readdirSync(dir).sort().map((name) => [name, entry(`${dir}/${name}`)]));
+
+  fs.mkdirSync(`${root}/keep`);
+  fs.writeFileSync(`${root}/keep/data.txt`, "keep");
+  fs.mkdirSync(`${root}/src`);
+  fs.writeFileSync(`${root}/src/file.txt`, "file");
+  fs.symlinkSync("../keep", `${root}/src/rel-dir`);
+  fs.symlinkSync(`${root}/keep/data.txt`, `${root}/src/abs-file`);
+  fs.symlinkSync("missing", `${root}/src/dangling`);
+  fs.mkdirSync(`${root}/existing`);
+
+  const result = {
+    intoExisting: await attempt(() => fs.cpSync(`${root}/src`, `${root}/existing`, { recursive: true })),
+    existing: tree(`${root}/existing`),
+    verbatim: await attempt(() =>
+      fs.promises.cp(`${root}/src`, `${root}/verbatim`, { recursive: true, verbatimSymlinks: true })
+    ),
+    verbatimTree: tree(`${root}/verbatim`),
+    topLevelLinkWithoutRecursive: await attempt(() => fs.cpSync(`${root}/src/rel-dir`, `${root}/top-link`)),
+    topLevelLink: await attempt(() =>
+      fs.cpSync(`${root}/src/rel-dir`, `${root}/top-link`, { recursive: true })
+    ),
+    topLevel: entry(`${root}/top-link`),
+    topLevelDangling: await attempt(() => fs.cpSync(`${root}/src/dangling`, `${root}/top-dangling`)),
+  };
+  result.dereference = await attempt(() =>
+    fs.cpSync(`${root}/src/rel-dir`, `${root}/deref`, { recursive: true, dereference: true })
+  );
+  result.dereferenced = entry(`${root}/deref`);
+  result.keep = fs.readdirSync(`${root}/keep`);
+  return result;
+});
+"#
+    );
+    assert_conformance("fs-cp-symlinks", &script);
+}
+
+#[test]
+fn cp_copies_symlinks_as_links_matches_host_node() {
+    run_isolated_builtin_conformance_test("fs-cp-symlinks");
+}
+
+fn readdir_dirent_types_match_host_node_impl() {
+    let script = format!(
+        "{FS_TWO_ROOTS_PRELUDE}{}",
+        r#"
+await runInRoots(async (root) => {
+  fs.mkdirSync(`${root}/dir/sub`, { recursive: true });
+  fs.writeFileSync(`${root}/dir/file.txt`, "file");
+  fs.symlinkSync("sub", `${root}/dir/link-dir`);
+  fs.symlinkSync("file.txt", `${root}/dir/link-file`);
+  fs.symlinkSync("missing", `${root}/dir/dangling`);
+  const types = (entries) =>
+    entries
+      .map((dirent) => [
+        dirent.name,
+        dirent.isFile(),
+        dirent.isDirectory(),
+        dirent.isSymbolicLink(),
+        dirent.isFIFO(),
+        dirent.isSocket(),
+        dirent.isCharacterDevice(),
+        dirent.isBlockDevice(),
+      ])
+      .sort();
+  return {
+    sync: types(fs.readdirSync(`${root}/dir`, { withFileTypes: true })),
+    promises: types(await fs.promises.readdir(`${root}/dir`, { withFileTypes: true })),
+  };
+});
+"#
+    );
+    assert_conformance("fs-dirent-types", &script);
+}
+
+#[test]
+fn readdir_dirent_types_match_host_node() {
+    run_isolated_builtin_conformance_test("fs-dirent-types");
+}
+
+fn rm_directory_without_recursive_matches_host_node_impl() {
+    assert_conformance(
+        "fs-rm-directory-without-recursive",
+        r#"
+import fs from "node:fs";
+
+fs.mkdirSync("full");
+fs.writeFileSync("full/file.txt", "full");
+fs.mkdirSync("empty");
+const describe = async (remove) => {
+  try {
+    await remove();
+    return null;
+  } catch (error) {
+    const { code, name, errno, syscall, message } = error;
+    return { code, name, errno, syscall, message };
+  }
+};
+
+console.log(
+  JSON.stringify({
+    full: await describe(() => fs.rmSync("full")),
+    empty: await describe(() => fs.rmSync("empty")),
+    force: await describe(() => fs.rmSync("empty", { force: true })),
+    callback: await describe(
+      () => new Promise((resolve, reject) => fs.rm("empty", (error) => (error ? reject(error) : resolve())))
+    ),
+    promises: await describe(() => fs.promises.rm("empty")),
+    remaining: ["full", "full/file.txt", "empty"].filter((path) => fs.existsSync(path)),
+  })
+);
+"#,
+    );
+}
+
+#[test]
+fn rm_directory_without_recursive_matches_host_node() {
+    run_isolated_builtin_conformance_test("fs-rm-directory-without-recursive");
+}
+
 fn console_conformance_matches_host_node() {
     assert_conformance(
         "console",
@@ -5133,6 +5358,14 @@ fn __builtin_conformance_extra_test_runner() {
         "http-server-unref-exit" => unrefd_http_server_does_not_keep_guest_process_alive_impl(),
         "fs-write-file-numeric-fd" => write_file_sync_numeric_fd_matches_host_node_impl(),
         "fs-rm-symlinks" => rm_does_not_follow_symlinks_matches_host_node_impl(),
+        "process-chdir-cwd" => {
+            process_chdir_moves_relative_paths_and_children_matches_host_node_impl()
+        }
+        "fs-cp-symlinks" => cp_copies_symlinks_as_links_matches_host_node_impl(),
+        "fs-dirent-types" => readdir_dirent_types_match_host_node_impl(),
+        "fs-rm-directory-without-recursive" => {
+            rm_directory_without_recursive_matches_host_node_impl()
+        }
         other => panic!("unknown builtin conformance extra test: {other}"),
     }
 }
